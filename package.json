@@ -1,0 +1,17 @@
+{
+  "name": "testomat-reporter",
+  "version": "1.0.0",
+  "description": "Testomatio Reporter client",
+  "main": "./lib/reporter.js",
+  "repository": "git@github.com:testomatio/reporter.git",
+  "author": "Koushik Mohan <koushikmohan1996@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.19.2"
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-plugin-import": "^2.20.1"
+  }
+}
