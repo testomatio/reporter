@@ -22,7 +22,7 @@ exports.config = {
     },
     testomat: {
       enabled: true,
-      require: './test',
+      require: 'testomat-reporter/lib/adapter/codecept',
       apiKey: 'l5x5d5cd6pc3',
     },
   },

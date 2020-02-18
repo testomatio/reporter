@@ -6,5 +6,5 @@ Scenario('Test issue for suite 1 @Tf0052a91', (I) => {
   I.fillField('login', 'randomuser_kmk');
   I.fillField('password', 'randomuser_kmk');
   I.click('Sign in');
-  I.see('Repositories');
+  // I.see('Repositories');
 });
