@@ -1,0 +1,10 @@
+{
+  "name": "jest",
+  "version": "1.0.0",
+  "description": "Example for jest",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "test": "jest"
+  }
+}

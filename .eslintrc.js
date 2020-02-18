@@ -15,6 +15,9 @@ module.exports = {
     ecmaVersion: 2018,
   },
   rules: {
-    'arrow-parens':0,
+    'arrow-parens': 0,
+    'no-underscore-dangle': 0,
+    'class-methods-use-this': 0,
+    'no-restricted-syntax': 0,
   },
 };
