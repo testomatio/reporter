@@ -7,7 +7,8 @@
   "author": "Koushik Mohan <koushikmohan1996@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "axios": "^0.19.2"
+    "axios": "^0.19.2",
+    "commander": "^4.1.1"
   },
   "peerDependencies": {
     "codeceptjs": "^2.4.3",
@@ -19,5 +20,8 @@
     "eslint-plugin-import": "^2.20.1",
     "jest": "^25.1.0",
     "puppeteer": "^2.1.1"
+  },
+  "bin": {
+    "start-test-run": "./lib/bin/startTest.js"
   }
 }
