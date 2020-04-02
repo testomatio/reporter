@@ -1,0 +1,46 @@
+Standardkrav:
+Kaffemaskinen ska starta av sig själv när el tillförs
+Kaffemaskinen ska som default ha valet 'kaffe'
+Kaffemaskinen ska vara uppkopplad till vattenuttag
+Kaffemaskinen ska kunna brygga en hel kanna
+Kaffemaskinen ska ta 10kr för en kopp kaffe(oberoende av sort), te och choklad
+Kaffemaskinen ska ta 100kr för en kanna kaffe
+Kaffemaskinen ska kunna erbjuda mjölk och socker till kaffet
+Kaffemaskinen ska kunna erbjuda varm choklad
+Kaffemaskinen ska kunna erbjuda tevatten
+Kaffemaskinen ska kunna ta betalt via mynt, betalkort samt studentkort
+Kaffemaskinen ska själv ta en kopp till köparen, men vid köp av kanna måste man sätta dit en kanna själv
+Man ska kunna fylla på malda kaffebönor i ett fack (max 1kg)
+Man ska kunna fylla på mjölk i ett fack med kylning (max 2L)
+Man ska kunna fylla på socker i ett fack (max 200g)
+Man ska kunna fylla på chokladpulver i ett fack (max 1kg)
+
+Designkrav:
+Kaffemaskinen ska visa information om priser på display
+Efter man tryckt på 'start'knappen och allt fungerar ska det stå 'brewing' på displayen medans kaffet görs
+Kaffemaskinen ska ha knappar för 'start', 'Avbryt', 'Svart kaffe', 'Latte', 'Choklad', 'Te', 'Mjölk' och 'Socker'
+Kaffemaskinen ska ha vätskeuppfång under koppen (så det inte rinner på golvet vid avsaknad av kopp)
+Kaffemaskinen ska ha myntinkast med returfack undertill
+Kaffemaskinen ska ha ett hål för kort med pin-terminal undertill för kortbetalning/studentkort
+När man trycker på en knapp ska den lysa tills man tryckt på 'Start' för att visa vad man valt 
+
+Funktionalitetskrav:
+Ett nytt val av dryck tar bort föregående val av dryck.
+Mjölk/sockerknapparna ska fungera som switchar(on/off)
+Vid avsaknad av vatten ska maskinen visa på displayen 'Fel vid vattenhämtning, kontakta service'
+Vid avsaknad av koppar ska maskinen visa på displayen 'Fyll på koppar'
+Vid avsaknad av tillräcklig mängd kaffe för angiven kopp ska maskinen visa på displayen 'Fyll på kaffebönor'
+Vid avsaknad av tillräcklig mängd chokladpulver för angiven kopp ska maskinen visa på displayen 'Fyll på choklad'
+Vid avsaknad av tillräcklig mängd mjölk för angiven kopp ska maskinen visa på displayen 'Fyll på mjölk'
+Vid avsaknad av tillräcklig mängd socker för angiven kopp ska maskinen visa på displayen 'Fyll på socker'
+Kaffemaskinen ska endast kunna laga vanligt brygkaffe när man vill ha en kanna kaffe
+En kopp svart kaffe ska använda 12 gram kaffebönor och vara av volymen 180ml
+En kopp Latte ska använda 3 gram kaffebönor och av volymen 180ml ska 140ml vara mjölk
+En kopp choklad ska bestå av 170ml varmt vatten och 20g chokladpulver
+Kaffemaskinen ska kunna avgöra hur mycket bönor som är kvar i maskinen (vikt i gram)
+Kaffemaskinen ska kunna avgöra hur många koppar som finns kvar i maskinen
+Kaffemaskinen ska kunna avgöra om man stoppar i ett giltigt mynt eller något annat
+Kaffemaskinen ska inte brygga kaffe vid kortbetalning om kortet saknar täckning eller banken inte är online
+Kaffemaskinen ska kunna ge tillbaka växel vid överbetalning
+
+

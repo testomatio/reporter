@@ -8,7 +8,8 @@
   "license": "MIT",
   "dependencies": {
     "axios": "^0.19.2",
-    "commander": "^4.1.1"
+    "commander": "^4.1.1",
+    "cucumber": "^6.0.5"
   },
   "peerDependencies": {
     "codeceptjs": "^2.4.3",
