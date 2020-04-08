@@ -7,11 +7,22 @@
   "author": "Koushik Mohan <koushikmohan1996@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "axios": "^0.19.2"
+    "axios": "^0.19.2",
+    "commander": "^4.1.1",
+    "cucumber": "^6.0.5"
+  },
+  "peerDependencies": {
+    "codeceptjs": "^2.4.3",
+    "mocha": "^7.0.1"
   },
   "devDependencies": {
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.0.0",
-    "eslint-plugin-import": "^2.20.1"
+    "eslint-plugin-import": "^2.20.1",
+    "jest": "^25.1.0",
+    "puppeteer": "^2.1.1"
+  },
+  "bin": {
+    "start-test-run": "./lib/bin/startTest.js"
   }
 }

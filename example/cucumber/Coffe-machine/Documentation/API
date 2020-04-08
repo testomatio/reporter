@@ -1,0 +1,330 @@
+# CoffeeMachine
+
+### Properties
+
+myMachine(object)
+- Create a nobject of a coffe machine from the class 'CoffeMachine'
+
+pluggedInWater(boolean)
+Initial value: false
+-describes if water is plugged into the machine
+
+pluggedInPower(boolean)
+Initial value: false
+-describes if the machine is connected to an outlet/electricity
+
+waterPerCup(number)
+Constant value: 180
+-describes the volume of water in a cup of beverage (in ml)
+
+waterPerKanna(number)
+Constant value: 1800
+-describes the volume of water in a kanna of beverage (in ml)
+
+waterPerLatte(number)
+Constant value: 60
+-describes the volume of water in a cup of beverage (in ml)
+
+sizeOfKanna(number)
+Initial value: 1800
+-describes the volume of water in a kanna of beverage (in ml)
+
+coffeePerCup(number)
+Constant value: 9
+-describes the amount of grounded coffee per cup(in grams)
+
+coffeePerLatteCup(number)
+Constant value: 3
+-describes the amount of grounded coffee per latte cup(in grams)
+
+milkPerCup(number)
+Constant value: 10
+-describes the amount of milk per cup(in ml)
+
+milkPerLatteCup(number)
+Constant value: 120
+-describes the amount of milk per Latte cup(in ml)
+
+coffeePerKanna(number)
+Constant value: 90
+-describes the amount of grounded coffee per kanna(in grams)
+
+sugarPerCup(number)
+Constant value: 10
+-describes the amount of sugar per cup(in grams)
+
+chocolatePerCup(number)
+Constant value: 10
+-describes the amount of chocolate powder per cup(in grams)
+
+amountOfCoffee(number)
+Initial value: 0
+-describes how much grounded coffee is avaliable in the machine (in grams)
+
+amountOfChocolate(number)
+Initial value: 0
+-describes how much chocolate powder is avaliable in the machine (in grams)
+
+amountOfMilk(number)
+Initial value: 0
+-describes how much milk is avaliable in the machine (in milliliters)
+
+amountOfSugar(number)
+Initial value: 0
+-describes the amount of sugar avaliable in the machine (in grams)
+
+latteButtonPressed(boolean)
+Initial value: false
+- describes if the 'Latte' button is pressed or not 
+
+kaffeButtonPressed(boolean)
+Initial value: true
+- describes if the 'Kaffe' button is pressed or not 
+
+teButtonPressed(boolean)
+Initial value: false
+- describes if the 'Te' button is pressed or not 
+
+chokladButtonPressed(boolean)
+Initial value: false
+- describes if the 'Choklad' button is pressed or not 
+
+sockerButtonPressed(boolean)
+Initial value: false
+- describes if the 'Socker' button is pressed or not 
+
+mjolkButtonPressed(boolean)
+Initial value: false
+- describes if the 'Mjölk' button is pressed or not 
+
+kannaButtonPressed(boolean)
+Initial value: false
+- describes if the 'Kanna' button is pressed or not
+
+amountOfMoneyPaid(number)
+Initial value: 0
+- describes how much money the user has payed so far
+
+reservedAmountFromCardPaid(number)
+Initial value: 0
+-money reserved from bankcard account
+
+pricePerCup(number)
+Initial value: 10
+-describes the cost of a cup of the beverages
+
+amountOfCups(number)
+Initial value: 0
+-describes how many cups are left in the machine
+
+cardPaymentSuccessful(boolean)
+Initial value: false
+-describes if cardpayments are successful or not
+
+beverageBrewedSuccessfully(boolean)
+Initial value: false
+-describes if the beverage was successfully brewed
+
+
+#Methods
+
+checkIfPluggedIn() //onödig????
+- checks to see if the machine is plugged in to an outlet
+- returns nothing, but changes property pluggedInPower to 'true' if the machine is plugged in
+
+checkIfWaterIsPluggedIn()
+- checks to see if the machine is plugged in to a water source
+- if water is avaliable, return true
+- if water is not avaliable, return false
+
+coffeeSupplyLeft(amount)
+-called when the user presses the 'start' button and the value of kaffeButtonPressed, kannaButtonPressed or latteButtonPressed is true
+-returns true if enough coffee for the beverage was avaliable
+
+milkSupplyLeft(amount)
+-called when the user presses the 'start' button and the value of mjolkButtonPressed or latteButtonPressed is true
+-changes the property amountOfMilk to the amount of milk left in the machine
+-returns true if enough milk for the beverage was avaliable
+
+sugarSupplyLeft(amount)
+-called when the user presses the 'start' button and has selected a drink with sugar in it (sugar option)
+-changes the property amountOfSugar to the amount of sugar left in the machine
+-returns true if enough sugar for the beverage was avaliable
+
+chocolateSupplyLeft(amount)
+-changes the property amountOfChocolate to the amount of chocolate left in the machine
+-returns true if enough chocolate for the beverage was avaliable
+
+cupSupplyLeft()
+-called when the user presses the 'start' button
+-if the property amountOfCups is equal to 0, return false
+-else return true
+
+start()
+-called when the user presses the 'start' button
+-calls the method cupSupplyLeft() and checkIfWaterIsPluggedIn()
+-if amountOfCups() method does not return true, display 'no cups avaliable in the machine, please refill' on the screen
+-if checkIfWaterIsPluggedIn() method does not return true, display 'No water avaliable, connect the machine to a water source'
+-if both method returns true, and the value of the amountOfMoneyPaid property is atleast the value of pricePerCup then the method brewBeverage() is called
+-else, it will not brew and user can try again until the 'cancel' button is pressed
+-if coffeeSupplyLeft returns false, display 'not enough coffe in the machine, please refill' on the screen
+-if milkSupplyLeft returns false, display 'not enough milk in the machine, please refill' on the screen
+-if sugarSupplyLeft returns false, display 'not enough sugar in the machine, please refill' on the screen
+-if cupSupplyLeft returns false, display 'no cups avaliable in the machine, please refill' on the screen
+-then call the method returnChange
+-last, change every property back to their initial values
+
+cancel()
+-called when the user presses the 'cancel' button
+-if the brewBeverage() method is ongoing, stop it and return to default mode for the machine but with user selected items still in place
+-if the brewBeverage() method is not ongoing, call the returnChange(amountOfMoneyPaid) method
+-last, change every property back to their initial values
+
+brewBeverage()
+-if kaffeButtonPressed, mjolkButtonPressed and sockerButtonPressed are all true, AND the methods coffeeSupplyLeft(coffeePerCup), milkSupplyLeft(milkPerCup), sugarSupplyLeft(sugarPerCup) all returns true call the method brewCoffeeMilkSugar()
+-if kaffeButtonPressed and mjolkButtonPressed are true, AND the methods coffeeSupplyLeft(coffeePerCup), milkSupplyLeft(milkPerCup) all returns true call the method brewCoffeeMilk()
+-if kaffeButtonPressed and sockerButtonPressed  are true, AND the methods coffeeSupplyLeft(coffeePerCup), sugarSupplyLeft(sugarPerCup) all returns true call the method brewCoffeeSugar()
+-if kaffeButtonPressed is true, AND the method coffeeSupplyLeft(coffeePerCup) returns true, call the method brewCoffee()
+-if kaffeButtonPressed and kannaButtonPressed are true, AND the method coffeeSupplyLeft(coffeePerKanna) returns true, call the method brewKanna()
+-if latteButtonPressed is true, AND the methods coffeeSupplyLeft(coffeePerLatteCup), milkSupplyLeft(milkPerLatteCup) return true, call the method brewLatte()
+-if teButtonPressed is true, call the method brewTe()
+-if chokladButtonPressed is true, AND the method chocolateSupplyLeft(chocolatePerCup) call the method brewChocolate()
+-after that, pour the content of the mixed beverage into the cup
+-last, change every property back to their initial values
+
+brewCoffeeMilkSugar()
+-brews a coffee beverage with milk and sugar
+-heat <sizeOfCup> of water, filter through <coffeePerCup> grams ground coffee, add <milkPerCup> ml of heated milk and <sugarPerCup> grams of sugar
+-subtract <coffeePerCup> from <amountOfCoffee>, <milkPerCup> from <amountOfMilk>, <sugarPerCup> from <amountOfSugar>, and 1 from amountOfCups
+-return 1
+
+brewCoffeMilk()
+-brews a coffee beverage with milk
+-heat <sizeOfCup> of water, filter through <coffeePerCup> grams ground coffee then add <milkPerCup> ml of heated milk
+-subtract <coffeePerCup> from <amountOfCoffee>, <milkPerCup> from <amountOfMilk>, and 1 from amountOfCups
+-return 1
+
+brewCoffeeSugar()
+-brews a coffee beverage with sugar
+-heat <sizeOfCup> of water, filter through <coffeePerCup> grams ground coffee and add <sugarPerCup> grams of sugar
+-subtract <coffeePerCup> from <amountOfCoffee>, <sugarPerCup> from <amountOfSugar>, and 1 from amountOfCups
+-return 1
+
+brewCoffee()
+-brews a coffee beverage
+-heat <sizeOfCup> of water and filter through <coffeePerCup> grams ground coffee
+-subtract <coffeePerCup> from <amountOfCoffee>, and 1 from amountOfCups
+-return 1
+
+brewTea()
+-brews a beverage of tea
+-heat up <sizeOfCup> of water, and subtract 1 from amountOfCups
+-return 1
+
+brewChocolate()
+-brews a beverage of hot chocolate
+-heat up <sizeOfCup> of water and add <chocolatePerCup> of chocolate powder
+-subtract <chocolatePerCup> from <amountOfChocolate>, and 1 from amountOfCups
+-return 1
+
+brewLatte()
+-brews a beverage of Latte
+-heat up <waterPerLatte> water and filter through <coffeePerLatteCup>, then add <milkPerLatteCup> heated milk
+-subtract <coffeePerLatteCup> from <amountOfCoffee>, <milkPerLatteCup> from <amountOfMilk> , and 1 from amountOfCups
+-return 1
+
+brewKanna()
+-brews a kanna of coffee
+-heat up <waterPerKanna> water and filter through <coffeePerKanna> grams of ground coffee
+-subtract <coffeePerKanna> from <amountOfCoffee>
+-return 0
+
+reservedCardPaymentHandler(originCalledFrom)
+- determines if the reserved amount on card whould be deducted from bankaccount or not
+- if originCalledFrom is 'cancel', no deduction is to be made, return false
+- else deduct amount from card, return true
+
+returnChange(amountOfMoneyPaid)
+- compares amountOfMoneyPaid and reservedAmountFromCardPaid to pricePerCup
+- if the cancelbutton is pressed, amountOfMoneyPaid will be payed back
+- else if amountOfMoneyPaid and reservedAmountFromCardPaid is greater than pricePerCup, then the difference will be payed back in corresponding change through the return socket on the machine
+- else if amountOfMoneyPaid and reservedAmountFromCardPaid is equal to pricePerCup, then no money gets payed back
+- else if amountOfMoneyPaid and reservedAmountFromCardPaid is less than pricePerCup, then pay back money equal to the value of amountOfMoneyPaid
+
+checkInsertedCoinObject(insertedObject)
+-called when the user inserts something into the coinsocket of the machine
+-if the object inserted is a valid Swedish coin, set local variable coinValue to insertedObject and call method payByCash(coinValue)
+-if the object inserted is not a valid Swedish coin, display 'Myntet kunde inte läsas, välj ett annat mynt eller försök igen' on the display screen and return false
+
+payByCard()
+-called when the user inputs a creditcard into the cardsocket of the machine
+-if the transaction was successful, adds funds to amountOfMoneyPaid corresponding to the price of the beverage
+-returns the new amountOfMoneyPaid property if the transaction was successful
+
+payByStudentCard()
+-called when the user inputs a studentCard into the cardsocket of the machine
+-adds pricePerCup to amountOfMoneyPaid
+
+payByCash(coinValue)
+-adds the value of <coinValue> to the amountOfMoneyPaid property 
+
+selectSugar()
+-called when the user presses the 'sugar' button
+-sets the value of sockerButtonPressed to 'true' if it is false, and sets the value to 'false' if it is true
+-last, if the value of sockerButtonPressed is true, light the 'socker' button up, else turn the light of on the button
+
+selectMilk()
+-called when the user presses the 'Mjölk' button
+-sets the value of mjolkButtonPressed to 'true' and sets the value to 'false' if it is true
+-last, if the value of mjolkButtonPressed is true, light the 'mjölk' button up, else turn the light of on the button
+
+selectKanna()
+-called when the user presses the 'Kanna' button
+-sets the value of kannaButtonPressed to 'true' and sets the value to 'false' if it is true
+-last, if the value of kannaButtonPressed is true, light the 'kanna' button up, else turn the light of on the button
+
+selectCoffee()
+-called when the user presses the 'Kaffe' button
+-sets the value of kaffeButtonPressed to 'true', and the value of latteButtonPressed, teButtonPressed, chokladButtonPressed to 'false'
+-last, light up the 'kaffe' button and turn of the lights of the 'latte', 'choklad' and 'te' buttons
+
+selectLatte()
+-called when the user presses the 'Latte' button
+-sets the value of latteButtonPressed to 'true', and the value of kaffeButtonPressed, teButtonPressed, chokladButtonPressed to 'false'
+-last, light up the 'Latte' button and turn of the lights of the 'kaffe', 'choklad', 'mjölk', 'socker', 'kanna' and 'te' buttons
+
+selectTea()
+-called when the user presses the 'Te' button
+-sets the value of teButtonPressed to 'true', and the value of latteButtonPressed, kaffeButtonPressed, chokladButtonPressed to 'false'
+-last, light up the 'te' button and turn of the lights of the 'latte', 'choklad', 'mjölk', 'socker', 'kanna' and 'kaffe' buttons
+
+selectChocolate()
+-called when the user presses the 'Choklad' button
+-sets the value of chocolateButtonPressed to 'true', and the value of latteButtonPressed, teButtonPressed, kaffeButtonPressed to 'false'
+-last, light up the 'choklad' button and turn of the lights of the 'latte', 'kaffe', 'mjölk', 'socker', 'kanna' and 'te' buttons
+
+refillSugar(weight)
+-called when the lid to the sugar storage unit is closed
+-weighs the amount of sugar in the sugar compartment and sets the value of amountOfSugar to that weight
+
+refillCoffee(weight)
+-called when the lid to the coffee storage unit is closed
+-weighs the amount of coffee in the coffee compartment and sets the value of amountOfCoffee to that weight
+
+refillMilk(weight)
+-called when the lid to the milk storage unit is closed
+-weighs the amount of milk in the milk compartment and sets the value of amountOfMilk to that weight
+
+refillChocolate(weight)
+-called when the lid to the sugar storage unit is closed
+-weighs the amount of chocolate in the chocolate compartment and sets the value of amountOfChocolate to that weight
+
+refillCups(weight)
+-called when the lid to the cup storage unit is closed
+-weighs the mass of the cups, divides that with 2.4, then sets the value of amountOfCups to the result
+
+https://www.coposplastico.com/Cups-Desechables-200-ml-PP
+
+
+
+

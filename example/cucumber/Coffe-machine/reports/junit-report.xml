@@ -1,0 +1,1171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+    <testsuite name=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" tests="10" failures="0" skipped="0">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/money_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.000743841">
+        </testcase>
+        <testcase name="When I have inserted a 10 coin" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.00037858">
+        </testcase>
+        <testcase name="And a 0 coin" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.000306634">
+        </testcase>
+        <testcase name="And a 0 coin" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.000099188">
+        </testcase>
+        <testcase name="And a 0 coin" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.000074172">
+        </testcase>
+        <testcase name="And a 0 coin" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.00006462">
+        </testcase>
+        <testcase name="And a 0 coin" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.000067517">
+        </testcase>
+        <testcase name="And a 0 coin" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.000068383">
+        </testcase>
+        <testcase name="And I press the startbutton" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.000120044">
+        </testcase>
+        <testcase name="Then i should recieve 0kr in coins back" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.000163459">
+        </testcase>
+    </testsuite>
+    <testsuite name=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" tests="10" failures="0" skipped="0">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/money_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.000089806">
+        </testcase>
+        <testcase name="When I have inserted a 1 coin" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.000131735">
+        </testcase>
+        <testcase name="And a 1 coin" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.000120932">
+        </testcase>
+        <testcase name="And a 1 coin" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.000313614">
+        </testcase>
+        <testcase name="And a 2 coin" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.000131411">
+        </testcase>
+        <testcase name="And a 2 coin" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.000101833">
+        </testcase>
+        <testcase name="And a 2 coin" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.000069426">
+        </testcase>
+        <testcase name="And a 2 coin" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.000055249">
+        </testcase>
+        <testcase name="And I press the startbutton" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.000044894">
+        </testcase>
+        <testcase name="Then i should recieve 1kr in coins back" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.000060342">
+        </testcase>
+    </testsuite>
+    <testsuite name=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" tests="10" failures="0" skipped="0">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/money_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.000127883">
+        </testcase>
+        <testcase name="When I have inserted a 5 coin" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.00010449">
+        </testcase>
+        <testcase name="And a 2 coin" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.000097474">
+        </testcase>
+        <testcase name="And a 2 coin" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.000095902">
+        </testcase>
+        <testcase name="And a 2 coin" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.000109527">
+        </testcase>
+        <testcase name="And a 0 coin" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.000158929">
+        </testcase>
+        <testcase name="And a 0 coin" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.000135991">
+        </testcase>
+        <testcase name="And a 0 coin" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.000138714">
+        </testcase>
+        <testcase name="And I press the startbutton" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.000097011">
+        </testcase>
+        <testcase name="Then i should recieve 1kr in coins back" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.000090761">
+        </testcase>
+    </testsuite>
+    <testsuite name=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" tests="10" failures="0" skipped="0">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/money_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.000157185">
+        </testcase>
+        <testcase name="When I have inserted a 10 coin" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.000129275">
+        </testcase>
+        <testcase name="And a 5 coin" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.000113294">
+        </testcase>
+        <testcase name="And a 5 coin" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.000215556">
+        </testcase>
+        <testcase name="And a 2 coin" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.000107794">
+        </testcase>
+        <testcase name="And a 1 coin" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.000156749">
+        </testcase>
+        <testcase name="And a 0 coin" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.000177337">
+        </testcase>
+        <testcase name="And a 0 coin" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.000147752">
+        </testcase>
+        <testcase name="And I press the startbutton" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.000084373">
+        </testcase>
+        <testcase name="Then i should recieve 13kr in coins back" classname=";the-user-inserts-a-lot-of-different-coins-and-wants-the-correct-change" time="0.000106822">
+        </testcase>
+    </testsuite>
+    <testsuite name=";the-user-inserts-something-that-is-not-a-valid-coin-into-the-coinsocket" tests="3" failures="0" skipped="0">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/money_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";the-user-inserts-something-that-is-not-a-valid-coin-into-the-coinsocket" time="0.000079365">
+        </testcase>
+        <testcase name="When I insert something that is not a valid coin into the coinsocket" classname=";the-user-inserts-something-that-is-not-a-valid-coin-into-the-coinsocket" time="0.000136861">
+        </testcase>
+        <testcase name="Then I should get an error message" classname=";the-user-inserts-something-that-is-not-a-valid-coin-into-the-coinsocket" time="0.000085545">
+        </testcase>
+    </testsuite>
+    <testsuite name=";the-user-puts-in-a-coin,-and-then-pays-by-card" tests="5" failures="0" skipped="0">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/money_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";the-user-puts-in-a-coin,-and-then-pays-by-card" time="0.000076037">
+        </testcase>
+        <testcase name="When I insert a 5kr coin" classname=";the-user-puts-in-a-coin,-and-then-pays-by-card" time="0.000124998">
+        </testcase>
+        <testcase name="And I pay 10kr with card" classname=";the-user-puts-in-a-coin,-and-then-pays-by-card" time="0.00014701">
+        </testcase>
+        <testcase name="And i press the startbutton" classname=";the-user-puts-in-a-coin,-and-then-pays-by-card" time="0.000078014">
+        </testcase>
+        <testcase name="Then i should recieve 5kr in change" classname=";the-user-puts-in-a-coin,-and-then-pays-by-card" time="0.000089254">
+        </testcase>
+    </testsuite>
+    <testsuite name=";the-user-puts-in-a-coin,-and-then-pays-by-card" tests="5" failures="0" skipped="0">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/money_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";the-user-puts-in-a-coin,-and-then-pays-by-card" time="0.00035307">
+        </testcase>
+        <testcase name="When I insert a 2kr coin" classname=";the-user-puts-in-a-coin,-and-then-pays-by-card" time="0.000097601">
+        </testcase>
+        <testcase name="And I pay 10kr with card" classname=";the-user-puts-in-a-coin,-and-then-pays-by-card" time="0.000122493">
+        </testcase>
+        <testcase name="And i press the startbutton" classname=";the-user-puts-in-a-coin,-and-then-pays-by-card" time="0.000087873">
+        </testcase>
+        <testcase name="Then i should recieve 2kr in change" classname=";the-user-puts-in-a-coin,-and-then-pays-by-card" time="0.000066717">
+        </testcase>
+    </testsuite>
+    <testsuite name=";the-user-puts-in-a-coin,-and-then-pays-by-card" tests="5" failures="0" skipped="0">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/money_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";the-user-puts-in-a-coin,-and-then-pays-by-card" time="0.000078589">
+        </testcase>
+        <testcase name="When I insert a 1kr coin" classname=";the-user-puts-in-a-coin,-and-then-pays-by-card" time="0.00005105">
+        </testcase>
+        <testcase name="And I pay 10kr with card" classname=";the-user-puts-in-a-coin,-and-then-pays-by-card" time="0.000047377">
+        </testcase>
+        <testcase name="And i press the startbutton" classname=";the-user-puts-in-a-coin,-and-then-pays-by-card" time="0.000046696">
+        </testcase>
+        <testcase name="Then i should recieve 1kr in change" classname=";the-user-puts-in-a-coin,-and-then-pays-by-card" time="0.000111909">
+        </testcase>
+    </testsuite>
+    <testsuite name=";the-user-pays-with-a-card-without-enough-funds-on-it" tests="4" failures="0" skipped="0">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/money_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";the-user-pays-with-a-card-without-enough-funds-on-it" time="0.00020254">
+        </testcase>
+        <testcase name="When i pay by card" classname=";the-user-pays-with-a-card-without-enough-funds-on-it" time="0.000443843">
+        </testcase>
+        <testcase name="And i do not have enough money" classname=";the-user-pays-with-a-card-without-enough-funds-on-it" time="0.000529999">
+        </testcase>
+        <testcase name="Then i should get a message that i do not have enough funds" classname=";the-user-pays-with-a-card-without-enough-funds-on-it" time="0.001753706">
+        </testcase>
+    </testsuite>
+    <testsuite name=";the-user-tries-to-buy-a-coffee-without-inserting-enough-money" tests="4" failures="0" skipped="0">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/money_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";the-user-tries-to-buy-a-coffee-without-inserting-enough-money" time="0.000082345">
+        </testcase>
+        <testcase name="Given that i have not inserted enough money" classname=";the-user-tries-to-buy-a-coffee-without-inserting-enough-money" time="0.000261064">
+        </testcase>
+        <testcase name="When I press the startbutton" classname=";the-user-tries-to-buy-a-coffee-without-inserting-enough-money" time="0.000077219">
+        </testcase>
+        <testcase name="Then I should get a message that i have not inserted enough money" classname=";the-user-tries-to-buy-a-coffee-without-inserting-enough-money" time="0.000267118">
+        </testcase>
+    </testsuite>
+    <testsuite name=";the-user-presses-the-cancel-button-when-the-machine-is-not-brewing" tests="5" failures="0" skipped="0">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/money_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";the-user-presses-the-cancel-button-when-the-machine-is-not-brewing" time="0.000114981">
+        </testcase>
+        <testcase name="Given that i have payed 10 kr" classname=";the-user-presses-the-cancel-button-when-the-machine-is-not-brewing" time="0.000154218">
+        </testcase>
+        <testcase name="And have not pressed the startbutton" classname=";the-user-presses-the-cancel-button-when-the-machine-is-not-brewing" time="0.000144234">
+        </testcase>
+        <testcase name="When i press the cancelbutton" classname=";the-user-presses-the-cancel-button-when-the-machine-is-not-brewing" time="0.000153798">
+        </testcase>
+        <testcase name="Then i should get 10kr back" classname=";the-user-presses-the-cancel-button-when-the-machine-is-not-brewing" time="0.000205192">
+        </testcase>
+    </testsuite>
+    <testsuite name=";the-user-presses-the-cancel-button-when-the-machine-is-not-brewing" tests="5" failures="0" skipped="0">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/money_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";the-user-presses-the-cancel-button-when-the-machine-is-not-brewing" time="0.000101063">
+        </testcase>
+        <testcase name="Given that i have payed 13 kr" classname=";the-user-presses-the-cancel-button-when-the-machine-is-not-brewing" time="0.000067133">
+        </testcase>
+        <testcase name="And have not pressed the startbutton" classname=";the-user-presses-the-cancel-button-when-the-machine-is-not-brewing" time="0.000055974">
+        </testcase>
+        <testcase name="When i press the cancelbutton" classname=";the-user-presses-the-cancel-button-when-the-machine-is-not-brewing" time="0.000052467">
+        </testcase>
+        <testcase name="Then i should get 13kr back" classname=";the-user-presses-the-cancel-button-when-the-machine-is-not-brewing" time="0.000062726">
+        </testcase>
+    </testsuite>
+    <testsuite name=";user-pays-with-card,-then-presses-the-cancelbutton" tests="5" failures="0" skipped="0">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/money_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";user-pays-with-card,-then-presses-the-cancelbutton" time="0.0001002">
+        </testcase>
+        <testcase name="Given that the user has payed with card" classname=";user-pays-with-card,-then-presses-the-cancelbutton" time="0.000265678">
+        </testcase>
+        <testcase name="When the user presses the cancelbutton" classname=";user-pays-with-card,-then-presses-the-cancelbutton" time="0.000111612">
+        </testcase>
+        <testcase name="Then the user gets no change back" classname=";user-pays-with-card,-then-presses-the-cancelbutton" time="0.000151843">
+        </testcase>
+        <testcase name="And no money is deducted from the card" classname=";user-pays-with-card,-then-presses-the-cancelbutton" time="0.000265461">
+        </testcase>
+    </testsuite>
+    <testsuite name=";" tests="6" failures="0" skipped="0">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/refilling_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";" time="0.000155617">
+        </testcase>
+        <testcase name="And that I have opened the lid to the deposit" classname=";" time="0.000342337">
+        </testcase>
+        <testcase name="Given that the sugar deposit contains 0" classname=";" time="0.000145906">
+        </testcase>
+        <testcase name="And I put in 600 in the sugar deposit" classname=";" time="0.000284904">
+        </testcase>
+        <testcase name="When I close the lid of the deposit" classname=";" time="0.000250863">
+        </testcase>
+        <testcase name="Then I should have 600 in the sugar deposit" classname=";" time="0.000228152">
+        </testcase>
+    </testsuite>
+    <testsuite name=";" tests="6" failures="0" skipped="0">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/refilling_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";" time="0.000207963">
+        </testcase>
+        <testcase name="And that I have opened the lid to the deposit" classname=";" time="0.000197953">
+        </testcase>
+        <testcase name="Given that the sugar deposit contains 200" classname=";" time="0.000123883">
+        </testcase>
+        <testcase name="And I put in 50 in the sugar deposit" classname=";" time="0.000131229">
+        </testcase>
+        <testcase name="When I close the lid of the deposit" classname=";" time="0.000124875">
+        </testcase>
+        <testcase name="Then I should have 250 in the sugar deposit" classname=";" time="0.000124363">
+        </testcase>
+    </testsuite>
+    <testsuite name=";" tests="6" failures="0" skipped="0">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/refilling_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";" time="0.000101128">
+        </testcase>
+        <testcase name="And that I have opened the lid to the deposit" classname=";" time="0.000096137">
+        </testcase>
+        <testcase name="Given that the coffee deposit contains 10" classname=";" time="0.000207773">
+        </testcase>
+        <testcase name="And I put in 720 in the coffee deposit" classname=";" time="0.000207833">
+        </testcase>
+        <testcase name="When I close the lid of the deposit" classname=";" time="0.000105898">
+        </testcase>
+        <testcase name="Then I should have 730 in the coffee deposit" classname=";" time="0.000113885">
+        </testcase>
+    </testsuite>
+    <testsuite name=";" tests="6" failures="0" skipped="0">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/refilling_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";" time="0.000076664">
+        </testcase>
+        <testcase name="And that I have opened the lid to the deposit" classname=";" time="0.00006835">
+        </testcase>
+        <testcase name="Given that the coffee deposit contains 800" classname=";" time="0.000041214">
+        </testcase>
+        <testcase name="And I put in 137 in the coffee deposit" classname=";" time="0.000048987">
+        </testcase>
+        <testcase name="When I close the lid of the deposit" classname=";" time="0.000039344">
+        </testcase>
+        <testcase name="Then I should have 937 in the coffee deposit" classname=";" time="0.000042522">
+        </testcase>
+    </testsuite>
+    <testsuite name=";" tests="6" failures="0" skipped="0">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/refilling_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";" time="0.000121025">
+        </testcase>
+        <testcase name="And that I have opened the lid to the deposit" classname=";" time="0.000106956">
+        </testcase>
+        <testcase name="Given that the milk deposit contains 53" classname=";" time="0.000207111">
+        </testcase>
+        <testcase name="And I put in 500 in the milk deposit" classname=";" time="0.00023063">
+        </testcase>
+        <testcase name="When I close the lid of the deposit" classname=";" time="0.000119105">
+        </testcase>
+        <testcase name="Then I should have 553 in the milk deposit" classname=";" time="0.000223271">
+        </testcase>
+    </testsuite>
+    <testsuite name=";" tests="6" failures="0" skipped="0">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/refilling_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";" time="0.000074074">
+        </testcase>
+        <testcase name="And that I have opened the lid to the deposit" classname=";" time="0.00007828">
+        </testcase>
+        <testcase name="Given that the milk deposit contains 40" classname=";" time="0.000043575">
+        </testcase>
+        <testcase name="And I put in 623 in the milk deposit" classname=";" time="0.000041466">
+        </testcase>
+        <testcase name="When I close the lid of the deposit" classname=";" time="0.000036966">
+        </testcase>
+        <testcase name="Then I should have 663 in the milk deposit" classname=";" time="0.000038563">
+        </testcase>
+    </testsuite>
+    <testsuite name=";" tests="6" failures="0" skipped="0">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/refilling_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";" time="0.00008871">
+        </testcase>
+        <testcase name="And that I have opened the lid to the deposit" classname=";" time="0.000071376">
+        </testcase>
+        <testcase name="Given that the chocolate deposit contains 250" classname=";" time="0.000159153">
+        </testcase>
+        <testcase name="And I put in 378 in the chocolate deposit" classname=";" time="0.000548602">
+        </testcase>
+        <testcase name="When I close the lid of the deposit" classname=";" time="0.000222038">
+        </testcase>
+        <testcase name="Then I should have 628 in the chocolate deposit" classname=";" time="0.00015854">
+        </testcase>
+    </testsuite>
+    <testsuite name=";" tests="6" failures="0" skipped="0">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/refilling_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";" time="0.000227316">
+        </testcase>
+        <testcase name="And that I have opened the lid to the deposit" classname=";" time="0.000182225">
+        </testcase>
+        <testcase name="Given that the chocolate deposit contains 0" classname=";" time="0.000095443">
+        </testcase>
+        <testcase name="And I put in 925 in the chocolate deposit" classname=";" time="0.000096155">
+        </testcase>
+        <testcase name="When I close the lid of the deposit" classname=";" time="0.000084295">
+        </testcase>
+        <testcase name="Then I should have 925 in the chocolate deposit" classname=";" time="0.000202477">
+        </testcase>
+    </testsuite>
+    <testsuite name=";" tests="6" failures="0" skipped="0">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/refilling_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";" time="0.000076785">
+        </testcase>
+        <testcase name="And that I have opened the lid to the deposit" classname=";" time="0.000056361">
+        </testcase>
+        <testcase name="Given that the cup deposit contains 20" classname=";" time="0.000111382">
+        </testcase>
+        <testcase name="And I put in 24 in the cup deposit" classname=";" time="0.000152305">
+        </testcase>
+        <testcase name="When I close the lid of the deposit" classname=";" time="0.000039279">
+        </testcase>
+        <testcase name="Then I should have 30 in the cup deposit" classname=";" time="0.000076449">
+        </testcase>
+    </testsuite>
+    <testsuite name=";" tests="6" failures="0" skipped="0">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/refilling_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";" time="0.000164076">
+        </testcase>
+        <testcase name="And that I have opened the lid to the deposit" classname=";" time="0.00015151">
+        </testcase>
+        <testcase name="Given that the cup deposit contains 10" classname=";" time="0.000097577">
+        </testcase>
+        <testcase name="And I put in 72 in the cup deposit" classname=";" time="0.000090366">
+        </testcase>
+        <testcase name="When I close the lid of the deposit" classname=";" time="0.000078755">
+        </testcase>
+        <testcase name="Then I should have 40 in the cup deposit" classname=";" time="0.000084997">
+        </testcase>
+    </testsuite>
+    <testsuite name=";user-tries-to-buy-a-beverage-while-the-lid-of-a-compartment-is-open" tests="6" failures="0" skipped="4">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/refilling_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";user-tries-to-buy-a-beverage-while-the-lid-of-a-compartment-is-open" time="0.000074754">
+        </testcase>
+        <testcase name="And that I have opened the lid to the deposit" classname=";user-tries-to-buy-a-beverage-while-the-lid-of-a-compartment-is-open" time="0.000074219">
+        </testcase>
+        <testcase name="Given that the lid to a compartment is open" classname=";user-tries-to-buy-a-beverage-while-the-lid-of-a-compartment-is-open">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And the user have selected a beverage" classname=";user-tries-to-buy-a-beverage-while-the-lid-of-a-compartment-is-open">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="When the user presses the startbutton" classname=";user-tries-to-buy-a-beverage-while-the-lid-of-a-compartment-is-open">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="Then an error message should appear to close the lid" classname=";user-tries-to-buy-a-beverage-while-the-lid-of-a-compartment-is-open">
+            <skipped message="">
+            </skipped>
+        </testcase>
+    </testsuite>
+    <testsuite name=";" tests="7" failures="0" skipped="0">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/selection_Successful_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";" time="0.000068081">
+        </testcase>
+        <testcase name="And there is water available" classname=";" time="0.000127978">
+        </testcase>
+        <testcase name="And the user has paid enough money" classname=";" time="0.000081153">
+        </testcase>
+        <testcase name="Given that the user has selected kaffemjolksocker" classname=";" time="0.00013876">
+        </testcase>
+        <testcase name="And there is enough components for kaffemjolksocker" classname=";" time="0.000120701">
+        </testcase>
+        <testcase name="When the user presses the startbutton" classname=";" time="0.000101396">
+        </testcase>
+        <testcase name="Then the user recieves 1 cup of beverage" classname=";" time="0.000123823">
+        </testcase>
+    </testsuite>
+    <testsuite name=";" tests="7" failures="0" skipped="4">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/selection_Successful_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";" time="0.000064646">
+        </testcase>
+        <testcase name="And there is water available" classname=";" time="0.000045268">
+        </testcase>
+        <testcase name="And the user has paid enough money" classname=";" time="0.000042117">
+        </testcase>
+        <testcase name="Given that the user has selected kaffemjolk" classname=";">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And there is enough components for kaffemjolk" classname=";">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="When the user presses the startbutton" classname=";">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="Then the user recieves 1 cup of beverage" classname=";">
+            <skipped message="">
+            </skipped>
+        </testcase>
+    </testsuite>
+    <testsuite name=";" tests="7" failures="0" skipped="4">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/selection_Successful_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";" time="0.000068556">
+        </testcase>
+        <testcase name="And there is water available" classname=";" time="0.000045678">
+        </testcase>
+        <testcase name="And the user has paid enough money" classname=";" time="0.000045569">
+        </testcase>
+        <testcase name="Given that the user has selected kaffesocker" classname=";">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And there is enough components for kaffesocker" classname=";">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="When the user presses the startbutton" classname=";">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="Then the user recieves 1 cup of beverage" classname=";">
+            <skipped message="">
+            </skipped>
+        </testcase>
+    </testsuite>
+    <testsuite name=";" tests="7" failures="0" skipped="4">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/selection_Successful_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";" time="0.000064074">
+        </testcase>
+        <testcase name="And there is water available" classname=";" time="0.000047306">
+        </testcase>
+        <testcase name="And the user has paid enough money" classname=";" time="0.000047988">
+        </testcase>
+        <testcase name="Given that the user has selected kaffe" classname=";">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And there is enough components for kaffe" classname=";">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="When the user presses the startbutton" classname=";">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="Then the user recieves 1 cup of beverage" classname=";">
+            <skipped message="">
+            </skipped>
+        </testcase>
+    </testsuite>
+    <testsuite name=";" tests="7" failures="0" skipped="4">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/selection_Successful_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";" time="0.000065253">
+        </testcase>
+        <testcase name="And there is water available" classname=";" time="0.000046923">
+        </testcase>
+        <testcase name="And the user has paid enough money" classname=";" time="0.000048647">
+        </testcase>
+        <testcase name="Given that the user has selected latte" classname=";">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And there is enough components for latte" classname=";">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="When the user presses the startbutton" classname=";">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="Then the user recieves 1 cup of beverage" classname=";">
+            <skipped message="">
+            </skipped>
+        </testcase>
+    </testsuite>
+    <testsuite name=";" tests="7" failures="0" skipped="4">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/selection_Successful_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";" time="0.000132043">
+        </testcase>
+        <testcase name="And there is water available" classname=";" time="0.000113497">
+        </testcase>
+        <testcase name="And the user has paid enough money" classname=";" time="0.000098803">
+        </testcase>
+        <testcase name="Given that the user has selected te" classname=";">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And there is enough components for te" classname=";">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="When the user presses the startbutton" classname=";">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="Then the user recieves 1 cup of beverage" classname=";">
+            <skipped message="">
+            </skipped>
+        </testcase>
+    </testsuite>
+    <testsuite name=";" tests="7" failures="0" skipped="4">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/selection_Successful_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";" time="0.000070264">
+        </testcase>
+        <testcase name="And there is water available" classname=";" time="0.00004577">
+        </testcase>
+        <testcase name="And the user has paid enough money" classname=";" time="0.000044214">
+        </testcase>
+        <testcase name="Given that the user has selected choklad" classname=";">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And there is enough components for choklad" classname=";">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="When the user presses the startbutton" classname=";">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="Then the user recieves 1 cup of beverage" classname=";">
+            <skipped message="">
+            </skipped>
+        </testcase>
+    </testsuite>
+    <testsuite name=";" tests="7" failures="0" skipped="4">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/selection_Successful_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";" time="0.000065868">
+        </testcase>
+        <testcase name="And there is water available" classname=";" time="0.000045471">
+        </testcase>
+        <testcase name="And the user has paid enough money" classname=";" time="0.000051124">
+        </testcase>
+        <testcase name="Given that the user has selected kanna" classname=";">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And there is enough components for kanna" classname=";">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="When the user presses the startbutton" classname=";">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="Then the user recieves 0 cup of beverage" classname=";">
+            <skipped message="">
+            </skipped>
+        </testcase>
+    </testsuite>
+    <testsuite name=";user-selects-a-beverage(coffee,latte,te,chocolate),-the-button-lights-up-and-the-others-goes-dark" tests="8" failures="0" skipped="5">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/selection_Successful_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";user-selects-a-beverage(coffee,latte,te,chocolate),-the-button-lights-up-and-the-others-goes-dark" time="0.000066121">
+        </testcase>
+        <testcase name="And there is water available" classname=";user-selects-a-beverage(coffee,latte,te,chocolate),-the-button-lights-up-and-the-others-goes-dark" time="0.000090545">
+        </testcase>
+        <testcase name="And the user has paid enough money" classname=";user-selects-a-beverage(coffee,latte,te,chocolate),-the-button-lights-up-and-the-others-goes-dark" time="0.000048356">
+        </testcase>
+        <testcase name="When the user presses the kaffe button" classname=";user-selects-a-beverage(coffee,latte,te,chocolate),-the-button-lights-up-and-the-others-goes-dark">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="Then the button should light up" classname=";user-selects-a-beverage(coffee,latte,te,chocolate),-the-button-lights-up-and-the-others-goes-dark">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And the te should go dark" classname=";user-selects-a-beverage(coffee,latte,te,chocolate),-the-button-lights-up-and-the-others-goes-dark">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And the latte should go dark" classname=";user-selects-a-beverage(coffee,latte,te,chocolate),-the-button-lights-up-and-the-others-goes-dark">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And the chocolate should go dark" classname=";user-selects-a-beverage(coffee,latte,te,chocolate),-the-button-lights-up-and-the-others-goes-dark">
+            <skipped message="">
+            </skipped>
+        </testcase>
+    </testsuite>
+    <testsuite name=";user-selects-a-beverage(coffee,latte,te,chocolate),-the-button-lights-up-and-the-others-goes-dark" tests="8" failures="0" skipped="5">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/selection_Successful_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";user-selects-a-beverage(coffee,latte,te,chocolate),-the-button-lights-up-and-the-others-goes-dark" time="0.000066883">
+        </testcase>
+        <testcase name="And there is water available" classname=";user-selects-a-beverage(coffee,latte,te,chocolate),-the-button-lights-up-and-the-others-goes-dark" time="0.000051343">
+        </testcase>
+        <testcase name="And the user has paid enough money" classname=";user-selects-a-beverage(coffee,latte,te,chocolate),-the-button-lights-up-and-the-others-goes-dark" time="0.000068386">
+        </testcase>
+        <testcase name="When the user presses the latte button" classname=";user-selects-a-beverage(coffee,latte,te,chocolate),-the-button-lights-up-and-the-others-goes-dark">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="Then the button should light up" classname=";user-selects-a-beverage(coffee,latte,te,chocolate),-the-button-lights-up-and-the-others-goes-dark">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And the kaffe should go dark" classname=";user-selects-a-beverage(coffee,latte,te,chocolate),-the-button-lights-up-and-the-others-goes-dark">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And the te should go dark" classname=";user-selects-a-beverage(coffee,latte,te,chocolate),-the-button-lights-up-and-the-others-goes-dark">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And the chocolate should go dark" classname=";user-selects-a-beverage(coffee,latte,te,chocolate),-the-button-lights-up-and-the-others-goes-dark">
+            <skipped message="">
+            </skipped>
+        </testcase>
+    </testsuite>
+    <testsuite name=";user-selects-a-beverage(coffee,latte,te,chocolate),-the-button-lights-up-and-the-others-goes-dark" tests="8" failures="0" skipped="5">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/selection_Successful_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";user-selects-a-beverage(coffee,latte,te,chocolate),-the-button-lights-up-and-the-others-goes-dark" time="0.000071327">
+        </testcase>
+        <testcase name="And there is water available" classname=";user-selects-a-beverage(coffee,latte,te,chocolate),-the-button-lights-up-and-the-others-goes-dark" time="0.000046793">
+        </testcase>
+        <testcase name="And the user has paid enough money" classname=";user-selects-a-beverage(coffee,latte,te,chocolate),-the-button-lights-up-and-the-others-goes-dark" time="0.00004911">
+        </testcase>
+        <testcase name="When the user presses the te button" classname=";user-selects-a-beverage(coffee,latte,te,chocolate),-the-button-lights-up-and-the-others-goes-dark">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="Then the button should light up" classname=";user-selects-a-beverage(coffee,latte,te,chocolate),-the-button-lights-up-and-the-others-goes-dark">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And the kaffe should go dark" classname=";user-selects-a-beverage(coffee,latte,te,chocolate),-the-button-lights-up-and-the-others-goes-dark">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And the latte should go dark" classname=";user-selects-a-beverage(coffee,latte,te,chocolate),-the-button-lights-up-and-the-others-goes-dark">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And the chocolate should go dark" classname=";user-selects-a-beverage(coffee,latte,te,chocolate),-the-button-lights-up-and-the-others-goes-dark">
+            <skipped message="">
+            </skipped>
+        </testcase>
+    </testsuite>
+    <testsuite name=";user-selects-a-beverage(coffee,latte,te,chocolate),-the-button-lights-up-and-the-others-goes-dark" tests="8" failures="0" skipped="5">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/selection_Successful_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";user-selects-a-beverage(coffee,latte,te,chocolate),-the-button-lights-up-and-the-others-goes-dark" time="0.000179366">
+        </testcase>
+        <testcase name="And there is water available" classname=";user-selects-a-beverage(coffee,latte,te,chocolate),-the-button-lights-up-and-the-others-goes-dark" time="0.000136693">
+        </testcase>
+        <testcase name="And the user has paid enough money" classname=";user-selects-a-beverage(coffee,latte,te,chocolate),-the-button-lights-up-and-the-others-goes-dark" time="0.000128876">
+        </testcase>
+        <testcase name="When the user presses the chocolate button" classname=";user-selects-a-beverage(coffee,latte,te,chocolate),-the-button-lights-up-and-the-others-goes-dark">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="Then the button should light up" classname=";user-selects-a-beverage(coffee,latte,te,chocolate),-the-button-lights-up-and-the-others-goes-dark">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And the kaffe should go dark" classname=";user-selects-a-beverage(coffee,latte,te,chocolate),-the-button-lights-up-and-the-others-goes-dark">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And the latte should go dark" classname=";user-selects-a-beverage(coffee,latte,te,chocolate),-the-button-lights-up-and-the-others-goes-dark">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And the te should go dark" classname=";user-selects-a-beverage(coffee,latte,te,chocolate),-the-button-lights-up-and-the-others-goes-dark">
+            <skipped message="">
+            </skipped>
+        </testcase>
+    </testsuite>
+    <testsuite name=";user-buys-a-coffee-with-milk-and-sugar" tests="6" failures="0" skipped="3">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/selection_Successful_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";user-buys-a-coffee-with-milk-and-sugar" time="0.000107333">
+        </testcase>
+        <testcase name="And there is water available" classname=";user-buys-a-coffee-with-milk-and-sugar" time="0.000072059">
+        </testcase>
+        <testcase name="And the user has paid enough money" classname=";user-buys-a-coffee-with-milk-and-sugar" time="0.000124136">
+        </testcase>
+        <testcase name="When the user selects a coffee with milk and sugar" classname=";user-buys-a-coffee-with-milk-and-sugar">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And presses the startbutton" classname=";user-buys-a-coffee-with-milk-and-sugar">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="Then the coffee machine brews a coffee with milk and sugar" classname=";user-buys-a-coffee-with-milk-and-sugar">
+            <skipped message="">
+            </skipped>
+        </testcase>
+    </testsuite>
+    <testsuite name=";user-presses-the-cancelbutton-within-three-seconds-from-the-moment-the-machine-started-brewing" tests="8" failures="0" skipped="5">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/selection_Successful_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";user-presses-the-cancelbutton-within-three-seconds-from-the-moment-the-machine-started-brewing" time="0.000071521">
+        </testcase>
+        <testcase name="And there is water available" classname=";user-presses-the-cancelbutton-within-three-seconds-from-the-moment-the-machine-started-brewing" time="0.000047661">
+        </testcase>
+        <testcase name="And the user has paid enough money" classname=";user-presses-the-cancelbutton-within-three-seconds-from-the-moment-the-machine-started-brewing" time="0.00005">
+        </testcase>
+        <testcase name="Given that the user has pressed startbutton" classname=";user-presses-the-cancelbutton-within-three-seconds-from-the-moment-the-machine-started-brewing">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="When the user presses the cancelbutton" classname=";user-presses-the-cancelbutton-within-three-seconds-from-the-moment-the-machine-started-brewing">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And it has been less than three seconds since machine started brewing" classname=";user-presses-the-cancelbutton-within-three-seconds-from-the-moment-the-machine-started-brewing">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="Then the machine stops brewing" classname=";user-presses-the-cancelbutton-within-three-seconds-from-the-moment-the-machine-started-brewing">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And goes back to the screen displayed before the user pressed start" classname=";user-presses-the-cancelbutton-within-three-seconds-from-the-moment-the-machine-started-brewing">
+            <skipped message="">
+            </skipped>
+        </testcase>
+    </testsuite>
+    <testsuite name=";user-buys-a-beverage-with-missing-ingredients" tests="6" failures="0" skipped="5">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/selection_Unsuccessful_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";user-buys-a-beverage-with-missing-ingredients" time="0.00006747">
+        </testcase>
+        <testcase name="Given that the user has selected kaffesockermjolk" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And there is not enough kaffe" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="When the user presses the startbutton" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="Then the machine does not brew" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And displays: &apos;Not enough coffee, refill&apos;" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+    </testsuite>
+    <testsuite name=";user-buys-a-beverage-with-missing-ingredients" tests="6" failures="0" skipped="5">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/selection_Unsuccessful_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";user-buys-a-beverage-with-missing-ingredients" time="0.000084517">
+        </testcase>
+        <testcase name="Given that the user has selected kaffesocker" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And there is not enough socker" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="When the user presses the startbutton" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="Then the machine does not brew" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And displays: &apos;Not enough sugar, refill&apos;" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+    </testsuite>
+    <testsuite name=";user-buys-a-beverage-with-missing-ingredients" tests="6" failures="0" skipped="5">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/selection_Unsuccessful_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";user-buys-a-beverage-with-missing-ingredients" time="0.000094673">
+        </testcase>
+        <testcase name="Given that the user has selected kaffemjolk" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And there is not enough mjolk" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="When the user presses the startbutton" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="Then the machine does not brew" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And displays: &apos;Not enough milk, refill&apos;" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+    </testsuite>
+    <testsuite name=";user-buys-a-beverage-with-missing-ingredients" tests="6" failures="0" skipped="5">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/selection_Unsuccessful_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";user-buys-a-beverage-with-missing-ingredients" time="0.000066384">
+        </testcase>
+        <testcase name="Given that the user has selected kaffe" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And there is not enough vatten" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="When the user presses the startbutton" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="Then the machine does not brew" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And displays: &apos;No water supply connected, call maintenance&apos;" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+    </testsuite>
+    <testsuite name=";user-buys-a-beverage-with-missing-ingredients" tests="6" failures="0" skipped="5">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/selection_Unsuccessful_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";user-buys-a-beverage-with-missing-ingredients" time="0.000254273">
+        </testcase>
+        <testcase name="Given that the user has selected te" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And there is not enough cups" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="When the user presses the startbutton" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="Then the machine does not brew" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And displays: &apos;No more cups, refill&apos;" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+    </testsuite>
+    <testsuite name=";user-buys-a-beverage-with-missing-ingredients" tests="6" failures="0" skipped="5">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/selection_Unsuccessful_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";user-buys-a-beverage-with-missing-ingredients" time="0.000107071">
+        </testcase>
+        <testcase name="Given that the user has selected choklad" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And there is not enough choklad" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="When the user presses the startbutton" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="Then the machine does not brew" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And displays: &apos;Not enough chocolate, refill&apos;" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+    </testsuite>
+    <testsuite name=";user-buys-a-beverage-with-missing-ingredients" tests="6" failures="0" skipped="5">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/selection_Unsuccessful_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";user-buys-a-beverage-with-missing-ingredients" time="0.000085743">
+        </testcase>
+        <testcase name="Given that the user has selected latte" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And there is not enough mjolk" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="When the user presses the startbutton" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="Then the machine does not brew" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And displays: &apos;Not enough milk, refill&apos;" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+    </testsuite>
+    <testsuite name=";user-buys-a-beverage-with-missing-ingredients" tests="6" failures="0" skipped="5">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/selection_Unsuccessful_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";user-buys-a-beverage-with-missing-ingredients" time="0.000105737">
+        </testcase>
+        <testcase name="Given that the user has selected kanna" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And there is not enough kaffe" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="When the user presses the startbutton" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="Then the machine does not brew" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And displays: &apos;Not enough coffee, refill&apos;" classname=";user-buys-a-beverage-with-missing-ingredients">
+            <skipped message="">
+            </skipped>
+        </testcase>
+    </testsuite>
+    <testsuite name=";the-user-tries-to-buy-a-beverage-when-the-catch-spillage-compartment-is-full" tests="6" failures="0" skipped="5">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/selection_Unsuccessful_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";the-user-tries-to-buy-a-beverage-when-the-catch-spillage-compartment-is-full" time="0.00013655">
+        </testcase>
+        <testcase name="Given that the catch-spill compartment is full" classname=";the-user-tries-to-buy-a-beverage-when-the-catch-spillage-compartment-is-full">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And the user has selected a beverage" classname=";the-user-tries-to-buy-a-beverage-when-the-catch-spillage-compartment-is-full">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="When the user presses the startbutton" classname=";the-user-tries-to-buy-a-beverage-when-the-catch-spillage-compartment-is-full">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="Then no beverage gets brewed" classname=";the-user-tries-to-buy-a-beverage-when-the-catch-spillage-compartment-is-full">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And an error message is displayed: &apos;Empty the spillage compartment&apos;" classname=";the-user-tries-to-buy-a-beverage-when-the-catch-spillage-compartment-is-full">
+            <skipped message="">
+            </skipped>
+        </testcase>
+    </testsuite>
+    <testsuite name=";user-presses-the-cancelbutton-after-three-seconds-from-the-moment-the-machine-started-brewing" tests="6" failures="0" skipped="5">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/selection_Unsuccessful_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";user-presses-the-cancelbutton-after-three-seconds-from-the-moment-the-machine-started-brewing" time="0.000065089">
+        </testcase>
+        <testcase name="Given that the user has pressed startbutton" classname=";user-presses-the-cancelbutton-after-three-seconds-from-the-moment-the-machine-started-brewing">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="When the user presses the cancelbutton" classname=";user-presses-the-cancelbutton-after-three-seconds-from-the-moment-the-machine-started-brewing">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And it has been more than three seconds since machine started brewing" classname=";user-presses-the-cancelbutton-after-three-seconds-from-the-moment-the-machine-started-brewing">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="Then the machine continues brewing" classname=";user-presses-the-cancelbutton-after-three-seconds-from-the-moment-the-machine-started-brewing">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And the user gets the beverage" classname=";user-presses-the-cancelbutton-after-three-seconds-from-the-moment-the-machine-started-brewing">
+            <skipped message="">
+            </skipped>
+        </testcase>
+    </testsuite>
+    <testsuite name=";the-user-unplugs-the-water-during-the-brewing-process" tests="5" failures="0" skipped="4">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/selection_Unsuccessful_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";the-user-unplugs-the-water-during-the-brewing-process" time="0.000118713">
+        </testcase>
+        <testcase name="Given that the user has selected a beverage" classname=";the-user-unplugs-the-water-during-the-brewing-process">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="And has pressed the startbutton" classname=";the-user-unplugs-the-water-during-the-brewing-process">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="When the user disconnects the water" classname=";the-user-unplugs-the-water-during-the-brewing-process">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="Then an error appears" classname=";the-user-unplugs-the-water-during-the-brewing-process">
+            <skipped message="">
+            </skipped>
+        </testcase>
+    </testsuite>
+    <testsuite name=";user-presses-two-buttons-at-the-same-time" tests="4" failures="0" skipped="2">
+        <properties>
+            <property name="URI" value="/home/koushik/Documents/testomat/workspace/reporter/example/cucumber/Coffe-machine/features/selection_Unsuccessful_Interactions.feature">
+            </property>
+        </properties>
+        <testcase name="Given that the machine is plugged in" classname=";user-presses-two-buttons-at-the-same-time" time="0.000076771">
+        </testcase>
+        <testcase name="Given that the machine is plugged in" classname=";user-presses-two-buttons-at-the-same-time" time="0.000049374">
+        </testcase>
+        <testcase name="When the user presses two buttons at the same time" classname=";user-presses-two-buttons-at-the-same-time">
+            <skipped message="">
+            </skipped>
+        </testcase>
+        <testcase name="Then only one of them should light up (Prio list: coffee&gt;latte&gt;chocolate&gt;te&gt;milk&gt;sugar&gt;kanna)" classname=";user-presses-two-buttons-at-the-same-time">
+            <skipped message="">
+            </skipped>
+        </testcase>
+    </testsuite>
+</testsuites>
