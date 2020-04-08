@@ -1,0 +1,16 @@
+{
+  "name": "coffee-machine",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test-runner.js && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cucumber": "^6.0.5"
+  },
+  "devDependencies": {},
+  "description": ""
+}

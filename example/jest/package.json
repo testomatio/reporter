@@ -6,5 +6,8 @@
   "license": "MIT",
   "scripts": {
     "test": "jest"
+  },
+  "dependencies": {
+    "commander": "^4.1.1"
   }
 }
