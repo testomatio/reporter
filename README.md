@@ -28,6 +28,7 @@ testomat: {
 [img]
 
 **Normal run :** Run the test with codecept command `npx codeceptjs run`
+
 **Worker :** If you are using worker use the following command `start-test-run -c 'npx codeceptjs run-workers 2 --verbose'`
 
 ## Mocha
