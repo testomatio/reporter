@@ -4,7 +4,11 @@ Send test run reports to your testomat.io project. Get the API key from testomat
 
 You can refer sample tests from example folder of this repo. This is a basic example. If you need something full fledged you can refer this [example repo](https://github.com/testomatio/examples)
 
-Add `testomat-reporter` package to your project
+Add `@testomatio/reporter` package to your project:
+
+```
+npm i @testomatio/reporter --save
+```
 
 ## codeceptJS
 
