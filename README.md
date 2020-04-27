@@ -12,11 +12,7 @@ npm i @testomatio/reporter --save
 
 ## codeceptJS
 
-Make sure you load all your tests using [check-test](https://github.com/testomatio/check-tests#cli). Once all the test are loaded, get the test id from testomat account and add it to your scenario like in this [example](https://github.com/testomatio/reporter/blob/master/example/codecept/index_test.js#L3)
-
-Test id will be available in test view in your testomat account
-
-[img]
+Make sure you load all your tests using [check-test](https://github.com/testomatio/check-tests#cli). 
 
 Add plugin to [codecept conf](https://github.com/testomatio/reporter/blob/master/example/codecept/codecept.conf.js#L23)
 
@@ -31,7 +27,6 @@ plugins: {
 ```
 
 **Note: Get the API_KEY from your testomat console**
-[img]
 
 **Normal run :** Run the test with codecept command `npx codeceptjs run`
 
