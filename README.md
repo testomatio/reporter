@@ -17,10 +17,12 @@ Test id will be available in test view in your testomat account
 Add plugin to [codecept conf](https://github.com/testomatio/reporter/blob/master/example/codecept/codecept.conf.js#L23)
 
 ```js
-testomat: {
-  enabled: true,
-  require: 'testomat-reporter/lib/adapter/codecept',
-  apiKey: 'API_KEY',
+plugins: {
+  testomat: {
+    enabled: true,
+    require: 'testomat-reporter/lib/adapter/codecept',
+    apiKey: process.env.API_KEY || 'API_KEY', // pass in api key via config or env variable
+  }
 }
 ```
 
