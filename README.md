@@ -20,7 +20,7 @@ Add plugin to [codecept conf](https://github.com/testomatio/reporter/blob/master
 plugins: {
   testomat: {
     enabled: true,
-    require: 'testomat-reporter/lib/adapter/codecept',
+    require: '@testomatio/reporter/lib/adapter/codecept',
     apiKey: process.env.API_KEY || 'API_KEY', // pass in api key via config or env variable
   }
 }
