@@ -9,6 +9,7 @@ defineSupportCode(({ Given, When, Then }) => {
 
   Given(/^that the machine is plugged in$/, () => {
     myMachine.pluggedInPower = true;
+    assert.equal(true, false);
     assert.deepEqual(myMachine.pluggedInPower, true, 'machine is plugged in');
   });
 

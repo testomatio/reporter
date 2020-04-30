@@ -6,7 +6,6 @@ Feature:
     Background:
         Given that the machine is plugged in
 
-    @T1b00ae20
     Scenario Outline: the user inserts a lot of different coins and wants the correct change
         When I have inserted a <coin1> coin
         And a <coin2> coin
@@ -25,12 +24,10 @@ Feature:
             | 5     | 2     | 2     | 2     | 0     | 0     | 0     | 1      |
             | 10    | 5     | 5     | 2     | 1     | 0     | 0     | 13     |
 
-    @T4f24862d
     Scenario: the user inserts something that is not a valid coin into the coinsocket
         When I insert something that is not a valid coin into the coinsocket
         Then I should get an error message
 
-    @T9eb5bb0b
     Scenario Outline: The user puts in a coin, and then pays by card
         When I insert a <coin>kr coin
         And I pay <cardAmount>kr with card
@@ -43,19 +40,16 @@ Feature:
             | 2    | 10         | 2      |
             | 1    | 10         | 1      |
     
-    @Tbb0c02e0
     Scenario: The user pays with a card without enough funds on it
         When i pay by card
         And i do not have enough money
         Then i should get a message that i do not have enough funds
 
-    @T80840be5
     Scenario: The user tries to buy a coffee without inserting enough money
         Given that i have not inserted enough money
         When I press the startbutton
         Then I should get a message that i have not inserted enough money
     
-    @T683aa3ff
     Scenario Outline: The user presses the cancel button when the machine is not brewing
         Given that i have payed <amount> kr
         And have not pressed the startbutton
@@ -67,7 +61,6 @@ Feature:
             | 10     | 10     |
             | 13     | 13     |
 
-    @T9b523ce0
     Scenario: User pays with card, then presses the cancelbutton
         Given that the user has payed with card
         When the user presses the cancelbutton

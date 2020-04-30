@@ -1,7 +1,9 @@
-test('Test issue for suite 1', () => {
-  expect(1 + 2).toBe(3);
-});
+describe('Suite 1', () => {
+  test('Test addition', () => {
+    expect(1 + 2).toBe(4);
+  });
 
-test('Test for suite 2', () => {
-  expect(1 + 2).toBe(3);
+  test('Test some more addition', () => {
+    expect(1 + 2).toBe(3);
+  });
 });
