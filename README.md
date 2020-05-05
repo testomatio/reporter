@@ -55,11 +55,9 @@ Run your tests.
 
 Load you test using [`check-cucumber`](https://github.com/testomatio/check-cucumber)
 
-Add test ids to the scenarios like in this [example](https://github.com/testomatio/reporter/blob/master/example/cucumber/Coffe-machine/features/money_Interactions.feature#L9)
 
-Create a formatter file passing the API like this [example](https://github.com/testomatio/reporter/blob/master/example/cucumber/Coffe-machine/formatter.js)
 
-Run cucumber test with this formatter
+Run cucumber test with this formatter and API key in environment in `TESTOMATIO`
 ```sh
-./node_modules/.bin/cucumber-js --format formatter.js
+TESTOMATIO=api_key ./node_modules/.bin/cucumber-js --format ./node_modules/@testomatio/reporter/lib/adapter/cucumber.js
 ```
