@@ -97,7 +97,7 @@ module.exports = {
   // projects: undefined,
 
   // Use this configuration option to add custom reporters to Jest
-  reporters: ['default', ['../../lib/adapter/jest.js', { apiKey: 'bu8e29984sqd' }]],
+  // reporters: ['default', ['../../lib/adapter/jest.js', { apiKey: 'bu8e29984sqd' }]],
 
   // Automatically reset mock state between every test
   // resetMocks: false,
