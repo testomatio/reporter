@@ -10,6 +10,12 @@ Add `@testomatio/reporter` package to your project:
 npm i @testomatio/reporter --save
 ```
 
+For testcafe use testcafe reporter
+
+```
+npm i testcafe-reporter-testomatio
+```
+
 ## codeceptJS
 
 Make sure you load all your tests using [check-test](https://github.com/testomatio/check-tests#cli). 
@@ -60,4 +66,14 @@ Load you test using [`check-cucumber`](https://github.com/testomatio/check-cucum
 Run cucumber test with this formatter and API key in environment in `TESTOMATIO`
 ```sh
 TESTOMATIO=api_key ./node_modules/.bin/cucumber-js --format ./node_modules/@testomatio/reporter/lib/adapter/cucumber.js
+```
+
+## TestCafe
+
+Load the test using using `check-test` .
+
+run the following command from you project folder
+
+```sh
+TESTOMATIO={apiKey} npx testcafe chrome -r testomatio
 ```
