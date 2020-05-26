@@ -75,5 +75,5 @@ Load the test using using `check-test` .
 run the following command from you project folder
 
 ```sh
-TESTOMAT={apiKey} npx testcafe -r testomatio
+TESTOMAT={apiKey} npx testcafe chrome -r testomatio
 ```
