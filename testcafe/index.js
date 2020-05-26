@@ -7,13 +7,13 @@ module.exports = function () {
   let failed = false;
 
   if (apiKey === '' || apiKey === undefined) {
-    throw new Error('Testomat API key cannot be empty');
+    throw new Error('Testomat.io API key cannot be empty');
   }
   const client = new TestomatClient({ apiKey });
 
   return {
     reportTaskStart(startTime, userAgents) {
-      console.log('Testcafe started with: ', userAgents);
+      console.log('TestCafe started with: ', userAgents);
       client.createRun();
     },
 

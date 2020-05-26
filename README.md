@@ -68,12 +68,12 @@ Run cucumber test with this formatter and API key in environment in `TESTOMATIO`
 TESTOMATIO=api_key ./node_modules/.bin/cucumber-js --format ./node_modules/@testomatio/reporter/lib/adapter/cucumber.js
 ```
 
-## Testcafe
+## TestCafe
 
 Load the test using using `check-test` .
 
 run the following command from you project folder
 
 ```sh
-TESTOMAT={apiKey} npx testcafe chrome -r testomatio
+TESTOMATIO={apiKey} npx testcafe chrome -r testomatio
 ```
