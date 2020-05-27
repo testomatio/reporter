@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "koushikmohan1996@gmail.com",
   "license": "ISC",
   "dependencies": {
     "@testomatio/reporter": "^0.1.8"
