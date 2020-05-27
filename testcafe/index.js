@@ -40,13 +40,14 @@ module.exports = function () {
     renderErrors(errors) {
       let errorMessage = '';
       errors.forEach((error, id) => {
-        errorMessage = `${this.formatError(error, `${id + 1} `)}\n`;
+        errorMessage = `${errorMessage}${this.formatError(error, `${id + 1} `)}\n`;
       });
 
-      return errorMessage;
+      console.log(errorMessage);
+      return errorMessage.replace(util.ansiRegExp(), '');
     },
 
-    reportTaskDone(endTime, passed, warnings) {
+    reportTaskDone() {
       const status = failed ? TRConstants.FAILED : TRConstants.PASSED;
       console.log(`Status : ${status}`);
       client.updateRunStatus(status);
