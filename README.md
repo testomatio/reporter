@@ -1,4 +1,4 @@
-# reporter
+# @testomatio/reporter
 
 Send test run reports to your testomat.io project. Get the API key from testomat.
 
@@ -16,7 +16,7 @@ For testcafe use testcafe reporter
 npm i testcafe-reporter-testomatio
 ```
 
-## codeceptJS
+## CodeceptJS
 
 Make sure you load all your tests using [check-test](https://github.com/testomatio/check-tests#cli). 
 
@@ -76,4 +76,12 @@ run the following command from you project folder
 
 ```sh
 TESTOMATIO={apiKey} npx testcafe chrome -r testomatio
+```
+
+## Development
+
+To change host of endpoint for receiving data, and set it to other than app.testomat.io use `TESTOMATIO_URL` environment variable:
+
+```
+TESTOMATIO_URL=http://127.0.0.1:3000 
 ```
