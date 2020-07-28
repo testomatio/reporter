@@ -78,6 +78,28 @@ run the following command from you project folder
 TESTOMATIO={apiKey} npx testcafe chrome -r testomatio
 ```
 
+## Protractor
+
+Load the test using using `check-test` .
+
+Add the following line to [conf.js](https://github.com/angular/protractor/blob/5.4.1/example/conf.js)
+
+```js
+const JasmineReporter = require('@testomatio/reporter/lib/adapter/jasmine');
+
+exports.config = {
+  onPrepare: () => { 
+  jasmine.getEnv().addReporter(new JasmineReporter({ apiKey: process.env.TESTOMATIO }));
+  },
+};
+```
+
+run the following command from you project folder
+
+```sh
+TESTOMATIO={apiKey}  npx @testomatio/reporter@latest -c 'npx protractor conf.js'
+```
+
 ## Development
 
 To change host of endpoint for receiving data, and set it to other than app.testomat.io use `TESTOMATIO_URL` environment variable:
