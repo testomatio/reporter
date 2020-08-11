@@ -100,6 +100,15 @@ run the following command from you project folder
 TESTOMATIO={apiKey}  npx @testomatio/reporter@latest -c 'npx protractor conf.js'
 ```
 
+## Note
+Give a title to your reports by passing it as environment variable to `TESTOMATIO_TITLE`.
+
+For example
+
+```sh
+TESTOMATIO={apiKey} TESTOMATIO_TITLE="title for the report" <actual run command>
+```
+
 ## Development
 
 To change host of endpoint for receiving data, and set it to other than app.testomat.io use `TESTOMATIO_URL` environment variable:
