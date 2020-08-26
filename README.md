@@ -100,7 +100,7 @@ run the following command from you project folder
 TESTOMATIO={apiKey}  npx @testomatio/reporter@latest -c 'npx protractor conf.js'
 ```
 
-## Note
+## Naming Report
 Give a title to your reports by passing it as environment variable to `TESTOMATIO_TITLE`.
 
 For example
