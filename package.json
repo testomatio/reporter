@@ -1,6 +1,6 @@
 {
   "name": "@testomatio/reporter",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "description": "Testomatio Reporter Client",
   "main": "./lib/reporter.js",
   "repository": "git@github.com:testomatio/reporter.git",
