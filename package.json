@@ -1,6 +1,6 @@
 {
   "name": "@testomatio/reporter",
-  "version": "0.1.17",
+  "version": "0.2.0",
   "description": "Testomatio Reporter Client",
   "main": "./lib/reporter.js",
   "repository": "git@github.com:testomatio/reporter.git",
@@ -8,7 +8,10 @@
   "license": "MIT",
   "dependencies": {
     "axios": "^0.19.2",
-    "commander": "^4.1.1"
+    "callsite-record": "^4.1.3",
+    "chalk": "^4.1.0",
+    "commander": "^4.1.1",
+    "cucumber": "^7.0.0-rc.0"
   },
   "peerDependencies": {
     "codeceptjs": "^2.4.3",

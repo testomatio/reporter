@@ -34,7 +34,12 @@ module.exports = function () {
         failed = true;
       }
       console.log(` - ${name} : ${status}`);
-      client.addTestRun(util.parseTest(name), status, message, name, testRunInfo.durationMs);
+      client.addTestRun(util.parseTest(name), status, {
+        error: testRunInfo.errs.length ? testRunInfo.errs[0] : null,
+        message,
+        title: name,
+        time: testRunInfo.durationMs
+      );
     },
 
     renderErrors(errors) {
