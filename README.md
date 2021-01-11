@@ -18,7 +18,7 @@ npm i testcafe-reporter-testomatio
 
 ## CodeceptJS
 
-Make sure you load all your tests using [check-test](https://github.com/testomatio/check-tests#cli). 
+Make sure you load all your tests using [check-test](https://github.com/testomatio/check-tests#cli).
 
 Add plugin to [codecept conf](https://github.com/testomatio/reporter/blob/master/example/codecept/codecept.conf.js#L23)
 
@@ -39,15 +39,17 @@ plugins: {
 **Worker :** If you are using worker use the following command `start-test-run -c 'npx codeceptjs run-workers 2 --verbose'`
 
 ## Mocha
+
 Load the test using using `check-test` if not done already. Get the test id from testomat account and add it to your mocha test like in this [example](https://github.com/testomatio/reporter/blob/master/example/mocha/test/index.test.js#L4)
 
 run the following command from you project folder
+
 ```sh
 mocha --reporter ./node_modules/testomat-reporter/lib/adapter/mocha.js  --reporter-options apiKey=API_KEY
 ```
 
-
 ## Jest
+
 Load the test using using `check-test` . Add the test id to your tests like in this [example](https://github.com/testomatio/reporter/blob/master/example/jest/index.test.js#L1)
 
 Add the following line to [jest.config.js](https://github.com/testomatio/reporter/blob/master/example/jest/jest.config.js#L100)
@@ -56,14 +58,12 @@ Add the following line to [jest.config.js](https://github.com/testomatio/reporte
 
 Run your tests.
 
-
 ## Cucumber
 
 Load you test using [`check-cucumber`](https://github.com/testomatio/check-cucumber)
 
-
-
 Run cucumber test with this formatter and API key in environment in `TESTOMATIO`
+
 ```sh
 TESTOMATIO=api_key ./node_modules/.bin/cucumber-js --format ./node_modules/@testomatio/reporter/lib/adapter/cucumber.js
 ```
@@ -85,17 +85,18 @@ Load the test using using `check-test` .
 Add the following line to [conf.js](https://github.com/angular/protractor/blob/5.4.1/example/conf.js)
 
 ```js
-const JasmineReporter = require('@testomatio/reporter/lib/adapter/jasmine');
+const JasmineReporter = require("@testomatio/reporter/lib/adapter/jasmine");
 
 exports.config = {
-  onPrepare: () => { 
-  jasmine.getEnv().addReporter(new JasmineReporter({ apiKey: process.env.TESTOMATIO }));
+  onPrepare: () => {
+    jasmine
+      .getEnv()
+      .addReporter(new JasmineReporter({ apiKey: process.env.TESTOMATIO }));
   },
 };
 ```
 
 run the following command from you project folder
-
 
 ```sh
 TESTOMATIO={apiKey}  npx @testomatio/reporter@latest -c 'npx protractor conf.js'
@@ -103,19 +104,32 @@ TESTOMATIO={apiKey}  npx @testomatio/reporter@latest -c 'npx protractor conf.js'
 
 # Advanced Usage
 
-## Naming Report
+## Naming Report and Adding report to group
+
 Give a title to your reports by passing it as environment variable to `TESTOMATIO_TITLE`.
+
+Create/Add run to group by providing `TESTOMATIO_RUNGROUP_TITLE`,
 
 For example
 
 ```sh
-TESTOMATIO={apiKey} TESTOMATIO_TITLE="title for the report" <actual run command>
+TESTOMATIO={apiKey} TESTOMATIO_TITLE="title for the report" TESTOMATIO_RUNGROUP_TITLE="Build ${1}" <actual run command>
 ```
+
+## Store screenshots in third party storage
+
+1. S3 - Provide following configuration from S3 bucket
+   **S3_REGION** - Region your bucket lies.
+   **S3_BUCKET** - Bucket name.
+   **S3_ACCESS_KEY_ID** - Access key.
+   **S3_SECRET_ACCESS_KEY** - Secret.
+
+If you are credential files, you can leave last 2 variables
 
 ## Development
 
 To change host of endpoint for receiving data, and set it to other than app.testomat.io use `TESTOMATIO_URL` environment variable:
 
 ```
-TESTOMATIO_URL=http://127.0.0.1:3000 
+TESTOMATIO_URL=http://127.0.0.1:3000
 ```
