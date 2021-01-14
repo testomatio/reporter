@@ -36,7 +36,15 @@ plugins: {
 
 **Normal run :** Run the test with codecept command `npx codeceptjs run`
 
-**Worker :** If you are using worker use the following command `start-test-run -c 'npx codeceptjs run-workers 2 --verbose'`
+## Parallel run
+
+If tests run parallel, like workers in codeceptJS use `start-test-run` command to get proper reports
+
+usage:
+
+`TESTOMATIO=<API_KEY> npx start-test-run -c 'npx codeceptjs run-workers 2'`
+
+-c : Actual test run command
 
 ## Mocha
 
