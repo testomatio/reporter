@@ -1,6 +1,6 @@
 {
   "name": "@testomatio/reporter",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Testomatio Reporter Client",
   "main": "./lib/reporter.js",
   "repository": "git@github.com:testomatio/reporter.git",
@@ -11,16 +11,16 @@
     "axios": "^0.21.1",
     "callsite-record": "^4.1.3",
     "chalk": "^4.1.0",
-    "commander": "^4.1.1",
-    "cucumber": "^7.0.0-rc.0"
+    "commander": "^4.1.1"
   },
   "peerDependencies": {
-    "codeceptjs": "^2.4.3",
-    "cucumber": "^6.0.5",
-    "mocha": "^7.0.1",
-    "@wdio/reporter": "^6.1.14"
+    "codeceptjs": "*",
+    "cucumber": "*",
+    "mocha": "*",
+    "@wdio/reporter": "*"
   },
   "devDependencies": {
+    "codeceptjs": "^3.0.4",
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.22.1",

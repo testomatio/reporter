@@ -32,19 +32,23 @@ plugins: {
 }
 ```
 
-**Note: Get the API_KEY from your testomat console**
+> **Get the API_KEY from your testomat console**
 
-**Normal run :** Run the test with codecept command `npx codeceptjs run`
+Run tests with
 
-## Parallel run
+```
+TESTOMATIO=<API_KEY> npx codeceptjs run`
+```
+
+### CodeceptJS Parallel Run
 
 If tests run parallel, like workers in codeceptJS use `start-test-run` command to get proper reports
 
-usage:
+```
+TESTOMATIO=<API_KEY> npx start-test-run -c 'npx codeceptjs run-workers 2'
+```
 
-`TESTOMATIO=<API_KEY> npx start-test-run -c 'npx codeceptjs run-workers 2'`
-
--c : Actual test run command
+> Specify a command to run with `-c` option in `start-test-run`
 
 ## Mocha
 
@@ -112,32 +116,38 @@ TESTOMATIO={apiKey}  npx @testomatio/reporter@latest -c 'npx protractor conf.js'
 
 # Advanced Usage
 
-## Naming Report and Adding report to group
+## Setting Report Title
 
 Give a title to your reports by passing it as environment variable to `TESTOMATIO_TITLE`.
 
-Create/Add run to group by providing `TESTOMATIO_RUNGROUP_TITLE`,
-
-For example
 
 ```sh
-TESTOMATIO={apiKey} TESTOMATIO_TITLE="title for the report" TESTOMATIO_RUNGROUP_TITLE="Build ${1}" <actual run command>
+TESTOMATIO={apiKey} TESTOMATIO_TITLE="title for the report" <actual run command>
 ```
 
-## Store screenshots in third party storage
 
-1. S3 - Provide following configuration from S3 bucket
-   **S3_REGION** - Region your bucket lies.
-   **S3_BUCKET** - Bucket name.
-   **S3_ACCESS_KEY_ID** - Access key.
-   **S3_SECRET_ACCESS_KEY** - Secret.
+## Adding Report to RunGroup
 
-If you are credential files, you can leave last 2 variables
+Create/Add run to group by providing `TESTOMATIO_RUNGROUP_TITLE`:
 
-## Development
-
-To change host of endpoint for receiving data, and set it to other than app.testomat.io use `TESTOMATIO_URL` environment variable:
-
+```sh
+TESTOMATIO={apiKey} TESTOMATIO_RUNGROUP_TITLE="Build ${BUILD_ID}" <actual run command>
 ```
-TESTOMATIO_URL=http://127.0.0.1:3000
-```
+
+## Attaching Screenshots
+
+To save a screenshot of a failed test use S3 storage.
+Please note, that the **storage is not connected to Testomatio**.
+This allows you to store your artifacts on your own account and not expose S3 credentials.
+
+To save screenshots provide a configuration for S3 bucket via environment variables.
+
+* **S3_REGION** - Region your bucket lies.
+* **S3_BUCKET** - Bucket name.
+* **S3_ACCESS_KEY_ID** - Access key.
+* **S3_SECRET_ACCESS_KEY** - Secret.
+* **S3_ENDPOINT** - for providers other than AWS
+
+For local testing, it is recommended to store this configuration in `.env` file and load it with [dotenv](https://www.npmjs.com/package/dotenv) library.
+
+On CI set environment variables in CI config.
