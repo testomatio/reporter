@@ -134,6 +134,14 @@ Create/Add run to group by providing `TESTOMATIO_RUNGROUP_TITLE`:
 TESTOMATIO={apiKey} TESTOMATIO_RUNGROUP_TITLE="Build ${BUILD_ID}" <actual run command>
 ```
 
+## Adding Environments to Run
+
+Add environments to run by providing `TESTOMATIO_ENV` as comma seperated values:
+
+```sh
+TESTOMATIO={apiKey} TESTOMATIO_ENV="Windows, Chrome" <actual run command>
+```
+
 ## Attaching Screenshots
 
 To save a screenshot of a failed test use S3 storage.
