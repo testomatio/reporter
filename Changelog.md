@@ -1,3 +1,7 @@
+# 0.3.2
+
+* Fixed error message for S3 uploading
+
 # 0.3.1
 
 * [CodeceptJS] Better formatter for nested structures and BDD tests
