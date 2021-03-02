@@ -156,6 +156,9 @@ To save screenshots provide a configuration for S3 bucket via environment variab
 * **S3_SECRET_ACCESS_KEY** - Secret.
 * **S3_ENDPOINT** - for providers other than AWS
 
+> AWS S3 bucket is required to have `public-read` permission to operate. Public links are used by Testomatio to display screenshots in UI.
+
 For local testing, it is recommended to store this configuration in `.env` file and load it with [dotenv](https://www.npmjs.com/package/dotenv) library.
 
 On CI set environment variables in CI config.
+

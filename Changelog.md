@@ -1,3 +1,9 @@
+# 0.3.3
+
+* [CodeceptJS] Fixed stack trace reporting
+* [CodeceptJS] Fixed displaying of nested steps
+* [CodeceptJS][mocha] Added assertion diff to report
+
 # 0.3.2
 
 * Fixed error message for S3 uploading
