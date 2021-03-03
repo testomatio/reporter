@@ -1,3 +1,7 @@
+# 0.3.4
+
+* Minor fixes
+
 # 0.3.3
 
 * [CodeceptJS] Fixed stack trace reporting
