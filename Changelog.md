@@ -1,3 +1,7 @@
+# 0.3.5
+
+* Added `TESTOMATIO_RUN` environment variable to pass id of a specific run to report
+
 # 0.3.4
 
 * Minor fixes
