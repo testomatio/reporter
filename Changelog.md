@@ -1,3 +1,7 @@
+# 0.3.7
+
+* Fixed release
+
 # 0.3.6
 
 * Update title and rungroup on start for scheduled runs.
