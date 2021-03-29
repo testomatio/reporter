@@ -1,3 +1,7 @@
+# 0.3.6
+
+* Update title and rungroup on start for scheduled runs.
+
 # 0.3.5
 
 * Added `TESTOMATIO_RUN` environment variable to pass id of a specific run to report
