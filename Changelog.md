@@ -1,3 +1,7 @@
+# 0.3.9
+
+* Making all reporters to run without API key
+
 # 0.3.8
 
 * Fixed `npx start-test-run` to work with empty API keys
