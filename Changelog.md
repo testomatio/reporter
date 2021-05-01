@@ -1,3 +1,7 @@
+# 0.3.8
+
+* Fixed `npx start-test-run` to work with empty API keys
+
 # 0.3.7
 
 * Fixed release
