@@ -1,6 +1,10 @@
-# 0.3.10
+# 0.3.11
 
 - Fixed circular JSON reference when submitting data to Testomatio
+
+# 0.3.10
+
+- Minor fixes
 
 # 0.3.9
 
