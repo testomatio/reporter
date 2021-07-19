@@ -126,16 +126,13 @@ a report is assigned to that run using `TESTOMATIO_RUN` environment variable and
 TESTOMATIO={apiKey} TESTOMATIO_RUN={runId} <actual run command>
 ```
 
-
 ## Setting Report Title
 
 Give a title to your reports by passing it as environment variable to `TESTOMATIO_TITLE`.
 
-
 ```sh
 TESTOMATIO={apiKey} TESTOMATIO_TITLE="title for the report" <actual run command>
 ```
-
 
 ## Adding Report to RunGroup
 
@@ -161,15 +158,14 @@ This allows you to store your artifacts on your own account and not expose S3 cr
 
 To save screenshots provide a configuration for S3 bucket via environment variables.
 
-* **S3_REGION** - Region your bucket lies.
-* **S3_BUCKET** - Bucket name.
-* **S3_ACCESS_KEY_ID** - Access key.
-* **S3_SECRET_ACCESS_KEY** - Secret.
-* **S3_ENDPOINT** - for providers other than AWS
+- **S3_REGION** - Region your bucket lies.
+- **S3_BUCKET** - Bucket name.
+- **S3_ACCESS_KEY_ID** - Access key.
+- **S3_SECRET_ACCESS_KEY** - Secret.
+- **S3_ENDPOINT** - for providers other than AWS
 
 > AWS S3 bucket is required to have `public-read` permission to operate. Public links are used by Testomatio to display screenshots in UI.
 
 For local testing, it is recommended to store this configuration in `.env` file and load it with [dotenv](https://www.npmjs.com/package/dotenv) library.
 
 On CI set environment variables in CI config.
-

@@ -1,18 +1,18 @@
 exports.config = {
-  tests: './*_test.js',
-  output: './output',
+  tests: "./*_test.js",
+  output: "./output",
   helpers: {
     Puppeteer: {
-      url: 'http://localhost',
+      url: "http://localhost",
       show: true,
     },
   },
   include: {
-    I: './steps_file.js',
+    I: "./steps_file.js",
   },
   bootstrap: null,
   mocha: {},
-  name: 'codecept',
+  name: "codecept",
   plugins: {
     retryFailedStep: {
       enabled: false,
@@ -22,8 +22,8 @@ exports.config = {
     },
     testomat: {
       enabled: true,
-      require: '../../lib/adapter/codecept',
-      apiKey: 'lz8ea4948ud5',
+      require: "../../lib/adapter/codecept",
+      apiKey: "lz8ea4948ud5",
     },
   },
 };

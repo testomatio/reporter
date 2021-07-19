@@ -4,20 +4,20 @@ module.exports = {
     es6: true,
     node: true,
   },
-  extends: [
-    'airbnb-base',
-  ],
+  extends: ["airbnb-base"],
   globals: {
-    Atomics: 'readonly',
-    SharedArrayBuffer: 'readonly',
+    Atomics: "readonly",
+    SharedArrayBuffer: "readonly",
   },
   parserOptions: {
     ecmaVersion: 2018,
   },
   rules: {
-    'arrow-parens': 0,
-    'no-underscore-dangle': 0,
-    'class-methods-use-this': 0,
-    'no-restricted-syntax': 0,
+    "arrow-parens": 0,
+    "no-underscore-dangle": 0,
+    "class-methods-use-this": 0,
+    "no-restricted-syntax": 0,
+    quotes: 0,
+    "no-console": 0,
   },
 };
