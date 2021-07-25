@@ -1,3 +1,9 @@
+# 0.3.12
+
+* Fixed submitting arbitrary data on a test run
+* Jest: fixed sending errors with stack traces
+* Cypress: fixed sending reports
+
 # 0.3.11
 
 - Fixed circular JSON reference when submitting data to Testomatio
