@@ -32,6 +32,7 @@ module.exports = {
     "no-plusplus": 0,
     "no-continue": 0,
     "import/no-unresolved": 0,
-    "implicit-arrow-linebreak": 0
+    "implicit-arrow-linebreak": 0,
+    camelcase: 0,
   },
 };
