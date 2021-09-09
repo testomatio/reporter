@@ -1,3 +1,8 @@
+# 0.3.13
+
+* Checking for a valid report URL
+* Sending unlimited data on test report
+
 # 0.3.12
 
 * Fixed submitting arbitrary data on a test run
