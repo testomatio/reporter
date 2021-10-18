@@ -183,3 +183,11 @@ This command will return RunID which you can pass to other testrunner processes.
 
 > When executed with `--launch` a command provided by `-c` flag is ignored
 
+## Manually Finishing Run
+
+If you want to finish a run started by `--launch` use `--finish` option. `TESTOMATIO_RUN` environment variable is required:
+
+```sh
+TESTOMATIO={apiKey} TESTOMATIO_RUN={runId} npx @testomatio/reporter@latest --finish
+```
+

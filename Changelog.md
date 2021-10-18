@@ -1,3 +1,11 @@
+# 0.3.15
+
+* Finish Run via API:
+
+```
+TESTOMATIO={apiKey} TESTOMATIO_RUN={runId} npx @testomatio/reporter@latest --finish
+```
+
 # 0.3.14
 
 * Create an empty Run via API:
