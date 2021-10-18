@@ -1,3 +1,11 @@
+# 0.3.14
+
+* Create an empty Run via API:
+
+```
+TESTOMATIO={apiKey} npx @testomatio/reporter@latest --launch
+```
+
 # 0.3.13
 
 * Checking for a valid report URL

@@ -169,3 +169,17 @@ To save screenshots provide a configuration for S3 bucket via environment variab
 For local testing, it is recommended to store this configuration in `.env` file and load it with [dotenv](https://www.npmjs.com/package/dotenv) library.
 
 On CI set environment variables in CI config.
+
+
+## Starting an Empty Run
+
+If you want to create a run and obtain its RunID from Testomat.io you can use `--launch` option:
+
+```sh
+TESTOMATIO={apiKey} npx @testomatio/reporter@latest --launch
+```
+
+This command will return RunID which you can pass to other testrunner processes.
+
+> When executed with `--launch` a command provided by `-c` flag is ignored
+
