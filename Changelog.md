@@ -1,3 +1,7 @@
+# 0.3.16
+
+* CodeceptJS: fixed reporting tests with empty steps (on retry)
+
 # 0.3.15
 
 * Finish Run via API:
