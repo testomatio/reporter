@@ -50,6 +50,25 @@ TESTOMATIO=<API_KEY> npx start-test-run -c 'npx codeceptjs run-workers 2'
 
 > Specify a command to run with `-c` option in `start-test-run`
 
+## Playwright
+
+Add a reporter to Playwright config:
+
+```
+  reporter: [
+    ['list'],
+    ['@testomatio/reporter/lib/adapter/playwright.js', {
+      apiKey: process.env.TESTOMATIO,
+    }]
+  ]
+```
+
+Execute tests providing Api Key as TESTOMATIO environment variables:
+
+```
+TESTOMATIO=<API_KEY> npx playwright test
+```
+
 ## Mocha
 
 Load the test using using `check-test` if not done already. Get the test id from testomat account and add it to your mocha test like in this [example](https://github.com/testomatio/reporter/blob/master/example/mocha/test/index.test.js#L4)
