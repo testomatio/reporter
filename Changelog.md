@@ -1,3 +1,11 @@
+# 0.4.0
+
+* Playwright: Introduced playwright/test support with screenshots and video artifacts
+
+> Known issues: reporting using projects configured in Playwright does not work yet
+
+* CodeceptJS: added video uploads
+
 # 0.3.16
 
 * CodeceptJS: fixed reporting tests with empty steps (on retry)
