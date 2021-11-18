@@ -1,3 +1,12 @@
+# 0.4.1
+
+Added `global.testomatioArtifacts = []` array which can be used to add arbitrary artifacts to a report.
+
+```js
+// inside a running test:
+global.testomatioArtifacts.push('file/to/upload.png');
+```
+
 # 0.4.0
 
 * Playwright: Introduced playwright/test support with screenshots and video artifacts

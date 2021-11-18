@@ -169,9 +169,9 @@ Add environments to run by providing `TESTOMATIO_ENV` as comma seperated values:
 TESTOMATIO={apiKey} TESTOMATIO_ENV="Windows, Chrome" <actual run command>
 ```
 
-## Attaching Screenshots
+## Attaching Test Artifacts
 
-To save a screenshot of a failed test use S3 storage.
+To save a test artifacts (screenshots and videos) of a failed test use S3 storage.
 Please note, that the **storage is not connected to Testomatio**.
 This allows you to store your artifacts on your own account and not expose S3 credentials.
 
@@ -183,11 +183,70 @@ To save screenshots provide a configuration for S3 bucket via environment variab
 - **S3_SECRET_ACCESS_KEY** - Secret.
 - **S3_ENDPOINT** - for providers other than AWS
 
-> AWS S3 bucket is required to have `public-read` permission to operate. Public links are used by Testomatio to display screenshots in UI.
+By default tests artifacts are uploaded to bucket with `public-read` permission. 
+In this case uploaded files will be publicly accessible in Internet. 
+These public links will be used by Testomat.io to display images and videos.
+
+To upload files with `private` access bucket add `TESTOMATIO_PRIVATE_ARTIFACTS=1` environment value. 
+Then update provide the same S3 credentials in "Settings > Artifacts" section of a Testomat.io project,
+so Testomat.io could connect to the same bucket and fetch uploaded artifacts. 
+Links to files will be pre-signed and expires automatically in 10 minutes.
+
+Example upload configuration in environment variables
+
+##### AWS
+
+```
+TESTOMATIO_PRIVATE_ARTIFACTS=1
+S3_ACCESS_KEY_ID=11111111111111111111
+S3_SECRET_ACCESS_KEY=2222222222222222222222222222222222222222222
+S3_BUCKET=artifacts
+S3_REGION=us-west-1
+```
+
+##### DigitalOcean
+
+```
+TESTOMATIO_PRIVATE_ARTIFACTS=1
+S3_ENDPOINT=https://ams3.digitaloceanspaces.com
+S3_ACCESS_KEY_ID=11111111111111111111
+S3_SECRET_ACCESS_KEY=2222222222222222222222222222222222222222222
+S3_BUCKET=artifacts
+S3_REGION=ams3
+```
+
+##### Minio
+
+```
+S3_ENDPOINT=http://company.storage.com
+S3_ACCESS_KEY_ID=minio
+S3_SECRET_ACCESS_KEY=minio123
+S3_BUCKET=testomatio
+S3_FORCE_PATH_STYLE=true
+```
+
+> It is important to add S3_FORCE_PATH_STYLE var for minio setup
+
 
 For local testing, it is recommended to store this configuration in `.env` file and load it with [dotenv](https://www.npmjs.com/package/dotenv) library.
 
 On CI set environment variables in CI config.
+
+Test artifacts are automatically uploaded for these test runners:
+
+* CodeceptJS 
+* Playwright
+
+To manually attach an artifact and upload it for a test use `global.testomatioArtifacts` array:
+
+```js
+// attach a picture inside a test
+global.testomatioArtifacts.push('img/file.png');
+// attach a picture and add a name to it
+global.testomatioArtifacts.push({ name: 'Screenshot', path: 'img/file.png' });
+```
+
+Artifacts will be uploaded for the current test when it is finished.
 
 
 ## Starting an Empty Run
