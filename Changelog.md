@@ -1,3 +1,9 @@
+# 0.4.2
+
+* print version of reporter
+* print number of uploaded artifacts
+* print access mode for uploaded artifacts
+
 # 0.4.1
 
 Added `global.testomatioArtifacts = []` array which can be used to add arbitrary artifacts to a report.
