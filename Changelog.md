@@ -1,3 +1,7 @@
+# 0.4.3
+
+* Added `TESTOMATIO_DISABLE_ARTIFACTS` env variable to disable publishing artifacts.
+
 # 0.4.2
 
 * print version of reporter

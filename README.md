@@ -248,6 +248,12 @@ global.testomatioArtifacts.push({ name: 'Screenshot', path: 'img/file.png' });
 
 Artifacts will be uploaded for the current test when it is finished.
 
+To disable uploading artifacts add `TESTOMATIO_DISABLE_ARTIFACTS` environment variable:
+
+```
+TESTOMATIO_DISABLE_ARTIFACTS=1
+```
+
 
 ## Starting an Empty Run
 
