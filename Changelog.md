@@ -1,3 +1,8 @@
+# 0.4.5
+
+* Fixed "Total XX artifacts publicly uploaded to S3 bucket" when no S3 bucket is configured
+* Improved S3 connection error messages
+
 # 0.4.4
 
 * Fixed returning 0 exit code when a process fails when running tests in parallel via `start-test-run`. Previously was using the last exit code returned by a process. Currently prefers the highest exit code that was returned by a process.
