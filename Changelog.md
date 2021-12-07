@@ -1,3 +1,7 @@
+# 0.4.6
+
+* Fixed CodeceptJS reporter to report tests failed in hooks
+
 # 0.4.5
 
 * Fixed "Total XX artifacts publicly uploaded to S3 bucket" when no S3 bucket is configured
