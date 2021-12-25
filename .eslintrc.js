@@ -14,6 +14,7 @@ module.exports = {
     ecmaVersion: 2018,
   },
   rules: {
+    'max-len': ['error', { code: 120 }],
     'arrow-parens': 0,
     'no-underscore-dangle': 0,
     'class-methods-use-this': 0,
