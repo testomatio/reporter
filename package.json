@@ -18,6 +18,7 @@
   "scripts": {
     "pretty": "prettier --write .",
     "lint": "eslint lib --fix",
+    "test": "npm run test:adapter:jest",
     "test:adapter:jest": "mocha './tests/adapter/jest/index.test.js'",
     "test:adapter:jest:example": "jest './tests/adapter/jest/example/index.test.js' --config='./tests/adapter/jest/example/jest.config.js'"
   },
