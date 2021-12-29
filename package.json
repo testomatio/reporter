@@ -17,21 +17,27 @@
   },
   "scripts": {
     "pretty": "prettier --write .",
-    "lint": "eslint lib --fix"
+    "lint": "eslint lib --fix",
+    "test": "npm run test:adapter:jest",
+    "test:adapter:jest": "mocha './tests/adapter/jest/index.test.js'",
+    "test:adapter:jest:example": "jest './tests/adapter/jest/example/index.test.js' --config='./tests/adapter/jest/example/jest.config.js'"
   },
   "peerDependencies": {
+    "@wdio/reporter": "*",
     "codeceptjs": "*",
     "cucumber": "*",
-    "mocha": "*",
-    "@wdio/reporter": "*"
+    "mocha": "*"
   },
   "devDependencies": {
     "@wdio/reporter": "^7.8.0",
+    "chai": "^4.3.4",
     "codeceptjs": "^3.0.4",
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.22.1",
     "jest": "^25.5.4",
+    "mocha": "^9.1.3",
+    "mock-http-server": "^1.4.5",
     "prettier": "2.3.2",
     "puppeteer": "^2.1.1"
   },

@@ -116,13 +116,11 @@ Load the test using using `check-test` .
 Add the following line to [conf.js](https://github.com/angular/protractor/blob/5.4.1/example/conf.js)
 
 ```js
-const JasmineReporter = require("@testomatio/reporter/lib/adapter/jasmine");
+const JasmineReporter = require('@testomatio/reporter/lib/adapter/jasmine');
 
 exports.config = {
   onPrepare: () => {
-    jasmine
-      .getEnv()
-      .addReporter(new JasmineReporter({ apiKey: process.env.TESTOMATIO }));
+    jasmine.getEnv().addReporter(new JasmineReporter({ apiKey: process.env.TESTOMATIO }));
   },
 };
 ```
@@ -183,13 +181,13 @@ To save screenshots provide a configuration for S3 bucket via environment variab
 - **S3_SECRET_ACCESS_KEY** - Secret.
 - **S3_ENDPOINT** - for providers other than AWS
 
-By default tests artifacts are uploaded to bucket with `public-read` permission. 
-In this case uploaded files will be publicly accessible in Internet. 
+By default tests artifacts are uploaded to bucket with `public-read` permission.
+In this case uploaded files will be publicly accessible in Internet.
 These public links will be used by Testomat.io to display images and videos.
 
-To upload files with `private` access bucket add `TESTOMATIO_PRIVATE_ARTIFACTS=1` environment value. 
+To upload files with `private` access bucket add `TESTOMATIO_PRIVATE_ARTIFACTS=1` environment value.
 Then update provide the same S3 credentials in "Settings > Artifacts" section of a Testomat.io project,
-so Testomat.io could connect to the same bucket and fetch uploaded artifacts. 
+so Testomat.io could connect to the same bucket and fetch uploaded artifacts.
 Links to files will be pre-signed and expires automatically in 10 minutes.
 
 Example upload configuration in environment variables
@@ -227,15 +225,14 @@ S3_FORCE_PATH_STYLE=true
 
 > It is important to add S3_FORCE_PATH_STYLE var for minio setup
 
-
 For local testing, it is recommended to store this configuration in `.env` file and load it with [dotenv](https://www.npmjs.com/package/dotenv) library.
 
 On CI set environment variables in CI config.
 
 Test artifacts are automatically uploaded for these test runners:
 
-* CodeceptJS 
-* Playwright
+- CodeceptJS
+- Playwright
 
 To manually attach an artifact and upload it for a test use `global.testomatioArtifacts` array:
 
@@ -253,7 +250,6 @@ To disable uploading artifacts add `TESTOMATIO_DISABLE_ARTIFACTS` environment va
 ```
 TESTOMATIO_DISABLE_ARTIFACTS=1
 ```
-
 
 ## Starting an Empty Run
 
@@ -274,4 +270,3 @@ If you want to finish a run started by `--launch` use `--finish` option. `TESTOM
 ```sh
 TESTOMATIO={apiKey} TESTOMATIO_RUN={runId} npx @testomatio/reporter@latest --finish
 ```
-
