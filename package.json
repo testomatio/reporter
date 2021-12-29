@@ -18,9 +18,12 @@
   "scripts": {
     "pretty": "prettier --write .",
     "lint": "eslint lib --fix",
-    "test": "npm run test:adapter:jest",
-    "test:adapter:jest": "mocha './tests/adapter/jest/index.test.js'",
-    "test:adapter:jest:example": "jest './tests/adapter/jest/example/index.test.js' --config='./tests/adapter/jest/example/jest.config.js'"
+    "test": "npm run test:adapter",
+    "test:adapter": "mocha './tests/adapter/index.test.js'",
+    "test:adapter:jest:example": "jest './tests/adapter/examples/jest/index.test.js' --config='./tests/adapter/examples/jest/jest.config.js'",
+    "test:adapter:mocha:example": "mocha './tests/adapter/examples/mocha/index.test.js' --config='./tests/adapter/examples/mocha/mocha.config.js'",
+    "test:adapter:jasmine:example": "./tests/adapter/examples/jasmine/passReporterOpts.sh && jasmine './tests/adapter/examples/jasmine/index.test.js' --reporter=./../../../lib/adapter/jasmine.js",
+    "test:adapter:codecept:example": "codeceptjs run --config='./tests/adapter/examples/codecept/codecept.conf.js'"
   },
   "peerDependencies": {
     "@wdio/reporter": "*",
@@ -35,6 +38,7 @@
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.22.1",
+    "jasmine": "^3.10.0",
     "jest": "^25.5.4",
     "mocha": "^9.1.3",
     "mock-http-server": "^1.4.5",
