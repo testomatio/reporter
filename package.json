@@ -7,9 +7,9 @@
   "author": "Koushik Mohan <koushikmohan1996@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "aws-sdk": "^2.1048.0",
-    "axios": "^0.24.0",
-    "callsite-record": "^4.1.3",
+    "aws-sdk": "^2.1064.0",
+    "axios": "^0.25.0",
+    "callsite-record": "^4.1.4",
     "chalk": "^4.1.0",
     "commander": "^4.1.1",
     "has-flag": "^5.0.1",
@@ -17,7 +17,8 @@
   },
   "scripts": {
     "pretty": "prettier --write .",
-    "lint": "eslint lib --fix",
+    "lint": "eslint lib",
+    "lint:fix": "eslint lib --fix",
     "test": "npm run test:adapter",
     "test:adapter": "mocha './tests/adapter/index.test.js'",
     "test:adapter:jest:example": "jest './tests/adapter/examples/jest/index.test.js' --config='./tests/adapter/examples/jest/jest.config.js'",
@@ -32,18 +33,19 @@
     "mocha": "*"
   },
   "devDependencies": {
-    "@wdio/reporter": "^7.16.11",
-    "chai": "^4.3.4",
-    "codeceptjs": "^3.2.2",
-    "eslint": "^8.5.0",
+    "@wdio/reporter": "^7.16.13",
+    "chai": "^4.3.6",
+    "codeceptjs": "^3.2.3",
+    "eslint": "^8.7.0",
     "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-plugin-import": "^2.25.3",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-import": "^2.25.4",
     "jasmine": "^3.10.0",
-    "jest": "^27.4.5",
-    "mocha": "^9.1.3",
+    "jest": "^27.4.7",
+    "mocha": "^9.2.0",
     "mock-http-server": "^1.4.5",
     "prettier": "2.5.1",
-    "puppeteer": "^13.0.1"
+    "puppeteer": "^13.1.2"
   },
   "bin": {
     "start-test-run": "./lib/bin/startTest.js"

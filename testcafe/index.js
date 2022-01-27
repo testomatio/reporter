@@ -2,7 +2,7 @@ const TestomatClient = require('@testomatio/reporter/lib/client');
 const TRConstants = require('@testomatio/reporter/lib/constants');
 const util = require('@testomatio/reporter/lib/util');
 
-module.exports = function () {
+module.exports = () => {
   const apiKey = process.env.TESTOMATIO;
   let failed = false;
 
