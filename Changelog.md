@@ -1,3 +1,8 @@
+# 0.5.0
+
+* Added Cypress.io plugin
+* Added artifacts upload to webdriverio
+
 # 0.4.6
 
 - Fixed CodeceptJS reporter to report tests failed in hooks
