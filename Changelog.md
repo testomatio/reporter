@@ -1,3 +1,7 @@
+# 0.5.2
+
+* Fixed multiple upload of artifacts in Cypress.io
+
 # 0.5.1
 
 * Fixed Cypress.io to report tests inside nested suites
