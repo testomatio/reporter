@@ -1,3 +1,7 @@
+# 0.5.1
+
+* Fixed Cypress.io to report tests inside nested suites
+
 # 0.5.0
 
 * Added Cypress.io plugin
