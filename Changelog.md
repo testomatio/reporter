@@ -1,3 +1,7 @@
+# 0.5.3
+
+* Fixed parsing suites
+
 # 0.5.2
 
 * Fixed multiple upload of artifacts in Cypress.io
