@@ -93,7 +93,7 @@ Load the test using using `check-test`. Add the test id to your tests like in th
 Add the following line to [jest.config.js](https://github.com/testomatio/reporter/blob/master/example/jest/jest.config.js#L100):
 
 ```javascript
-reporters: ['default', ['../../lib/adapter/jest.js', { apiKey: {API_KEY} }]],
+reporters: ['default', ['@testomatio/reporter/lib/adapter/jest.js', { apiKey: process.env.TESTOMATIO }]],
 ```
 
 Run your tests.
