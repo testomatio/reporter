@@ -1,3 +1,7 @@
+# 0.5.5
+
+* Fixed `BeforeSuite` failures in CodeceptJS
+
 # 0.5.4
 
 Added `TESTOMATIO_CREATE=1` option to create unmatched tests on report
