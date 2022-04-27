@@ -1,3 +1,11 @@
+# 0.5.4
+
+Added `TESTOMATIO_CREATE=1` option to create unmatched tests on report
+
+```
+TESTOMATIO_CREATE=1 TESTOMATIO=apiKey npx codeceptjs run
+```
+
 # 0.5.3
 
 * Fixed parsing suites
