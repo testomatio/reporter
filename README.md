@@ -59,12 +59,15 @@ TESTOMATIO={API_KEY} npx start-test-run -c 'npx codeceptjs run-workers 2'
 Add a reporter to Playwright config:
 
 ```javascript
-  reporter: [
-    ['list'],
-    ['@testomatio/reporter/lib/adapter/playwright.js', {
+reporter: [
+  ['list'],
+  [
+    '@testomatio/reporter/lib/adapter/playwright.js',
+    {
       apiKey: process.env.TESTOMATIO,
-    }]
-  ]
+    },
+  ],
+];
 ```
 
 Run the following command from you project folder:
@@ -90,7 +93,7 @@ Load the test using using `check-test`. Add the test id to your tests like in th
 Add the following line to [jest.config.js](https://github.com/testomatio/reporter/blob/master/example/jest/jest.config.js#L100):
 
 ```javascript
-reporters: ['default', ['../../lib/adapter/jest.js', { apiKey: {API_KEY} }]],
+reporters: ['default', ['@testomatio/reporter/lib/adapter/jest.js', { apiKey: process.env.TESTOMATIO }]],
 ```
 
 Run your tests.
@@ -147,7 +150,7 @@ TESTOMATIO={API_KEY} npx cypress run
 
 Load the test using using `check-test`.
 
-Add the following line to [conf.js](https://github.com/angular/protractor/blob/5.4.1/example/conf.js):
+Add the following lines to [conf.js](https://github.com/angular/protractor/blob/5.4.1/example/conf.js):
 
 ```javascript
 const JasmineReporter = require('@testomatio/reporter/lib/adapter/jasmine');
@@ -163,6 +166,33 @@ Run the following command from you project folder:
 
 ```bash
 TESTOMATIO={API_KEY} npx @testomatio/reporter@latest -c 'npx protractor conf.js'
+```
+
+### WebdriverIO
+
+Load the test using using `check-test`.
+
+Add the following lines to [wdio.conf.js](https://webdriver.io/docs/configurationfile/):
+
+```javascript
+const testomatio = require('@testomatio/reporter/lib/adapter/webdriver');
+
+exports.config = {
+  // ...
+  reporters: [
+    [testomatio, {
+      apiKey: $ {
+        process.env.TESTOMATIO
+      }
+    }]
+  ]
+}
+```
+
+Run the following command from you project folder:
+
+```bash
+TESTOMATIO={API_KEY} npx @testomatio/reporter -c 'npx wdio wdio.conf.js'
 ```
 
 ## Advanced Usage
@@ -276,6 +306,8 @@ Test artifacts are automatically uploaded for these test runners:
 
 - CodeceptJS
 - Playwright
+- Cypress
+- WebdriverIO
 
 To manually attach an artifact and upload it for a test use `global.testomatioArtifacts` array:
 
