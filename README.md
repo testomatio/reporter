@@ -167,6 +167,15 @@ TESTOMATIO={API_KEY} npx @testomatio/reporter@latest -c 'npx protractor conf.js'
 
 ## Advanced Usage
 
+### Create Unmatched Tests
+
+Testomat.io will not create tests from the report if they have not been previously imported. To create tests during the report `TESTOMATIO_CREATE` option can be used:
+
+```bash
+TESTOMATIO={API_KEY} TESTOMATIO_CREATE=1 <actual run command>
+```
+
+
 ### Adding Report to Run by ID
 
 This feature is widely used when a run is executed on CI.
