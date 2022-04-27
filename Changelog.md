@@ -1,3 +1,7 @@
+# 0.5.6
+
+* Unmark failed CodeceptJS tests as skipped
+
 # 0.5.5
 
 * Fixed `BeforeSuite` failures in CodeceptJS
