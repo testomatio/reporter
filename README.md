@@ -189,6 +189,16 @@ exports.config = {
 }
 ```
 
+For making screenshots on failed tests add the following hook to `wdio.conf.js`:
+
+```js
+    afterTest: function (test, context, { error, result, duration, passed, retries }) {
+        if (error) {
+            browser.takeScreenshot()
+        }
+    },
+```
+
 Run the following command from you project folder:
 
 ```bash
