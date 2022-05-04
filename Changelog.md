@@ -1,3 +1,11 @@
+# 0.5.8
+
+* Fixed Cypress.io reporting
+
+# 0.5.7
+
+* Fixed webdriverio artifacts
+
 # 0.5.6
 
 * Unmark failed CodeceptJS tests as skipped
