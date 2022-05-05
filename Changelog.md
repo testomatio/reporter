@@ -1,3 +1,7 @@
+# 0.5.9
+
+* Added environment on Cypress report
+
 # 0.5.8
 
 * Fixed Cypress.io reporting
