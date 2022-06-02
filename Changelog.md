@@ -1,3 +1,8 @@
+# 0.5.10
+
+* Fixed reporting Scenario Outline in Cypress-Cucumber
+* Fixed error reports for Cypress when running in Chrome
+
 # 0.5.9
 
 * Added environment on Cypress report
