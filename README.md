@@ -246,7 +246,7 @@ TESTOMATIO={API_KEY} npx report-xml "{pattern}" --lang={lang}
 ```
 
 * `pattern` - is a glob pattern to match all XML files from report. For instance, `"test/report/**.xml"` or just `report.xml`
-* `--lang` option should be specified to identify source code of the project. Example: `--lang=Ruby` or `--lang=Java` or `--lang=Python`.
+* `--lang` option can be specified to identify source code of the project. Example: `--lang=Ruby` or `--lang=Java` or `--lang=Python`.
 * `--java-tests` option is avaiable for Java projects, and can be set if path to tests is different then `src/test/java`. When this option is enable, `lang` option is automatically set to `java`
 
 
@@ -273,7 +273,7 @@ TESTOMATIO={API_KEY} npx report-xml report.xml --lang=python
 Run tests via Maven, make sure JUnit report was configured in `pom.xml`.
 
 ```
-maven clean test
+mvn clean test
 ```
 
 Import report with this command:
@@ -307,6 +307,33 @@ Import reports from `test/reports` directory:
 ```
 TESTOMATIO={API_KEY} npx report-xml "test/reports/*.xml" --lang ruby
 ```
+
+### Artifacts
+
+Screenshots or videos from tests are uploaded if a test contains output with a path to file of following format:
+
+```
+file://path/to/screenshot.png
+```
+
+For instance, inside Java test you can use `System.out.println` to print a path to file that should be uploaded as a screenshot.
+
+```java
+System.out.println("file://" + pathToScreenshot);
+```
+
+This will produce XML report which contains path to a file:
+
+```xml
+<testcase>
+  <system-out><![CDATA[
+    file://path/to/scrrenshot.png
+  ]]></system-out>
+</testcase>
+```
+
+When uploaded XML report, all files from `file://` will be uploaded to corresponding tests.
+
 
 ## Advanced Usage
 
