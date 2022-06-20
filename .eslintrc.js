@@ -11,7 +11,7 @@ module.exports = {
     SharedArrayBuffer: 'readonly',
   },
   parserOptions: {
-    ecmaVersion: 2018,
+    ecmaVersion: 2020,
   },
   rules: {
     'max-len': ['error', { code: 120 }],
@@ -25,6 +25,7 @@ module.exports = {
     'no-use-before-define': 0,
     'object-curly-newline': 0,
     'consistent-return': 0,
+    'no-await-in-loop': 0,
     'no-param-reassign': 0,
     'operator-linebreak': 0,
     'prefer-destructuring': 0,
