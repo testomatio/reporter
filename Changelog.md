@@ -1,3 +1,11 @@
+# 0.6.1
+
+* Fixed creating RunGroup with JUnit reporter
+
+# 0.6.0
+
+* JUnit reporter support
+
 # 0.5.10
 
 * Fixed reporting Scenario Outline in Cypress-Cucumber
