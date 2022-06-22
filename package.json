@@ -1,6 +1,6 @@
 {
   "name": "@testomatio/reporter",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "Testomatio Reporter Client",
   "main": "./lib/reporter.js",
   "repository": "git@github.com:testomatio/reporter.git",
@@ -12,6 +12,7 @@
     "callsite-record": "^4.1.4",
     "chalk": "^4.1.0",
     "commander": "^4.1.1",
+    "dotenv": "^16.0.1",
     "fast-xml-parser": "^4.0.8",
     "glob": "^8.0.3",
     "has-flag": "^5.0.1",

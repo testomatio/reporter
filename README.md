@@ -54,6 +54,9 @@ TESTOMATIO={API_KEY} npx start-test-run -c 'npx codeceptjs run-workers 2'
 
 > Specify a command to run with `-c` option in `start-test-run`
 
+Use `--env-file <envfile>` option to load environment variables from .env file. Inside env file TESTOMATIO credentials like `TESTOMATIO` api key or [S3 config](#attaching-test-artifacts) can be stored.
+
+
 ### Playwright
 
 Add a reporter to Playwright config:
@@ -248,6 +251,7 @@ TESTOMATIO={API_KEY} npx report-xml "{pattern}" --lang={lang}
 * `pattern` - is a glob pattern to match all XML files from report. For instance, `"test/report/**.xml"` or just `report.xml`
 * `--lang` option can be specified to identify source code of the project. Example: `--lang=Ruby` or `--lang=Java` or `--lang=Python`.
 * `--java-tests` option is avaiable for Java projects, and can be set if path to tests is different then `src/test/java`. When this option is enable, `lang` option is automatically set to `java`
+* `--env-file <envfile>` option to load environment variables from .env file. Inside env file TESTOMATIO credentials like `TESTOMATIO` api key or [S3 config](#attaching-test-artifacts) can be stored.
 
 
 > *Notice:* All options from [Advanced Usage](#advanced-usage) are also available for JUnit reporter
@@ -438,7 +442,14 @@ S3_FORCE_PATH_STYLE=true
 
 > It is important to add S3_FORCE_PATH_STYLE var for minio setup
 
-For local testing, it is recommended to store this configuration in `.env` file and load it with [dotenv](https://www.npmjs.com/package/dotenv) library.
+For local testing, it is recommended to store configuration in `.env` file. If you load configuration from a test runner, use [dotenv](https://www.npmjs.com/package/dotenv) library to load it.
+
+If you run a reporter via `start-test-run` or `report-xml` command use `--env-file` option to load variables from .env file:
+
+```
+npx start-test-run --env-file .env
+npx report-xml --env-file .env
+```
 
 On CI set environment variables in CI config.
 

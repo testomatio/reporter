@@ -1,3 +1,7 @@
+# 0.6.2
+
+* Added `--env-file` option to load env variables from env file
+
 # 0.6.1
 
 * Fixed creating RunGroup with JUnit reporter
