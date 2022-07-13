@@ -1,3 +1,7 @@
+# 0.6.3
+
+* Fixed `npx start-test-run` to launch commands
+
 # 0.6.2
 
 * Added `--env-file` option to load env variables from env file
