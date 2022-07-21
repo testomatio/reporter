@@ -168,7 +168,7 @@ exports.config = {
 Run the following command from you project folder:
 
 ```bash
-TESTOMATIO={API_KEY} npx @testomatio/reporter@latest -c 'npx protractor conf.js'
+TESTOMATIO={API_KEY} npx start-test-run@latest -c 'npx protractor conf.js'
 ```
 
 ### WebdriverIO
@@ -205,7 +205,7 @@ For making screenshots on failed tests add the following hook to `wdio.conf.js`:
 Run the following command from you project folder:
 
 ```bash
-TESTOMATIO={API_KEY} npx @testomatio/reporter -c 'npx wdio wdio.conf.js'
+TESTOMATIO={API_KEY} npx start-test-run -c 'npx wdio wdio.conf.js'
 ```
 
 ## JUnit Reports
@@ -349,8 +349,7 @@ Testomat.io will not create tests from the report if they have not been previous
 TESTOMATIO={API_KEY} TESTOMATIO_CREATE=1 <actual run command>
 ```
 
-
-### Adding Report to Run by ID
+### Add Report to Run by ID
 
 This feature is widely used when a run is executed on CI.
 A run is created before the test is started and it is marked as `scheduled`. Then
@@ -358,6 +357,21 @@ a report is assigned to that run using `TESTOMATIO_RUN` environment variable and
 
 ```bash
 TESTOMATIO={API_KEY} TESTOMATIO_RUN={RUN_ID} <actual run command>
+```
+
+### Do Not Finalize Run
+
+If multiple reports are added to the same run, each of them should not finalize the run. 
+In this case use `TESTOMATIO_PROCEED=1` environment variable, so the Run will be shown as `Running`
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_PROCEED=1 TESTOMATIO_RUN={RUN_ID} <actual run command>
+```
+
+After all reports were attached and run can be execute the following command:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_RUN={RUN_ID} npx start-test-run --finish
 ```
 
 ### Setting Report Title
@@ -482,7 +496,7 @@ TESTOMATIO_DISABLE_ARTIFACTS=1
 If you want to create a run and obtain its `{RUN_ID}` from [testomat.io](https://testomat.io) you can use `--launch` option:
 
 ```bash
-TESTOMATIO={API_KEY} npx @testomatio/reporter@latest --launch
+TESTOMATIO={API_KEY} npx start-test-run@latest --launch
 ```
 
 This command will return `{RUN_ID}` which you can pass to other testrunner processes.
@@ -494,5 +508,5 @@ This command will return `{RUN_ID}` which you can pass to other testrunner proce
 If you want to finish a run started by `--launch` use `--finish` option. `TESTOMATIO_RUN` environment variable is required:
 
 ```bash
-TESTOMATIO={API_KEY} TESTOMATIO_RUN={RUN_ID} npx @testomatio/reporter@latest --finish
+TESTOMATIO={API_KEY} TESTOMATIO_RUN={RUN_ID} npx start-test-run@latest --finish
 ```

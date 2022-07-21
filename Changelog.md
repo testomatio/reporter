@@ -1,3 +1,8 @@
+# 0.6.4
+
+* Added `TESTOMATIO_PROCEED=1` param to not close current run
+* Fixed priority of commands from `npx @testomatio/reporter`
+
 # 0.6.3
 
 * Fixed `npx start-test-run` to launch commands

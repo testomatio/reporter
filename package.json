@@ -1,6 +1,6 @@
 {
   "name": "@testomatio/reporter",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "description": "Testomatio Reporter Client",
   "main": "./lib/reporter.js",
   "repository": "git@github.com:testomatio/reporter.git",
@@ -54,7 +54,7 @@
     "puppeteer": "^13.1.2"
   },
   "bin": {
-    "start-test-run": "./lib/bin/startTest.js",
-    "report-xml": "./lib/bin/reportXml.js"
+    "report-xml": "./lib/bin/reportXml.js",
+    "start-test-run": "./lib/bin/startTest.js"
   }
 }
