@@ -168,7 +168,7 @@ exports.config = {
 Run the following command from you project folder:
 
 ```bash
-TESTOMATIO={API_KEY} npx start-test-run@latest -c 'npx protractor conf.js'
+TESTOMATIO={API_KEY} npx start-test-run -c 'npx protractor conf.js'
 ```
 
 ### WebdriverIO
@@ -496,7 +496,7 @@ TESTOMATIO_DISABLE_ARTIFACTS=1
 If you want to create a run and obtain its `{RUN_ID}` from [testomat.io](https://testomat.io) you can use `--launch` option:
 
 ```bash
-TESTOMATIO={API_KEY} npx start-test-run@latest --launch
+TESTOMATIO={API_KEY} npx start-test-run --launch
 ```
 
 This command will return `{RUN_ID}` which you can pass to other testrunner processes.
@@ -508,5 +508,5 @@ This command will return `{RUN_ID}` which you can pass to other testrunner proce
 If you want to finish a run started by `--launch` use `--finish` option. `TESTOMATIO_RUN` environment variable is required:
 
 ```bash
-TESTOMATIO={API_KEY} TESTOMATIO_RUN={RUN_ID} npx start-test-run@latest --finish
+TESTOMATIO={API_KEY} TESTOMATIO_RUN={RUN_ID} npx start-test-run --finish
 ```
