@@ -1,3 +1,7 @@
+# 0.6.5
+
+* Fixed test statuses for runs in JUnit reporter
+
 # 0.6.4
 
 * Added `TESTOMATIO_PROCEED=1` param to not close current run
