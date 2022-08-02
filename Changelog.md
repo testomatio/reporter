@@ -1,3 +1,7 @@
+# 0.6.6
+
+* JUnit reporter: prefer suite title over testcase classname in a report
+
 # 0.6.5
 
 * Fixed test statuses for runs in JUnit reporter
