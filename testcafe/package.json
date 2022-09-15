@@ -9,6 +9,6 @@
   "author": "koushikmohan1996@gmail.com",
   "license": "ISC",
   "dependencies": {
-    "@testomatio/reporter": "^0.1.8"
+    "@testomatio/reporter": "^0.6.7"
   }
 }
