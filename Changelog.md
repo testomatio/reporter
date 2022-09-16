@@ -1,3 +1,8 @@
+# 0.6.8
+# 0.6.7
+
+* Pytest: fixed creating suites from reports
+
 # 0.6.6
 
 * JUnit reporter: prefer suite title over testcase classname in a report
