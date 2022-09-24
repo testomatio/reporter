@@ -1,3 +1,7 @@
+# 0.6.10
+
+* Fixed uploading multilpe artifacts in Playwright
+
 # 0.6.9
 
 * Fixed pending tests reports for Cypress
