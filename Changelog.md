@@ -1,3 +1,7 @@
+# 0.6.9
+
+* Fixed pending tests reports for Cypress
+
 # 0.6.8
 # 0.6.7
 
