@@ -1,10 +1,10 @@
 {
   "name": "@testomatio/reporter",
-  "version": "0.6.10",
+  "version": "0.7.0-beta",
   "description": "Testomatio Reporter Client",
   "main": "./lib/reporter.js",
   "repository": "git@github.com:testomatio/reporter.git",
-  "author": "Koushik Mohan <koushikmohan1996@gmail.com>",
+  "author": "Michael Bodnarchuk <davert@testomat.io>,Koushik Mohan <koushikmohan1996@gmail.com>",
   "license": "MIT",
   "dependencies": {
     "aws-sdk": "^2.1072.0",
@@ -20,25 +20,28 @@
     "json-cycle": "^1.3.0",
     "lodash.memoize": "^4.1.2"
   },
+  "files": [
+    "bin",
+    "lib",
+    "testcafe"
+  ],  
   "scripts": {
     "pretty": "prettier --write .",
     "lint": "eslint lib",
     "lint:fix": "eslint lib --fix",
     "test": "mocha tests/**",
+    "init": "cd ./tests/adapter/examples/cucumber && npm i",
     "test:unit": "mocha tests",
     "test:adapter": "mocha './tests/adapter/index.test.js'",
     "test:adapter:jest:example": "jest './tests/adapter/examples/jest/index.test.js' --config='./tests/adapter/examples/jest/jest.config.js'",
     "test:adapter:mocha:example": "mocha './tests/adapter/examples/mocha/index.test.js' --config='./tests/adapter/examples/mocha/mocha.config.js'",
     "test:adapter:jasmine:example": "./tests/adapter/examples/jasmine/passReporterOpts.sh && jasmine './tests/adapter/examples/jasmine/index.test.js' --reporter=./../../../lib/adapter/jasmine.js",
-    "test:adapter:codecept:example": "codeceptjs run --config='./tests/adapter/examples/codecept/codecept.conf.js'"
+    "test:adapter:codecept:example": "codeceptjs run --config='./tests/adapter/examples/codecept/codecept.conf.js'",
+    "test:adapter:cucumber:example": "cd ./tests/adapter/examples/cucumber && npx cucumber-js"
   },
-  "peerDependencies": {
-    "@wdio/reporter": "*",
-    "codeceptjs": "*",
-    "cucumber": "*",
-    "mocha": "*"
-  },
+  "peerDependencies": {},
   "devDependencies": {
+    "@cucumber/cucumber": "^8.6.0",
     "@wdio/reporter": "^7.16.13",
     "chai": "^4.3.6",
     "codeceptjs": "^3.2.3",

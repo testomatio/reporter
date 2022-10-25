@@ -224,6 +224,7 @@ Tested Frameworks:
 * Python (Pytest)
 * Minitest (Ruby)
 * PHPUnit (PHP)
+* NUnit (C#)
 
 
 To import JUnit reports into Testomat.io **NodeJS >=14 is required**.
@@ -231,14 +232,9 @@ To import JUnit reports into Testomat.io **NodeJS >=14 is required**.
 Package `@testomatio/reporter` should be installed:
 
 ```
-npm i @testomatio/reporter@latest
+npm i @testomatio/reporter@latest --save-dev
 ```
 
-For local development it is recommended to install @testomatio/reporter globally:
-
-```
-npm i -g @testomatio/reporter@latest
-```
 
 Run your test framework and generate a JUnit report.
 
@@ -249,7 +245,12 @@ TESTOMATIO={API_KEY} npx report-xml "{pattern}" --lang={lang}
 ```
 
 * `pattern` - is a glob pattern to match all XML files from report. For instance, `"test/report/**.xml"` or just `report.xml`
-* `--lang` option can be specified to identify source code of the project. Example: `--lang=Ruby` or `--lang=Java` or `--lang=Python`.
+* `--lang` option can be specified to identify source code of the project. Example: `--lang=Ruby` or `--lang=Java` or `--lang=Python`. Possible values:
+  * `c#`
+  * `java`
+  * `ruby`
+  * `python`
+  * `php`
 * `--java-tests` option is avaiable for Java projects, and can be set if path to tests is different then `src/test/java`. When this option is enable, `lang` option is automatically set to `java`
 * `--env-file <envfile>` option to load environment variables from .env file. Inside env file TESTOMATIO credentials like `TESTOMATIO` api key or [S3 config](#attaching-test-artifacts) can be stored.
 
@@ -287,6 +288,14 @@ TESTOMATIO={API_KEY} npx report-xml "target/surefire-reports/*.xml" --java-tests
 ```
 
 > You can specify `--java-test` option to set a path to tests if they are located in path other than `src/test/java`
+
+#### Example: NUnit
+
+Generate NUnit XML report and run the following code:
+
+```
+TESTOMATIO={API_KEY} npx report-xml "report.xml" --lang="c#"
+```
 
 #### Example: Ruby on Rails with Minitest
 

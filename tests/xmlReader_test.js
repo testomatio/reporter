@@ -177,6 +177,67 @@ describe('XML Reader', () => {
     expect(failedTest.stack).to.include('(CalculatorTest.java:43')
   })
 
+
+  it('should parse JUnit C#', () => {
+    const reader = new XmlReader({ lang: 'c#' });
+    reader.connectAdapter();
+    const jsonData = reader.parse(path.join(__dirname, 'data/csharp.xml'))
+
+    expect(jsonData.status).to.eql('failed')
+    const stats = reader.calculateStats();
+    expect(stats.status).to.eql('failed')
+    expect(stats.tests_count).to.eql(3)
+    expect(jsonData.tests.length).to.eql(stats.tests_count)
+
+
+    reader.fetchSourceCode();
+    reader.formatErrors();
+    reader.formatTests();
+
+    jsonData.tests.forEach(t => {
+      expect(t).to.contain.keys([
+        'stack',
+        'create',
+        'status',
+        'title',
+        'run_time',
+        'suite_title',
+      ])
+    })
+    
+    const tests = jsonData.tests;
+    expect(tests[0].title).to.include('Create a web lead');
+    expect(tests[0].suite_title).to.include('User');
+  })
+
+  it('should parse NUnit Special XML', () => {
+    const reader = new XmlReader();
+    const jsonData = reader.parse(path.join(__dirname, 'data/nunit.xml'))
+
+    expect(jsonData.status).to.eql('passed')
+    expect(jsonData.tests_count).to.eql(2)
+    expect(jsonData.tests.length).to.eql(2)
+
+    reader.formatTests();
+
+    jsonData.tests.forEach(t => {
+      expect(t).to.contain.keys([
+        'stack',
+        'create',
+        'status',
+        'title',
+        'run_time',
+        'suite_title',
+      ])
+    })
+    
+    const tests = jsonData.tests;
+    expect(tests[0].title).to.include('Create user login');
+    expect(tests[0].suite_title).to.include('User');
+  })
+
+
+
   describe('#request', () => {
 
     before(function () {
