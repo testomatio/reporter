@@ -1,3 +1,8 @@
+# 0.7.0
+
+* Support for `@cucumber/cucumber` (>= 7.0) added
+* Initial support for C# and NUnit  
+
 # 0.6.10
 
 * Fixed uploading multilpe artifacts in Playwright

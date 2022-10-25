@@ -5,6 +5,7 @@ const JestReporter = require('../../lib/adapter/jest');
 const MochaReporter = require('../../lib/adapter/mocha');
 const JasmineReporter = require('../../lib/adapter/jasmine');
 const CodeceptReporter = require('../../lib/adapter/codecept');
+const CucumberReporter = require('../../lib/adapter/cucumber/current');
 const { registerHandlers } = require('./utils');
 const { host, port, TESTOMATIO_URL, TESTOMATIO, RUN_ID } = require('./config');
 
@@ -28,6 +29,11 @@ const params = [
     adapterName: CodeceptReporter.name,
     positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:jasmine:example`,
     negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:jasmine:example`,
+  },
+  {
+    adapterName: CucumberReporter.name,
+    positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:cucumber:example`,
+    negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:cucumber:example`,
   },
 ];
 
