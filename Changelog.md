@@ -1,3 +1,7 @@
+# 0.7.1
+
+* Support for NUnit XML v3 format
+
 # 0.7.0
 
 * Support for `@cucumber/cucumber` (>= 7.0) added

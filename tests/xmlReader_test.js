@@ -210,7 +210,7 @@ describe('XML Reader', () => {
     expect(tests[0].suite_title).to.include('User');
   })
 
-  it('should parse NUnit Special XML', () => {
+  it('should parse NUnit TRX XML', () => {
     const reader = new XmlReader();
     const jsonData = reader.parse(path.join(__dirname, 'data/nunit.xml'))
 
@@ -235,6 +235,32 @@ describe('XML Reader', () => {
     expect(tests[0].title).to.include('Create user login');
     expect(tests[0].suite_title).to.include('User');
   })
+
+  it('should parse NUnit3 XML', () => {
+    const reader = new XmlReader();
+    const jsonData = reader.parse(path.join(__dirname, 'data/nunit3.xml'))
+
+    expect(jsonData.status).to.eql('failed')
+    expect(jsonData.tests_count).to.eql(3)
+    expect(jsonData.tests.length).to.eql(3)
+
+    reader.formatTests();
+
+    jsonData.tests.forEach(t => {
+      expect(t).to.contain.keys([
+        'stack',
+        'create',
+        'status',
+        'title',
+        'run_time',
+        'suite_title',
+      ])
+    })
+    
+    const tests = jsonData.tests;
+    expect(tests[0].title).to.include('Update user');
+    expect(tests[0].suite_title).to.include('User');
+  })  
 
 
 
