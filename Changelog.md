@@ -1,3 +1,7 @@
+# 0.7.2
+
+* Fixed uploading non-existing file
+
 # 0.7.1
 
 * Support for NUnit XML v3 format
