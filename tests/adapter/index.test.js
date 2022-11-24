@@ -64,7 +64,14 @@ describe('Adapters', () => {
 
           registerHandlers(server, RUN_ID);
 
-          exec(positiveCmd, () => done());
+          exec(positiveCmd, (err, stdout, stderr) => {
+            if (err) console.log('Error', err);
+            if (process.env.DEBUG) {
+              console.log(stdout);
+              console.log(stderr);
+            }                        
+            done()
+          });
         });
 
         after(() => {
@@ -75,6 +82,7 @@ describe('Adapters', () => {
           const [req] = server.requests({ method: 'POST', path: '/api/reporter' });
 
           const expectedResult = { api_key: TESTOMATIO };
+
 
           assert.isObject(req.body);
           assert.deepEqual(req.body, expectedResult);
