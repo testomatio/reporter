@@ -1,3 +1,8 @@
+# 0.7.3
+
+* Fixed reporting skipped test in XML
+* added `--timelimit` option to `report-xml` command line
+
 # 0.7.2
 
 * Fixed uploading non-existing file
