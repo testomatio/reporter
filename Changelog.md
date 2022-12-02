@@ -1,6 +1,8 @@
 # 0.7.3
 
 * CodeceptJS: Upload all traces and videos from artifacts
+* Fixed reporting skipped test in XML
+* added `--timelimit` option to `report-xml` command line
 
 # 0.7.2
 

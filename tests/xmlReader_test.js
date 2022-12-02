@@ -177,6 +177,37 @@ describe('XML Reader', () => {
     expect(failedTest.stack).to.include('(CalculatorTest.java:43')
   })
 
+  it('should parse JUnit XML and skipped tests', () => {
+    const reader = new XmlReader();
+    const jsonData = reader.parse(path.join(__dirname, 'data/junit_skipped.xml'))
+
+    expect(jsonData.status).to.eql('failed')
+    const stats = reader.calculateStats();
+    expect(stats.status).to.eql('failed')
+    expect(stats.tests_count).to.eql(2)
+
+    reader.fetchSourceCode();
+    reader.formatErrors();
+    reader.formatTests();
+
+    jsonData.tests.forEach(t => {
+      expect(t).to.contain.keys([
+        'stack',
+        'create',
+        'status',
+        'file',
+        'title',
+        'run_time',
+        'suite_title',
+      ])
+    })
+
+    const skippedTests = jsonData.tests.filter(t => t.status === 'skipped')
+    expect(skippedTests.length).to.eql(1)
+    const skippedTest = skippedTests[0];
+    expect(skippedTest.title).to.eql('check dashboard')
+  })  
+
 
   it('should parse JUnit C#', () => {
     const reader = new XmlReader({ lang: 'c#' });
