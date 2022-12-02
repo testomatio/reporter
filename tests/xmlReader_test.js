@@ -205,7 +205,7 @@ describe('XML Reader', () => {
     const skippedTests = jsonData.tests.filter(t => t.status === 'skipped')
     expect(skippedTests.length).to.eql(1)
     const skippedTest = skippedTests[0];
-    expect(skippedTest.title).to.eql('checkDashboard')
+    expect(skippedTest.title).to.eql('check dashboard')
   })  
 
 
