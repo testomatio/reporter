@@ -1,3 +1,7 @@
+# 0.7.3
+
+* CodeceptJS: Upload all traces and videos from artifacts
+
 # 0.7.2
 
 * Fixed uploading non-existing file
