@@ -307,13 +307,12 @@ describe('XML Reader', () => {
 
     it('should create a new run Id', async () => {
       const reader = new XmlReader({
-        url: TESTOMATIO_URL,
+        testomatioUrl: TESTOMATIO_URL,
         apiKey: TESTOMATIO,
       });
       reader.parse(path.join(__dirname, 'data/junit1.xml'))
       await reader.createRun()
-      expect(reader.runId).to.eql(RUN_ID)
-
+      
       const [req] = server.requests({ method: 'POST', path: '/api/reporter' });
       const expectedResult = { api_key: TESTOMATIO };
       assert.isObject(req.body);
@@ -322,23 +321,16 @@ describe('XML Reader', () => {
 
     it('should publish updates', async () => {
       const reader = new XmlReader({
-        url: TESTOMATIO_URL,
+        testomatioUrl: TESTOMATIO_URL,
         apiKey: TESTOMATIO,
         runId: RUN_ID,
       });
       reader.parse(path.join(__dirname, 'data/junit1.xml'))
-      expect(reader.runId).to.eql(RUN_ID)
 
-      const resp = await reader.uploadData();
-      expect(resp.status).to.eql(200)
-
+      await reader.createRun()
       const [req] = server.requests({ method: 'PUT', path: '/api/reporter/' + RUN_ID });
       assert.isObject(req.body);
-      expect(req.body).to.include({ status: 'failed' })
     });
-
-
-
 
     afterEach(() => {
       server.reset();
