@@ -1,6 +1,6 @@
 {
   "name": "@testomatio/reporter",
-  "version": "0.8.0-beta.10",
+  "version": "0.8.0-beta.13",
   "description": "Testomatio Reporter Client",
   "main": "./lib/reporter.js",
   "repository": "git@github.com:testomatio/reporter.git",
@@ -17,6 +17,7 @@
     "fast-xml-parser": "^4.0.8",
     "glob": "^8.0.3",
     "has-flag": "^5.0.1",
+    "humanize-duration": "^3.27.3",
     "is-valid-path": "^0.1.1",
     "json-cycle": "^1.3.0",
     "lodash.memoize": "^4.1.2",
@@ -41,7 +42,6 @@
     "test:adapter:codecept:example": "codeceptjs run --config='./tests/adapter/examples/codecept/codecept.conf.js'",
     "test:adapter:cucumber:example": "cd ./tests/adapter/examples/cucumber && npx cucumber-js"
   },
-  "peerDependencies": {},
   "devDependencies": {
     "@cucumber/cucumber": "^8.6.0",
     "@wdio/reporter": "^7.16.13",
