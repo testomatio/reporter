@@ -1,3 +1,7 @@
+# 0.7.4
+
+* Fixed parsing source code in JUnit files
+
 # 0.7.3
 
 * Fixed reporting skipped test in XML
