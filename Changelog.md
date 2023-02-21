@@ -1,3 +1,7 @@
+# 0.7.5
+
+* Fixed reporting skipped tests in mocha
+
 # 0.7.4
 
 * Fixed parsing source code in JUnit files
