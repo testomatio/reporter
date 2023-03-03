@@ -1,42 +1,14 @@
-import { ConsoleEvent, NewmanRunExecution, NewmanRunExecutionItem, NewmanRunOptions, NewmanRunSummary } from 'newman';
 import TestomatioReporter from '@testomatio/reporter';
 import chalk from 'chalk';
+import { ConsoleEvent, NewmanRunExecution, NewmanRunExecutionAssertion, NewmanRunOptions, NewmanRunSummary } from 'newman';
+import { beatifyVariablesList } from './helpers';
+import { AnyObject, KeyValueObject } from "./types";
+import { stringifyURL, URL } from './url-parser';
 
 // FIXME: when add chulk to package.json, this reporter does not work. have to investigate and try to fix
 
-type AnyObject = {
-  [key: string]: any;
-}
-
-type SearchParams = { key: string, value: string }[];
-
-type URL = {
-  protocol: 'https' | 'http',
-  path: string[],
-  host: string[],
-  query: SearchParams,
-  variable: { [key: string]: any }[],
-}
-
-function stringifySearchParams(searchParams: SearchParams): string {
-  searchParams = JSON.parse(JSON.stringify(searchParams));
-
-  if (!searchParams.length) return '';
-
-  // url params starts with ? sign like ?param=value
-  let result = '?';
-
-  for (const param of searchParams) {
-    result += (param.key + '=' + param.value);
-  }
-  return result;
-}
-
-function stringifyURL(url: URL): string {
-  return `${url.protocol}://${url.host.join('.')}/${url.path.join('/')}${stringifySearchParams(url.query)}`
-}
-
 const APP_PREFIX = chalk.gray('[TESTOMATIO-NEWMAN-REPORTER]');
+
 /**
  * 
  * @param emitter is an event emitter that triggers the following events: https://github.com/postmanlabs/newman#newmanrunevents
@@ -47,43 +19,56 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
   // initialize Testomatio reporter
   const testomatioReporter = new TestomatioReporter.TestomatClient({ ...reporterOptions, createNewTests: true });
   let responseCodeAndStatusColorized = '';
+  let assertionErrorTextColorized = '';
+
+  const envVars = JSON.parse(JSON.stringify(emitter.summary.environment.values)) as KeyValueObject[];
+  const globalVars = JSON.parse(JSON.stringify(emitter.summary.globals.values)) as KeyValueObject[];
+  const allVars = beatifyVariablesList([...globalVars, ...envVars]);
 
   // listen to the Newman events
 
   // collection start
   emitter.on('start', function (err: any, newmanRun: NewmanRunExecution) {
-    if (err) console.error(err);
     testomatioReporter.createRun();
   });
 
-  // response received
-  emitter.on('request', function (err: any, newmanRun: NewmanRunExecution) {
+  // when an item (the whole set of prerequest->request->test) starts
+  emitter.on('beforeItem', function (err: any, result: NewmanRunExecution) {
     if (err) console.error(err);
-    responseCodeAndStatusColorized = newmanRun.response.code < 300 ? chalk.green(newmanRun.response.code, newmanRun.response.status) : chalk.red(newmanRun.response.code, newmanRun.response.status);
+    // reset before each Item (which is the same as Test for Testomatio)
+    responseCodeAndStatusColorized = '';
+    assertionErrorTextColorized = '';
+  });
+
+  // response received
+  emitter.on('request', function (err: any, result: NewmanRunExecution) {
+    if (err) console.error(err);
+    if (!result.response) return;
+    responseCodeAndStatusColorized = result.response.code < 300 ? chalk.green(result.response.code, result.response.status) : chalk.red(result.response.code, result.response.status);
   });
 
   // when an item (the whole set of prerequest->request->test) completes
   emitter.on('item', function (err: AnyObject | null, result: NewmanRunExecution) {
     if (err) console.error(err);
 
-    let steps = '';
     const request = result.item.request;
     const requestURL = request.url as unknown as URL;
-    steps += `request\n${request.method} ${stringifyURL(requestURL)}`;
-    steps += responseCodeAndStatusColorized ? `\nresponse\n${responseCodeAndStatusColorized}`: '';
 
-    const events = result.item.events;
+    let steps = '';
+    // add request method and url
+    steps += `request\n${request.method} ${stringifyURL(requestURL, allVars)}`;
+    // add response status name and code
+    steps += responseCodeAndStatusColorized ? `\nresponse\n${responseCodeAndStatusColorized}` : '';
+    // add assertion error
+    steps += assertionErrorTextColorized ? `\n\n\n${assertionErrorTextColorized}` : '';
 
     // events includes prerequest, tests etc
+    const events = result.item.events;
     events.map(event => {
       const eventName = event.listen;
       const eventScripts = event.script.exec;
-      const eventScriptsAsStr = eventScripts?.join('\n');
-      if (eventScriptsAsStr) steps += `\n\n${chalk.blue(eventName)}\n${chalk.grey(eventScriptsAsStr)}`;
+      if (eventScripts?.length) steps += `\n\n\n${chalk.blue(eventName)}\n${chalk.grey(eventScripts?.join('\n'))}`;
     });
-
-
-    // TODO: add error to steps. here or in 'request' handler
 
     const testData = {
       error: err,
@@ -101,10 +86,18 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
     testomatioReporter.addTestRun(null, 'passed', testData);
   });
 
+  // test assertion
+  emitter.on('assertion', function (err: any, assertion: NewmanRunExecutionAssertion) {
+    if (err) console.error(err);
+    if (assertion.error) {
+      assertionErrorTextColorized = chalk.red(`${assertion.error.name}: ${assertion.error.message}`);
+    }
+  });
+
   // every time a console function is called from within any script, this event is propagated
   emitter.on('console', function (err: AnyObject, event: ConsoleEvent) {
     if (err) console.error(err);
-    console.log(APP_PREFIX, chalk.grey('CONSOLE:', event.messages));
+    console.log(APP_PREFIX, chalk.grey('CONSOLE:', JSON.stringify(event.messages)));
   });
 
   // collection run finished
@@ -113,12 +106,7 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
 
     const status = summary.run.failures.length ? 'failed' : 'passed';
     console.log(APP_PREFIX, chalk.blue('Run result:', status));
-
-    // notify Testomatio that the test run has finished
     testomatioReporter.updateRunStatus(status);
-    // console.log(' - - - - - DONE - - - - - ');
-    // console.log(JSON.stringify(summary));
-    // console.log(' - - - - - DONE - - - - - ');
   });
 }
 

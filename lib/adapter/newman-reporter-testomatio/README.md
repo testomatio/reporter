@@ -21,3 +21,13 @@ You can verify installed packages via `npm list` or `npm list -g`.
 `npx newman run <collection_name> -r testomatio`
 \
 Do not forget to pass token as TESTOMATIO env variable. Also TESTOMATIO_CREATE should be set to truthy value (e.g. TESTOMATIO_CREATE=1).
+
+
+### Publishing
+1. Build .js files
+\
+`tsc`
+
+2. Publish
+\
+`npm publish`
