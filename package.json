@@ -20,7 +20,7 @@
     "json-cycle": "^1.3.0",
     "lodash.memoize": "^4.1.2",
     "newman": "^5.3.2",
-    "newman-reporter-testomatio": "latest"
+    "newman-reporter-testomatio": "file:packages/newman-reporter-testomatio/newman-reporter-testomatio-0.0.1.tgz"
   },
   "files": [
     "bin",

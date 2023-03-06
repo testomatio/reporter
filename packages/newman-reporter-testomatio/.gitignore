@@ -1,2 +1,3 @@
 node_modules/
 lib/
+!newman-reporter-testomatio-0.0.1.tgz
