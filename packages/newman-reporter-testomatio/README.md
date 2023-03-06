@@ -23,6 +23,11 @@ You can verify installed packages via `npm list` or `npm list -g`.
 Do not forget to pass token as TESTOMATIO env variable. Also TESTOMATIO_CREATE should be set to truthy value (e.g. TESTOMATIO_CREATE=1).
 
 
+### Run tests
+\
+`TESTOMATIO=<API_KEY> npm test`
+
+
 ### Publishing
 1. Build .js files
 \
@@ -31,3 +36,4 @@ Do not forget to pass token as TESTOMATIO env variable. Also TESTOMATIO_CREATE s
 2. Publish
 \
 `npm publish`
+
