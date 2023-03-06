@@ -62,6 +62,8 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
     // add assertion error
     steps += assertionErrorTextColorized ? `\n\n\n${assertionErrorTextColorized}` : '';
 
+    // TODO: add response body
+
     // events includes prerequest, tests etc
     const events = result.item.events;
     events.map(event => {
@@ -79,7 +81,8 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
       steps,
       title: result.item.name,
       suite_title: typeof collectionRunOptions.collection === 'string' ? collectionRunOptions.collection : collectionRunOptions.collection.name,
-      suite_id: typeof collectionRunOptions.collection === 'string' ? '' : collectionRunOptions?.collection?.id,
+      // collection id is passed (looks like uuid); // TODO: pass id with length of 8
+      // suite_id: typeof collectionRunOptions.collection === 'string' ? '' : collectionRunOptions?.collection?.id,
     };
 
     // notify Testomatio about the item result
