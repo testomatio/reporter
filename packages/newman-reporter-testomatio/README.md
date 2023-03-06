@@ -29,6 +29,10 @@ Do not forget to pass token as TESTOMATIO env variable. Also TESTOMATIO_CREATE s
 
 
 ### Publishing
+`npm publish`
+
+or
+
 1. Build .js files
 \
 `tsc`
@@ -36,4 +40,3 @@ Do not forget to pass token as TESTOMATIO env variable. Also TESTOMATIO_CREATE s
 2. Publish
 \
 `npm publish`
-
