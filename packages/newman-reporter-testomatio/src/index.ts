@@ -3,7 +3,6 @@ import chalk from 'chalk';
 import { ConsoleEvent, NewmanRunExecution, NewmanRunExecutionAssertion, NewmanRunOptions, NewmanRunSummary } from 'newman';
 import { beatifyVariablesList } from './helpers';
 import { AnyObject, KeyValueObject } from "./types";
-import { stringifyURL, URL } from './url-parser';
 
 // FIXME: when add chulk to package.json, this reporter does not work. have to investigate and try to fix
 
@@ -18,17 +17,22 @@ const APP_PREFIX = chalk.gray('[TESTOMATIO-NEWMAN-REPORTER]');
 function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject, collectionRunOptions: NewmanRunOptions) {
   // initialize Testomatio reporter
   const testomatioReporter = new TestomatioReporter.TestomatClient({ ...reporterOptions, createNewTests: true });
-  let responseCodeAndStatusColorized = '';
-  let assertionErrorTextColorized = '';
+  let newmanItemStore = {
+    assertionErrorTextColorized: '',
+    requestURL: '',
+    responseBody: '',
+    responseCodeAndStatusColorized: '',
+  };
 
-  const envVars = JSON.parse(JSON.stringify(emitter.summary.environment.values)) as KeyValueObject[];
-  const globalVars = JSON.parse(JSON.stringify(emitter.summary.globals.values)) as KeyValueObject[];
-  const allVars = beatifyVariablesList([...globalVars, ...envVars]);
+  // const envVars = JSON.parse(JSON.stringify(emitter.summary.environment.values)) as KeyValueObject[];
+  // const globalVars = JSON.parse(JSON.stringify(emitter.summary.globals.values)) as KeyValueObject[];
+  // const allVars = beatifyVariablesList([...globalVars, ...envVars]);
 
   // listen to the Newman events
 
   // collection start
   emitter.on('start', function (err: any, newmanRun: NewmanRunExecution) {
+    if (err) console.error(err);
     testomatioReporter.createRun();
   });
 
@@ -36,15 +40,21 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
   emitter.on('beforeItem', function (err: any, result: NewmanRunExecution) {
     if (err) console.error(err);
     // reset before each Item (which is the same as Test for Testomatio)
-    responseCodeAndStatusColorized = '';
-    assertionErrorTextColorized = '';
+    newmanItemStore = {
+      assertionErrorTextColorized: '',
+      requestURL: '',
+      responseBody: '',
+      responseCodeAndStatusColorized: '',
+    };
   });
-
+  
   // response received
   emitter.on('request', function (err: any, result: NewmanRunExecution) {
     if (err) console.error(err);
-    if (!result.response) return;
-    responseCodeAndStatusColorized = result.response.code < 300 ? chalk.green(result.response.code, result.response.status) : chalk.red(result.response.code, result.response.status);
+    
+    newmanItemStore.responseCodeAndStatusColorized = result.response.code < 300 ? chalk.green(result.response.code, result.response.status) : chalk.red(result.response.code, result.response.status);
+    newmanItemStore.requestURL = result.request.url.toString();
+    newmanItemStore.responseBody = JSON.stringify(JSON.parse(result?.response?.stream?.toString() || ''), null, 2);
   });
 
   // when an item (the whole set of prerequest->request->test) completes
@@ -52,19 +62,22 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
     if (err) console.error(err);
 
     const request = result.item.request;
-    const requestURL = request.url as unknown as URL;
+    // const requestURL = request.url as unknown as URL;
 
     let steps = '';
     // add request method and url
-    steps += `request\n${request.method} ${stringifyURL(requestURL, allVars)}`;
+    // steps += `Request\n${request.method} ${stringifyURL(requestURL, allVars)}`;
+    steps += `${chalk.bold('Request')}\n${request.method} ${newmanItemStore.requestURL}`;
     // add response status name and code
-    steps += responseCodeAndStatusColorized ? `\nresponse\n${responseCodeAndStatusColorized}` : '';
-    // add assertion error
-    steps += assertionErrorTextColorized ? `\n\n\n${assertionErrorTextColorized}` : '';
+    steps += newmanItemStore.responseCodeAndStatusColorized ? `\n\n${chalk.bold('Response')}\n${newmanItemStore.responseCodeAndStatusColorized}` : '';
+    // add response body
+    steps += newmanItemStore.responseBody ? `\n${chalk.bold('body')}:\n${newmanItemStore.responseBody}` : '';
+    // add assertion error (in case of it)
+    steps += newmanItemStore.assertionErrorTextColorized ? `\n\n\n${newmanItemStore.assertionErrorTextColorized}` : '';
 
     // TODO: add response body
 
-    // events includes prerequest, tests etc
+    // events includes: prerequest, tests etc
     const events = result.item.events;
     events.map(event => {
       const eventName = event.listen;
@@ -93,7 +106,7 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
   emitter.on('assertion', function (err: any, assertion: NewmanRunExecutionAssertion) {
     if (err) console.error(err);
     if (assertion.error) {
-      assertionErrorTextColorized = chalk.red(`${assertion.error.name}: ${assertion.error.message}`);
+      newmanItemStore.assertionErrorTextColorized = chalk.red(`${assertion.error.name}: ${assertion.error.message}`);
     }
   });
 

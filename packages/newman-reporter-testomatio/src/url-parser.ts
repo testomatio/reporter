@@ -1,3 +1,8 @@
+/* this file was created to parse data from newman run results
+but later easier ways were found
+for now this functionality is not used but may be used for later (e.g. for test code parsing)
+so decided to leave*/
+
 import { AnyObject, KeyValueObject } from "./types";
 
 export type URL = {
