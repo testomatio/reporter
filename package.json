@@ -40,7 +40,6 @@
     "test:adapter:codecept:example": "codeceptjs run --config='./tests/adapter/examples/codecept/codecept.conf.js'",
     "test:adapter:cucumber:example": "cd ./tests/adapter/examples/cucumber && npx cucumber-js"
   },
-  "peerDependencies": {},
   "devDependencies": {
     "@cucumber/cucumber": "^8.6.0",
     "@wdio/reporter": "^7.16.13",
