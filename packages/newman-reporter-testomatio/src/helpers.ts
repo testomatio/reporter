@@ -1,3 +1,4 @@
+import chalk from "chalk";
 import { AnyObject, KeyValueObject } from "./types";
 
 export function beatifyVariablesList(varsList: KeyValueObject[]) {
@@ -8,4 +9,9 @@ export function beatifyVariablesList(varsList: KeyValueObject[]) {
   }
 
   return beatifiedVarsList;
+}
+
+export function getPrettyTimeFromTimestamp(timestamp: number) {
+  const seconds = timestamp / 1000;
+  return seconds.toFixed(1);
 }
