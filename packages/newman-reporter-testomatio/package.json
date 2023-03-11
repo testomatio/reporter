@@ -10,7 +10,8 @@
   "author": "Testomatio",
   "license": "ISC",
   "dependencies": {
-    "@testomatio/reporter": "^0.7.5"
+    "@testomatio/reporter": "^0.7.5",
+    "newman": "^5.3.2"
   },
   "devDependencies": {
     "@types/newman": "^5.3.2"
