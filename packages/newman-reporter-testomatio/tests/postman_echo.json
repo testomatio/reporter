@@ -12,7 +12,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "postman-echo.com/get\n",
+					"raw": "postman-echo.com/get",
 					"host": [
 						"postman-echo",
 						"com"
