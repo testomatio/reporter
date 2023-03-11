@@ -31,3 +31,13 @@ You can verify installed packages via `npm list` or `npm list -g`.
 or
 1. Build .js files: `tsc`
 2. Publish: `npm publish`
+
+
+### Install as local package
+Build local package:
+
+`tsc && npm pack`
+
+Install:
+
+`npm i <path to generate .tgz file>`
