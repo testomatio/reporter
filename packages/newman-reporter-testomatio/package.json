@@ -4,8 +4,7 @@
   "description": "Newman adapter (custom reporter) for testomatio/reporter",
   "main": "lib/index.js",
   "scripts": {
-    "prepublish": "tsc",
-    "test": "npx newman run tests/postman_echo.json -r testomatio"
+    "prepublish": "tsc"
   },
   "author": "Testomatio",
   "license": "ISC",
