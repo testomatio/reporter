@@ -20,11 +20,6 @@ You can verify installed packages via `npm list` or `npm list -g`.
 \
 `TESTOMATIO=<token> npx newman run <collection_name> -r testomatio`
 
-
-### Run tests
-
-`TESTOMATIO=<API_KEY> npm test`
-
 ### Publishing
 `npm publish`
 \

@@ -22,6 +22,7 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
     startTime: 0,
     requestURL: '',
     responseBody: '',
+    requestHeaders: '',
     responseCodeAndStatusColorized: '',
   };
 
@@ -51,6 +52,7 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
       startTime: new Date().getTime(),
       requestURL: '',
       responseBody: '',
+      requestHeaders: '',
       responseCodeAndStatusColorized: '',
     };
   });
@@ -61,13 +63,13 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
 
     newmanItemStore.responseCodeAndStatusColorized = result.response.code < 300 ? chalk.green(result.response.code, result.response.status) : chalk.red(result.response.code, result.response.status);
     newmanItemStore.requestURL = result.request.url.toString();
+    newmanItemStore.requestHeaders = result.request.headers.toString();
     newmanItemStore.responseBody = JSON.stringify(JSON.parse(result?.response?.stream?.toString() || ''), null, 2);
   });
 
   // when an item (the whole set of prerequest->request->test) completes
   emitter.on('item', function (err: AnyObject | null, result: NewmanRunExecution) {
     if (err) console.error(err);
-    const startTime = new Date().getTime();
 
     const request = result.item.request;
     // const requestURL = request.url as unknown as URL;
@@ -76,6 +78,9 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
     // add request method and url
     // steps += `Request\n${request.method} ${stringifyURL(requestURL, allVars)}`;
     steps += `${chalk.bold('Request')}\n${request.method} ${newmanItemStore.requestURL}`;
+    
+    // add request headers
+    steps += `\n\n${chalk.bold('headers:')}\n${newmanItemStore.requestHeaders}`;
     
     // add response status name and code
     steps += newmanItemStore.responseCodeAndStatusColorized ? `\n\n\n${chalk.bold('Response')}\n${newmanItemStore.responseCodeAndStatusColorized}` : '';
