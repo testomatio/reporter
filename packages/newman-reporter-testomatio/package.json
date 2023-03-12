@@ -1,5 +1,5 @@
 {
-  "name": "@testomatio/newman-reporter-testomatio",
+  "name": "newman-reporter-testomatio",
   "version": "0.1.0",
   "description": "Newman adapter (custom reporter) for testomatio/reporter",
   "main": "lib/index.js",
