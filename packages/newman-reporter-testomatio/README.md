@@ -13,7 +13,7 @@ Note:
 \
 If you run your tests using globally installed newman (`newman run ...`), intall `newman-reporter-testomatio` globally too (`npm i newman-reporter-testomatio -g`).
 \
-If you use locally installed newman (withing the project) (`npx newman run ...`), install `newman-reporter-testomatio` locally (`npm i newman-reporter-testomatio`).
+If you use locally installed newman (within the project) (`npx newman run ...`), install `newman-reporter-testomatio` locally (`npm i newman-reporter-testomatio`).
 You can verify installed packages via `npm list` or `npm list -g`.
 
 2. Run collection and specify `testomatio` as reporter:
