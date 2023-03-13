@@ -4,6 +4,7 @@ import { ConsoleEvent, NewmanRunExecution, NewmanRunExecutionAssertion, NewmanRu
 import { getPrettyTimeFromTimestamp } from './helpers';
 import { AnyObject } from "./types";
 
+type TestStatus = 'passed' | 'failed' | 'skipped' | 'finished';
 // FIXME: when add chulk to package.json, this reporter does not work. have to investigate and try to fix
 
 const APP_PREFIX = chalk.gray('[TESTOMATIO-NEWMAN-REPORTER]');
@@ -18,14 +19,18 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
   // initialize Testomatio reporter
   const testomatioReporter = new TestomatioReporter.TestomatClient({ ...reporterOptions, createNewTests: true });
   let newmanItemStore = {
+    authType: '',
     assertionErrorTextColorized: '',
+    cookies: '',
     startTime: 0,
+    testStatus: '',
+    requestBody: '',
     requestURL: '',
     responseBody: '',
+    responseTime: 0,
+    requestHeaders: '',
     responseCodeAndStatusColorized: '',
   };
-
-  let itemStartTime;
 
   // const envVars = JSON.parse(JSON.stringify(emitter.summary.environment.values)) as KeyValueObject[];
   // const globalVars = JSON.parse(JSON.stringify(emitter.summary.globals.values)) as KeyValueObject[];
@@ -43,55 +48,85 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
   emitter.on('beforeItem', function (err: any, result: NewmanRunExecution) {
     if (err) console.error(err);
 
-    itemStartTime = new Date();
-
     // reset before each Item (which is the same as Test for Testomatio)
     newmanItemStore = {
+      authType: '',
       assertionErrorTextColorized: '',
+      requestBody: '',
+      cookies: '',
       startTime: new Date().getTime(),
+      testStatus: '',
       requestURL: '',
       responseBody: '',
+      responseTime: 0,
+      requestHeaders: '',
       responseCodeAndStatusColorized: '',
     };
   });
   
   // response received
   emitter.on('request', function (err: any, result: NewmanRunExecution) {
-    if (err) console.error(err);
+    if (err) {
+      console.error(err);
+      newmanItemStore.testStatus = 'failed';
+    }
 
+    newmanItemStore.authType  = result.request.auth?.toJSON().type || '';
+    newmanItemStore.cookies = result.response.cookies.toString();
     newmanItemStore.responseCodeAndStatusColorized = result.response.code < 300 ? chalk.green(result.response.code, result.response.status) : chalk.red(result.response.code, result.response.status);
+    newmanItemStore.requestBody = result.request.body?.toString() || '';
     newmanItemStore.requestURL = result.request.url.toString();
-    newmanItemStore.responseBody = JSON.stringify(JSON.parse(result?.response?.stream?.toString() || ''), null, 2);
+    newmanItemStore.requestHeaders = result.request.headers.toString();
+    // newmanItemStore.responseBody = JSON.stringify(JSON.parse(result?.response?.stream?.toString() || ''), null, 2);
+    newmanItemStore.responseBody = result?.response?.stream?.toString() || '';
+    newmanItemStore.responseTime = result.response.responseTime;
   });
 
   // when an item (the whole set of prerequest->request->test) completes
   emitter.on('item', function (err: AnyObject | null, result: NewmanRunExecution) {
-    if (err) console.error(err);
-    const startTime = new Date().getTime();
+    if (err) {
+      console.error(err);
+      newmanItemStore.testStatus = 'failed';
+    }
 
     const request = result.item.request;
     // const requestURL = request.url as unknown as URL;
 
     let steps = '';
+    // add assertion error (in case of it)
+    steps += newmanItemStore.assertionErrorTextColorized ? `${newmanItemStore.assertionErrorTextColorized}\n\n\n` : '';
+
     // add request method and url
     // steps += `Request\n${request.method} ${stringifyURL(requestURL, allVars)}`;
-    steps += `${chalk.bold('Request')}\n${request.method} ${newmanItemStore.requestURL}`;
+    steps += `${chalk.bold('Request')}\n${chalk.blue(request.method)} ${newmanItemStore.requestURL}`;
+
+    // auth type
+    steps += newmanItemStore.authType ? `\n\n${chalk.bold('auth: ')}${newmanItemStore.authType}` : '';
+    
+    // add request headers
+    steps += `\n\n${chalk.bold('headers:')}\n${newmanItemStore.requestHeaders}`;
+    
+    // request body
+    steps += newmanItemStore.requestBody ? `\n${chalk.bold('request body:')}\n${newmanItemStore.requestBody}` : '';
     
     // add response status name and code
     steps += newmanItemStore.responseCodeAndStatusColorized ? `\n\n\n${chalk.bold('Response')}\n${newmanItemStore.responseCodeAndStatusColorized}` : '';
+    
+    // response time
+    steps += newmanItemStore.responseTime ? `  (${chalk.italic(newmanItemStore.responseTime)} ms)` : '';
 
     // add response body
-    steps += newmanItemStore.responseBody ? `\n\n${chalk.bold('body')}:\n${newmanItemStore.responseBody}` : '';
+    steps += newmanItemStore.responseBody ? `\n\n${chalk.bold('response body')}:\n${newmanItemStore.responseBody}` : '';
 
-    // add assertion error (in case of it)
-    steps += newmanItemStore.assertionErrorTextColorized ? `\n\n\n${newmanItemStore.assertionErrorTextColorized}` : '';
+    // add response cookies
+    steps += newmanItemStore.cookies ? `\n\n${chalk.bold('cookies')}:\n${newmanItemStore.cookies}` : '';
 
     // events includes: prerequest, tests etc
     const events = result.item.events;
     events.map(event => {
       const eventName = event.listen;
       const eventScripts = event.script.exec;
-      if (eventScripts?.length) steps += `\n\n\n${chalk.blue(eventName)}\n${chalk.grey(eventScripts?.join('\n'))}`;
+      if (eventScripts?.length) steps += `\n\n\n${chalk.blue.bold(eventName)}\n${eventScripts?.join('\n')}`;
     });
 
     // add execution time
@@ -113,7 +148,7 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
     };
 
     // notify Testomatio about the item result
-    testomatioReporter.addTestRun(null, 'passed', testData);
+    testomatioReporter.addTestRun(null, newmanItemStore.testStatus || 'passed' as TestStatus, testData);
   });
 
   // test assertion
@@ -121,13 +156,14 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
     if (err) console.error(err);
     if (assertion.error) {
       newmanItemStore.assertionErrorTextColorized = chalk.red(`${assertion.error.name}: ${assertion.error.message}`);
+      newmanItemStore.testStatus = 'failed';
     }
   });
 
   // every time a console function is called from within any script, this event is propagated
   emitter.on('console', function (err: AnyObject, event: ConsoleEvent) {
     if (err) console.error(err);
-    console.log(APP_PREFIX, chalk.grey('CONSOLE:', JSON.stringify(event.messages)));
+    console.log(APP_PREFIX, chalk.grey('CONSOLE:', event.messages.join(' ')));
   });
 
   // collection run finished
