@@ -408,6 +408,23 @@ Add environments to run by providing `TESTOMATIO_ENV` as comma seperated values:
 TESTOMATIO={API_KEY} TESTOMATIO_ENV="Windows, Chrome" <actual run command>
 ```
 
+### Save test results to .csv file
+Add an env to run by specifying the `TESTOMATIO_CSV_FILENAME` variable.
+
+1) using default report name:
+
+```bash
+TESTOMATIO={API_KEY} TESTOMATIO_CSV_FILENAME="report.csv" <actual run command>
+```
+
+2) using unique report name:
+
+```bash
+TESTOMATIO={API_KEY} TESTOMATIO_CSV_FILENAME="test.csv" <actual run command>
+```
+_It's create a new /export folder with csv files_
+
+
 ### Attaching Test Artifacts
 
 To save a test artifacts (screenshots and videos) of a failed test use S3 storage.
