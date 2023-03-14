@@ -22,7 +22,8 @@
     "is-valid-path": "^0.1.1",
     "json-cycle": "^1.3.0",
     "lodash.memoize": "^4.1.2",
-    "lodash.merge": "^4.6.2"
+    "lodash.merge": "^4.6.2",
+    "csv-writer": "^1.6.0"
   },
   "files": [
     "bin",
@@ -30,6 +31,7 @@
     "testcafe"
   ],
   "scripts": {
+    "clear-exportdir": "rm -rf export/",
     "pretty": "prettier --write .",
     "lint": "eslint lib",
     "lint:fix": "eslint lib --fix",
