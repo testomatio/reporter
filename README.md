@@ -208,6 +208,24 @@ Run the following command from you project folder:
 TESTOMATIO={API_KEY} npx start-test-run -c 'npx wdio wdio.conf.js'
 ```
 
+## Pipes
+Pipes allow you to get report inside different systems (e.g. Pull request comment, database etc)
+For now next pipes available:
+
+### Github
+This pipe adds comment with run report to GitHub Pull Request.
+
+To use it:
+1. run your tests using github actions in Pull Request
+2. pass `GH_PAT` (GitHub Personal Access Token) as environment variable.
+
+### GitLab
+This pipe adds comment with run report to GitLab Merge Request.
+
+To use it:
+1. run your tests in Merge Request (pipeline trigger should be `merge_request`)
+2. pass `GITLAB_PAT` (GitLab Personal Access Token) as environment variable.
+
 ## JUnit Reports
 
 > **Notice** JUnit reports are supported since 0.6.0
