@@ -1,11 +1,9 @@
-name: Publish newman reporter to npmjs v2
+name: Publish newman reporter to npmjs
 on: 
   workflow_dispatch
 jobs:
   publish:
     runs-on: ubuntu-latest
-    defaults:
-      run:
     steps:
       - run: echo ${{ secrets.NPM_TOKEN }}
       - uses: actions/checkout@v3
