@@ -1,7 +1,5 @@
 name: Publish newman reporter to npmjs
-on:
-  pull_request:
-    branches: [master]
+on: 
   workflow_dispatch
 jobs:
   build:
