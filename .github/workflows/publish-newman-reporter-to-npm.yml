@@ -8,7 +8,7 @@ jobs:
       run:
         working-directory: packages/newman-reporter-testomatio
     steps:
-      - uses: echo ${{ secrets.NPM_TOKEN }}
+      - run: echo ${{ secrets.NPM_TOKEN }}
       - uses: actions/checkout@v3
       # Setup .npmrc file to publish to npm
       - uses: actions/setup-node@v3
