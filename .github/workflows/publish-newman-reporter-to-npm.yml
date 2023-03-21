@@ -1,6 +1,5 @@
 name: Publish newman reporter to npmjs
-on:
-  workflow_dispatch
+on: workflow_dispatch
 jobs:
   build:
     runs-on: ubuntu-latest
