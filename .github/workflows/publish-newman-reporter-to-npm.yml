@@ -1,12 +1,11 @@
-name: Publish newman reporter to npmjs
+name: Publish newman reporter to npmjs v2
 on: 
   workflow_dispatch
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: packages/newman-reporter-testomatio
     steps:
       - run: echo ${{ secrets.NPM_TOKEN }}
       - uses: actions/checkout@v3
@@ -16,6 +15,8 @@ jobs:
           node-version: '18.x'
           registry-url: 'https://registry.npmjs.org'
       - run: npm ci
+        working-directory: ./packages/newman-reporter-testomatio
       - run: npm publish
+        working-directory: ./packages/newman-reporter-testomatio
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
