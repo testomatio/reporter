@@ -20,6 +20,19 @@ For testcafe use testcafe reporter:
 npm i testcafe-reporter-testomatio
 ```
 
+For newman use:
+
+```bash
+npm i newman-reporter-testomatio
+```
+
+>`newman` and `newman-reporter-testomatio` should be installed in the same directory.
+\
+If you run your tests using globally installed newman (`newman run ...`), intall `newman-reporter-testomatio` globally too (`npm i newman-reporter-testomatio -g`).
+\
+If you use locally installed newman (within the project) (`npx newman run ...`), install `newman-reporter-testomatio` locally (`npm i newman-reporter-testomatio`).
+You can verify installed packages via `npm list` or `npm list -g`.
+
 ## Usage
 
 ### CodeceptJS
@@ -120,6 +133,15 @@ Run the following command from you project folder:
 ```bash
 TESTOMATIO={API_KEY} npx testcafe chrome -r testomatio
 ```
+
+### Newman (Postman)
+
+Run collection and specify `testomatio` as reporter:
+
+`TESTOMATIO={API_KEY} npx newman run {collection_name.json} -r testomatio`
+
+> _`check-test` not supported for newman for now, tests will be created on testomatio by default_
+
 
 ### Cypress
 
