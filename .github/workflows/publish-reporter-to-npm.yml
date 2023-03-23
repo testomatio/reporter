@@ -1,4 +1,4 @@
-name: Publish newman reporter to npmjs
+name: Publish REPORTER
 on:
   release:
     types: [published]

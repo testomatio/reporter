@@ -1,4 +1,4 @@
-name: Publish TESTCAFE reporter to npmjs v2
+name: Publish TESTCAFE reporter
 on: 
   workflow_dispatch
 jobs:
