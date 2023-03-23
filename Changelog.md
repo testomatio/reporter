@@ -1,3 +1,15 @@
+# 0.7.6
+
+* Updated to use AWS S3 3.0 SDK for uploading
+
+# 0.7.5
+
+* Fixed reporting skipped tests in mocha
+
+# 0.7.4
+
+* Fixed parsing source code in JUnit files
+
 # 0.7.3
 
 * CodeceptJS: Upload all traces and videos from artifacts

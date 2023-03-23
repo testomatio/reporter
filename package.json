@@ -1,6 +1,6 @@
 {
   "name": "@testomatio/reporter",
-  "version": "0.8.0-beta.14",
+  "version": "0.7.7",
   "description": "Testomatio Reporter Client",
   "main": "./lib/reporter.js",
   "repository": "git@github.com:testomatio/reporter.git",
@@ -9,6 +9,8 @@
   "dependencies": {
     "@octokit/rest": "^19.0.5",
     "aws-sdk": "^2.1072.0",
+    "@aws-sdk/client-s3": "^3.279.0",
+    "@aws-sdk/lib-storage": "^3.279.0",
     "axios": "^0.25.0",
     "callsite-record": "^4.1.4",
     "chalk": "^4.1.0",
