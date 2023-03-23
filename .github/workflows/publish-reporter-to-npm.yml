@@ -1,0 +1,26 @@
+name: Publish newman reporter to npmjs
+on:
+  release:
+    types: [published]
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:    
+        ref: ${{ github.event.release.target_commitish }}    
+    - uses: actions/setup-node@v2
+      with:
+        node-version: 16
+        cache: 'npm'
+    - run: git config --global user.name "GitHub CD bot"
+    - run: git config --global user.email "github-cd-bot@example.com"        
+    - run: npm version ${{ github.event.release.tag_name }}      
+    - uses: JS-DevTools/npm-publish@v1
+      with:
+        token: ${{ secrets.NPM_TOKEN }}
+
+    # push the version changes to GitHub
+    - run: git push
+      env:
+        github-token: ${{ secrets.GITHUB_TOKEN }}

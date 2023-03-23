@@ -1,12 +1,10 @@
-name: Publish newman reporter to npmjs
+name: Publish TESTCAFE reporter to npmjs v2
 on: 
-  # push:
-  #   branches:
-  #     - master
   workflow_dispatch
 jobs:
   publish:
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v3
       # Setup .npmrc file to publish to npm
@@ -15,8 +13,8 @@ jobs:
           node-version: '18.x'
           registry-url: 'https://registry.npmjs.org'
       - run: npm ci
-        working-directory: ./packages/newman-reporter-testomatio
+        working-directory: ./packages/testcafe
       - run: npm publish
-        working-directory: ./packages/newman-reporter-testomatio
+        working-directory: ./packages/testcafe
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
