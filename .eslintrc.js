@@ -33,6 +33,7 @@ module.exports = {
     'guard-for-in': 0,
     'import/no-dynamic-require': 0,
     'global-require': 0,
+    'no-empty-function': 0,
     camelcase: 0,
   },
 };
