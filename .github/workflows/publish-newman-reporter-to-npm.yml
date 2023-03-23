@@ -1,11 +1,8 @@
 name: Publish newman reporter to npmjs
 on: 
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
+  # push:
+  #   branches:
+  #     - master
   workflow_dispatch
 jobs:
   publish:
