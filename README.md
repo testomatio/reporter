@@ -23,7 +23,7 @@ npm i testcafe-reporter-testomatio
 For newman use:
 
 ```bash
-npm i newman-reporter-testomatio
+npm i newman-reporter-testomatio --save-dev
 ```
 
 >`newman` and `newman-reporter-testomatio` should be installed in the same directory.
