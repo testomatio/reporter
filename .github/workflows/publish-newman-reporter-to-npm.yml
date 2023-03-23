@@ -6,8 +6,8 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
-      - run: echo ${{ secrets.NPM_TOKEN }}
       - uses: actions/checkout@v3
       # Setup .npmrc file to publish to npm
       - uses: actions/setup-node@v3
