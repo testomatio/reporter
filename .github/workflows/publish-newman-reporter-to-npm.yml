@@ -1,12 +1,15 @@
 name: Publish newman reporter to npmjs
 on: 
+  push:
+    branches:
+      - master
   pull_request:
-    # branches:
-      # - master
+    branches:
+      - master
+  workflow_dispatch
 jobs:
   publish:
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v3
       # Setup .npmrc file to publish to npm
