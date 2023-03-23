@@ -30,6 +30,10 @@ module.exports = {
     'operator-linebreak': 0,
     'prefer-destructuring': 0,
     'no-plusplus': 0,
+    'guard-for-in': 0,
+    'import/no-dynamic-require': 0,
+    'global-require': 0,
+    'no-empty-function': 0,
     camelcase: 0,
   },
 };

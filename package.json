@@ -1,12 +1,14 @@
 {
   "name": "@testomatio/reporter",
-  "version": "0.7.6",
+  "version": "0.7.7",
   "description": "Testomatio Reporter Client",
   "main": "./lib/reporter.js",
   "repository": "git@github.com:testomatio/reporter.git",
   "author": "Michael Bodnarchuk <davert@testomat.io>,Koushik Mohan <koushikmohan1996@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@octokit/rest": "^19.0.5",
+    "aws-sdk": "^2.1072.0",
     "@aws-sdk/client-s3": "^3.279.0",
     "@aws-sdk/lib-storage": "^3.279.0",
     "axios": "^0.25.0",
@@ -16,10 +18,14 @@
     "dotenv": "^16.0.1",
     "fast-xml-parser": "^4.0.8",
     "glob": "^8.0.3",
+    "got": "^11.8.3",
     "has-flag": "^5.0.1",
+    "humanize-duration": "^3.27.3",
     "is-valid-path": "^0.1.1",
     "json-cycle": "^1.3.0",
-    "lodash.memoize": "^4.1.2"
+    "lodash.memoize": "^4.1.2",
+    "lodash.merge": "^4.6.2",
+    "csv-writer": "^1.6.0"
   },
   "files": [
     "bin",
@@ -27,6 +33,7 @@
     "testcafe"
   ],
   "scripts": {
+    "clear-exportdir": "rm -rf export/",
     "pretty": "prettier --write .",
     "lint": "eslint lib",
     "lint:fix": "eslint lib --fix",
@@ -34,6 +41,7 @@
     "init": "cd ./tests/adapter/examples/cucumber && npm i",
     "test:unit": "mocha tests",
     "test:adapter": "mocha './tests/adapter/index.test.js'",
+    "test:pipes": "mocha './tests/pipes/*_test.js'",
     "test:adapter:jest:example": "jest './tests/adapter/examples/jest/index.test.js' --config='./tests/adapter/examples/jest/jest.config.js'",
     "test:adapter:mocha:example": "mocha './tests/adapter/examples/mocha/index.test.js' --config='./tests/adapter/examples/mocha/mocha.config.js'",
     "test:adapter:jasmine:example": "./tests/adapter/examples/jasmine/passReporterOpts.sh && jasmine './tests/adapter/examples/jasmine/index.test.js' --reporter=./../../../lib/adapter/jasmine.js",

@@ -83,7 +83,6 @@ describe('Adapters', () => {
 
           const expectedResult = { api_key: TESTOMATIO };
 
-
           assert.isObject(req.body);
           assert.deepEqual(req.body, expectedResult);
         });
