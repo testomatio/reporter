@@ -37,7 +37,7 @@ You can verify installed packages via `npm list` or `npm list -g`.
 
 ### CodeceptJS
 
-Make sure you load all your tests using [check-test](https://github.com/testomatio/check-tests#cli).
+Make sure you load all your tests using [check-tests](https://github.com/testomatio/check-tests#cli).
 
 Add plugin to [codecept conf](https://github.com/testomatio/reporter/blob/master/example/codecept/codecept.conf.js#L23):
 
@@ -94,7 +94,7 @@ TESTOMATIO={API_KEY} npx playwright test
 
 ### Mocha
 
-Load the test using using `check-test` if not done already. Get the test id from testomat account and add it to your mocha test like in this [example](https://github.com/testomatio/reporter/blob/master/example/mocha/test/index.test.js#L4).
+Load the test using using `check-tests` if not done already. Get the test id from testomat account and add it to your mocha test like in this [example](https://github.com/testomatio/reporter/blob/master/example/mocha/test/index.test.js#L4).
 
 Run the following command from you project folder:
 
@@ -104,7 +104,7 @@ mocha --reporter ./node_modules/testomat-reporter/lib/adapter/mocha.js --reporte
 
 ### Jest
 
-Load the test using using `check-test`. Add the test id to your tests like in this [example](https://github.com/testomatio/reporter/blob/master/example/jest/index.test.js#L1).
+Load the test using using `check-tests`. Add the test id to your tests like in this [example](https://github.com/testomatio/reporter/blob/master/example/jest/index.test.js#L1).
 
 Add the following line to [jest.config.js](https://github.com/testomatio/reporter/blob/master/example/jest/jest.config.js#L100):
 
@@ -126,7 +126,7 @@ TESTOMATIO={API_KEY} ./node_modules/.bin/cucumber-js --format ./node_modules/@te
 
 ### TestCafe
 
-Load the test using using `check-test`.
+Load the test using using `check-tests`.
 
 Run the following command from you project folder:
 
@@ -140,12 +140,12 @@ Run collection and specify `testomatio` as reporter:
 
 `TESTOMATIO={API_KEY} npx newman run {collection_name.json} -r testomatio`
 
-> _`check-test` not supported for newman for now, tests will be created on testomatio by default_
+> _`check-tests` not supported for newman for now, tests will be created on testomatio by default_
 
 
 ### Cypress
 
-Load the test using using `check-test`.
+Load the test using using `check-tests`.
 
 Register our `cypress-plugin` in `cypress/plugins/index.js`:
 
@@ -173,7 +173,7 @@ TESTOMATIO={API_KEY} npx cypress run
 
 ### Protractor
 
-Load the test using using `check-test`.
+Load the test using using `check-tests`.
 
 Add the following lines to [conf.js](https://github.com/angular/protractor/blob/5.4.1/example/conf.js):
 
@@ -195,7 +195,7 @@ TESTOMATIO={API_KEY} npx start-test-run -c 'npx protractor conf.js'
 
 ### WebdriverIO
 
-Load the test using using `check-test`.
+Load the test using using `check-tests`.
 
 Add the following lines to [wdio.conf.js](https://webdriver.io/docs/configurationfile/):
 
