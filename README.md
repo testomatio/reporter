@@ -138,7 +138,9 @@ TESTOMATIO={API_KEY} npx testcafe chrome -r testomatio
 
 Run collection and specify `testomatio` as reporter:
 
-`TESTOMATIO={API_KEY} npx newman run {collection_name.json} -r testomatio`
+```bash
+TESTOMATIO={API_KEY} npx newman run {collection_name.json} -r testomatio
+```
 
 > _`check-tests` not supported for newman for now, tests will be created on testomatio by default_
 
