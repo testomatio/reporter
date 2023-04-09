@@ -585,3 +585,8 @@ If you want to finish a run started by `--launch` use `--finish` option. `TESTOM
 ```bash
 TESTOMATIO={API_KEY} TESTOMATIO_RUN={RUN_ID} npx start-test-run --finish
 ```
+
+### Debug logs
+Pass `DEBUG` variable with module name e.g. `DEBUG=@testomatio/reporter:pipe:github`.
+(Module name could be taken directly from the required module code).
+To log all debug info pass `DEBUG=*`.
