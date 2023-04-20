@@ -1,10 +1,14 @@
+import debug from 'debug';
 import TestomatioReporter from '@testomatio/reporter';
 import chalk from 'chalk';
 import { ConsoleEvent, NewmanRunExecution, NewmanRunExecutionAssertion, NewmanRunOptions, NewmanRunSummary } from 'newman';
-import { getPrettyTimeFromTimestamp } from './helpers';
+import { getGroupPath, getPrettyTimeFromTimestamp } from './helpers';
 import { AnyObject } from "./types";
+import { filesize } from 'filesize';
 
+const log = debug('newman-reporter-testomatio');
 type TestStatus = 'passed' | 'failed' | 'skipped' | 'finished';
+type ResponseSize = { body: number, header: number, total: number };
 // FIXME: when add chulk to package.json, this reporter does not work. have to investigate and try to fix
 
 const APP_PREFIX = chalk.gray('[TESTOMATIO-NEWMAN-REPORTER]');
@@ -22,25 +26,31 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
     authType: '',
     assertionErrorTextColorized: '',
     cookies: '',
+    groupPath: '',
+    responseCodeAndStatusColorized: '',
+    responseBody: '',
+    responseSize: 0,
+    responseTime: 0,
+    requestBody: '',
+    requestHeaders: '',
+    requestURL: '',
     startTime: 0,
     testStatus: '',
-    requestBody: '',
-    requestURL: '',
-    responseBody: '',
-    responseTime: 0,
-    requestHeaders: '',
-    responseCodeAndStatusColorized: '',
   };
 
-  // const envVars = JSON.parse(JSON.stringify(emitter.summary.environment.values)) as KeyValueObject[];
-  // const globalVars = JSON.parse(JSON.stringify(emitter.summary.globals.values)) as KeyValueObject[];
-  // const allVars = beatifyVariablesList([...globalVars, ...envVars]);
+  /* Every request in Postman collection is inside the group.
+  The collection itself is also a group. Next level of groups are folders.
+  Folders may include other folders.
+  Requests could be inside the folders or just directly inside the collection (without folders).
+  */
+  let currentGroup = collectionRunOptions.collection;
 
   // listen to the Newman events
 
   // collection start
   emitter.on('start', function (err: any, newmanRun: NewmanRunExecution) {
     if (err) console.error(err);
+    log('Start running collection');
     testomatioReporter.createRun();
   });
 
@@ -52,18 +62,33 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
     newmanItemStore = {
       authType: '',
       assertionErrorTextColorized: '',
-      requestBody: '',
       cookies: '',
+      groupPath: '',
+      responseCodeAndStatusColorized: '',
+      responseBody: '',
+      responseSize: 0,
+      responseTime: 0,
+      requestBody: '',
+      requestHeaders: '',
+      requestURL: '',
       startTime: new Date().getTime(),
       testStatus: '',
-      requestURL: '',
-      responseBody: '',
-      responseTime: 0,
-      requestHeaders: '',
-      responseCodeAndStatusColorized: '',
     };
+
+    // refer to "currentGroup" variable above for explanation
+    const itemGroup = result.item.parent();
+    const rootGroup = !itemGroup || (itemGroup === collectionRunOptions.collection);
+
+    // in case this item belongs to a separate folder, set that folder name
+    if (itemGroup && (currentGroup !== itemGroup)) {
+      const groupPath = getGroupPath(itemGroup);
+      if (!rootGroup && groupPath) newmanItemStore.groupPath = groupPath;
+
+      // this keeps track of the currently running group
+      currentGroup = itemGroup;
+    }
   });
-  
+
   // response received
   emitter.on('request', function (err: any, result: NewmanRunExecution) {
     if (err) {
@@ -71,14 +96,14 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
       newmanItemStore.testStatus = 'failed';
     }
 
-    newmanItemStore.authType  = result.request.auth?.toJSON().type || '';
+    newmanItemStore.authType = result.request.auth?.toJSON().type || '';
     newmanItemStore.cookies = result.response.cookies.toString();
     newmanItemStore.responseCodeAndStatusColorized = result.response.code < 300 ? chalk.green(result.response.code, result.response.status) : chalk.red(result.response.code, result.response.status);
     newmanItemStore.requestBody = result.request.body?.toString() || '';
     newmanItemStore.requestURL = result.request.url.toString();
     newmanItemStore.requestHeaders = result.request.headers.toString();
-    // newmanItemStore.responseBody = JSON.stringify(JSON.parse(result?.response?.stream?.toString() || ''), null, 2);
-    newmanItemStore.responseBody = result?.response?.stream?.toString() || '';
+    newmanItemStore.responseBody = result.response.stream?.toString() || '';
+    newmanItemStore.responseSize = (result.response.size() as unknown as ResponseSize).total;
     newmanItemStore.responseTime = result.response.responseTime;
   });
 
@@ -102,18 +127,20 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
 
     // auth type
     steps += newmanItemStore.authType ? `\n\n${chalk.bold('auth: ')}${newmanItemStore.authType}` : '';
-    
+
     // add request headers
     steps += `\n\n${chalk.bold('headers:')}\n${newmanItemStore.requestHeaders}`;
-    
+
     // request body
     steps += newmanItemStore.requestBody ? `\n${chalk.bold('request body:')}\n${newmanItemStore.requestBody}` : '';
-    
+
     // add response status name and code
     steps += newmanItemStore.responseCodeAndStatusColorized ? `\n\n\n${chalk.bold('Response')}\n${newmanItemStore.responseCodeAndStatusColorized}` : '';
-    
+
     // response time
-    steps += newmanItemStore.responseTime ? `  (${chalk.italic(newmanItemStore.responseTime)} ms)` : '';
+    steps += newmanItemStore.responseTime ? `  Time: ${chalk.italic(`${newmanItemStore.responseTime} ms`)}` : '';
+
+    steps += newmanItemStore.responseSize ? `  Size: ${chalk.italic(filesize(newmanItemStore.responseSize))}` : '';
 
     // add response body
     steps += newmanItemStore.responseBody ? `\n\n${chalk.bold('response body')}:\n${newmanItemStore.responseBody}` : '';
@@ -133,19 +160,21 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
     const executionTime = new Date().getTime() - newmanItemStore.startTime;
     steps += newmanItemStore.startTime ? `\n\n\n${chalk.bold('Execution time: ')}${getPrettyTimeFromTimestamp(executionTime)}s` : '';
 
-
     const testData = {
       error: err,
-      time: '',
       example: null,
+      file: newmanItemStore.groupPath,
       files: [],
       filesBuffers: [],
       steps,
-      title: result.item.name,
       suite_title: typeof collectionRunOptions.collection === 'string' ? collectionRunOptions.collection : collectionRunOptions.collection.name,
+      time: '',
+      title: result.item.name,
       // collection id is passed (looks like uuid); // TODO: pass id with length of 8
       // suite_id: typeof collectionRunOptions.collection === 'string' ? '' : collectionRunOptions?.collection?.id,
     };
+
+    log('Test data sent:', testData);
 
     // notify Testomatio about the item result
     testomatioReporter.addTestRun(null, newmanItemStore.testStatus || 'passed' as TestStatus, testData);
@@ -173,6 +202,7 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
     const status = summary.run.failures.length ? 'failed' : 'passed';
     console.log(APP_PREFIX, chalk.blue('Run result:', status));
     testomatioReporter.updateRunStatus(status);
+    log('Collection run completed', status === 'passed' ? 'without failures' : `with ${summary.run.failures.length} failures`);
   });
 }
 
