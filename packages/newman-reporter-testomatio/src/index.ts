@@ -138,9 +138,9 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
     steps += newmanItemStore.responseCodeAndStatusColorized ? `\n\n\n${chalk.bold('Response')}\n${newmanItemStore.responseCodeAndStatusColorized}` : '';
 
     // response time
-    steps += newmanItemStore.responseTime ? `  Time: ${chalk.italic(`${newmanItemStore.responseTime} ms`)}` : '';
+    steps += newmanItemStore.responseTime ? `\nTime: ${newmanItemStore.responseTime} ms` : '';
 
-    steps += newmanItemStore.responseSize ? `  Size: ${chalk.italic(filesize(newmanItemStore.responseSize))}` : '';
+    steps += newmanItemStore.responseSize ? `\tSize: ${filesize(newmanItemStore.responseSize)}` : '';
 
     // add response body
     steps += newmanItemStore.responseBody ? `\n\n${chalk.bold('response body')}:\n${newmanItemStore.responseBody}` : '';
@@ -153,7 +153,8 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
     events.map(event => {
       const eventName = event.listen;
       const eventScripts = event.script.exec;
-      if (eventScripts?.length) steps += `\n\n\n${chalk.blue.bold(eventName)}\n${eventScripts?.join('\n')}`;
+      // sometimes first script element is empty string
+      if (eventScripts?.length && eventScripts[0].length) steps += `\n\n\n${chalk.blue.bold(eventName)}\n${eventScripts?.join('\n')}`;
     });
 
     // add execution time
@@ -168,13 +169,14 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
       filesBuffers: [],
       steps,
       suite_title: typeof collectionRunOptions.collection === 'string' ? collectionRunOptions.collection : collectionRunOptions.collection.name,
+      // test_id:
       time: '',
       title: result.item.name,
       // collection id is passed (looks like uuid); // TODO: pass id with length of 8
       // suite_id: typeof collectionRunOptions.collection === 'string' ? '' : collectionRunOptions?.collection?.id,
     };
 
-    log('Test data sent:', testData);
+    // log('Test data sent:', testData);
 
     // notify Testomatio about the item result
     testomatioReporter.addTestRun(null, newmanItemStore.testStatus || 'passed' as TestStatus, testData);
