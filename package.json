@@ -27,7 +27,6 @@
     "lodash.merge": "^4.6.2",
     "csv-writer": "^1.6.0",
     "uuid": "^9.0.0",
-    "mocha": "^9.2.0"
   },
   "files": [
     "bin",
