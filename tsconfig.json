@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "noImplicitAny": false,
+    "noImplicitThis": false,
+    "noEmit": true,
+    "strictNullChecks": true,
+    "types": [
+        "node"
+    ],
+    "target": "es2017"
+  },
+  "compileOnSave": true,
+  "include": [
+    "lib",
+    "typings"
+  ],
+  "exclude": [
+    "typings/tests"
+  ]
+}
