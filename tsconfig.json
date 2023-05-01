@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "resolveJsonModule": true,
     "allowJs": true,
     "checkJs": true,
     "module": "commonjs",
@@ -7,7 +8,6 @@
     "noImplicitAny": false,
     "noImplicitThis": false,
     "noEmit": true,
-    "strictNullChecks": true,
     "types": [
         "node"
     ],
@@ -15,9 +15,8 @@
   },
   "compileOnSave": true,
   "include": [
-    "lib",
-    "typings"
-, "types.d.ts"  ],
+    "lib", "types.d.ts"  
+  ],
   "exclude": [
     "typings/tests"
   ]
