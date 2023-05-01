@@ -11,8 +11,8 @@ export interface TestData {
   title: string;
   suite_title?: string;
   suite_id?: string;
-  test_id?: string|null;
-  error?: Error|null;
+  test_id?: string;
+  error?: Error;
   time?: number;
   example?: any;
   files?: string[]|FileType[];
