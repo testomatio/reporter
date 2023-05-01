@@ -103,7 +103,7 @@ describe('Adapters', () => {
             'api_key',
             'files',
             // 'steps',
-            'status_event',
+            'status',
             'stack',
             'example',
             'title',
