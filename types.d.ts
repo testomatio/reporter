@@ -11,7 +11,7 @@ export interface TestData {
   title: string;
   suite_title?: string;
   suite_id?: string;
-  test_id?: string|null;
+  test_id?: string;
   error?: Error|null;
   time?: number;
   example?: any;
