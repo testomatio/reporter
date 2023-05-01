@@ -93,12 +93,13 @@ export enum RunStatus {
 
 export interface Pipe {
 
-  isEnabled: boolean;           
+  isEnabled: boolean;
   store: {},
 
   /** starts run  */
   startRun(): Promise<void>;
 
+  /** adds a test to the current run */
   addTest(test: TestData): void;
 
   /** ends the run */
