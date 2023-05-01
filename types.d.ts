@@ -48,7 +48,6 @@ export interface TestData {
   message?: string;
 }
 
-
 /**
  * Object representing a result of a Run.
  */
@@ -97,7 +96,8 @@ export interface Pipe {
   isEnabled: boolean;           
   store: {},
 
-  createRun(params?: {}): Promise<void>;
+  /** starts run  */
+  startRun(): Promise<void>;
 
   addTest(test: TestData): void;
 
