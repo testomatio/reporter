@@ -12,7 +12,7 @@ export interface TestData {
   suite_title?: string;
   suite_id?: string;
   test_id?: string;
-  error?: Error|null;
+  error?: Error;
   time?: number;
   example?: any;
   files?: string[]|FileType[];
