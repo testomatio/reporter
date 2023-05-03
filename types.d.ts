@@ -97,7 +97,7 @@ export interface Pipe {
   store: {},
 
   /** starts run  */
-  startRun(): Promise<void>;
+  createRun(): Promise<void>;
 
   /** adds a test to the current run */
   addTest(test: TestData): void;
