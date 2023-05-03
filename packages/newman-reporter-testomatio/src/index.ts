@@ -150,12 +150,16 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
 
     // events includes: prerequest, tests etc
     const events = result.item.events;
+    
+    let code = '';
     events.map(event => {
       const eventName = event.listen;
       const eventScripts = event.script.exec;
+
       // sometimes first script element is empty string
-      if (eventScripts?.length && eventScripts[0].length) steps += `\n\n\n${chalk.blue.bold(eventName)}\n${eventScripts?.join('\n')}`;
+      if (eventScripts?.length && eventScripts[0].length) code += `\n\n\n${chalk.blue.bold(eventName)}\n${eventScripts?.join('\n')}`;
     });
+    steps += code;
 
     // add execution time
     const executionTime = new Date().getTime() - newmanItemStore.startTime;
@@ -168,6 +172,7 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
       files: [],
       filesBuffers: [],
       steps,
+      code,
       suite_title: typeof collectionRunOptions.collection === 'string' ? collectionRunOptions.collection : collectionRunOptions.collection.name,
       // test_id:
       time: '',

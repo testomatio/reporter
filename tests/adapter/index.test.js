@@ -90,7 +90,7 @@ describe('Adapters', () => {
         it('PUT :: /api/reporter/:runId :: should update run status', () => {
           const [req] = server.requests({ method: 'PUT', path: `/api/reporter/${RUN_ID}` });
 
-          const expectedResult = { api_key: TESTOMATIO, status_event: 'fail', status: 'failed' };
+          const expectedResult = { api_key: TESTOMATIO, status_event: 'fail' };
 
           assert.isObject(req.body);
           assert.deepEqual(req.body, expectedResult);

@@ -1,0 +1,207 @@
+openapi: 3.0.0
+info:
+  title: Test Run API
+  version: 1.0.0
+servers:
+  - url: https://app.testomat.io
+paths:
+  /api/reporter:
+    post:
+      summary: Create a new (empty) run
+      description: |
+        Creates a new test run in Testomat.io, which can be used to report the results of multiple tests. Returns a unique ID for the run.
+      parameters:
+        - name: api_key
+          in: query
+          description: The API key for your Testomat.io account
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRunData"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uid:
+                    type: string
+                    description: Run ID used to send data to in following requests
+                  url:
+                    type: string
+
+    put:
+      summary: Update or finish existing run
+      description: |
+        Updates an existing test run in Testomat.io, which can be used to report the results of multiple tests. Requires a unique ID for the test run.
+      parameters:
+        - name: runId
+          in: path
+          description: The unique ID of the test run
+          required: true
+          schema:
+            type: string
+        - name: api_key
+          in: query
+          description: The API key for your Testomat.io account
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateRunData"
+      responses:
+        '200':
+          description: OK
+
+  /api/reporter/{runId}/testrun:
+    post:
+      summary: Send test results for a test run
+      parameters:
+        - in: path
+          name: runId
+          required: true
+          description: The ID of the test run to report results for
+          schema:
+            type: string
+        - in: query
+          name: apiKey
+          required: true
+          description: Your Testomat.io API key
+          schema:
+            type: string
+      requestBody:
+        description: The test data to report
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TestData"
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad request - check the request body and/or parameters
+        '401':
+          description: Unauthorized - check your API key
+        '404':
+          description: Not found - check the runId parameter
+
+components:
+  schemas:
+    TestStatus:
+      type: string
+      enum:
+        - passed
+        - failed
+        - skipped  
+    RunStatusEvent:
+      description: 
+        The final status of the run. Suffix _parallel and marks that only one part of this run has finished. To finish parallel run, send additional request with status=finish. 
+        Set status explicitly with `pass` or `fail` statuses or use `finish` status to calculate final status from test run results. 
+      type: string
+      enum:
+        - pass
+        - fail
+        - finish
+        - pass_parallel
+        - fail_parallel
+        - finish_parallel
+    CreateRunData:
+      type: object
+      properties:
+        title:
+          type: string
+          description: The title of the test run
+        tags:
+          type: array
+          items:
+            type: string
+          description: An array of tags to associate with the test run
+        env:
+          type: string
+          description: The environment the test run was executed in
+        group_title:
+          type: string
+          description: Add a run to rungroup matching this group by its title. If rungroup does not exist, it will be created.
+        parallel:
+          type: boolean
+          description: Whether to create a prallell run
+
+    UpdateRunData:
+      type: object
+      properties:
+        status_event:
+          $ref: "#/components/schemas/RunStatusEvent"
+          description: The final status of the run. Suffix _parallel and marks that only one part of this run has finished.
+        create_tests:
+          type: boolean
+          description: Whether to create new tests or update existing ones
+        tests_count:
+          type: integer
+          description: The total number of tests to be run
+        passed_count:
+          type: integer
+          description: The number of tests that passed
+        failed_count:
+          type: integer
+          description: The number of tests that failed
+        skipped_count:
+          type: integer
+          description: The number of tests that were skipped
+        tests:
+          type: array
+          items:
+            $ref: "#/components/schemas/TestData"
+          description: The details of each test        
+    TestData:
+      type: object
+      properties:
+        status:
+          $ref: "#/components/schemas/TestStatus"
+          description: The status of the test
+        title:
+          type: string
+          description: The title of the test
+        suite_title:
+          type: string
+          description: The title of the test suite
+        suite_id:
+          type: string
+          description: The ID of the test suite
+        test_id:
+          type: string
+          description: The ID of the test
+        message:
+          type: string
+          description: A message describing the error
+        stack:
+          type: string
+          description: A stack trace for the error
+        run_time:
+          type: number
+          description: The time it took to execute the test, in seconds
+        example:
+          type: object
+          description: An example associated with the test
+        artifacts:
+          type: array
+          items:
+            type: string
+          description: An array of URLs for uploaded artifacts associated with the test
+        steps:
+          type: string
+          description: The steps taken during the test
+        code:
+          type: string
+          description: The code executed during the test
