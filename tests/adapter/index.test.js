@@ -27,8 +27,8 @@ const params = [
   },
   {
     adapterName: CodeceptReporter.name,
-    positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:jasmine:example`,
-    negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:jasmine:example`,
+    positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:codecept:example`,
+    negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:codecept:example`,
   },
   {
     adapterName: CucumberReporter.name,
