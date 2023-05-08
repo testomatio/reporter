@@ -1,4 +1,4 @@
-const { TESTOMATIO } = require('../../config');
+// const { TESTOMATIO } = require('../../config');
 
 exports.config = {
   tests: './*_test.js',
@@ -29,7 +29,7 @@ exports.config = {
     testomat: {
       enabled: true,
       require: '../../../../lib/adapter/codecept',
-      apiKey: TESTOMATIO,
+      // apiKey: TESTOMATIO,
     },
   },
 };
