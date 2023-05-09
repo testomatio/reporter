@@ -27,8 +27,8 @@ const params = [
   },
   {
     adapterName: CodeceptReporter.name,
-    positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:jasmine:example`,
-    negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:jasmine:example`,
+    positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:codecept:example`,
+    negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:codecept:example`,
   },
   {
     adapterName: CucumberReporter.name,
@@ -60,7 +60,7 @@ describe('Adapters', () => {
     describe(adapterName, () => {
       describe('positive tests', () => {
         before(function (done) {
-          this.timeout(5000);
+          this.timeout(10000);
 
           registerHandlers(server, RUN_ID);
 
@@ -126,7 +126,7 @@ describe('Adapters', () => {
 
       describe('negative tests', () => {
         before(function (done) {
-          this.timeout(5000);
+          this.timeout(10000);
 
           registerHandlers(server, RUN_ID);
 

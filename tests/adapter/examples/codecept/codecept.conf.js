@@ -1,3 +1,5 @@
+// const { TESTOMATIO } = require('../../config');
+
 exports.config = {
   tests: './*_test.js',
   output: './output',
@@ -27,7 +29,7 @@ exports.config = {
     testomat: {
       enabled: true,
       require: '../../../../lib/adapter/codecept',
-      apiKey: 'lz8ea4948ud5',
+      // apiKey: TESTOMATIO,
     },
   },
 };
