@@ -2,7 +2,7 @@ import debug from 'debug';
 import TestomatioReporter from '@testomatio/reporter';
 import chalk from 'chalk';
 import { ConsoleEvent, NewmanRunExecution, NewmanRunExecutionAssertion, NewmanRunOptions, NewmanRunSummary } from 'newman';
-import { getGroupPath, getPrettyTimeFromTimestamp } from './helpers';
+import { getGroupPath, getPrettyTimeFromTimestamp, getTestIdFromTestName } from './helpers';
 import { AnyObject } from "./types";
 import { filesize } from 'filesize';
 
@@ -22,11 +22,26 @@ const APP_PREFIX = chalk.gray('[TESTOMATIO-NEWMAN-REPORTER]');
 function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject, collectionRunOptions: NewmanRunOptions) {
   // initialize Testomatio reporter
   const testomatioReporter = new TestomatioReporter.TestomatClient({ ...reporterOptions, createNewTests: true });
-  let newmanItemStore = {
+  const collectionName = typeof collectionRunOptions.collection === 'string' ?
+    collectionRunOptions.collection : collectionRunOptions.collection.name || 'Unnamed collection';
+  let newmanItemStore: {
+    authType: string,
+    assertionErrorTextColorized: string,
+    cookies: string,
+    responseCodeAndStatusColorized: string,
+    responseBody: string,
+    responseSize: number,
+    responseTime: number,
+    requestBody: string,
+    requestHeaders: string,
+    requestURL: string,
+    startTime: number,
+    suites: string[],
+    testStatus: string,
+  } = {
     authType: '',
     assertionErrorTextColorized: '',
     cookies: '',
-    groupPath: '',
     responseCodeAndStatusColorized: '',
     responseBody: '',
     responseSize: 0,
@@ -35,15 +50,9 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
     requestHeaders: '',
     requestURL: '',
     startTime: 0,
+    suites: [],
     testStatus: '',
   };
-
-  /* Every request in Postman collection is inside the group.
-  The collection itself is also a group. Next level of groups are folders.
-  Folders may include other folders.
-  Requests could be inside the folders or just directly inside the collection (without folders).
-  */
-  let currentGroup = collectionRunOptions.collection;
 
   // listen to the Newman events
 
@@ -63,7 +72,6 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
       authType: '',
       assertionErrorTextColorized: '',
       cookies: '',
-      groupPath: '',
       responseCodeAndStatusColorized: '',
       responseBody: '',
       responseSize: 0,
@@ -72,21 +80,29 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
       requestHeaders: '',
       requestURL: '',
       startTime: new Date().getTime(),
+      suites: [],
       testStatus: '',
     };
 
-    // refer to "currentGroup" variable above for explanation
+
+
+    // Generate "suites"
+    const suites = [collectionName];
+
+    /* Every request in Postman collection is inside the group.
+    The collection itself is also a group. Next level of groups are folders.
+    Folders may include other folders.
+    Requests could be inside any group (folders or just directly inside the collection (without folders)).
+    */
     const itemGroup = result.item.parent();
-    const rootGroup = !itemGroup || (itemGroup === collectionRunOptions.collection);
 
     // in case this item belongs to a separate folder, set that folder name
-    if (itemGroup && (currentGroup !== itemGroup)) {
+    if (itemGroup) {
       const groupPath = getGroupPath(itemGroup);
-      if (!rootGroup && groupPath) newmanItemStore.groupPath = groupPath;
-
-      // this keeps track of the currently running group
-      currentGroup = itemGroup;
+      suites.push(...groupPath);
     }
+    newmanItemStore.suites = suites;
+
   });
 
   // response received
@@ -150,7 +166,7 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
 
     // events includes: prerequest, tests etc
     const events = result.item.events;
-    
+
     let code = '';
     events.map(event => {
       const eventName = event.listen;
@@ -165,23 +181,26 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
     const executionTime = new Date().getTime() - newmanItemStore.startTime;
     steps += newmanItemStore.startTime ? `\n\n\n${chalk.bold('Execution time: ')}${getPrettyTimeFromTimestamp(executionTime)}s` : '';
 
+    // set the closest folder name as suite title
+    const suiteTitle = newmanItemStore.suites[newmanItemStore.suites.length - 1] || '';
+
     const testData = {
       error: err,
       example: null,
-      file: newmanItemStore.groupPath,
+      // file: newmanItemStore.groupPath,
       files: [],
       filesBuffers: [],
       steps,
       code,
-      suite_title: typeof collectionRunOptions.collection === 'string' ? collectionRunOptions.collection : collectionRunOptions.collection.name,
-      // test_id:
+      suite_title: suiteTitle,
+      suites: newmanItemStore.suites,
+      test_id: getTestIdFromTestName(result.item.name),
       time: '',
       title: result.item.name,
-      // collection id is passed (looks like uuid); // TODO: pass id with length of 8
       // suite_id: typeof collectionRunOptions.collection === 'string' ? '' : collectionRunOptions?.collection?.id,
     };
 
-    // log('Test data sent:', testData);
+    log('Test data sent:', testData);
 
     // notify Testomatio about the item result
     testomatioReporter.addTestRun(null, newmanItemStore.testStatus || 'passed' as TestStatus, testData);
