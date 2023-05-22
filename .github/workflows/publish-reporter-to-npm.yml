@@ -14,11 +14,14 @@ jobs:
         node-version: 16
     - run: npm i
     - run: git config --global user.name "GitHub CD bot"
-    - run: git config --global user.email "github-cd-bot@example.com"        
-    - run: npm version ${{ github.event.release.tag_name }}      
+    - run: git config --global user.email "github-cd-bot@example.com"
+                        # remove @beta tag from version
+    - run: npm version $(echo "${{ github.event.release.tag_name }}" | awk -F '@' '{ print $1 }')
     - uses: JS-DevTools/npm-publish@v1
       with:
         token: ${{ secrets.NPM_TOKEN }}
+        # use "beta" tag if relevant, otherwise use "latest"
+        tag: ${{ contains(github.event.release.tag_name, 'beta') && 'beta' || 'latest' }}
 
     # push the version changes to GitHub
     - run: git push
