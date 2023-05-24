@@ -194,7 +194,7 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
       code,
       suite_title: suiteTitle,
       suites: newmanItemStore.suites,
-      test_id: getTestIdFromTestName(result.item.name),
+      // test_id: getTestIdFromTestName(result.item.name),
       time: '',
       title: result.item.name,
       // suite_id: typeof collectionRunOptions.collection === 'string' ? '' : collectionRunOptions?.collection?.id,
