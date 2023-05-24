@@ -19,11 +19,10 @@ export function getPrettyTimeFromTimestamp(timestamp: number) {
 /**
  * 
  * @param item represents postman collection item, which could be collection itself, folder or request
- * @param separator to join the path
  * @returns path to postman request (through the folders)
  */
-export function getGroupPath(item: any, separator = '/') {
-  if (_.isEmpty(item) || !_.isFunction(item.parent) || !_.isFunction(item.forEachParent)) { return; }
+export function getGroupPath(item: any) {
+  if (_.isEmpty(item) || !_.isFunction(item.parent) || !_.isFunction(item.forEachParent)) { return []; }
 
   const chain = [];
   item.forEachParent(function (parent: any) {
@@ -35,7 +34,15 @@ export function getGroupPath(item: any, separator = '/') {
 
   // slash "/" sign is used to divide the path on testomatio;
   // thus, it have to be replaced to prevent misleading if collection folder name contains slash in it's name
-  const formatedChain = chain.map(item => item.replace('/', '|'));
+  // const formatedChain = chain.map(item => item.replace('/', '|'));
+  // return formatedChain.join(separator);
 
-  return formatedChain.join(separator);
+  return chain;
+}
+
+export function getTestIdFromTestName(testName: string): string {
+  const TEST_ID_REGEX = /@T([\w\d]{8})/;
+  const regexMatches = testName.match(TEST_ID_REGEX);
+  if (!regexMatches) return '';
+  return regexMatches[1];
 }
