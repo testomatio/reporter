@@ -114,6 +114,8 @@ reporters: ['default', ['@testomatio/reporter/lib/adapter/jest.js', { apiKey: pr
 
 Run your tests.
 
+> Do not use `bail` option in your jest config or testrun script. (It cause issues with updating testrun status).
+
 ### Cucumber
 
 Load you test using [`check-cucumber`](https://github.com/testomatio/check-cucumber).
