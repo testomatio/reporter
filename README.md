@@ -440,6 +440,17 @@ Give a title to your reports by passing it as environment variable to `TESTOMATI
 TESTOMATIO={API_KEY} TESTOMATIO_TITLE="title for the report" <actual run command>
 ```
 
+### Reporting Parallel Executionto To Same Run
+
+Provide a shared unique title to all runs that will be running in parallel, and add `TESTOMATIO_SHARED_RUN` environment var. So all reports will be sent to this run.
+
+```bash
+TESTOMATIO={API_KEY} TESTOMATIO_TITLE="report for commit ${GIT_COMMIT}" TESTOMATIO_SHARED_RUN=1 <actual run command>
+```
+
+We recommend using a commit hash as a title to create a new Run. In this case we ensure that run title is unique and will be the same for all parallel jobs running exactly for this commit.
+
+
 ### Adding Report to RunGroup
 
 Create/Add run to group by providing `TESTOMATIO_RUNGROUP_TITLE`:
