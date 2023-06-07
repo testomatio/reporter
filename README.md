@@ -487,12 +487,20 @@ To save screenshots provide a configuration for S3 bucket via environment variab
 - **S3_SECRET_ACCESS_KEY** - Secret.
 - **S3_ENDPOINT** - for providers other than AWS
 
+OR if you prefer using AZURE bucket to store your files:
+
+- **AZURE_DEFAULT_ENDPOINTS_PROTOCOL** - Endpoint protocol (https / http)
+- **AZURE_ACCOUNT_NAME** - Bucket account name
+- **AZURE_ACCOUNT_KEY** - Access bucket key
+- **AZURE_ENDPOINT_SUFFIX** - Bucket endpoint suffix
+- **AZURE_CONTAINER_NAME** - Bicket special Container name
+
 By default tests artifacts are uploaded to bucket with `public-read` permission.
 In this case uploaded files will be publicly accessible in Internet.
 These public links will be used by [testomat.io](https://testomat.io) to display images and videos.
 
 To upload files with `private` access bucket add `TESTOMATIO_PRIVATE_ARTIFACTS=1` environment value.
-Then update provide the same S3 credentials in "Settings > Artifacts" section of a [testomat.io](https://testomat.io) project,
+Then update provide the same S3/Azure credentials in "Settings > Artifacts" section of a [testomat.io](https://testomat.io) project,
 so [testomat.io](https://testomat.io) could connect to the same bucket and fetch uploaded artifacts.
 Links to files will be pre-signed and expires automatically in 10 minutes.
 
@@ -530,6 +538,16 @@ S3_FORCE_PATH_STYLE=true
 ```
 
 > It is important to add S3_FORCE_PATH_STYLE var for minio setup
+
+##### AZURE
+
+```bash
+AZURE_DEFAULT_ENDPOINTS_PROTOCOL=https
+AZURE_ACCOUNT_NAME=testomatio
+AZURE_ACCOUNT_KEY=l11111111111111111111111111111
+AZURE_ENDPOINT_SUFFIX=core.windows.net
+AZURE_CONTAINER_NAME=mytest
+```
 
 For local testing, it is recommended to store configuration in `.env` file. If you load configuration from a test runner, use [dotenv](https://www.npmjs.com/package/dotenv) library to load it.
 
