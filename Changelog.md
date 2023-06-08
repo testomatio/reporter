@@ -1,3 +1,9 @@
+# 1.0.0
+
+<!-- pending release updates -->
+
+* Added `TESTOMATIO_SHARED_RUN` option to use a shared run for parallel executions
+
 # 0.7.6
 
 * Updated to use AWS S3 3.0 SDK for uploading
