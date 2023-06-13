@@ -40,8 +40,12 @@ TESTOMATIO={API_KEY} npx codeceptjs run
 ```
 
 > 📑 [Example Project](https://github.com/testomatio/examples/tree/master/codeceptJS)
+
 > 🗄 [CodeceptJS API Example](https://github.com/testomatio/examples/tree/master/codeceptJSApi)
+
 > 🥒 [CodeceptJS Cucumber Example](https://github.com/testomatio/examples/tree/master/codeceptjs-cucumber)
+
+> 📺 [Video](https://www.youtube.com/watch?v=f_pCe3wPRPs)
 
 #### CodeceptJS Parallel Run
 
@@ -133,7 +137,8 @@ Add the following line to [jest.config.js](https://github.com/testomatio/reporte
 reporters: ['default', ['@testomatio/reporter/lib/adapter/jest.js', { apiKey: process.env.TESTOMATIO }]],
 ```
 
-Run your tests.
+> 📺 [Video](https://www.youtube.com/watch?v=RKfIfnEuGys)
+
 
 ### WebdriverIO
 
@@ -155,6 +160,8 @@ exports.config = {
   ]
 }
 ```
+
+> 📺 [Video](https://www.youtube.com/watch?v=cjVZzey-lto)
 
 For making screenshots on failed tests add the following hook to `wdio.conf.js`:
 
