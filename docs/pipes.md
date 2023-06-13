@@ -38,6 +38,8 @@ Testomat.io Pipe sends data to [Testomat.io Application](https://app.testomat.io
 TESTOMATIO={API_KEY} <actual run command>
 ```
 
+Here are some possible use cases where you can use additional configuration on reporter:
+
 ### Create Unmatched Tests
 
 Testomat.io will not create tests from the report if they have not been previously imported. To create tests during the report `TESTOMATIO_CREATE` option can be used:
@@ -79,7 +81,7 @@ Give a title to your reports by passing it as environment variable to `TESTOMATI
 TESTOMATIO={API_KEY} TESTOMATIO_TITLE="title for the report" <actual run command>
 ```
 
-### Reporting Parallel Executionto To Same Run
+### Reporting Parallel Execution to To Same Run
 
 Provide a shared unique title to all runs that will be running in parallel, and add `TESTOMATIO_SHARED_RUN` environment var. So all reports will be sent to this run.
 
@@ -106,28 +108,75 @@ Add environments to run by providing `TESTOMATIO_ENV` as comma seperated values:
 TESTOMATIO={API_KEY} TESTOMATIO_ENV="Windows, Chrome" <actual run command>
 ```
 
+## GitHub Pipe
+
+GitHub Pipe adds a comment with a summary of a run to a Pull Request:
+
+![](./images/github.png)
+
+This summary will contain:
+
+* Status of a test run 
+* Number of failed/passed/skipped tests
+* Stack traces of failing tests (first 20)
+* Screenshots of failed tests (if available)
+* List of 5 slowest tests
+
+**🔌 To enable GitHub pipe set `GH_PAT` environment with GitHub Private Access Token**
+
+When using GitHub Actions inside Pull Request you can set GH_PAT from `github.token` system variable. Here is a sample workflow:
+
+```yaml
+name: CI
+
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+
+jobs:
+  test:
+  	# pre-execution steps
+    - name: Run Tests
+      run: <actual test command with @testomatio/reporter enabled>
+      env:
+        GH_PAT: ${{ github.token }}
+```
+
+### Keep Outdated Reports
+
+If a pipeline is executed multiple times, comment with previous reports will be deleted. To keep them pass `GH_KEEP_OUTDATED_REPORTS` variable:
+
+```yaml
+    - name: Run Tests
+      run: <actual test command with @testomatio/reporter enabled>
+      env:
+        GH_PAT: ${{ github.token }}
+		GH_KEEP_OUTDATED_REPORTS: 1
+```
+
+
+## GitLab Pipe
+
+## CSV Pipe
+
 ### Save test results to .csv file
+
 Add an env to run by specifying the `TESTOMATIO_CSV_FILENAME` variable.
 
 1) using default report name:
 
 ```bash
-TESTOMATIO={API_KEY} TESTOMATIO_CSV_FILENAME="report.csv" <actual run command>
+TESTOMATIO_CSV_FILENAME="report.csv" <actual run command>
 ```
 
 2) using unique report name:
 
 ```bash
-TESTOMATIO={API_KEY} TESTOMATIO_CSV_FILENAME="test.csv" <actual run command>
+TESTOMATIO_CSV_FILENAME="test.csv" <actual run command>
 ```
 _It's create a new /export folder with csv files_
 
-
-
-## GitHub Pipe
-
-## GitLab Pipe
-
-## CSV Pipe
 
 ## Custom Pipe
