@@ -137,7 +137,7 @@ on:
 
 jobs:
   test:
-  	# pre-execution steps
+    # pre-execution steps
     - name: Run Tests
       run: <actual test command with @testomatio/reporter enabled>
       env:
@@ -153,30 +153,39 @@ If a pipeline is executed multiple times, comment with previous reports will be 
       run: <actual test command with @testomatio/reporter enabled>
       env:
         GH_PAT: ${{ github.token }}
-		GH_KEEP_OUTDATED_REPORTS: 1
+        GH_KEEP_OUTDATED_REPORTS: 1
 ```
-
 
 ## GitLab Pipe
 
+Similarly to [GitHub Pipe](#GitHub-Pipe), GitLab Pipe adds a comment with a summary of a run to a Merge Request:
+
+This summary will contain:
+
+* Status of a test run 
+* Number of failed/passed/skipped tests
+* Stack traces of failing tests (first 20)
+* Screenshots of failed tests (if available)
+* List of 5 slowest tests
+
+**🔌 To enable GitLab pipe set `GITLAB_PAT` environment with GitLab Private Access Token**
+
+### Keep Outdated Reports
+
+If a pipeline is executed multiple times, comment with previous reports will be deleted. To keep them set `GITLAB_KEEP_OUTDATED_REPORTS=1`.
+
 ## CSV Pipe
 
-### Save test results to .csv file
+CSV Pipe saves test result as CSV file
+
+**🔌 To enable GitLab pipe set `TESTOMATIO_CSV_FILENAME` environment variable with the name of CSV file to save into**
 
 Add an env to run by specifying the `TESTOMATIO_CSV_FILENAME` variable.
-
-1) using default report name:
 
 ```bash
 TESTOMATIO_CSV_FILENAME="report.csv" <actual run command>
 ```
 
-2) using unique report name:
-
-```bash
-TESTOMATIO_CSV_FILENAME="test.csv" <actual run command>
-```
-_It's create a new /export folder with csv files_
-
-
 ## Custom Pipe
+
+....
