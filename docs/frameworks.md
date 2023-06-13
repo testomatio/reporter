@@ -20,7 +20,7 @@ yarn add @testomatio/reporter --dev
 
 ### CodeceptJS
 
-> 📐 When used with [Testomat.io Application](https://app.testomat.io) it is recommended to import automated tests via [check-tests](https://github.com/testomatio/check-tests#cli) first. To create items on fly use `TESTOMATIO_CREATE=1` env variable.
+> 📐 When used with [Testomat.io Application](https://app.testomat.io) it is recommended to import automated tests first via [check-tests](https://github.com/testomatio/check-tests#cli). To create items on the fly set `TESTOMATIO_CREATE=1` env variable.
 
 Add plugin to [codecept conf](https://github.com/testomatio/reporter/blob/master/example/codecept/codecept.conf.js#L23):
 
@@ -39,13 +39,6 @@ Run the following command from you project folder:
 TESTOMATIO={API_KEY} npx codeceptjs run
 ```
 
-> 📑 [Example Project](https://github.com/testomatio/examples/tree/master/codeceptJS)
-
-> 🗄 [CodeceptJS API Example](https://github.com/testomatio/examples/tree/master/codeceptJSApi)
-
-> 🥒 [CodeceptJS Cucumber Example](https://github.com/testomatio/examples/tree/master/codeceptjs-cucumber)
-
-> 📺 [Video](https://www.youtube.com/watch?v=f_pCe3wPRPs)
 
 #### CodeceptJS Parallel Run
 
@@ -59,11 +52,20 @@ TESTOMATIO={API_KEY} npx start-test-run -c 'npx codeceptjs run-workers 2'
 
 Use `--env-file <envfile>` option to load environment variables from .env file. Inside env file TESTOMATIO credentials like `TESTOMATIO` api key or [S3 config](#attaching-test-artifacts) can be stored.
 
-> **Note**
-> Command `start-test-run` is used to initiate a single run report before all workers are started. Each worker will report to the same Run, and after all workers and codeceptjs finishes, this will finish the run report.
+Command `start-test-run` is used to initiate a single run report before all workers are started. Each worker will report to the same Run, and after all workers and codeceptjs finishes, this will finish the run report.
 
+
+> 📑 [Example Project](https://github.com/testomatio/examples/tree/master/codeceptJS)
+
+> 🗄 [CodeceptJS API Example](https://github.com/testomatio/examples/tree/master/codeceptJSApi)
+
+> 🥒 [CodeceptJS Cucumber Example](https://github.com/testomatio/examples/tree/master/codeceptjs-cucumber)
+
+> 📺 [Video](https://www.youtube.com/watch?v=f_pCe3wPRPs)
 
 ### Playwright
+
+> 📐 When used with [Testomat.io Application](https://app.testomat.io) it is recommended to import automated tests first via [check-tests](https://github.com/testomatio/check-tests#cli). To create items on the fly set `TESTOMATIO_CREATE=1` env variable.
 
 Add a reporter to Playwright config:
 
@@ -91,9 +93,9 @@ TESTOMATIO={API_KEY} npx playwright test
 
 ### Cypress
 
-Load the test using using `check-tests`.
+> 📐 When used with [Testomat.io Application](https://app.testomat.io) it is recommended to import automated tests first via [check-tests](https://github.com/testomatio/check-tests#cli). To create items on the fly set `TESTOMATIO_CREATE=1` env variable.
 
-Register our `cypress-plugin` in `cypress/plugins/index.js`:
+Register `cypress-plugin` in `cypress/plugins/index.js`:
 
 ```javascript
 const testomatioReporter = require('@testomatio/reporter/lib/adapter/cypress-plugin');
@@ -119,7 +121,8 @@ TESTOMATIO={API_KEY} npx cypress run
 
 ### Mocha
 
-Load the test using using `check-tests` if not done already. Get the test id from testomat account and add it to your mocha test like in this [example](https://github.com/testomatio/reporter/blob/master/example/mocha/test/index.test.js#L4).
+> 📐 When used with [Testomat.io Application](https://app.testomat.io) it is recommended to import automated tests first via [check-tests](https://github.com/testomatio/check-tests#cli). To create items on the fly set `TESTOMATIO_CREATE=1` env variable.
+
 
 Run the following command from you project folder:
 
@@ -129,7 +132,7 @@ mocha --reporter ./node_modules/@testomatio/reporter/lib/adapter/mocha.js --repo
 
 ### Jest
 
-Load the test using using `check-tests`. Add the test id to your tests like in this [example](https://github.com/testomatio/reporter/blob/master/example/jest/index.test.js#L1).
+> 📐 When used with [Testomat.io Application](https://app.testomat.io) it is recommended to import automated tests first via [check-tests](https://github.com/testomatio/check-tests#cli). To create items on the fly set `TESTOMATIO_CREATE=1` env variable.
 
 Add the following line to [jest.config.js](https://github.com/testomatio/reporter/blob/master/example/jest/jest.config.js#L100):
 
@@ -142,7 +145,7 @@ reporters: ['default', ['@testomatio/reporter/lib/adapter/jest.js', { apiKey: pr
 
 ### WebdriverIO
 
-Load the test using using `check-tests`.
+> 📐 When used with [Testomat.io Application](https://app.testomat.io) it is recommended to import automated tests first via [check-tests](https://github.com/testomatio/check-tests#cli). To create items on the fly set `TESTOMATIO_CREATE=1` env variable.
 
 Add the following lines to [wdio.conf.js](https://webdriver.io/docs/configurationfile/):
 
@@ -182,7 +185,7 @@ TESTOMATIO={API_KEY} npx start-test-run -c 'npx wdio wdio.conf.js'
 
 ### Cucumber
 
-> Load you test using [`check-cucumber`](https://github.com/testomatio/check-cucumber).
+> 📐 When used with [Testomat.io Application](https://app.testomat.io) it is recommended to import feature files via [check-cucumber](https://github.com/testomatio/check-cucumber).
 
 Run the following command from you project folder:
 
@@ -194,7 +197,7 @@ TESTOMATIO={API_KEY} ./node_modules/.bin/cucumber-js --format ./node_modules/@te
 
 ### TestCafe
 
-Load the test using using `check-tests`.
+> 📐 When used with [Testomat.io Application](https://app.testomat.io) it is recommended to import automated tests first via [check-tests](https://github.com/testomatio/check-tests#cli). To create items on the fly set `TESTOMATIO_CREATE=1` env variable.
 
 Run the following command from you project folder:
 
@@ -203,6 +206,8 @@ TESTOMATIO={API_KEY} npx testcafe chrome -r testomatio
 ```
 
 ### Newman (Postman)
+
+
 
 To report Newman tests a separate package is required:
 
@@ -224,7 +229,7 @@ TESTOMATIO={API_KEY} npx newman run {collection_name.json} -r testomatio
 
 ### Protractor
 
-Load the test using using `check-tests`.
+> 📐 When used with [Testomat.io Application](https://app.testomat.io) it is recommended to import automated tests first via [check-tests](https://github.com/testomatio/check-tests#cli). To create items on the fly set `TESTOMATIO_CREATE=1` env variable.
 
 Add the following lines to [conf.js](https://github.com/angular/protractor/blob/5.4.1/example/conf.js):
 
