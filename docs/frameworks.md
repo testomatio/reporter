@@ -55,11 +55,7 @@ Use `--env-file <envfile>` option to load environment variables from .env file. 
 Command `start-test-run` is used to initiate a single run report before all workers are started. Each worker will report to the same Run, and after all workers and codeceptjs finishes, this will finish the run report.
 
 
-> 📑 [Example Project](https://github.com/testomatio/examples/tree/master/codeceptJS)
-
-> 🗄 [CodeceptJS API Example](https://github.com/testomatio/examples/tree/master/codeceptJSApi)
-
-> 🥒 [CodeceptJS Cucumber Example](https://github.com/testomatio/examples/tree/master/codeceptjs-cucumber)
+> 📑 [Example Project](https://github.com/testomatio/examples/tree/master/codeceptJS) | 🗄 [CodeceptJS API Example](https://github.com/testomatio/examples/tree/master/codeceptJSApi) | 🥒 [CodeceptJS Cucumber Example](https://github.com/testomatio/examples/tree/master/codeceptjs-cucumber)
 
 > 📺 [Video](https://www.youtube.com/watch?v=f_pCe3wPRPs)
 
@@ -87,9 +83,7 @@ Run the following command from you project folder:
 TESTOMATIO={API_KEY} npx playwright test
 ```
 
-> 📑 [Example Project](https://github.com/testomatio/examples/tree/master/playwright)
-
-> 🥒 [Playwright + Cucumber Example](https://github.com/testomatio/examples/tree/master/playwright-cucumber-js)
+> 📑 [Example Project](https://github.com/testomatio/examples/tree/master/playwright) | 🥒 [Playwright + Cucumber Example](https://github.com/testomatio/examples/tree/master/playwright-cucumber-js)
 
 ### Cypress
 
@@ -119,6 +113,9 @@ Run the following command from you project folder:
 TESTOMATIO={API_KEY} npx cypress run
 ```
 
+
+> 📑 [Example Project](https://github.com/testomatio/examples/tree/master/cypress) | 🥒 [Cypress + Cucumber Example](https://github.com/testomatio/examples/tree/master/cypress-cucumber)
+
 ### Mocha
 
 > 📐 When used with [Testomat.io Application](https://app.testomat.io) it is recommended to import automated tests first via [check-tests](https://github.com/testomatio/check-tests#cli). To create items on the fly set `TESTOMATIO_CREATE=1` env variable.
@@ -130,6 +127,8 @@ Run the following command from you project folder:
 mocha --reporter ./node_modules/@testomatio/reporter/lib/adapter/mocha.js --reporter-options apiKey={API_KEY}
 ```
 
+> 📑 [Example Project](https://github.com/testomatio/examples/tree/master/mocha-ts-multi-reporters)
+
 ### Jest
 
 > 📐 When used with [Testomat.io Application](https://app.testomat.io) it is recommended to import automated tests first via [check-tests](https://github.com/testomatio/check-tests#cli). To create items on the fly set `TESTOMATIO_CREATE=1` env variable.
@@ -139,6 +138,8 @@ Add the following line to [jest.config.js](https://github.com/testomatio/reporte
 ```javascript
 reporters: ['default', ['@testomatio/reporter/lib/adapter/jest.js', { apiKey: process.env.TESTOMATIO }]],
 ```
+
+> 📑 [Example Project](https://github.com/testomatio/examples/tree/master/jest)
 
 > 📺 [Video](https://www.youtube.com/watch?v=RKfIfnEuGys)
 
@@ -164,7 +165,6 @@ exports.config = {
 }
 ```
 
-> 📺 [Video](https://www.youtube.com/watch?v=cjVZzey-lto)
 
 For making screenshots on failed tests add the following hook to `wdio.conf.js`:
 
@@ -182,6 +182,9 @@ Run the following command from you project folder:
 TESTOMATIO={API_KEY} npx start-test-run -c 'npx wdio wdio.conf.js'
 ```
 
+> 📑 [Example Project](https://github.com/testomatio/examples/tree/master/webdriverio-mocha)
+
+> 📺 [Video](https://www.youtube.com/watch?v=cjVZzey-lto)
 
 ### Cucumber
 
@@ -190,8 +193,13 @@ TESTOMATIO={API_KEY} npx start-test-run -c 'npx wdio wdio.conf.js'
 Run the following command from you project folder:
 
 ```bash
-TESTOMATIO={API_KEY} ./node_modules/.bin/cucumber-js --format ./node_modules/@testomatio/reporter/lib/adapter/cucumber.js
+TESTOMATIO={API_KEY} npx cucumber-js --format ./node_modules/@testomatio/reporter/lib/adapter/cucumber.js
 ```
+
+> **Note**
+> If you use Cucumber with Playwright, Cypress, CodeceptJS, please refer to corresponding framework. This reference is required only if you run tests via `cucumber-js` CLI.
+
+> 📑 [Example Project](https://github.com/testomatio/examples/tree/master/cucumber)
 
 > 📺 [Video](https://www.youtube.com/watch?v=qf83AtII-LI)
 
@@ -206,8 +214,6 @@ TESTOMATIO={API_KEY} npx testcafe chrome -r testomatio
 ```
 
 ### Newman (Postman)
-
-
 
 To report Newman tests a separate package is required:
 
@@ -226,6 +232,18 @@ Run collection and specify `testomatio` as reporter:
 TESTOMATIO={API_KEY} npx newman run {collection_name.json} -r testomatio
 ```
 
+> 📑 [Example Project](https://github.com/testomatio/examples/tree/master/newman)
+
+
+### Detox
+
+> 📐 When used with [Testomat.io Application](https://app.testomat.io) it is recommended to import automated tests first via [check-tests](https://github.com/testomatio/check-tests#cli). To create items on the fly set `TESTOMATIO_CREATE=1` env variable.
+
+Run detox tests sptcifying configuration name:
+
+```
+TESTOMATIO={API_KEY} npx detox test -c {configuration_name}
+```
 
 ### Protractor
 
@@ -249,3 +267,4 @@ Run the following command from you project folder:
 TESTOMATIO={API_KEY} npx start-test-run -c 'npx protractor conf.js'
 ```
 
+> 📑 [Example Project](https://github.com/testomatio/examples/tree/master/protractor)
