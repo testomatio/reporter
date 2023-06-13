@@ -26,6 +26,17 @@ Concepts about pipes:
 
 ## Testomat.io Pipe
 
+![](./images/testomatio.png)
+
+Testomat.io Pipe sends data to [Testomat.io Application](https://app.testomat.io). Testomat.io provides free projects forever and unlimited test runs. Even it is a cloud application you can use it for free.
+
+**🔌 To enable Testomat.io pipe set `TESTOMATIO` environment variable as API key provided by Testomatio.**
+
+List of variables:
+
+* `TESTOMATIO` *(required)* - API key from Testomat.io. A project where the data should be reported to.
+
+
 
 
 ### Create Unmatched Tests
