@@ -39,6 +39,10 @@ Run the following command from you project folder:
 TESTOMATIO={API_KEY} npx codeceptjs run
 ```
 
+> 📑 [Example Project](https://github.com/testomatio/examples/tree/master/codeceptJS)
+> 🗄 [CodeceptJS API Example](https://github.com/testomatio/examples/tree/master/codeceptJSApi)
+> 🥒 [CodeceptJS Cucumber Example](https://github.com/testomatio/examples/tree/master/codeceptjs-cucumber)
+
 #### CodeceptJS Parallel Run
 
 If tests run parallel, like workers in CodeceptJS use `start-test-run` command to get proper reports:
@@ -76,6 +80,9 @@ Run the following command from you project folder:
 ```bash
 TESTOMATIO={API_KEY} npx playwright test
 ```
+
+> 📑 [Example Project](https://github.com/testomatio/examples/tree/master/playwright)
+> 🥒 [Playwright + Cucumber Example](https://github.com/testomatio/examples/tree/master/playwright-cucumber-js)
 
 ### Cypress
 
