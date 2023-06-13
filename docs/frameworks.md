@@ -82,6 +82,7 @@ TESTOMATIO={API_KEY} npx playwright test
 ```
 
 > 📑 [Example Project](https://github.com/testomatio/examples/tree/master/playwright)
+
 > 🥒 [Playwright + Cucumber Example](https://github.com/testomatio/examples/tree/master/playwright-cucumber-js)
 
 ### Cypress
