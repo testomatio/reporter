@@ -51,7 +51,8 @@ TESTOMATIO={API_KEY} npx start-test-run -c 'npx codeceptjs run-workers 2'
 
 Use `--env-file <envfile>` option to load environment variables from .env file. Inside env file TESTOMATIO credentials like `TESTOMATIO` api key or [S3 config](#attaching-test-artifacts) can be stored.
 
-> 🧑‍🔬 Command `start-test-run` is used to initiate a single run report before all workers are started. Each worker will report to the same Run, and after all workers and codeceptjs finishes, this will finish the run report.
+> **Note**
+> Command `start-test-run` is used to initiate a single run report before all workers are started. Each worker will report to the same Run, and after all workers and codeceptjs finishes, this will finish the run report.
 
 
 ### Playwright
@@ -192,11 +193,8 @@ To report Newman tests a separate package is required:
 npm i newman-reporter-testomatio --save-dev
 ```
 
-> 🧑‍🔬`newman` and `newman-reporter-testomatio` should be installed in the same directory.
-\
-If you run your tests using globally installed newman (`newman run ...`), intall `newman-reporter-testomatio` globally too (`npm i newman-reporter-testomatio -g`).
-\
-If you use locally installed newman (within the project) (`npx newman run ...`), install `newman-reporter-testomatio` locally (`npm i newman-reporter-testomatio`).
+> **Note**
+> `newman` and `newman-reporter-testomatio` should be installed in the same directory. If you run your tests using globally installed newman (`newman run ...`), intall `newman-reporter-testomatio` globally too (`npm i newman-reporter-testomatio -g`). If you use locally installed newman (within the project) (`npx newman run ...`), install `newman-reporter-testomatio` locally (`npm i newman-reporter-testomatio`).
 You can verify installed packages via `npm list` or `npm list -g`.
 
 
