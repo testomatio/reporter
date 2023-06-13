@@ -1,0 +1,231 @@
+## Frameworks
+
+To enable testomatio reporter install `@testomatio/reporter` package
+
+
+Use one of your favorite package managers:
+
+```
+npm install @testomatio/reporter --save-dev
+```
+
+```
+pnpm install @testomatio/reporter --save-dev
+```
+
+```
+yarn add @testomatio/reporter --dev
+```
+
+
+### CodeceptJS
+
+Make sure you load all your tests using [check-tests](https://github.com/testomatio/check-tests#cli).
+
+Add plugin to [codecept conf](https://github.com/testomatio/reporter/blob/master/example/codecept/codecept.conf.js#L23):
+
+```javascript
+plugins: {
+  testomatio: {
+    enabled: true,
+    require: '@testomatio/reporter/lib/adapter/codecept',
+  }
+}
+```
+
+Run the following command from you project folder:
+
+```bash
+TESTOMATIO={API_KEY} npx codeceptjs run
+```
+
+#### CodeceptJS Parallel Run
+
+If tests run parallel, like workers in CodeceptJS use `start-test-run` command to get proper reports:
+
+```bash
+TESTOMATIO={API_KEY} npx start-test-run -c 'npx codeceptjs run-workers 2'
+```
+
+> Specify a command to run with `-c` option in `start-test-run`
+
+Use `--env-file <envfile>` option to load environment variables from .env file. Inside env file TESTOMATIO credentials like `TESTOMATIO` api key or [S3 config](#attaching-test-artifacts) can be stored.
+
+> 🧑‍🔬 Command `start-test-run` is used to initiate a single run report before all workers are started. Each worker will report to the same Run, and after all workers and codeceptjs finishes, this will finish the run report.
+
+
+### Playwright
+
+Add a reporter to Playwright config:
+
+```javascript
+reporter: [
+  ['list'],
+  [
+    '@testomatio/reporter/lib/adapter/playwright.js',
+    {
+      apiKey: process.env.TESTOMATIO,
+    },
+  ],
+];
+```
+
+Run the following command from you project folder:
+
+```bash
+TESTOMATIO={API_KEY} npx playwright test
+```
+
+### Cypress
+
+Load the test using using `check-tests`.
+
+Register our `cypress-plugin` in `cypress/plugins/index.js`:
+
+```javascript
+const testomatioReporter = require('@testomatio/reporter/lib/adapter/cypress-plugin');
+
+/**
+ * @type {Cypress.PluginConfig}
+ */
+module.exports = (on, config) => {
+  // `on` is used to hook into various events Cypress emits
+  // `config` is the resolved Cypress config
+
+  testomatioReporter(on, config);
+
+  return config;
+};
+```
+
+Run the following command from you project folder:
+
+```bash
+TESTOMATIO={API_KEY} npx cypress run
+```
+
+### Mocha
+
+Load the test using using `check-tests` if not done already. Get the test id from testomat account and add it to your mocha test like in this [example](https://github.com/testomatio/reporter/blob/master/example/mocha/test/index.test.js#L4).
+
+Run the following command from you project folder:
+
+```bash
+mocha --reporter ./node_modules/@testomatio/reporter/lib/adapter/mocha.js --reporter-options apiKey={API_KEY}
+```
+
+### Jest
+
+Load the test using using `check-tests`. Add the test id to your tests like in this [example](https://github.com/testomatio/reporter/blob/master/example/jest/index.test.js#L1).
+
+Add the following line to [jest.config.js](https://github.com/testomatio/reporter/blob/master/example/jest/jest.config.js#L100):
+
+```javascript
+reporters: ['default', ['@testomatio/reporter/lib/adapter/jest.js', { apiKey: process.env.TESTOMATIO }]],
+```
+
+Run your tests.
+
+### WebdriverIO
+
+Load the test using using `check-tests`.
+
+Add the following lines to [wdio.conf.js](https://webdriver.io/docs/configurationfile/):
+
+```javascript
+const testomatio = require('@testomatio/reporter/lib/adapter/webdriver');
+
+exports.config = {
+  // ...
+  reporters: [
+    [testomatio, {
+      apiKey: $ {
+        process.env.TESTOMATIO
+      }
+    }]
+  ]
+}
+```
+
+For making screenshots on failed tests add the following hook to `wdio.conf.js`:
+
+```js
+    afterTest: function (test, context, { error, result, duration, passed, retries }) {
+        if (error) {
+            browser.takeScreenshot()
+        }
+    },
+```
+
+Run the following command from you project folder:
+
+```bash
+TESTOMATIO={API_KEY} npx start-test-run -c 'npx wdio wdio.conf.js'
+```
+
+
+### Cucumber
+
+> Load you test using [`check-cucumber`](https://github.com/testomatio/check-cucumber).
+
+Run the following command from you project folder:
+
+```bash
+TESTOMATIO={API_KEY} ./node_modules/.bin/cucumber-js --format ./node_modules/@testomatio/reporter/lib/adapter/cucumber.js
+```
+
+### TestCafe
+
+Load the test using using `check-tests`.
+
+Run the following command from you project folder:
+
+```bash
+TESTOMATIO={API_KEY} npx testcafe chrome -r testomatio
+```
+
+### Newman (Postman)
+
+To report Newman tests a separate package is required:
+
+```bash
+npm i newman-reporter-testomatio --save-dev
+```
+
+> 🧑‍🔬`newman` and `newman-reporter-testomatio` should be installed in the same directory.
+\
+If you run your tests using globally installed newman (`newman run ...`), intall `newman-reporter-testomatio` globally too (`npm i newman-reporter-testomatio -g`).
+\
+If you use locally installed newman (within the project) (`npx newman run ...`), install `newman-reporter-testomatio` locally (`npm i newman-reporter-testomatio`).
+You can verify installed packages via `npm list` or `npm list -g`.
+
+
+Run collection and specify `testomatio` as reporter:
+
+```bash
+TESTOMATIO={API_KEY} npx newman run {collection_name.json} -r testomatio
+```
+
+
+### Protractor
+
+Load the test using using `check-tests`.
+
+Add the following lines to [conf.js](https://github.com/angular/protractor/blob/5.4.1/example/conf.js):
+
+```javascript
+const JasmineReporter = require('@testomatio/reporter/lib/adapter/jasmine');
+
+exports.config = {
+  onPrepare: () => {
+    jasmine.getEnv().addReporter(new JasmineReporter({ apiKey: process.env.TESTOMATIO }));
+  },
+};
+```
+
+Run the following command from you project folder:
+
+```bash
+TESTOMATIO={API_KEY} npx start-test-run -c 'npx protractor conf.js'
+```
+
