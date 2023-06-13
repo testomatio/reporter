@@ -20,7 +20,7 @@ yarn add @testomatio/reporter --dev
 
 ### CodeceptJS
 
-Make sure you load all your tests using [check-tests](https://github.com/testomatio/check-tests#cli).
+> 📐 When used with [Testomat.io Application](https://app.testomat.io) it is recommended to import automated tests via [check-tests](https://github.com/testomatio/check-tests#cli) first. To create items on fly use `TESTOMATIO_CREATE=1` env variable.
 
 Add plugin to [codecept conf](https://github.com/testomatio/reporter/blob/master/example/codecept/codecept.conf.js#L23):
 
@@ -189,6 +189,8 @@ Run the following command from you project folder:
 ```bash
 TESTOMATIO={API_KEY} ./node_modules/.bin/cucumber-js --format ./node_modules/@testomatio/reporter/lib/adapter/cucumber.js
 ```
+
+> 📺 [Video](https://www.youtube.com/watch?v=qf83AtII-LI)
 
 ### TestCafe
 
