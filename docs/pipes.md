@@ -8,11 +8,11 @@ Unlike other reporters, Testomat.io Reporter doesn't force you to report data on
 
 For instance, you can enable GitHub Pipe to create a comment on a GitHub Pull Request and CSV Export Pipe to write a report in CSV format. To report data to Testomat.io App, Testomat.io Pipe should be enabled, but not required if you don't plan to use Testomat.io App. You can also write your own pipe to:
 
-* send data to analytics storage
-* store data into database
-* send emails
-* send notifications to chats
-* ....
+* 📈 send data to analytics storage
+* 🗄 store data into database
+* 📧 send emails
+* 💬 send notifications to chats
+* etc....
 
 Pipes work in the very same manner for all supported test frameworks, as well as for JUnit reports. So writing a pipe instead of a custom reporter for a particular framework, saves your time as you can be sure, this pipe will work with any attached test result.
 
@@ -23,6 +23,7 @@ Concepts about pipes:
 * **Pipes are configured via environment variables** - each test framework has its own configuration (or not). To ensure that a pipe receives its configuration it is independent from a running test framework.
 * **Pipes are enabled if a corresponding environment variables are set** - for instance, if `TESTOMATIO` variable is present, Testomat.io Pipe is enabled, if `GH_PAT` variable is set, GitHub Pipe is enabled.
 * **Custom Pipes** can be created as modules and added to `package.json` file.
+* When used locally environment variables are expected to be set in `.env` file. When running on CI server use Environment Configuration a CI server provides to pass environment variables into the pipeline.
 
 ## Testomat.io Pipe
 
@@ -30,14 +31,12 @@ Concepts about pipes:
 
 Testomat.io Pipe sends data to [Testomat.io Application](https://app.testomat.io). Testomat.io provides free projects forever and unlimited test runs. Even it is a cloud application you can use it for free.
 
-**🔌 To enable Testomat.io pipe set `TESTOMATIO` environment variable as API key provided by Testomatio.**
-
-List of variables:
-
-* `TESTOMATIO` *(required)* - API key from Testomat.io. A project where the data should be reported to.
+**🔌 To enable Testomat.io pipe set `TESTOMATIO` environment variable with API key provided by Testomatio.**
 
 
-
+```
+TESTOMATIO={API_KEY} <actual run command>
+```
 
 ### Create Unmatched Tests
 
