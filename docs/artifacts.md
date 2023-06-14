@@ -38,10 +38,13 @@ In this case Testomat.io Reporter will obtain S3 credentials for server and use 
 
 ### Privacy
 
-By default tests artifacts are uploaded to bucket with `public-read` permission.
+**👀 By default tests artifacts are uploaded to bucket with `public-read` permission.**
+
 In this case uploaded files will be publicly accessible in Internet. These public links will be used by [testomat.io Application](https://testomat.io) as well as [GitHub](./pipes.md#github-pipe) and [GitLab](./pipes.md#gitlab-pipe) Pipes to display images.
 
-To upload files with private access bucket add `TESTOMATIO_PRIVATE_ARTIFACTS=1` environment value.
+**➿ To upload files with private access** bucket add `TESTOMATIO_PRIVATE_ARTIFACTS=1` environment value.
 Then update provide the same S3 credentials in "Settings > Artifacts" section of a [testomat.io](https://testomat.io) project,
-so [testomat.io](https://testomat.io) could connect to the same bucket and fetch uploaded artifacts.
+so [Testomat.io Application](https://testomat.io) could connect to the same bucket and fetch uploaded artifacts.
+
 Links to files will be pre-signed and expires automatically in 10 minutes.
+
