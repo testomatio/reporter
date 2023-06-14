@@ -62,7 +62,7 @@ yarn add @testomatio/reporter --dev
 
 ## Getting Started
 
-Attach reporter to the test runner you use:
+1️⃣ Attach reporter to the test runner you use:
 
 #### [Playwright](./docs/frameworks.md#playwright)
 
@@ -93,6 +93,14 @@ Attach reporter to the test runner you use:
 #### [Protractor](./docs/frameworks.md#protractor)
 
 or any [other via JUnit](./docs/junit.md) report....
+
+---
+
+2️⃣ Configure reports
+
+Reports are processed [via pipes, configure one or several pipes](./docs/pipes.md) to send test report to 
+
+> If you use Testomat.io Application, obtain API key and set it as `TESTOMATIO` environment variable to enable [Testomatio Pipe](./docs/pipes.md#testomatio-pipe)
 
 
 
