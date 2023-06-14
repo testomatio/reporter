@@ -68,26 +68,16 @@ yarn add @testomatio/reporter --dev
 * #### [CodeceptJS](./docs/frameworks.md#CodeceptJS)
 * #### [Cypress](./docs/frameworks.md#Cypress)
 * #### [Jest](./docs/frameworks.md#Jest)
-
-#### [Mocha](./docs/frameworks.md#Mocha)
-
-#### [WebDriverIO](./docs/frameworks.md#WebDriverIO)
-
-#### [TestCafe](./docs/frameworks.md#TestCafe)
-
-#### [Detox](./docs/frameworks.md#Detox)
-
-#### [Newman (Postman)](./docs/frameworks.md#Newman)
-
-#### [JUnit](./docs/junit#junit)
-
-#### [NUnit](./docs/junit#nunit)
-
-#### [PyTest](./docs/junit#pytest)
-
-#### [PHPUnit](./docs/junit#phpunit)
-
-#### [Protractor](./docs/frameworks.md#protractor)
+* #### [Mocha](./docs/frameworks.md#Mocha)
+* #### [WebDriverIO](./docs/frameworks.md#WebDriverIO)
+* #### [TestCafe](./docs/frameworks.md#TestCafe)
+* #### [Detox](./docs/frameworks.md#Detox)
+* #### [Newman (Postman)](./docs/frameworks.md#Newman)
+* #### [JUnit](./docs/junit#junit)
+* #### [NUnit](./docs/junit#nunit)
+* #### [PyTest](./docs/junit#pytest)
+* #### [PHPUnit](./docs/junit#phpunit)
+* #### [Protractor](./docs/frameworks.md#protractor)
 
 or any [other via JUnit](./docs/junit.md) report....
 
