@@ -41,7 +41,6 @@
     "lint:fix": "eslint lib --fix",
     "test": "mocha tests/**",
     "init": "cd ./tests/adapter/examples/cucumber && npm i",
-    "build:docs": "vuepress build docs",
     "test:unit": "mocha tests",
     "test:adapter": "mocha './tests/adapter/index.test.js'",
     "test:pipes": "mocha './tests/pipes/*_test.js'",
@@ -66,8 +65,7 @@
     "mocha": "^9.2.0",
     "mock-http-server": "^1.4.5",
     "prettier": "2.5.1",
-    "puppeteer": "^13.1.2",
-    "vuepress": "^1.9.9"
+    "puppeteer": "^13.1.2"
   },
   "bin": {
     "report-xml": "./lib/bin/reportXml.js",
