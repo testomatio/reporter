@@ -219,7 +219,7 @@ Run the following command from you project folder:
 TESTOMATIO={API_KEY} npx testcafe chrome -r testomatio
 ```
 
-### Newman (Postman)
+### Newman
 
 To report Newman tests a separate package is required:
 

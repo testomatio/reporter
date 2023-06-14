@@ -21,6 +21,8 @@ Testomat.io Reporter (this npm package) supports:
 
 ![](./docs/images/app.png)
 
+## How It Works
+
 Testomatio Reporter provides common API to store and organize test reports.
 It can receive test result data from any [test framework](./docs/frameworks) and send it to different services via [pipes](./docs/pipes).
 
@@ -30,14 +32,13 @@ It can receive test result data from any [test framework](./docs/frameworks) and
 | Cypress       | Report on GitLab                       |
 | Jest          | Report on [Testomat.io](https://testomat.io) |
 | WebdriverIo   | ... your custom report   |
-| CodeceptJS    |                                        |
 | ....all others via JUnit format |                                  |
 
 If you use multiple test frameworks and you need to use one customizable reporter, check Testomat.io Reporter, as you can adjust it once and attach it to all your projects.
 
-## Architecture
-
 ![](./docs/images/reporter-architecture.png)
+
+Artifacts like screenshots, videos, traces, are **uploaded to your own cloud storage** via S3 protocol. Artifacts can be uplaoded privately or publicly, and used in reports.
 
 ## Installation
 
@@ -57,6 +58,41 @@ pnpm install @testomatio/reporter --save-dev
 ```
 yarn add @testomatio/reporter --dev
 ```
+
+## Getting Started
+
+Attach reporter to the test runner you use:
+
+#### [Playwright](./docs/frameworks#playwright)
+
+#### [CodeceptJS](./docs/frameworks#CodeceptJS)
+
+#### [Cypress](./docs/frameworks#Cypress)
+
+#### [Jest](./docs/frameworks#Jest)
+
+#### [Mocha](./docs/frameworks#Mocha)
+
+#### [WebDriverIO](./docs/frameworks#WebDriverIO)
+
+#### [TestCafe](./docs/frameworks#TestCafe)
+
+#### [Detox](./docs/frameworks#Detox)
+
+#### [Newman (Postman)](./docs/frameworks#Newman)
+
+#### [JUnit](./docs/junit#junit)
+
+#### [NUnit](./docs/junit#nunit)
+
+#### [PyTest](./docs/junit#pytest)
+
+#### [PHPUnit](./docs/junit#phpunit)
+
+#### [Protractor](./docs/frameworks#protractor)
+
+or any [other via JUnit](./docs/junit.md) report....
+
 
 
 ## Examples
