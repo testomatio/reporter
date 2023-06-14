@@ -108,6 +108,26 @@ Add environments to run by providing `TESTOMATIO_ENV` as comma seperated values:
 TESTOMATIO={API_KEY} TESTOMATIO_ENV="Windows, Chrome" <actual run command>
 ```
 
+### Starting an Empty Run
+
+If you want to create a run and obtain its `{RUN_ID}` from [testomat.io](https://testomat.io) you can use `--launch` option:
+
+```bash
+TESTOMATIO={API_KEY} npx start-test-run --launch
+```
+
+This command will return `{RUN_ID}` which you can pass to other jobs in a workflow.
+
+> When executed with `--launch` a command provided by `-c` flag is ignored
+
+### Manually Finishing Run
+
+If you want to finish a run started by `--launch` use `--finish` option. `TESTOMATIO_RUN` environment variable is required:
+
+```bash
+TESTOMATIO={API_KEY} TESTOMATIO_RUN={RUN_ID} npx start-test-run --finish
+```
+
 ## GitHub Pipe
 
 GitHub Pipe adds a comment with a summary of a run to a Pull Request:
