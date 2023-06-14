@@ -90,4 +90,19 @@ S3_FORCE_PATH_STYLE=true
 
 > It is important to add S3_FORCE_PATH_STYLE var for minio setup
 
-For local testing, it is recommended to store configuration in `.env` file. If you load configuration from a test runner, use [dotenv](https://www.npmjs.com/package/dotenv) library to load it.
+##### Google Cloud Storage
+
+Google Cloud Storage can work via S3 protocol if **Interporability mode** is enabled.
+
+![](./images/gcp_interporability.png)
+
+
+Open Cloud Storage. Create a bucket for artifacts, then inside Settings select "Interporability". Create Access Key and Secret Key for the current user.
+
+```bash
+S3_ENDPOINT=https://storage.googleapis.com
+S3_ACCESS_KEY_ID=11111111
+S3_SECRET_ACCESS_KEY=2222222
+S3_BUCKET=testomatio
+```
+
