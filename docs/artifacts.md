@@ -103,5 +103,108 @@ S3_ENDPOINT=https://storage.googleapis.com
 S3_ACCESS_KEY_ID=11111111
 S3_SECRET_ACCESS_KEY=2222222
 S3_BUCKET=testomatio
+S3_REGION=us-east1
+```
+
+### Adding Artifacts
+
+#### JavaScript Frameworks
+
+Testomat.io Reporter has built-in support for test artifacts of following frameworks: 
+
+* Playwright
+* CodeceptJS
+* Cypress
+* webdriverio
+
+If a screenshot, video, or trace was saved and attached to test, Testomat.io reporter will automatically upload this as artifacts.
+
+Usually, artifacts are stored automatically for failed test cases. To send arbitrary files as artifacts use `addArtifact` function from `@testomatio/reporter` package.
+
+```js
+const { addArtifact } = require('@testomatio/reporter');
+
+addArtifact(pathToFile)
+```
+
+Use this syntax to also add a name for uploading artifact:
+
+```js
+addArtifact({ name: 'Screenshot', path: './img/file.png' });
+```
+
+Common use case would be to make a screenshot and add it to current test. Here is the sample code for it:
+
+```js
+const { addArtifact } = require('@testomatio/reporter');
+
+
+// inside test
+test('my test', async () => {
+
+  // saveScreenshot is a custom function that makes a screenshot, 
+  // saves to file, and returns a path to this file
+  const pathToFile = await saveScreenshot();
+  // 
+  // Ensure, that file at `pathToFile` exists, and is not a promise. 
+  addArtifact(pathToFile);
+})
+```
+
+
+If S3 credentials are not set, artfact file will be ignored.
+
+
+> **Warning**
+> `addArtifact` doesn't work (yet) in parallel mode for `mocha` or `jest` frameworks. We are working to support for these frameworks in next versions.
+
+
+### Other Frameworks
+
+For tests in **Java**, **Python**, **C#** and other languages, which are not (yet) integrated into Testomat.io Reporter, **use [JUnit format](./junit) for reporting**.
+
+To attach a file to a test as an artifact print the file name into console with `file://` prefix and upload XML report with Testomat.io.
+
+If S3 credentials are set, files will be uploaded to bucket and attached to test in a report. 
+
+##### Java Example:
+
+Attaching screenshot to Java test
+
+```java
+// inside Java test
+// assume you created a screenshot
+// which is located at `pathToScreenshot`
+System.out.println("file://" + pathToScreenshot);
+```
+
+##### C# Example:
+
+Attaching screenshot to C# test
+
+```C#
+// assume you created a screenshot
+// which is located at `pathToScreenshot`
+Console.WriteLine("file://" + pathToScreenshot);
+```
+
+#### Python
+
+Attaching screenshot to Python test
+
+```python
+# assume you created a screenshot
+# which is located at `pathToScreenshot`
+print("file://" + pathToScreenshot)
+```
+
+#### Ruby
+
+Attaching screenshot to Ruby test
+
+```python
+# assume you created a screenshot
+# which is located at `path_to_screenshot`
+puts "file://" + path_to_screenshot
 ```
 
