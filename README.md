@@ -64,13 +64,10 @@ yarn add @testomatio/reporter --dev
 
 1️⃣ **Attach reporter to the test runner you use:**
 
-#### [Playwright](./docs/frameworks.md#playwright)
-
-#### [CodeceptJS](./docs/frameworks.md#CodeceptJS)
-
-#### [Cypress](./docs/frameworks.md#Cypress)
-
-#### [Jest](./docs/frameworks.md#Jest)
+* ####  [Playwright](./docs/frameworks.md#playwright)
+* #### [CodeceptJS](./docs/frameworks.md#CodeceptJS)
+* #### [Cypress](./docs/frameworks.md#Cypress)
+* #### [Jest](./docs/frameworks.md#Jest)
 
 #### [Mocha](./docs/frameworks.md#Mocha)
 
