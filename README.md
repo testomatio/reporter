@@ -9,12 +9,14 @@ Testomat.io Reporter is a library that integrates with popular **JavaScript and 
 
 Testomat.io Reporter (this npm package) supports:
 
-* 🏄 Integarion with all popular [JavaScript/TypeScript frameworks](./docs/frameworks)
-* 🗄️ Screenshots, videos, traces [uploaded into S3 bucket](./docs/artifacts)
+* 🏄 Integarion with all popular [JavaScript/TypeScript frameworks](./docs/frameworks.md)
+* 🗄️ Screenshots, videos, traces [uploaded into S3 bucket](./docs/artifacts.md)
 * 🔎 Stack traces and error messages
-* 🐙 [GitHub](./docs/pipes#github-pipe) & [GitLab](./docs/pipes#gitlab-pipe) integarion
+* 🐙 [GitHub](./docs/pipes.md#github-pipe) & [GitLab](./docs/pipes.md#gitlab-pipe) integarion
 * 🚅 Realtime reports
 * 🗃️ Other test frameworks supported via [JUNit XML](./docs/junit.md)
+* 🚶‍♀️ Steps *(work in progress)*
+* ☁️  Custom properties and metadata *(work in progress)*
 * 💯 Free & open-source.
 * 📊 Public and prviate Run reports on cloud via Testomat.io 👇
 
@@ -24,15 +26,14 @@ Testomat.io Reporter (this npm package) supports:
 ## How It Works
 
 Testomatio Reporter provides common API to store and organize test reports.
-It can receive test result data from any [test framework](./docs/frameworks) and send it to different services via [pipes](./docs/pipes).
+It can receive test result data from any [test framework](./docs/frameworks.md) and send it to different services via [pipes](./docs/pipes).
 
 | 🌊 Input         | 📊 Output                                 |
 |---------------|----------------------------------------|
-| Playwright    | Report on GitHub                       |
-| Cypress       | Report on GitLab                       |
-| Jest          | Report on [Testomat.io](https://testomat.io) |
-| WebdriverIo   | ... your custom report   |
-| ....all others via JUnit format |                                  |
+| Playwright    | Report to GitHub                       |
+| Cypress       | Report to GitLab                       |
+| Jest          | Report to [Testomat.io](https://testomat.io) |
+| ...   | ... your custom report   |
 
 If you use multiple test frameworks and you need to use one customizable reporter, check Testomat.io Reporter, as you can adjust it once and attach it to all your projects.
 
@@ -63,23 +64,23 @@ yarn add @testomatio/reporter --dev
 
 Attach reporter to the test runner you use:
 
-#### [Playwright](./docs/frameworks#playwright)
+#### [Playwright](./docs/frameworks.md#playwright)
 
-#### [CodeceptJS](./docs/frameworks#CodeceptJS)
+#### [CodeceptJS](./docs/frameworks.md#CodeceptJS)
 
-#### [Cypress](./docs/frameworks#Cypress)
+#### [Cypress](./docs/frameworks.md#Cypress)
 
-#### [Jest](./docs/frameworks#Jest)
+#### [Jest](./docs/frameworks.md#Jest)
 
-#### [Mocha](./docs/frameworks#Mocha)
+#### [Mocha](./docs/frameworks.md#Mocha)
 
-#### [WebDriverIO](./docs/frameworks#WebDriverIO)
+#### [WebDriverIO](./docs/frameworks.md#WebDriverIO)
 
-#### [TestCafe](./docs/frameworks#TestCafe)
+#### [TestCafe](./docs/frameworks.md#TestCafe)
 
-#### [Detox](./docs/frameworks#Detox)
+#### [Detox](./docs/frameworks.md#Detox)
 
-#### [Newman (Postman)](./docs/frameworks#Newman)
+#### [Newman (Postman)](./docs/frameworks.md#Newman)
 
 #### [JUnit](./docs/junit#junit)
 
@@ -89,7 +90,7 @@ Attach reporter to the test runner you use:
 
 #### [PHPUnit](./docs/junit#phpunit)
 
-#### [Protractor](./docs/frameworks#protractor)
+#### [Protractor](./docs/frameworks.md#protractor)
 
 or any [other via JUnit](./docs/junit.md) report....
 
