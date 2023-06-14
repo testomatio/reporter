@@ -62,7 +62,7 @@ yarn add @testomatio/reporter --dev
 
 ## Getting Started
 
-1️⃣ Attach reporter to the test runner you use:
+1️⃣ **Attach reporter to the test runner you use:**
 
 #### [Playwright](./docs/frameworks.md#playwright)
 
@@ -96,12 +96,28 @@ or any [other via JUnit](./docs/junit.md) report....
 
 ---
 
-2️⃣ Configure reports
+2️⃣ **Configure reports:**
 
-Reports are processed [via pipes, configure one or several pipes](./docs/pipes.md) to send test report to 
+If you have Testomat.io Project, obtain API key and set it as `TESTOMATIO` environment variable to enable [Testomatio Pipe](./docs/pipes.md#testomatio-pipe)
 
-> If you use Testomat.io Application, obtain API key and set it as `TESTOMATIO` environment variable to enable [Testomatio Pipe](./docs/pipes.md#testomatio-pipe)
+If you work with GitHub, enable [GitHub Pipe](./docs/pipes.md#github-pipe) to get a brief summary for pull requests:
 
+![](./docs/images/github.png)
+
+[Configure other pipes](./docs/pipes.md) for other ways to process test results output.
+
+---
+
+3️⃣ **Enable artifacts storage:**
+
+Create bucket on AWS, Google Cloud, or any other cloud storage provider supporting S3 protocol. 
+[Pass S3 credentials](./docs/artifacts.md) to reporter to enable artifacts uploading.
+
+---
+
+🎉 **You are all set!**
+
+Bring this reporter on CI and never lose test results again!
 
 
 ## Examples
