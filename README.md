@@ -62,7 +62,7 @@ yarn add @testomatio/reporter --dev
 
 ## Getting Started
 
-1️⃣ **Attach reporter to the test runner you use:**
+### 1️⃣ **Attach reporter to the test runner you use:**
 
 * ####  [Playwright](./docs/frameworks.md#playwright)
 * #### [CodeceptJS](./docs/frameworks.md#CodeceptJS)
@@ -81,11 +81,9 @@ yarn add @testomatio/reporter --dev
 
 or any [other via JUnit](./docs/junit.md) report....
 
----
+### 2️⃣ **Configure reports:**
 
-2️⃣ **Configure reports:**
-
-If you have Testomat.io Project, obtain API key and set it as `TESTOMATIO` environment variable to enable [Testomatio Pipe](./docs/pipes.md#testomatio-pipe)
+If you have Testomat.io Project, obtain API key and set it as `TESTOMATIO` environment variable to enable [send data to Testomatio](./docs/pipes.md#testomatio-pipe).
 
 If you work with GitHub, enable [GitHub Pipe](./docs/pipes.md#github-pipe) to get a brief summary for pull requests:
 
@@ -93,9 +91,7 @@ If you work with GitHub, enable [GitHub Pipe](./docs/pipes.md#github-pipe) to ge
 
 [Configure other pipes](./docs/pipes.md) for other ways to process test results output.
 
----
-
-3️⃣ **Enable artifacts storage:**
+### 3️⃣ **Enable artifacts storage:**
 
 Create bucket on AWS, Google Cloud, or any other cloud storage provider supporting S3 protocol. 
 [Pass S3 credentials](./docs/artifacts.md) to reporter to enable artifacts uploading.
@@ -107,28 +103,19 @@ Create bucket on AWS, Google Cloud, or any other cloud storage provider supporti
 Bring this reporter on CI and never lose test results again!
 
 
-## Examples
+## Development
 
+### Debug Logs
 
-You can refer sample tests from example folder of this repo. This is a basic example. If you need something full fledged you can refer this [example repo](https://github.com/testomatio/examples).
+To enable verbose logging run tests with `DEBUG` environment variable:
 
-Add `@testomatio/reporter` package to your project:
+To print all reporter logs:
 
-```bash
-npm i @testomatio/reporter --save
 ```
+DEBUG=@testomatio/reporter:*
+```
+To print all reporter logs of a specific pipe:
 
-### Steps
-
-👷‍♂️ *Work in progress...*
-
-### Custom Properties
-
-👷‍♂️ *Work in progress...*
-
-
-
-### Debug logs
-Pass `DEBUG` variable with module name e.g. `DEBUG=@testomatio/reporter:pipe:github`.
-(Module name could be taken directly from the required module code).
-To log all debug info pass `DEBUG=*`.
+```
+DEBUG=@testomatio/reporter:pipe:github
+```
