@@ -2,10 +2,17 @@
 
 Artifacts are files produced by test runner, usually screenshots, videos or traces.
 
-![](./images/artifacts.png)
-
 Testomat.io Reporter uses a custom S3 bucket for artifacts which can be obtained from any S3 provider, like AWS, DigitalOcean and others. This makes artifacts storage to be independent from Testomat.io Application. In case you decide to stop using it, you still control your data. It is also up to you to clean old artifacts when you don't need them.
 
+By using external storage Testomat.io allows getting full control over how the storage is used. You can either clean up old test artifacts or contrary extend storage to store all history for all periods. S3 was chosen as a de-facto standard for file storage so all cloud providers support it. If you don't have S3 storage yet, you can purchase one from your favorite cloud provider and create a new bucket (storage space) on it. Testomat.io has no direct access to artifacts storage.
+
+![](./images/artifacts.png)
+
+
+Test artifacts can be uploaded with public (default) or private access to a bucket
+
+1. reporter sends a file to S3 storage and sends link back
+2. Testomat.io displays artifacts by the link in public mode or pre-signed links in private mode
 
 > **Note**
 > Testomat.io Application won't bill you for stored artifacts, as they are stored in your bucket. If you don't have S3 bucket yet, it's not more than 5$ a month to purchase them one of the cloud providers. S3 was chosen as it is de-facto standard for file storage for cloud hostings. All popular hostings except Microsoft Azure support S3 protocol for storing files.
@@ -43,8 +50,44 @@ In this case Testomat.io Reporter will obtain S3 credentials for server and use 
 In this case uploaded files will be publicly accessible in Internet. These public links will be used by [testomat.io Application](https://testomat.io) as well as [GitHub](./pipes.md#github-pipe) and [GitLab](./pipes.md#gitlab-pipe) Pipes to display images.
 
 **➿ To upload files with private access** bucket add `TESTOMATIO_PRIVATE_ARTIFACTS=1` environment value.
-Then update provide the same S3 credentials in "Settings > Artifacts" section of a [testomat.io](https://testomat.io) project,
+Then update provide the same S3 credentials in "Settings > Artifacts" section of a project,
 so [Testomat.io Application](https://testomat.io) could connect to the same bucket and fetch uploaded artifacts.
 
 Links to files will be pre-signed and expires automatically in 10 minutes.
 
+### Providers
+
+##### AWS
+
+```bash
+TESTOMATIO_PRIVATE_ARTIFACTS=1
+S3_ACCESS_KEY_ID=11111111111111111111
+S3_SECRET_ACCESS_KEY=2222222222222222222222222222222222222222222
+S3_BUCKET=artifacts
+S3_REGION=us-west-1
+```
+
+##### DigitalOcean
+
+```bash
+TESTOMATIO_PRIVATE_ARTIFACTS=1
+S3_ENDPOINT=https://ams3.digitaloceanspaces.com
+S3_ACCESS_KEY_ID=11111111111111111111
+S3_SECRET_ACCESS_KEY=2222222222222222222222222222222222222222222
+S3_BUCKET=artifacts
+S3_REGION=ams3
+```
+
+##### Minio
+
+```bash
+S3_ENDPOINT=http://company.storage.com
+S3_ACCESS_KEY_ID=minio
+S3_SECRET_ACCESS_KEY=minio123
+S3_BUCKET=testomatio
+S3_FORCE_PATH_STYLE=true
+```
+
+> It is important to add S3_FORCE_PATH_STYLE var for minio setup
+
+For local testing, it is recommended to store configuration in `.env` file. If you load configuration from a test runner, use [dotenv](https://www.npmjs.com/package/dotenv) library to load it.
