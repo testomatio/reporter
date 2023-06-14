@@ -9,19 +9,20 @@ Testomat.io Reporter is a library that integrates with popular **JavaScript and 
 
 Testomat.io Reporter (this npm package) supports:
 
-* 🏄 Integarion with all popular JavaScript/TypeScript frameworks
-* 🗄️ Screenshots, videos, traces of failed tests uploaded into S3 bucket
+* 🏄 Integarion with all popular [JavaScript/TypeScript frameworks](./docs/frameworks)
+* 🗄️ Screenshots, videos, traces [uploaded into S3 bucket](./docs/artifacts)
 * 🔎 Stack traces and error messages
-* 🐙 GitHub & GitLab integarion
-* 📊 Public and prviate Run reports on cloud via Testomat.io
+* 🐙 [GitHub](./docs/pipes#github-pipe) & [GitLab](./docs/pipes#gitlab-pipe) integarion
 * 🚅 Realtime reports
-* 🗃️ Other test frameworks supported via JUNit XML
+* 🗃️ Other test frameworks supported via [JUNit XML](./docs/junit.md)
+* 💯 Free & open-source.
+* 📊 Public and prviate Run reports on cloud via Testomat.io 👇
 
 
-![](./images/architecture.png)
+![](./docs/images/app.png)
 
 Testomatio Reporter provides common API to store and organize test reports.
-It can receive test result data from any [test framework](./frameworks) and send it to different services via [pipes](./pipes).
+It can receive test result data from any [test framework](./docs/frameworks) and send it to different services via [pipes](./docs/pipes).
 
 | 🌊 Input         | 📊 Output                                 |
 |---------------|----------------------------------------|
@@ -32,6 +33,11 @@ It can receive test result data from any [test framework](./frameworks) and send
 | CodeceptJS    |                                        |
 | ....all others via JUnit format |                                  |
 
+If you use multiple test frameworks and you need to use one customizable reporter, check Testomat.io Reporter, as you can adjust it once and attach it to all your projects.
+
+## Architecture
+
+![](./docs/images/reporter-architecture.png)
 
 ## Installation
 
