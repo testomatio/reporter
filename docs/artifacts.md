@@ -94,7 +94,7 @@ S3_FORCE_PATH_STYLE=true
 
 Google Cloud Storage can work via S3 protocol if **Interporability mode** is enabled.
 
-![](./images/gcp_interporability.png)
+![](./images/google_interporability.png)
 
 
 Open Cloud Storage. Create a bucket for artifacts, then inside Settings select "Interporability". Create Access Key and Secret Key for the current user.
