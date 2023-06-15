@@ -100,12 +100,20 @@ export interface Pipe {
   createRun(): Promise<void>;
 
   /** adds a test to the current run */
-  addTest(test: TestData): void;
+  addTest(test: TestData): any;
 
   /** ends the run */
   finishRun(runParams: RunData): Promise<void>;
 
   /** name of this pipe */
   toString(): string;
+}
+
+export interface PipeResult {
+  /** Name of the pipe: Pipe.toString() */
+  pipe: string;
+
+  /** the result that pipe returned */
+  result?: any; 
 }
 
