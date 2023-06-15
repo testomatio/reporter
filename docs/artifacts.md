@@ -53,7 +53,7 @@ In this case uploaded files will be publicly accessible in Internet. These publi
 Then update provide the same S3 credentials in "Settings > Artifacts" section of a project,
 so [Testomat.io Application](https://testomat.io) could connect to the same bucket and fetch uploaded artifacts.
 
-Links to files will be pre-signed and expires automatically in 10 minutes.
+Links to files will be pre-signed and expire automatically in 10 minutes.
 
 ### Providers
 
@@ -117,7 +117,7 @@ Testomat.io Reporter has built-in support for test artifacts of following framew
 * Cypress
 * webdriverio
 
-If a screenshot, video, or trace was saved and attached to test, Testomat.io reporter will automatically upload this as artifacts.
+If a screenshot, a video, or a trace was saved and attached to test, Testomat.io reporter will automatically upload any of these as artifacts.
 
 Usually, artifacts are stored automatically for failed test cases. To send arbitrary files as artifacts use `addArtifact` function from `@testomatio/reporter` package.
 
