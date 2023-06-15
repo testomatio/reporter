@@ -15,7 +15,7 @@ Test artifacts can be uploaded with public (default) or private access to a buck
 2. Testomat.io displays artifacts by the link in public mode or pre-signed links in private mode
 
 > **Note**
-> Testomat.io Application won't bill you for stored artifacts, as they are stored in your bucket. If you don't have S3 bucket yet, it's not more than 5$ a month to purchase them one of the cloud providers. S3 was chosen as it is de-facto standard for file storage for cloud hostings. All popular hostings except Microsoft Azure support S3 protocol for storing files.
+> Testomat.io Application won't bill you for stored artifacts, as they are stored in your bucket. If you don't have S3 bucket yet, it's not more than 5$ a month to purchase them one of the cloud providers. S3 was chosen as it is de-facto standard for file storage for cloud hosting. All popular hosting except Microsoft Azure support S3 protocol for storing files.
 
 If a test files, a test runner may produce screenshot, video, or trace of a failed test. These files will be picked up by a reporter and uploaded to S3 bucket and attached to test. 
 
@@ -47,7 +47,7 @@ In this case Testomat.io Reporter will obtain S3 credentials for server and use 
 
 **👀 By default tests artifacts are uploaded to bucket with `public-read` permission.**
 
-In this case uploaded files will be publicly accessible in Internet. These public links will be used by [testomat.io Application](https://testomat.io) as well as [GitHub](./pipes.md#github-pipe) and [GitLab](./pipes.md#gitlab-pipe) Pipes to display images.
+In this case uploaded files will be publicly accessible in Internet. These public links will be used by [Testomat.io Application](https://testomat.io) as well as [GitHub](./pipes.md#github-pipe) and [GitLab](./pipes.md#gitlab-pipe) Pipes to display images.
 
 **➿ To upload files with private access** bucket add `TESTOMATIO_PRIVATE_ARTIFACTS=1` environment value.
 Then update provide the same S3 credentials in "Settings > Artifacts" section of a project,
@@ -226,4 +226,13 @@ docker run -e TESTOMATIO_PRIVATE_ARTIFACTS=1 \
 -e S3_REGION=us-west-1 \
 run-tests
 ```
+
+#### Environment variables for S3 not working
+
+This can be caused by various reasons. As an alternative approach, you can try to set S3 credentials inside Testomat.io Application and enable shared credentials.
+
+#### How to cleanup old artifacts?
+
+At this moment we don't provide any tools for cleanup files.
+It is recommended to write a custom cleanup tool on S3 bucket.
 

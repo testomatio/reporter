@@ -3,7 +3,7 @@
 
 👋 Hey, do you need some test reporting?
 
-Testomat.io Reporter is a library that integrates with popular **JavaScript and TypeScript** test frameworks to provide a common interface for test reporting. By default, Testomat.io Reporter works with our reporting cloud service [Testomat.io App](https://testomat.io), however it is not locked to it. Reporter can be used as a stanadlone tool to make test reports even if you don't use Testomat.io App.
+Testomat.io Reporter is a library that integrates with popular **JavaScript and TypeScript** test frameworks to provide a common interface for test reporting. By default, Testomat.io Reporter works with our reporting cloud service [Testomat.io App](https://testomat.io), however it is not locked to it. Reporter can be used as a standalone tool to make test reports even if you don't use Testomat.io App.
 
 ## Features
 
@@ -12,7 +12,7 @@ Testomat.io Reporter (this npm package) supports:
 * 🏄 Integarion with all popular [JavaScript/TypeScript frameworks](./docs/frameworks.md)
 * 🗄️ Screenshots, videos, traces [uploaded into S3 bucket](./docs/artifacts.md)
 * 🔎 Stack traces and error messages
-* 🐙 [GitHub](./docs/pipes.md#github-pipe) & [GitLab](./docs/pipes.md#gitlab-pipe) integarion
+* 🐙 [GitHub](./docs/pipes.md#github-pipe) & [GitLab](./docs/pipes.md#gitlab-pipe) integration
 * 🚅 Realtime reports
 * 🗃️ Other test frameworks supported via [JUNit XML](./docs/junit.md)
 * 🚶‍♀️ Steps *(work in progress)*
@@ -25,7 +25,7 @@ Testomat.io Reporter (this npm package) supports:
 
 ## How It Works
 
-Testomatio Reporter provides common API to store and organize test reports.
+Testomat.io Reporter provides common API to store and organize test reports.
 It can receive test result data from any [test framework](./docs/frameworks.md) and send it to different services via [pipes](./docs/pipes).
 
 | 🌊 Input         | 📊 Output                                 |
@@ -43,7 +43,7 @@ Artifacts like screenshots, videos, traces, are **uploaded to your own cloud sto
 
 ## Installation
 
-To enable testomatio reporter install `@testomatio/reporter` package
+To enable Testomat.io Reporter install `@testomatio/reporter` package
 
 
 Use one of your favorite package managers:
@@ -72,6 +72,7 @@ yarn add @testomatio/reporter --dev
 * #### [WebDriverIO](./docs/frameworks.md#WebDriverIO)
 * #### [TestCafe](./docs/frameworks.md#TestCafe)
 * #### [Detox](./docs/frameworks.md#Detox)
+* #### [Codeception](https://github.com/testomatio/php-reporter)
 * #### [Newman (Postman)](./docs/frameworks.md#Newman)
 * #### [JUnit](./docs/junit#junit)
 * #### [NUnit](./docs/junit#nunit)
@@ -83,15 +84,15 @@ or any [other via JUnit](./docs/junit.md) report....
 
 ### 2️⃣ Configure Reports
 
-* [Create report on Testomatio](./docs/pipes.md#testomatio-pipe).
+* [Create report on Testomat.io](./docs/pipes.md#testomatio-pipe).
 * [Create brief summary report for GitHub Pull Request](./docs/pipes.md#github-pipe) 👇
-* [Create breif summary report for GitLab Merge Request](./docs/pipes.md#gitlab-pipe).
+* [Create brief summary report for GitLab Merge Request](./docs/pipes.md#gitlab-pipe).
 * [Configure other pipes](./docs/pipes.md) for other ways to process test results output.
 
-GitHub brief summary report published as a comment to Pull Request:
 
-![](./docs/images/github.png)
+![GitHub report](./docs/images/github.png)
 
+GitHub report published as a comment to Pull Request:
 
 ### 3️⃣ Enable Artifacts Storage
 
@@ -120,6 +121,13 @@ Bring this reporter on CI and never lose test results again!
 * 🔂 [Workflows](./docs/workflows.md)
 
 ## Development
+
+
+### REST API 
+
+Testomat.io App uses REST API to collect data from the reporter.
+
+[👉 API Reference](https://testomatio.github.io/reporter/)
 
 ### Debug Logs
 

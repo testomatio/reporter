@@ -1,22 +1,6 @@
 ## Frameworks
 
-To enable testomatio reporter install `@testomatio/reporter` package
-
-
-Use one of your favorite package managers:
-
-```
-npm install @testomatio/reporter --save-dev
-```
-
-```
-pnpm install @testomatio/reporter --save-dev
-```
-
-```
-yarn add @testomatio/reporter --dev
-```
-
+Testomat.io reporter is NodeJS package that can be applied to all popular JavaScript test runners.
 
 ### CodeceptJS
 
@@ -38,6 +22,8 @@ Run the following command from you project folder:
 ```bash
 TESTOMATIO={API_KEY} npx codeceptjs run
 ```
+
+> 🖼 Screenshots of failed tests and videos (for Playwright helper) will be automatically uploaded as [Artifacts](./artifacts.md)
 
 
 #### CodeceptJS Parallel Run
@@ -83,6 +69,8 @@ Run the following command from you project folder:
 TESTOMATIO={API_KEY} npx playwright test
 ```
 
+> 🖼 Screenshots of failed tests and videos will be automatically uploaded as [Artifacts](./artifacts.md)
+
 > 📑 [Example Project](https://github.com/testomatio/examples/tree/master/playwright) | 🥒 [Playwright + Cucumber Example](https://github.com/testomatio/examples/tree/master/playwright-cucumber-js)
 
 ### Cypress
@@ -113,6 +101,7 @@ Run the following command from you project folder:
 TESTOMATIO={API_KEY} npx cypress run
 ```
 
+> 🖼 Screenshots of failed tests and videos will be automatically uploaded as [Artifacts](./artifacts.md)
 
 > 📑 [Example Project](https://github.com/testomatio/examples/tree/master/cypress) | 🥒 [Cypress + Cucumber Example](https://github.com/testomatio/examples/tree/master/cypress-cucumber)
 

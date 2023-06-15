@@ -2,7 +2,7 @@
 
 JUnit XML format is standard among test runners on various platforms. Testomat.io can load XML reports from test runners and create tests in a project from it. If your framework is not supported yet, generate JUnit report and upload it into Testomat.io
 
-Testomat.io will not only create a run report but also collect all information about tests, including source code, and create tests in a system as regular importer do. The only difference that normal process of Testomat.io import does not require executing tests on import, while importing via repoter requires to have tests executed and XML report provided.
+Testomat.io will not only create a run report but also collect all information about tests, including source code, and create tests in a system as regular importer do. The only difference that normal process of Testomat.io import does not require executing tests on import, while importing via reporter requires to have tests executed and XML report provided.
 
 Tested Frameworks:
 
@@ -13,7 +13,7 @@ Tested Frameworks:
 * NUnit (C#)
 
 
-To enable testomatio reporter install `@testomatio/reporter` package
+To enable Testomatio Reporter install `@testomatio/reporter` package
 
 
 Use one of your favorite package managers:
