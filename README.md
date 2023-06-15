@@ -3,7 +3,7 @@
 
 👋 Hey, do you need some test reporting?
 
-Testomat.io Reporter is a library that integrates with popular **JavaScript and TypeScript** test frameworks to provide a common interface for test reporting. By default, Testomat.io Reporter works with our reporting cloud service [Testomat.io Application](https://testomat.io), however it is not locked to it. Reporter can be used as a stanadlone tool to make test reports even if you don't use Testomat.io App.
+Testomat.io Reporter is a library that integrates with popular **JavaScript and TypeScript** test frameworks to provide a common interface for test reporting. By default, Testomat.io Reporter works with our reporting cloud service [Testomat.io App](https://testomat.io), however it is not locked to it. Reporter can be used as a stanadlone tool to make test reports even if you don't use Testomat.io App.
 
 ## Features
 
@@ -18,7 +18,7 @@ Testomat.io Reporter (this npm package) supports:
 * 🚶‍♀️ Steps *(work in progress)*
 * ☁️  Custom properties and metadata *(work in progress)*
 * 💯 Free & open-source.
-* 📊 Public and prviate Run reports on cloud via Testomat.io 👇
+* 📊 Public and private Run reports on cloud via [Testomat.io App](https://testomat.io) 👇
 
 
 ![](./docs/images/app.png)
@@ -96,12 +96,26 @@ If you work with GitHub, enable [GitHub Pipe](./docs/pipes.md#github-pipe) to ge
 Create bucket on AWS, Google Cloud, or any other cloud storage provider supporting S3 protocol. 
 [Pass S3 credentials](./docs/artifacts.md) to reporter to enable artifacts uploading.
 
+### 4️⃣ **Add it to CI Pipeline:**
+
+After you tested reporter locally add it to your CI pipeline.
+
+We prepared some [example workflows](./docs/workflows.md) that might help you to get it running.
+
 ---
 
 🎉 **You are all set!**
 
 Bring this reporter on CI and never lose test results again!
 
+
+## Documentation
+
+* 🛠️ [Frameworks](./docs/frameworks.md)
+* ⛲ [Pipes](./docs/pipes.md)
+* 📓 [JUnit](./docs/junit.md)
+* 🗄️ [Artifacts](./docs/artifacts.md)
+* 🔂 [Workflows](./docs/workflows.md)
 
 ## Development
 

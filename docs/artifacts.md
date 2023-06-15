@@ -208,3 +208,22 @@ Attaching screenshot to Ruby test
 puts "file://" + path_to_screenshot
 ```
 
+## Troubleshooting
+
+#### I don't have S3 Bucket
+
+Well, just get it. Even if your company doesn't provide one, you can purchase S3 storage by yourself.
+
+#### Publishing Artifacts from Docker Container
+
+If your tests are running within Docker container pass all environment variables explicitly 
+
+```
+docker run -e TESTOMATIO_PRIVATE_ARTIFACTS=1 \
+-e S3_ACCESS_KEY_ID=11111111111111111111 \
+-e S3_SECRET_ACCESS_KEY=2222222222222222222222222222222222222222222 \
+-e S3_BUCKET=artifacts \
+-e S3_REGION=us-west-1 \
+run-tests
+```
+
