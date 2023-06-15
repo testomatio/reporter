@@ -26,7 +26,7 @@ Testomat.io Reporter (this npm package) supports:
 ## How It Works
 
 Testomat.io Reporter provides common API to store and organize test reports.
-It can receive test result data from any [test framework](./docs/frameworks.md) and send it to different services via [pipes](./docs/pipes).
+It can receive test result data from any [test framework](./docs/frameworks.md) and send it to different services via [pipes](./docs/pipes.md).
 
 | 🌊 Input         | 📊 Output                                 |
 |---------------|----------------------------------------|
@@ -74,10 +74,10 @@ yarn add @testomatio/reporter --dev
 * #### [Detox](./docs/frameworks.md#Detox)
 * #### [Codeception](https://github.com/testomatio/php-reporter)
 * #### [Newman (Postman)](./docs/frameworks.md#Newman)
-* #### [JUnit](./docs/junit#junit)
-* #### [NUnit](./docs/junit#nunit)
-* #### [PyTest](./docs/junit#pytest)
-* #### [PHPUnit](./docs/junit#phpunit)
+* #### [JUnit](./docs/junit.md#junit)
+* #### [NUnit](./docs/junit.md#nunit)
+* #### [PyTest](./docs/junit.md#pytest)
+* #### [PHPUnit](./docs/junit.md#phpunit)
 * #### [Protractor](./docs/frameworks.md#protractor)
 
 or any [other via JUnit](./docs/junit.md) report....

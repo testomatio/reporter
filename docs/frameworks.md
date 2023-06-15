@@ -134,6 +134,9 @@ Run tests:
 TESTOMATIO={API_KEY} npx jest
 ```
 
+> **Warning**
+> Do not use `bail` option in your jest config or testrun script. (It cause issues with updating testrun status).
+
 > 📑 [Example Project](https://github.com/testomatio/examples/tree/master/jest)
 
 > 📺 [Video](https://www.youtube.com/watch?v=RKfIfnEuGys)
@@ -239,6 +242,9 @@ Run detox tests sptcifying configuration name:
 ```
 TESTOMATIO={API_KEY} npx detox test -c {configuration_name}
 ```
+
+> **Warning**
+> Do not use `bail` option in your jest config or testrun script. (It cause issues with updating testrun status).
 
 ### Protractor
 
