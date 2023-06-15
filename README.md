@@ -62,7 +62,7 @@ yarn add @testomatio/reporter --dev
 
 ## Getting Started
 
-### 1️⃣ **Attach reporter to the test runner you use:**
+### 1️⃣ Attach Reporter to the Test Runner
 
 * ####  [Playwright](./docs/frameworks.md#playwright)
 * #### [CodeceptJS](./docs/frameworks.md#CodeceptJS)
@@ -81,7 +81,7 @@ yarn add @testomatio/reporter --dev
 
 or any [other via JUnit](./docs/junit.md) report....
 
-### 2️⃣ **Configure reports:**
+### 2️⃣ Configure Reports
 
 * [Create report on Testomatio](./docs/pipes.md#testomatio-pipe).
 * [Create brief summary report for GitHub Pull Request](./docs/pipes.md#github-pipe) 👇
@@ -93,16 +93,16 @@ GitHub brief summary report published as a comment to Pull Request:
 ![](./docs/images/github.png)
 
 
-### 3️⃣ **Enable artifacts storage:**
+### 3️⃣ Enable Artifacts Storage
 
-Create bucket on AWS, Google Cloud, or any other cloud storage provider supporting S3 protocol. 
-[Pass S3 credentials](./docs/artifacts.md) to reporter to enable artifacts uploading.
+1. Create bucket on AWS, Google Cloud, or any other cloud storage provider supporting S3 protocol. 
+2. [Pass S3 credentials](./docs/artifacts.md) to reporter to enable artifacts uploading.
 
-### 4️⃣ **Add it to CI Pipeline:**
+### 4️⃣ Add to CI Pipeline
 
 After you tested reporter locally add it to your CI pipeline.
 
-We prepared some [example workflows](./docs/workflows.md) that might help you to get it running.
+> We prepared some [example workflows](./docs/workflows.md) that might help you to get it running.
 
 ---
 
