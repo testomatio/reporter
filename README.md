@@ -83,13 +83,15 @@ or any [other via JUnit](./docs/junit.md) report....
 
 ### 2️⃣ **Configure reports:**
 
-If you have Testomat.io Project, obtain API key and set it as `TESTOMATIO` environment variable to enable [send data to Testomatio](./docs/pipes.md#testomatio-pipe).
+* [Create report on Testomatio](./docs/pipes.md#testomatio-pipe).
+* [Create brief summary report for GitHub Pull Request](./docs/pipes.md#github-pipe) 👇
+* [Create breif summary report for GitLab Merge Request](./docs/pipes.md#gitlab-pipe).
+* [Configure other pipes](./docs/pipes.md) for other ways to process test results output.
 
-If you work with GitHub, enable [GitHub Pipe](./docs/pipes.md#github-pipe) to get a brief summary for pull requests:
+GitHub brief summary report published as a comment to Pull Request:
 
 ![](./docs/images/github.png)
 
-[Configure other pipes](./docs/pipes.md) for other ways to process test results output.
 
 ### 3️⃣ **Enable artifacts storage:**
 
