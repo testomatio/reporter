@@ -21,12 +21,12 @@ If a test files, a test runner may produce screenshot, video, or trace of a fail
 
 ### Configuration
 
-There are two options setting S3 bucket credentials:
+There are two options for setting S3 bucket credentials:
 
 * via environment variables
 * by connecting to Testomat.io Application
 
-Recommended way is by setting S3 bucket credentials as environment variables:
+Recommended way is to set S3 bucket credentials as environment variables:
 
 - **S3_REGION** - Region your bucket lies.
 - **S3_BUCKET** - Bucket name.
@@ -143,7 +143,7 @@ const { addArtifact } = require('@testomatio/reporter');
 test('my test', async () => {
 
   // saveScreenshot is a custom function that makes a screenshot, 
-  // saves to file, and returns a path to this file
+  // saves it to file, and returns a path to this file
   const pathToFile = await saveScreenshot();
   // 
   // Ensure, that file at `pathToFile` exists, and is not a promise. 
@@ -169,7 +169,7 @@ If S3 credentials are set, files will be uploaded to bucket and attached to test
 
 ##### Java Example:
 
-Attaching screenshot to Java test
+Attaching a screenshot to the Java test
 
 ```java
 // inside Java test
@@ -180,7 +180,7 @@ System.out.println("file://" + pathToScreenshot);
 
 ##### C# Example:
 
-Attaching screenshot to C# test
+Attaching a screenshot to the C# test
 
 ```C#
 // assume you created a screenshot
@@ -190,7 +190,7 @@ Console.WriteLine("file://" + pathToScreenshot);
 
 #### Python
 
-Attaching screenshot to Python test
+Attaching a screenshot to the Python test
 
 ```python
 # assume you created a screenshot
@@ -200,7 +200,7 @@ print("file://" + pathToScreenshot)
 
 #### Ruby
 
-Attaching screenshot to Ruby test
+Attaching a screenshot to the Ruby test
 
 ```python
 # assume you created a screenshot
@@ -210,9 +210,9 @@ puts "file://" + path_to_screenshot
 
 ## Troubleshooting
 
-#### I don't have S3 Bucket
+#### I don't have a S3 Bucket
 
-Well, just get it. Even if your company doesn't provide one, you can purchase S3 storage by yourself.
+Well then, just get it. Even if your company doesn't provide one, you can purchase a S3 storage by yourself.
 
 #### Publishing Artifacts from Docker Container
 
@@ -227,12 +227,12 @@ docker run -e TESTOMATIO_PRIVATE_ARTIFACTS=1 \
 run-tests
 ```
 
-#### Environment variables for S3 not working
+#### Environment variables for S3 are not working
 
 This can be caused by various reasons. As an alternative approach, you can try to set S3 credentials inside Testomat.io Application and enable shared credentials.
 
 #### How to cleanup old artifacts?
 
-At this moment we don't provide any tools for cleanup files.
-It is recommended to write a custom cleanup tool on S3 bucket.
+At this moment we don't provide any tools for the cleanup of files.
+It is recommended to write a custom cleanup tool on a S3 bucket.
 
