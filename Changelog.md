@@ -2,7 +2,14 @@
 
 <!-- pending release updates -->
 
-* Added `TESTOMATIO_SHARED_RUN` option to use a shared run for parallel executions
+* Added [`TESTOMATIO_SHARED_RUN` option](https://github.com/testomatio/reporter/blob/master/docs/pipes.md#reporting-parallel-execution-to-to-same-run) to use a shared run for parallel executions
+* Reworked [documentation](https://github.com/testomatio/reporter/tree/master#readme).
+* Added an option to obtain [S3 configuration](https://github.com/testomatio/reporter/blob/master/docs/artifacts.md#configuration) from Testomat.io
+* Introduced [pipes](https://github.com/testomatio/reporter/blob/master/docs/pipes.md):
+  * GitHub
+  * GitLab
+  * CSV Pipe
+
 
 # 0.7.6
 
