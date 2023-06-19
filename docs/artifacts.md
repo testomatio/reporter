@@ -233,6 +233,7 @@ This can be caused by various reasons. As an alternative approach, you can try t
 
 #### How to cleanup old artifacts?
 
+
 At this moment we don't provide any tools for the cleanup of files.
 It is recommended to write a custom cleanup tool on a S3 bucket.
 
