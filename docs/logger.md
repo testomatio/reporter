@@ -5,7 +5,7 @@
 - has a varied and convenient syntax
 - automatically converts any data to human-readable format
 
-The logger supports the next methods: `assert`, `debug`, `error`, `info`, `log`, `trace`, and `warn`.
+The logger supports the next methods: `assert`, `debug`, `error`, `info`, `log`, `trace` and `warn`.
 
 ## Usage
 For logs intercepting:
@@ -87,3 +87,16 @@ log('Successful login with user', userName, userAge)
 ```
 
 You are not limited to log only text. Log anything you wish, including objects. Everything will be converted to human-readable format.
+
+## Configuration
+After you import logger, you can configure it:
+```javascript
+const { logger } = require('@testomatio/reporter')
+loggger.config({
+  prettyObjects: true,
+})
+```
+
+List of available options:
+- `prettyObjects` [boolean] - if true, objects will be printed on multiple lines (easier to read). Default: `false`
+- `logLevel` [error, warn, log, info, debug, trace, verbose, all] - ignores messages below the log level set. Default: `all`
