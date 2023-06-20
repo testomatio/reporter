@@ -2,10 +2,10 @@
 - intercepts all logger messages (console, winston, etc., specified by user)
 - attaches intercepted log messages to your report
 - provides own methods to add any info to your report (like logger.info(), logger.debug(), etc.)
-- has varied and convenient syntax
-- automatically converts any data to human readable format
+- has a varied and convenient syntax
+- automatically converts any data to human-readable format
 
-The logger supports next methods: `assert`, `debug`, `error`, `info`, `log`, `trace`, and `warn`.
+The logger supports the next methods: `assert`, `debug`, `error`, `info`, `log`, `trace`, and `warn`.
 
 ## Usage
 ```const { logger } = require('@testomatio/reporter')```
@@ -26,7 +26,7 @@ describe('Your suite', () => {
 ```
 Result: the message 'Login successful' will be added to your report.
 
-Logger can intercept any logger (e.g. pino, loglevel, morgan, tracer, winston etc.). And even multiple loggers at the same time.
+Logger can intercept any logger (e.g. pino, loglevel, morgan, tracer, winston, etc.). And even multiple loggers at the same time.
 
 ### Examples for other loggers intercepting
 ```javascript
@@ -45,11 +45,10 @@ logger.intercept(tracerColor);
 
 > Note: if you import testomatio logger as "logger", be sure not to import other loggers as "logger" too. Otherwise, you will get an error.
 
-If you intercept logger, it does not affect your logger settings (e.g. log level). But if you start intercep multiple loggers, the last intercepted will be used as console output.
+If you intercept logger, it does not affect your logger settings (e.g. log level). But if you start intercept multiple loggers, the last intercepted will be used as console output.
 
-### Log anything and attach to report 
-Varied syntax is supported.
-Examples:
+### Log anything and attach it to report 
+The varied syntax is supported. Examples:
 - #### Tagged template
 ```log`Successful login` ```
 or
@@ -61,4 +60,4 @@ or
 - #### Standard with multiple arguments
 ```log('Successful login with user', userName)```
 
-You are not limited to log only text. Log anything you with, including objects. Everything will be converted to human readable format.
+You are not limited to log only text. Log anything you wish, including objects. Everything will be converted to human-readable format.
