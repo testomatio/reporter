@@ -16,7 +16,8 @@ Testomat.io Reporter (this npm package) supports:
 * 🚅 Realtime reports
 * 🗃️ Other test frameworks supported via [JUNit XML](./docs/junit.md)
 * 🚶‍♀️ Steps *(work in progress)*
-* ☁️  Custom properties and metadata *(work in progress)*
+* 📄 Logger *(work in progress, supports Jest for now)*
+* ☁️ Custom properties and metadata *(work in progress)*
 * 💯 Free & open-source.
 * 📊 Public and private Run reports on cloud via [Testomat.io App](https://testomat.io) 👇
 
@@ -64,7 +65,7 @@ yarn add @testomatio/reporter --dev
 
 ### 1️⃣ Attach Reporter to the Test Runner
 
-* ####  [Playwright](./docs/frameworks.md#playwright)
+* #### [Playwright](./docs/frameworks.md#playwright)
 * #### [CodeceptJS](./docs/frameworks.md#CodeceptJS)
 * #### [Cypress](./docs/frameworks.md#Cypress)
 * #### [Jest](./docs/frameworks.md#Jest)
@@ -99,7 +100,11 @@ GitHub report published as a comment to Pull Request:
 1. Create bucket on AWS, Google Cloud, or any other cloud storage provider supporting S3 protocol. 
 2. [Pass S3 credentials](./docs/artifacts.md) to reporter to enable artifacts uploading.
 
-### 4️⃣ Add to CI Pipeline
+### 4️⃣ Use Logger
+
+Intercept your logger messages or log anything with our [Logger](./docs/logger.md) (_work in progress_).
+
+### 5️⃣ Add to CI Pipeline
 
 After you tested reporter locally add it to your CI pipeline.
 
@@ -119,6 +124,7 @@ Bring this reporter on CI and never lose test results again!
 * 📓 [JUnit](./docs/junit.md)
 * 🗄️ [Artifacts](./docs/artifacts.md)
 * 🔂 [Workflows](./docs/workflows.md)
+* 🔂 [Logger](./docs/logger.md)
 
 ## Development
 
