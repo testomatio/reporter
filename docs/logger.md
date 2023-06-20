@@ -51,10 +51,14 @@ If you intercept logger, it does not affect your logger settings (e.g. log level
 Varied syntax is supported.
 Examples:
 - #### Tagget template
-```log`text ${someVar}```
+```log`Successful login` ```
+or
+```log`Successful login with user ${userName}```
 - #### Standard
-```log(`text ${someVar}`)```
+```log('Successful login')```
+or
+```log(`Successful login with user ${userName}`)```
 - #### Standard with multiple arguments
-```log('text', someVar)```
+```log('Successful login with user', userName)```
 
 You are not limited to log only text. Log anything you with, including objects. Everything will be converted to human readable format.
