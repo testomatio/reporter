@@ -56,4 +56,5 @@ Examples:
 ```log(`text ${someVar}`)```
 - #### Standard with multiple arguments
 ```log('text', someVar)```
+
 You are not limited to log only text. Log anything you with, including objects. Everything will be converted to human readable format.
