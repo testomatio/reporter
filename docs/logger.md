@@ -50,7 +50,7 @@ If you intercept logger, it does not affect your logger settings (e.g. log level
 ### Log anything and attach to report 
 Varied syntax is supported.
 Examples:
-- #### Tagget template
+- #### Tagged template
 ```log`Successful login` ```
 or
 ```log`Successful login with user ${userName}```
