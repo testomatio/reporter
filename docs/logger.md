@@ -8,19 +8,27 @@
 The logger supports the next methods: `assert`, `debug`, `error`, `info`, `log`, `trace`, and `warn`.
 
 ## Usage
-```const { logger } = require('@testomatio/reporter')```
-
-
-### Intercept logger
+For logs intercepting:
 ```javascript
-const logger = require('./logger');
+const { logger } = require('@testomatio/reporter')
+```
 
-logger.intercept(console);
+For logging:
+```javascript
+const { log } = require('@testomatio/reporter')
+```
 
-describe('Your suite', () => {
-  test('Your test', async () => {
+
+## Intercept logger
+```javascript
+const { logger } = require('@testomatio/reporter')
+
+logger.intercept(console); // intercept console
+
+describe('Your suite @S12345678', () => {
+  test('Your test @T12345678', async () => {
     await page.login();
-    console.log('Login successful');
+    console.log('Login successful'); // this message will be intercepted and added to your report
     assert(something);
   });
 ```
@@ -47,17 +55,35 @@ logger.intercept(tracerColor);
 
 If you intercept logger, it does not affect your logger settings (e.g. log level). But if you start intercept multiple loggers, the last intercepted will be used as console output.
 
-### Log anything and attach it to report 
-The varied syntax is supported. Examples:
+## Log anything and attach it to report 
+
+```javascript
+const {log} = require('./logger');
+
+logger.intercept(console);
+
+describe('Your suite @S12345678', () => {
+  test('Your test @T12345678', async () => {
+    await page.login();
+    log`Login successful`; // <<<<<
+    assert(something);
+  });
+```
+
+Varied syntax is supported. Use which you prefer. Examples:
 - #### Tagged template
-```log`Successful login` ```
-or
-```log`Successful login with user ${userName}```
+```javascript
+log`Successful login`
+log`Successful login with user ${userName}
+```
 - #### Standard
-```log('Successful login')```
-or
-```log(`Successful login with user ${userName}`)```
+```javascript
+log('Successful login')
+log(`Successful login with user ${userName}`)
+```
 - #### Standard with multiple arguments
-```log('Successful login with user', userName)```
+```javascript
+log('Successful login with user', userName, userAge)
+```
 
 You are not limited to log only text. Log anything you wish, including objects. Everything will be converted to human-readable format.
