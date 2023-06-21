@@ -1,6 +1,6 @@
 ## Frameworks
 
-Testomat.io reporter is NodeJS package that can be applied to all popular JavaScript test runners.
+Testomat.io reporter is a NodeJS package that can be applied to all popular JavaScript test runners.
 
 ### CodeceptJS
 
@@ -17,7 +17,7 @@ plugins: {
 }
 ```
 
-Run the following command from you project folder:
+Run the following command from your project folder:
 
 ```bash
 TESTOMATIO={API_KEY} npx codeceptjs run
@@ -38,7 +38,7 @@ TESTOMATIO={API_KEY} npx start-test-run -c 'npx codeceptjs run-workers 2'
 
 Use `--env-file <envfile>` option to load environment variables from .env file. Inside env file TESTOMATIO credentials like `TESTOMATIO` api key or [S3 config for artifacts](./artifacts).
 
-Command `start-test-run` is used to initiate a single run report before all workers are started. Each worker will report to the same Run, and after all workers and codeceptjs finishes, this will finish the run report.
+Command `start-test-run` is used to initiate a single run report before all workers are started. Each worker will report to the same Run, and after all workers and codeceptjs finishes, this will complete the run report.
 
 
 > 📑 [Example Project](https://github.com/testomatio/examples/tree/master/codeceptJS) | 🗄 [CodeceptJS API Example](https://github.com/testomatio/examples/tree/master/codeceptJSApi) | 🥒 [CodeceptJS Cucumber Example](https://github.com/testomatio/examples/tree/master/codeceptjs-cucumber)
@@ -49,7 +49,7 @@ Command `start-test-run` is used to initiate a single run report before all work
 
 > 📐 When used with [Testomat.io Application](https://app.testomat.io) it is recommended to import automated tests first via [check-tests](https://github.com/testomatio/check-tests#cli). To create items on the fly set `TESTOMATIO_CREATE=1` env variable.
 
-Add a reporter to Playwright config:
+Add a reporter to the Playwright config:
 
 ```javascript
 reporter: [
@@ -63,7 +63,7 @@ reporter: [
 ];
 ```
 
-Run the following command from you project folder:
+Run the following command from your project folder:
 
 ```bash
 TESTOMATIO={API_KEY} npx playwright test
@@ -95,7 +95,7 @@ module.exports = (on, config) => {
 };
 ```
 
-Run the following command from you project folder:
+Run the following command from your project folder:
 
 ```bash
 TESTOMATIO={API_KEY} npx cypress run
@@ -110,7 +110,7 @@ TESTOMATIO={API_KEY} npx cypress run
 > 📐 When used with [Testomat.io Application](https://app.testomat.io) it is recommended to import automated tests first via [check-tests](https://github.com/testomatio/check-tests#cli). To create items on the fly set `TESTOMATIO_CREATE=1` env variable.
 
 
-Run the following command from you project folder:
+Run the following command from your project folder:
 
 ```bash
 mocha --reporter ./node_modules/@testomatio/reporter/lib/adapter/mocha.js --reporter-options apiKey={API_KEY}
@@ -135,7 +135,7 @@ TESTOMATIO={API_KEY} npx jest
 ```
 
 > **Warning**
-> Do not use `bail` option in your jest config or testrun script. (It cause issues with updating testrun status).
+> Do not use `bail` option in your jest config or testrun script. (It causes issues with updating testrun status).
 
 > 📑 [Example Project](https://github.com/testomatio/examples/tree/master/jest)
 
@@ -164,7 +164,7 @@ exports.config = {
 ```
 
 
-For making screenshots on failed tests add the following hook to `wdio.conf.js`:
+For making screenshots of failed tests add the following hook to `wdio.conf.js`:
 
 ```js
     afterTest: function (test, context, { error, result, duration, passed, retries }) {
@@ -174,7 +174,7 @@ For making screenshots on failed tests add the following hook to `wdio.conf.js`:
     },
 ```
 
-Run the following command from you project folder:
+Run the following command from your project folder:
 
 ```bash
 TESTOMATIO={API_KEY} npx start-test-run -c 'npx wdio wdio.conf.js'
@@ -188,7 +188,7 @@ TESTOMATIO={API_KEY} npx start-test-run -c 'npx wdio wdio.conf.js'
 
 > 📐 When used with [Testomat.io Application](https://app.testomat.io) it is recommended to import feature files via [check-cucumber](https://github.com/testomatio/check-cucumber).
 
-Run the following command from you project folder:
+Run the following command from your project folder:
 
 ```bash
 TESTOMATIO={API_KEY} npx cucumber-js --format ./node_modules/@testomatio/reporter/lib/adapter/cucumber.js
@@ -205,7 +205,7 @@ TESTOMATIO={API_KEY} npx cucumber-js --format ./node_modules/@testomatio/reporte
 
 > 📐 When used with [Testomat.io Application](https://app.testomat.io) it is recommended to import automated tests first via [check-tests](https://github.com/testomatio/check-tests#cli). To create items on the fly set `TESTOMATIO_CREATE=1` env variable.
 
-Run the following command from you project folder:
+Run the following command from your project folder:
 
 ```bash
 TESTOMATIO={API_KEY} npx testcafe chrome -r testomatio
@@ -224,7 +224,7 @@ npm i newman-reporter-testomatio --save-dev
 You can verify installed packages via `npm list` or `npm list -g`.
 
 
-Run collection and specify `testomatio` as reporter:
+Run collection and specify `testomatio` as a reporter:
 
 ```bash
 TESTOMATIO={API_KEY} npx newman run {collection_name.json} -r testomatio
@@ -237,7 +237,7 @@ TESTOMATIO={API_KEY} npx newman run {collection_name.json} -r testomatio
 
 > 📐 When used with [Testomat.io Application](https://app.testomat.io) it is recommended to import automated tests first via [check-tests](https://github.com/testomatio/check-tests#cli). To create items on the fly set `TESTOMATIO_CREATE=1` env variable.
 
-Run detox tests sptcifying configuration name:
+Run detox tests specifying configuration name:
 
 ```
 TESTOMATIO={API_KEY} npx detox test -c {configuration_name}
@@ -262,7 +262,7 @@ exports.config = {
 };
 ```
 
-Run the following command from you project folder:
+Run the following command from your project folder:
 
 ```bash
 TESTOMATIO={API_KEY} npx start-test-run -c 'npx protractor conf.js'
