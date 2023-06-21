@@ -55,7 +55,8 @@ logger.intercept(tracerColor);
 
 If you intercept logger, it does not affect your logger settings (e.g. log level). But if you start intercept multiple loggers, the last intercepted will be used as console output.
 
-## Log anything and attach it to report 
+## Log anything
+and attach it to report 
 
 ```javascript
 const {log} = require('./logger');
@@ -88,15 +89,29 @@ log('Successful login with user', userName, userAge)
 
 You are not limited to log only text. Log anything you wish, including objects. Everything will be converted to human-readable format.
 
+## Step
+You can add a step to your test:
+```javascript
+const { step } = require('@testomatio/reporter');
+describe('Your suite @S12345678', () => {
+  test('Your test @T12345678', async () => {
+    await page.login();
+    step`Login successful` // <<<<<
+    assert(something);
+  });
+```
+It will also be attached to your report and helps to understand the test flow.
+
 ## Configuration
 After you import logger, you can configure it:
 ```javascript
 const { logger } = require('@testomatio/reporter')
-loggger.config({
+loggger.configure({
   prettyObjects: true,
+  prettyObjects: 'WARN',
 })
 ```
 
 List of available options:
 - `prettyObjects` [boolean] - if true, objects will be printed on multiple lines (easier to read). Default: `false`
-- `logLevel` [error, warn, log, info, debug, trace, verbose, all] - ignores messages below the log level set. Default: `all`
+- `logLevel` [error, warn, log, info, debug, trace, verbose, all] - ignores messages below the log level set. Also could be set by `LOG_LEVEL` env variable. Default: `all`
