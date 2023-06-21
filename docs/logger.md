@@ -115,3 +115,18 @@ loggger.configure({
 List of available options:
 - `prettyObjects` [boolean] - if true, objects will be printed on multiple lines (easier to read). Default: `false`
 - `logLevel` [error, warn, log, info, debug, trace, verbose, all] - ignores messages below the log level set. Also could be set by `LOG_LEVEL` env variable. Default: `all`
+
+### Supported frameworks
+This feature is under development right now. List of supported frameworks:
+- [ ] CodeceptJS
+- [ ] Cypress
+- [ ] Cucumber
+- [ ] Jasmine
+- [x] Jest
+- [ ] Mocha
+- [ ] Newman (Postman)
+- [ ] Playwright
+- [ ] Protractor
+- [ ] Puppeteer
+- [ ] TestCafe
+- [ ] WebdriverIO
