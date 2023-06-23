@@ -118,7 +118,7 @@ List of available options:
 
 ### Supported frameworks
 This feature is under development right now. List of supported frameworks:
-- [ ] CodeceptJS
+- [x] CodeceptJS
 - [ ] Cypress
 - [ ] Cucumber
 - [ ] Jasmine
