@@ -120,7 +120,7 @@ List of available options:
 This feature is under development right now. List of supported frameworks:
 - [x] CodeceptJS
 - [ ] Cypress
-- [ ] Cucumber
+- [x] Cucumber
 - [ ] Jasmine
 - [x] Jest
 - [ ] Mocha
