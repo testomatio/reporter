@@ -129,7 +129,15 @@ This feature is under development right now. List of supported frameworks:
 - 🟢 Jest
 - 🔴 Mocha
 - 🟡 Newman (Postman) _(logs are added by testomatio reporter by default)_
-- 🟡 Playwright _(does not support intercepting)_
+- 🟡 Playwright
+  - requires passing `testInfo` param to log function
+    ```javascript
+    import { logger } from '@testomatio/reporter';
+    test('title @Tabc12345', async ({ page }, testInfo) => { // <<<
+      logger.log('message', testInfo);  // <<<
+    });
+    ```
+  - does not support intercepting
 - 🔴 Protractor
 - 🔴 Puppeteer
 - 🔴 TestCafe
