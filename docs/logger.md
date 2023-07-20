@@ -5,6 +5,8 @@
 - has a varied and convenient syntax
 - automatically converts any data to human-readable format
 
+> Some frameworks does not support Logger functionality fully. Please check your framework in the list below [Supported frameworks](#supported-frameworks)
+
 The logger supports the next methods: `assert`, `debug`, `error`, `info`, `log`, `trace` and `warn`.
 
 ## Usage
@@ -107,8 +109,8 @@ After you import logger, you can configure it:
 ```javascript
 const { logger } = require('@testomatio/reporter')
 loggger.configure({
+  logLevel: 'WARN',
   prettyObjects: true,
-  prettyObjects: 'WARN',
 })
 ```
 
@@ -118,15 +120,17 @@ List of available options:
 
 ### Supported frameworks
 This feature is under development right now. List of supported frameworks:
-- [x] CodeceptJS
-- [ ] Cypress
-- [x] Cucumber
-- [ ] Jasmine
-- [x] Jest
-- [ ] Mocha
-- [ ] Newman (Postman)
-- [ ] Playwright
-- [ ] Protractor
-- [ ] Puppeteer
-- [ ] TestCafe
-- [ ] WebdriverIO
+
+🟢 - full support, 🟡 - partial support, 🔴 - no support yet
+- 🟢 CodeceptJS
+- 🔴 Cypress
+- 🟢 Cucumber
+- 🔴 Jasmine
+- 🟢 Jest
+- 🔴 Mocha
+- 🟡 Newman (Postman) _(logs are added by testomatio reporter by default)_
+- 🟡 Playwright _(does not support intercepting)_
+- 🔴 Protractor
+- 🔴 Puppeteer
+- 🔴 TestCafe
+- 🔴 WebdriverIO
