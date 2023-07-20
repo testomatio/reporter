@@ -10,18 +10,22 @@
 The logger supports the next methods: `assert`, `debug`, `error`, `info`, `log`, `trace` and `warn`.
 
 ## Usage
-For logs intercepting:
+Log messages with different levels:
 ```javascript
 const { logger } = require('@testomatio/reporter')
+logger.info('message');
+logger.error('message');
 ```
+Logger allows configuration (See [Configuration](#configuration) section for details).
 
-For logging:
+For simple logging:
 ```javascript
 const { log } = require('@testomatio/reporter')
+log('message');
 ```
 
 
-## Intercept logger
+### Intercept logs from your logger (and attach them to your report)
 ```javascript
 const { logger } = require('@testomatio/reporter')
 
@@ -128,16 +132,9 @@ This feature is under development right now. List of supported frameworks:
 - 🔴 Jasmine
 - 🟢 Jest
 - 🔴 Mocha
-- 🟡 Newman (Postman) _(logs are added by testomatio reporter by default)_
-- 🟡 Playwright
-  - requires passing `testInfo` param to log function
-    ```javascript
-    import { logger } from '@testomatio/reporter';
-    test('title @Tabc12345', async ({ page }, testInfo) => { // <<<
-      logger.log('message', testInfo);  // <<<
-    });
-    ```
-  - does not support intercepting
+- 🟢 Newman (Postman)
+  - console logs are added by testomatio reporter by default, no need to use logger
+- 🟢 Playwright
 - 🔴 Protractor
 - 🔴 Puppeteer
 - 🔴 TestCafe
