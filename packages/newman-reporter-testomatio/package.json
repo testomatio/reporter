@@ -1,6 +1,6 @@
 {
   "name": "newman-reporter-testomatio",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Newman adapter (custom reporter) for testomatio/reporter",
   "main": "lib/index.js",
   "scripts": {
