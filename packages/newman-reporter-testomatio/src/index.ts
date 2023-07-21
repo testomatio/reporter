@@ -203,7 +203,7 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
     log('Test data sent:', testData);
 
     // notify Testomatio about the item result
-    testomatioReporter.addTestRun(null, newmanItemStore.testStatus || 'passed' as TestStatus, testData);
+    testomatioReporter.addTestRun(newmanItemStore.testStatus || 'passed' as TestStatus, testData);
   });
 
   // test assertion
