@@ -41,6 +41,9 @@ export interface TestData {
   /** The steps taken or logs printed during the execution of the test case. */
   steps?: string;
 
+  /** The stack taken or logs printed during the execution of the test case. */
+  stack?: string;
+
   /** The current source code of a test. Used only for JUnit or Newman reports, when we create tests from a run */
   code?: string;
 
