@@ -114,11 +114,11 @@ This feature is under development right now. List of supported frameworks:
 - 🔴 Cypress
 - 🟢 Cucumber
 - 🟢 Jest
-- 🔴 Mocha
+- 🟡 Mocha
+  - refer to [Use logger in Mocha](#use-logger-in-mocha) section
 - 🟢 Newman (Postman)
   - console logs are added by testomatio reporter by default, no need to use logger
 - 🟢 Playwright
-- 🔴 Protractor
 - 🟢 Puppeteer (using Jest)
 - 🔴 WebdriverIO
 
@@ -137,3 +137,38 @@ It will also be attached to your report and helps to understand the test flow.
 
 ##### Minor comments
 If you intercept logger, it does not affect your logger settings (e.g. log level). But if you start intercept multiple loggers, the last intercepted will be used as output to terminal where your tests executed.
+
+###### Use logger in Mocha
+You have to pass test title to logger. Here is an example how to do it:
+
+Set test title inside `beforeEach` hook:
+```javascript
+let currentTestTitle = null; // <<<<<
+
+beforeEach(function () {
+  currentTestTitle = this.currentTest.fullTitle(); // <<<<<
+});
+
+describe('suite @S12345678', () => {
+  it('test @12345678', () => {
+    logger.log('message', currentTestTitle); // <<<<<
+  });
+});
+```
+You can set title to env variable (e.g. process.env.TEST_TITLE):
+```javascript
+beforeEach(function () {
+  process.env.TEST_TITLE = this.currentTest.fullTitle(); // <<<<<
+});
+...
+it('test @12345678', () => {
+  logger.log('message', process.env.TEST_TITLE); // <<<<<
+});
+...
+```
+Examples above are usable if you use logger in multiple places.
+
+If you want to use logger just in one place, you can pass test title directly to logger (logger should be called inside the test):
+```javascript
+logger.log('message', this.currentTest.fullTitle()); // <<<<<
+```
