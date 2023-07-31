@@ -1,6 +1,11 @@
+<!-- pending release updates -->
+
+# 1.0.3
+
+* Fixed reporting parallel runs
+
 # 1.0.0
 
-<!-- pending release updates -->
 
 * Added [`TESTOMATIO_SHARED_RUN` option](https://github.com/testomatio/reporter/blob/master/docs/pipes.md#reporting-parallel-execution-to-to-same-run) to use a shared run for parallel executions
 * Reworked [documentation](https://github.com/testomatio/reporter/tree/master#readme).
