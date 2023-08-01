@@ -12,7 +12,7 @@ Testomat.io Reporter (this npm package) supports:
 * 🏄 Integarion with all popular [JavaScript/TypeScript frameworks](./docs/frameworks.md)
 * 🗄️ Screenshots, videos, traces [uploaded into S3 bucket](./docs/artifacts.md)
 * 🔎 Stack traces and error messages
-* 🐙 [GitHub](./docs/pipes.md#github-pipe) & [GitLab](./docs/pipes.md#gitlab-pipe) integration
+* 🐙 [GitHub](./docs/pipes/github.d) & [GitLab](./docs/pipes/gitlab.d) integration
 * 🚅 Realtime reports
 * 🗃️ Other test frameworks supported via [JUNit XML](./docs/junit.md)
 * 🚶‍♀️ Steps *(work in progress)*
@@ -91,7 +91,7 @@ or any [other via JUnit](./docs/junit.md) report....
 * [Configure other pipes](./docs/pipes/md) for other ways to process test results output.
 
 
-![GitHub report](./docs/images/pipes/github.png)
+![GitHub report](./docs/pipes/images/github.png)
 
 GitHub report published as a comment to Pull Request:
 
