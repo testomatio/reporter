@@ -138,7 +138,7 @@ jobs:
       if: always()
       env:
         TESTOMATIO: ${{ secrets.TESTOMATIO }}
-        TESTOMATIO_RUN: "PR ${{ github.event.number }} ${{ github.event.pull_request.title }}"
+        TESTOMATIO_TITLE: "PR ${{ github.event.number }} ${{ github.event.pull_request.title }}"
         GH_PAT: ${{ github.token }}
 ```
 
@@ -168,14 +168,13 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Setup dependancies
+      - name: Setup dependencies
         run: npm i
 
       - name: Run tests
         run: npx cypress run
         env:
           TESTOMATIO: "${{ secrets.TESTOMATIO }}"
-          TESTOMATIO_URL: "${{ secrets.TESTOMATIO_URL }}"
 ```
 
 ## GitHub Actions and Playwright
@@ -204,7 +203,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Setup dependancies
+      - name: Setup dependencies
         run: npm i
 
       - name: Playwright browser updates
@@ -214,7 +213,6 @@ jobs:
         run: npx playwright test
         env:
           TESTOMATIO: "${{ secrets.TESTOMATIO }}"
-          TESTOMATIO_URL: "${{ secrets.TESTOMATIO_URL }}"
 ```
 
 ...more examples are coming
