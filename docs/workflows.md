@@ -142,4 +142,79 @@ jobs:
         GH_PAT: ${{ github.token }}
 ```
 
+## GitHub Actions and Cypress
+
+Execute Cypress tests and report data to Testomat.io Application.
+This workflow will be executed from Testomat.io Application when you click "Run on CI"
+
+```yaml
+name: Cypress reporting
+
+on:
+  pull_request:
+
+jobs:
+  reporting:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Setup dependancies
+        run: npm i
+
+      - name: Run tests
+        run: npx cypress run
+        env:
+          TESTOMATIO: "${{ secrets.TESTOMATIO }}"
+          TESTOMATIO_URL: "${{ secrets.TESTOMATIO_URL }}"
+```
+
+## GitHub Actions and Playwright
+
+Execute Playwright tests and report data to Testomat.io Application.
+This workflow will be executed from Testomat.io Application when you click "Run on CI"
+
+```yaml
+name: Playwright reporting
+
+on:
+  pull_request:
+
+jobs:
+  reporting:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Setup dependancies
+        run: npm i
+
+      - name: Playwright browser updates
+        run: npx playwright install
+
+      - name: Run tests
+        run: npx playwright test
+        env:
+          TESTOMATIO: "${{ secrets.TESTOMATIO }}"
+          TESTOMATIO_URL: "${{ secrets.TESTOMATIO_URL }}"
+```
+
 ...more examples are coming
