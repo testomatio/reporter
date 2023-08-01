@@ -85,13 +85,13 @@ or any [other via JUnit](./docs/junit.md) report....
 
 ### 2️⃣ Configure Reports
 
-* [Create report on Testomat.io](./docs/pipes.md#testomatio-pipe).
-* [Create brief summary report for GitHub Pull Request](./docs/pipes.md#github-pipe) 👇
-* [Create brief summary report for GitLab Merge Request](./docs/pipes.md#gitlab-pipe).
-* [Configure other pipes](./docs/pipes.md) for other ways to process test results output.
+* [Create report on Testomat.io](./docs/pipes/testomatio.md).
+* [Create brief summary report for GitHub Pull Request](./docs/pipes/github.md) 👇
+* [Create brief summary report for GitLab Merge Request](./docs/pipes/gitlab.md).
+* [Configure other pipes](./docs/pipes/md) for other ways to process test results output.
 
 
-![GitHub report](./docs/images/github.png)
+![GitHub report](./docs/images/pipes/github.png)
 
 GitHub report published as a comment to Pull Request:
 
@@ -121,6 +121,10 @@ Bring this reporter on CI and never lose test results again!
 
 * 🛠️ [Frameworks](./docs/frameworks.md)
 * ⛲ [Pipes](./docs/pipes.md)
+  * [Testomat.io](./docs/pipes/testomatio.md)
+  * [GitHub](./docs/pipes/github.md)
+  * [Gitlab](./docs/pipes/gitlab.md)
+  * [CSV](./docs/pipes/csv.md)
 * 📓 [JUnit](./docs/junit.md)
 * 🗄️ [Artifacts](./docs/artifacts.md)
 * 🔂 [Workflows](./docs/workflows.md)
