@@ -44,7 +44,13 @@ describe('Your suite @S12345678', () => {
   });
 ```
 
+Pass the logger object you want to intercept, not its name:\
+✅ ```logger.intercept(console)```\
+❌ ```logger.intercept('console')```
+
 Logger can intercept any logger (e.g. pino, loglevel, morgan, tracer, winston, etc.). And even multiple loggers at the same time.
+
+`console` is intercepted by default. To add console logs to your report just import logger in your test file and use console as usual.
 
 ### Examples for other loggers intercepting
 ```javascript
@@ -135,40 +141,15 @@ describe('Your suite @S12345678', () => {
 ```
 It will also be attached to your report and helps to understand the test flow.
 
-##### Minor comments
+#### Minor comments
 If you intercept logger, it does not affect your logger settings (e.g. log level). But if you start intercept multiple loggers, the last intercepted will be used as output to terminal where your tests executed.
 
-###### Use logger in Mocha
+#### Use logger in Mocha
 You have to pass test title to logger. Here is an example how to do it:
 
-Set test title inside `beforeEach` hook:
 ```javascript
-let currentTestTitle = null; // <<<<<
-
-beforeEach(function () {
-  currentTestTitle = this.currentTest.fullTitle(); // <<<<<
-});
-
-describe('suite @S12345678', () => {
-  it('test @12345678', () => {
-    logger.log('message', currentTestTitle); // <<<<<
-  });
-});
-```
-You can set title to env variable (e.g. process.env.TEST_TITLE):
-```javascript
-beforeEach(function () {
-  process.env.TEST_TITLE = this.currentTest.fullTitle(); // <<<<<
-});
-...
 it('test @12345678', () => {
-  logger.log('message', process.env.TEST_TITLE); // <<<<<
+  logger.log('message', global.testTitle); // <<<<<
+  console.log('message', global.testTitle); // <<<<<
 });
-...
-```
-Examples above are usable if you use logger in multiple places.
-
-If you want to use logger just in one place, you can pass test title directly to logger (logger should be called inside the test):
-```javascript
-logger.log('message', this.currentTest.fullTitle()); // <<<<<
 ```
