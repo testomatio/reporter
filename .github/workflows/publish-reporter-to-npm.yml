@@ -7,8 +7,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-      with:    
-        ref: ${{ github.event.release.target_commitish }}    
+      with:
+        ref: ${{ github.event.release.target_commitish }}
     - uses: actions/setup-node@v2
       with:
         node-version: 16
@@ -21,8 +21,10 @@ jobs:
         token: ${{ secrets.NPM_TOKEN }}
         # use "beta" tag if relevant, otherwise use "latest"
         tag: ${{ contains(github.event.release.tag_name, 'beta') && 'beta' || 'latest' }}
-
-    # push the version changes to GitHub
-    - run: git push
+    
+    # push the version changes to GitHub only if the tag does not include "beta"
+    - name: update version in package.json (via github push)
+      run: git push
+      if: contains(github.event.release.tag_name, 'beta') == false
       env:
         github-token: ${{ secrets.GITHUB_TOKEN }}
