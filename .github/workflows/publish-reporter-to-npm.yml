@@ -27,7 +27,7 @@ jobs:
         run: |
           echo "\n\n\n## Release ${{ github.event.release.tag_name }}\n\n" >> Changelog.md
           echo "${{ github.event.release.body }}" >> Changelog.md
-        # if: contains(github.event.release.tag_name, 'beta') == false
+        if: contains(github.event.release.tag_name, 'beta') == false
 
       - name: commit version to package.json (only for not beta release)
         run: git push
