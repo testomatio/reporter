@@ -115,13 +115,12 @@ List of available options:
 
 ### Supported frameworks
 This feature is under development right now. List of supported frameworks:
-🟢 - full support, 🟡 - partial support, 🔴 - no support yet
+🟢 - full support, 🟡 - partial support, 🔴 - no support
 - 🟢 CodeceptJS
 - 🔴 Cypress
 - 🟢 Cucumber
 - 🟢 Jest
-- 🟡 Mocha
-  - refer to [Use logger in Mocha](#use-logger-in-mocha) section
+- 🟢 Mocha
 - 🟢 Newman (Postman)
   - console logs are added by testomatio reporter by default, no need to use logger
 - 🟢 Playwright
@@ -143,13 +142,3 @@ It will also be attached to your report and helps to understand the test flow.
 
 #### Minor comments
 If you intercept logger, it does not affect your logger settings (e.g. log level). But if you start intercept multiple loggers, the last intercepted will be used as output to terminal where your tests executed.
-
-#### Use logger in Mocha
-You have to pass test title to logger. Here is an example how to do it:
-
-```javascript
-it('test @12345678', () => {
-  logger.log('message', global.testTitle); // <<<<<
-  console.log('message', global.testTitle); // <<<<<
-});
-```
