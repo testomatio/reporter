@@ -227,7 +227,12 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
 
     const status = summary.run.failures.length ? 'failed' : 'passed';
     console.log(APP_PREFIX, chalk.blue('Run result:', status));
-    testomatioReporter.updateRunStatus(status);
+    testomatioReporter.updateRunStatus(status).then(() => {
+      debug(chalk.blue('Run status updated:', status));
+    }).catch((err: any) => {
+      debug('Run status update failed');
+      debug(err);
+    });
     log('Collection run completed', status === 'passed' ? 'without failures' : `with ${summary.run.failures.length} failures`);
   });
 }
