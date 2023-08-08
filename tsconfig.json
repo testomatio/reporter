@@ -11,7 +11,7 @@
     "types": [
         "node"
     ],
-    "target": "es2017"
+    "target": "ESNext",
   },
   "compileOnSave": true,
   "include": [

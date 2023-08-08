@@ -39,7 +39,7 @@ logger.intercept(console); // intercept console
 describe('Your suite @S12345678', () => {
   test('Your test @T12345678', async () => {
     await page.login();
-    console.log('Login successful'); // this message will be intercepted and added to your report
+    console.log('this message will be intercepted and added to your testomatio report');
     assert(something);
   });
 ```
@@ -82,17 +82,17 @@ describe('Your suite @S12345678', () => {
 ```
 
 Varied syntax is supported. Use which you prefer. Examples:
-- #### Tagged template
+- Tagged template
 ```javascript
 log`Successful login`
 log`Successful login with user ${userName}
 ```
-- #### Standard
+- Standard
 ```javascript
 log('Successful login')
 log(`Successful login with user ${userName}`)
 ```
-- #### Standard with multiple arguments
+- Standard with multiple arguments
 ```javascript
 log('Successful login with user', userName, userAge)
 ```
