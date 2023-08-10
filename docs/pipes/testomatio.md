@@ -100,3 +100,19 @@ If you want to finish a run started by `--launch` use `--finish` option. `TESTOM
 ```bash
 TESTOMATIO={API_KEY} TESTOMATIO_RUN={RUN_ID} npx start-test-run --finish
 ```
+
+### Setting Build URL
+
+When running on CI reporter tries to detect automatically the URL of the current build. This URL will be set to Run report. Reporter automatically detects build URL for following CI services:
+
+* GitHub Actions
+* Azure Devops
+* Jenkins
+* CircleCi
+* Gitlab CI
+
+If you are using a different CI or you want to override build url run tests with `BUILD_URL` environment variable:
+
+```bash
+TESTOMATIO={API_KEY} BUILD_URL=<build-url> <actual run command>
+```
