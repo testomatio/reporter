@@ -1,4 +1,19 @@
 <!-- pending release updates -->
+# 1.0.6
+
+* Testomat.io. Auto-detect current build url and report it to Testomat.io. Manually url can be set with `BUILD_URL` variable:
+
+```
+BUILD_URL=https://.... TESTOMATIO=apiKey <actual test command>
+```
+
+# 1.0.5 
+
+* Fix "create tests" params processing for testomatio pipe
+
+# 1.0.4
+
+* Fixed parallel run
 
 # 1.0.3
 
