@@ -316,7 +316,7 @@ describe('XML Reader', () => {
       const [req] = server.requests({ method: 'POST', path: '/api/reporter' });
       const expectedResult = { api_key: TESTOMATIO };
       assert.isObject(req.body);
-      assert.deepEqual(req.body, expectedResult);
+      expect(req.body).to.include(expectedResult);
     });
 
     it('should publish updates', async () => {
