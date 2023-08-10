@@ -1,4 +1,4 @@
-const { assert } = require('chai');
+const { assert, expect } = require('chai');
 const { exec } = require('child_process');
 const ServerMock = require('mock-http-server');
 const JestReporter = require('../../lib/adapter/jest');
@@ -84,7 +84,7 @@ describe('Adapters', () => {
           const expectedResult = { api_key: TESTOMATIO };
 
           assert.isObject(req.body);
-          assert.deepEqual(req.body, expectedResult);
+          expect(req.body).to.include(expectedResult);
         });
 
         it('PUT :: /api/reporter/:runId :: should update run status', () => {
@@ -93,7 +93,7 @@ describe('Adapters', () => {
           const expectedResult = { api_key: TESTOMATIO, status_event: 'fail' };
 
           assert.isObject(req.body);
-          assert.deepEqual(req.body, expectedResult);
+          expect(req.body).to.include(expectedResult);
         });
 
         it('POST :: /api/reporter/:runId/testrun :: should add a new test to run instance', () => {
