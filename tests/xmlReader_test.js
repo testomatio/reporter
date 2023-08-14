@@ -293,7 +293,60 @@ describe('XML Reader', () => {
     expect(tests[0].suite_title).to.include('User');
   })  
 
+  it('should parse XUnit XML', () => {
+    const reader = new XmlReader();
+    const jsonData = reader.parse(path.join(__dirname, 'data/xunit.xml'))
 
+    expect(jsonData.status).to.eql('failed')
+    expect(jsonData.tests_count).to.eql(6)
+    expect(jsonData.tests.length).to.eql(6)
+
+    reader.formatTests();
+
+    jsonData.tests.forEach(t => {
+      expect(t).to.contain.keys([
+        'stack',
+        'create',
+        'status',
+        'title',
+        'run_time',
+        'suite_title',
+      ])
+    })
+    
+    const tests = jsonData.tests;
+    expect(tests[0].title).to.include('Test method1');
+    expect(tests[0].suite_title).to.include('TestClass1');
+    expect(tests[0].file).to.eql('Sample/Tests');
+    expect(tests[0].status).to.eql('passed');
+  })
+
+  it('should parse XUnit2 client XML', () => {
+    const reader = new XmlReader();
+    const jsonData = reader.parse(path.join(__dirname, 'data/xunit2.xml'))
+
+    expect(jsonData.status).to.eql('passed')
+    expect(jsonData.tests_count).to.eql(1)
+    expect(jsonData.tests.length).to.eql(1)
+
+    reader.formatTests();
+
+    jsonData.tests.forEach(t => {
+      expect(t).to.contain.keys([
+        'stack',
+        'create',
+        'status',
+        'title',
+        'run_time',
+        'suite_title',
+      ])
+    })
+    
+    const tests = jsonData.tests;
+    expect(tests[0].title).to.include('Test');
+    expect(tests[0].suite_title).to.include('Class1');
+    expect(tests[0].file).to.eql('ConsoleApp2');
+  })
 
   describe('#request', () => {
 
