@@ -35,4 +35,4 @@ Build local package:
 
 Install:
 
-`npm i <path to generate .tgz file>`
+`npm i <path to generated .tgz file>`
