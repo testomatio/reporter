@@ -1,4 +1,12 @@
 <!-- pending release updates -->
+# 1.0.9
+
+* Support XUnit format
+
+# 1.0.8 
+
+* Fixed `Can't read push of undefined` when logging steps
+
 # 1.0.6
 
 * Testomat.io. Auto-detect current build url and report it to Testomat.io. Manually url can be set with `BUILD_URL` variable:
