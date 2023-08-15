@@ -2,6 +2,7 @@
 # 1.0.9
 
 * Support XUnit format
+* Improved support for parametrized Java tests
 
 # 1.0.8 
 
