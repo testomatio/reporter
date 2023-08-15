@@ -142,7 +142,7 @@ describe('XML Reader', () => {
   })  
 
   it('should parse JUnit XML', () => {
-    const reader = new XmlReader();
+    const reader = new XmlReader({ lang: 'java' });
     const jsonData = reader.parse(path.join(__dirname, 'data/java.xml'))
 
     expect(jsonData.status).to.eql('failed')
@@ -206,7 +206,37 @@ describe('XML Reader', () => {
     expect(skippedTests.length).to.eql(1)
     const skippedTest = skippedTests[0];
     expect(skippedTest.title).to.eql('check dashboard')
-  })  
+  })
+
+  it('should parse JUnit params', () => {
+    const reader = new XmlReader({ lang: 'java' });
+    const jsonData = reader.parse(path.join(__dirname, 'data/junit2.xml'))
+
+    expect(jsonData.status).to.eql('passed')
+    const stats = reader.calculateStats();
+    expect(stats.status).to.eql('passed')
+    expect(stats.tests_count).to.eql(4)
+
+    reader.connectAdapter();
+    reader.fetchSourceCode();
+    reader.formatErrors();
+    reader.formatTests();
+
+    jsonData.tests.forEach(t => {
+      expect(t.title).to.eql('Can Create API Key ${param}')
+      expect(t).to.contain.keys([
+        'stack',
+        'create',
+        'status',
+        'file',
+        'title',
+        'run_time',
+        'suite_title',
+      ])
+    })
+
+    expect(jsonData.tests[0].example.param).to.eql('Master');
+  })    
 
 
   it('should parse JUnit C#', () => {
