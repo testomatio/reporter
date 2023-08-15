@@ -100,7 +100,7 @@ describe('XML Reader', () => {
       ])
     })
 
-    expect(jsonData.tests[0].title).to.eql("login with valid credentials")
+    expect(jsonData.tests[0].title).to.eql("Login With Valid Credentials")
 
     const failedTests = jsonData.tests.filter(t => t.status === 'failed')
   })
@@ -134,7 +134,7 @@ describe('XML Reader', () => {
 
     expect(jsonData.tests[0].code).to.be.ok;
     expect(jsonData.tests[0].code).to.include("public function runCestWithTwoFailedTest(")
-    expect(jsonData.tests[0].title).to.eql("run cest with two failed test")
+    expect(jsonData.tests[0].title).to.eql("Run Cest With Two Failed Test")
 
     const failedTests = jsonData.tests.filter(t => t.status === 'failed')
     const failedTest = failedTests[0];
@@ -174,6 +174,7 @@ describe('XML Reader', () => {
 
     const failedTests = jsonData.tests.filter(t => t.status === 'failed')
     const failedTest = failedTests[0];
+    console.log(failedTest.stack)
     expect(failedTest.stack).to.include('(CalculatorTest.java:43')
   })
 
@@ -205,7 +206,7 @@ describe('XML Reader', () => {
     const skippedTests = jsonData.tests.filter(t => t.status === 'skipped')
     expect(skippedTests.length).to.eql(1)
     const skippedTest = skippedTests[0];
-    expect(skippedTest.title).to.eql('check dashboard')
+    expect(skippedTest.title).to.eql('Check Dashboard')
   })
 
   it('should parse JUnit params', () => {
@@ -267,7 +268,7 @@ describe('XML Reader', () => {
     })
     
     const tests = jsonData.tests;
-    expect(tests[0].title).to.include('Create a web lead');
+    expect(tests[0].title).to.include('Create a Web Lead');
     expect(tests[0].suite_title).to.include('User');
   })
 
@@ -293,7 +294,7 @@ describe('XML Reader', () => {
     })
     
     const tests = jsonData.tests;
-    expect(tests[0].title).to.include('Create user login');
+    expect(tests[0].title).to.include('Create User Login');
     expect(tests[0].suite_title).to.include('User');
   })
 
@@ -319,7 +320,7 @@ describe('XML Reader', () => {
     })
     
     const tests = jsonData.tests;
-    expect(tests[0].title).to.include('Update user');
+    expect(tests[0].title).to.include('Update User');
     expect(tests[0].suite_title).to.include('User');
   })  
 
@@ -345,7 +346,7 @@ describe('XML Reader', () => {
     })
     
     const tests = jsonData.tests;
-    expect(tests[0].title).to.include('Test method1');
+    expect(tests[0].title).to.include('Method1');
     expect(tests[0].suite_title).to.include('TestClass1');
     expect(tests[0].file).to.eql('Sample/Tests');
     expect(tests[0].status).to.eql('passed');
