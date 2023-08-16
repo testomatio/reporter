@@ -44,7 +44,13 @@ describe('Your suite @S12345678', () => {
   });
 ```
 
+Pass the logger object you want to intercept, not its name:\
+✅ ```logger.intercept(console)```\
+❌ ```logger.intercept('console')```
+
 Logger can intercept any logger (e.g. pino, loglevel, morgan, tracer, winston, etc.). And even multiple loggers at the same time.
+
+`console` is intercepted by default. To add console logs to your report just import logger in your test file and use console as usual.
 
 ### Examples for other loggers intercepting
 ```javascript
@@ -109,16 +115,15 @@ List of available options:
 
 ### Supported frameworks
 This feature is under development right now. List of supported frameworks:
-🟢 - full support, 🟡 - partial support, 🔴 - no support yet
+🟢 - full support, 🟡 - partial support, 🔴 - no support
 - 🟢 CodeceptJS
 - 🔴 Cypress
 - 🟢 Cucumber
 - 🟢 Jest
-- 🔴 Mocha
+- 🟢 Mocha
 - 🟢 Newman (Postman)
   - console logs are added by testomatio reporter by default, no need to use logger
 - 🟢 Playwright
-- 🔴 Protractor
 - 🟢 Puppeteer (using Jest)
 - 🔴 WebdriverIO
 
@@ -135,5 +140,5 @@ describe('Your suite @S12345678', () => {
 ```
 It will also be attached to your report and helps to understand the test flow.
 
-##### Minor comments
+#### Minor comments
 If you intercept logger, it does not affect your logger settings (e.g. log level). But if you start intercept multiple loggers, the last intercepted will be used as output to terminal where your tests executed.
