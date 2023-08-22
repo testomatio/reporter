@@ -27,6 +27,7 @@
     "json-cycle": "^1.3.0",
     "lodash.memoize": "^4.1.2",
     "lodash.merge": "^4.6.2",
+    "pino": "^8.15.0",
     "uuid": "^9.0.0"
   },
   "files": [
@@ -48,7 +49,8 @@
     "test:adapter:mocha:example": "mocha './tests/adapter/examples/mocha/index.test.js' --config='./tests/adapter/examples/mocha/mocha.config.js'",
     "test:adapter:jasmine:example": "./tests/adapter/examples/jasmine/passReporterOpts.sh && jasmine './tests/adapter/examples/jasmine/index.test.js' --reporter=./../../../lib/adapter/jasmine.js",
     "test:adapter:codecept:example": "codeceptjs run --config='./tests/adapter/examples/codecept/codecept.conf.js'",
-    "test:adapter:cucumber:example": "cd ./tests/adapter/examples/cucumber && npx cucumber-js"
+    "test:adapter:cucumber:example": "cd ./tests/adapter/examples/cucumber && npx cucumber-js",
+    "test:logger": "npx mocha ./tests/logger.test.js"
   },
   "devDependencies": {
     "@cucumber/cucumber": "^9.3.0",
