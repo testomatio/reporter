@@ -116,3 +116,55 @@ If you are using a different CI or you want to override build url run tests with
 ```bash
 TESTOMATIO={API_KEY} BUILD_URL=<build-url> <actual run command>
 ```
+
+## Additional Execution Options with Testomatio
+
+Testomatio allows you to enhance your test execution with the option to filter and manage test runs based on various criteria. This can help you efficiently organize and execute your tests. Below, we explain how to use the `--filter` option in conjunction with Testomatio for customized test runs.
+
+To use the `--filter` option with Testomatio, follow the format:
+
+```bash
+TESTOMATIO={API_KEY} npx start-test-run -c <actual run command> --filter 'testomatio:{filter-type}={filter-value}'
+```
+
+### Available Filter Types
+
+**Tag Name Filter**
+
+Filter tests by tag names. Use this filter to select tests associated with specific tags.
+
+![Tag Name Filter](./images/by-tag-name.png)
+
+**Plan ID Filter**
+
+Filter tests by Testomatio plan IDs. Use this filter to organize and execute tests based on plan IDs.
+
+![Plan ID Filter](./images/by-plan-id.png)
+
+**Label Filter**
+
+Filter tests using custom labels. Labels allow you to categorize tests for better management and execution.
+
+Label Filter Example:
+![Label Filter Example 1](./images/by-label.png)
+
+Another Label Filter Example:
+![Label Filter Example 2](./images/by-label-2.png)
+
+**JIRA Ticket Filter**
+
+Filter tests linked to JIRA tickets. Use this filter to coordinate testing efforts with your JIRA workflow.
+
+![JIRA Ticket Filter](./images/by-jira-id.png)
+
+**📚 Example Usage**
+
+For instance, if you want to run tests with a specific label named "new-label-test," you can use the following command:
+
+```bash
+TESTOMATIO={API_KEY} npx start-test-run -c 'npx codeceptjs run' --filter 'testomatio:label=new-label-test'
+```
+
+> Remember to replace {API_KEY} with your actual Testomatio API key and adjust the <actual run command> according to your testing setup
+
+> It's important to note that the provided filter value must match exactly the corresponding tag name, plan ID, label, or JIRA ticket for the desired tests_
