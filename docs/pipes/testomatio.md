@@ -121,6 +121,8 @@ TESTOMATIO={API_KEY} BUILD_URL=<build-url> <actual run command>
 
 Testomatio allows you to enhance your test execution with the option to filter and manage test runs based on various criteria. This can help you efficiently organize and execute your tests. Below, we explain how to use the `--filter` option in conjunction with Testomatio for customized test runs.
 
+> The filtering functionality for test execution is currently available for the following frameworks: Playwright & CodeceptJS.
+
 To use the `--filter` option with Testomatio, follow the format:
 
 ```bash
@@ -151,6 +153,22 @@ Label Filter Example:
 Another Label Filter Example:
 ![Label Filter Example 2](./images/by-label-2.png)
 
+**Label Filter based on the Severity type**
+
+If you want to use a specific severity type, you should join the "severity" label id + severity type(e.g.: `s1-id2:⛔ Blocker`).
+
+Here's a list of available types that you can copy and add to the run command:
+
+- ⚠️ Critical
+- ⛔ Blocker
+- 🔥 Major
+- 👌 Normal
+- ❄️ Minor
+- 💤 Trivial
+
+Label Filter Example based on the Severity type:
+![Label Filter Example 3](./images/by-label-severity.png)
+
 **JIRA Ticket Filter**
 
 Filter tests linked to JIRA tickets. Use this filter to coordinate testing efforts with your JIRA workflow.
@@ -167,4 +185,6 @@ TESTOMATIO={API_KEY} npx start-test-run -c 'npx codeceptjs run' --filter 'testom
 
 > Remember to replace {API_KEY} with your actual Testomatio API key and adjust the <actual run command> according to your testing setup
 
-> It's important to note that the provided filter value must match exactly the corresponding tag name, plan ID, label, or JIRA ticket for the desired tests_
+> It's important to note that the provided filter value must match exactly the corresponding tag name, plan ID, label, or JIRA ticket for the desired tests
+
+Please note that this functionality allows you to easily filter and execute tests based on specific criteria, enhancing your testing experience.
