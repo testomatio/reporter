@@ -144,11 +144,23 @@ Filter tests by tag names. Use this filter to select tests associated with speci
 
 ![Tag Name Filter](./images/by-tag-name.png)
 
+_Command execution example_
+
+```bash
+TESTOMATIO={API_KEY} npx start-test-run -c 'actual run command' --filter 'testomatio:tag-name=smoke'
+```
+
 **Plan ID Filter**
 
 Filter tests by Testomatio plan IDs. Use this filter to organize and execute tests based on plan IDs.
 
 ![Plan ID Filter](./images/by-plan-id.png)
+
+_Command execution example_
+
+```bash
+TESTOMATIO={API_KEY} npx start-test-run -c 'actual run command' --filter 'testomatio:plan-id=b62f3170'
+```
 
 **Label Filter**
 
@@ -159,6 +171,12 @@ Label Filter Example:
 
 Another Label Filter Example:
 ![Label Filter Example 2](./images/by-label-2.png)
+
+_Command execution example_
+
+```bash
+TESTOMATIO={API_KEY} npx start-test-run -c 'actual run command' --filter 'testomatio:label=new-label-test'
+```
 
 **Label Filter based on the Severity type**
 
@@ -176,24 +194,36 @@ Here's a list of available types that you can copy and add to the run command:
 Label Filter Example based on the Severity type:
 ![Label Filter Example 3](./images/by-label-severity.png)
 
+_Command execution example_
+
+```bash
+TESTOMATIO={API_KEY} npx start-test-run -c 'actual run command' --filter 'testomatio:label=severity-f1b11:🔥 Major'
+```
+
 **JIRA Ticket Filter**
 
 Filter tests linked to JIRA tickets. Use this filter to coordinate testing efforts with your JIRA workflow.
 
 ![JIRA Ticket Filter](./images/by-jira-id.png)
 
+_Command execution example_
+
+```bash
+TESTOMATIO={API_KEY} npx start-test-run -c 'actual run command' --filter 'testomatio:jira-ticket=LMP-51'
+```
+
 **📚 Example Usage**
 
 For instance, if you want to run tests with a specific label named "new-label-test," you can use the following command:
 
 ```bash
-TESTOMATIO={API_KEY} npx start-test-run -c 'npx codeceptjs run' --filter 'testomatio:label=new-label-test'
-or
-TESTOMATIO={API_KEY} npx start-test-run -c 'npx codeceptjs run' --filter 'testomatio:tag-name=smoke'
-or
-TESTOMATIO={API_KEY} npx start-test-run -c 'npx codeceptjs run' --filter 'testomatio:plan-id=p29a11test'
-or
-TESTOMATIO={API_KEY} npx start-test-run -c 'npx codeceptjs run' --filter 'testomatio:jira-ticket=TET-123'
+TESTOMATIO={API_KEY} npx start-test-run -c 'npx codeceptjs run' --filter 'testomatio:label=new-label'
+```
+
+OR using Playwright:
+
+```bash
+TESTOMATIO={API_KEY} npx start-test-run -c 'npx playwright test' --filter 'testomatio:label=new-label'
 ```
 
 > Remember to replace {API_KEY} with your actual Testomatio API key and adjust the <actual run command> according to your testing setup
