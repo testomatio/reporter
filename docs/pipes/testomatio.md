@@ -188,6 +188,12 @@ For instance, if you want to run tests with a specific label named "new-label-te
 
 ```bash
 TESTOMATIO={API_KEY} npx start-test-run -c 'npx codeceptjs run' --filter 'testomatio:label=new-label-test'
+or
+TESTOMATIO={API_KEY} npx start-test-run -c 'npx codeceptjs run' --filter 'testomatio:tag-name=smoke'
+or
+TESTOMATIO={API_KEY} npx start-test-run -c 'npx codeceptjs run' --filter 'testomatio:plan-id=p29a11test'
+or
+TESTOMATIO={API_KEY} npx start-test-run -c 'npx codeceptjs run' --filter 'testomatio:jira-ticket=TET-123'
 ```
 
 > Remember to replace {API_KEY} with your actual Testomatio API key and adjust the <actual run command> according to your testing setup
