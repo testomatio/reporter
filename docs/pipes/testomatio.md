@@ -116,3 +116,11 @@ If you are using a different CI or you want to override build url run tests with
 ```bash
 TESTOMATIO={API_KEY} BUILD_URL=<build-url> <actual run command>
 ```
+
+### Publish Run
+
+To make report publicly available pass `TESTOMATIO_PUBLISH=1` variable:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_PUBLISH=1 <actual run command>
+```

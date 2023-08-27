@@ -1,4 +1,9 @@
 <!-- pending release updates -->
+
+# 1.0.10
+
+* Added `TESTOMATIO_PUBLISH=1` variable to automatically publish run report
+
 # 1.0.9
 
 * Support XUnit format
