@@ -78,7 +78,13 @@ logger.intercept(tracerColor);
 ## Simple syntax
 
 ```javascript
-const { log } = require('./logger');
+const { testomatioLogger } = require('@testomatio/reporter');
+// or
+const { logger } = require('@testomatio/reporter');
+// or
+import { logger } from '@testomatio/reporter';
+// or
+import { testomatioLogger } from '@testomatio/reporter';
 
 describe('Your suite @S12345678', () => {
   test('Your test @T12345678', async () => {
@@ -117,7 +123,7 @@ You are not limited to log only text. Log anything you wish, including objects. 
 After you import logger, you can configure it:
 
 ```javascript
-const { logger } = require('@testomatio/reporter');
+const { testomatioLogger } = require('@testomatio/reporter');
 loggger.configure({
   logLevel: 'WARN',
   prettyObjects: true,
@@ -151,6 +157,7 @@ You can add a step to your test:
 
 ```javascript
 const { step } = require('@testomatio/reporter');
+
 describe('Your suite @S12345678', () => {
   test('Your test @T12345678', async () => {
     await page.login();
