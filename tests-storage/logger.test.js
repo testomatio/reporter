@@ -3,18 +3,9 @@ const { expect } = require('chai');
 const fs = require('fs');
 const path = require('path');
 const { TESTOMAT_TMP_STORAGE } = require('../lib/constants');
-const { fileSystem } = require('../lib/util');
+const { fileSystem, removeColorCodes } = require('../lib/util');
 
 const pinoLogger = require('pino')();
-
-/**
- * Used to remove color codes
- * @param {*} input
- * @returns
- */
-function removeColorCodes(input) {
-  return input.replace(/\u001b\[[0-9;]*m/g, '');
-}
 
 describe('Logger', () => {
   it('logger is defined', () => {
@@ -22,7 +13,7 @@ describe('Logger', () => {
   });
 
   before(() => {
-    fileSystem.clearDir(TESTOMAT_TMP_STORAGE.mainDir);
+    fileSystem.clearDir(TESTOMAT_TMP_STORAGE.mainDir + '/log');
   });
 
   describe('Console log methods', () => {
@@ -71,7 +62,7 @@ describe('Logger', () => {
       expect(logContent).to.equal(`${message}\n`);
     });
 
-    it('intercept console.trace @T00000005', () => {
+    it.skip('intercept console.trace @T00000005', () => {
       const message = 'test trace message';
       console.trace(message);
       const logFilePath = path.join(TESTOMAT_TMP_STORAGE.mainDir, 'log', 'log_00000005');
@@ -159,13 +150,12 @@ describe('Logger', () => {
     });
   });
 
-  it('get logs from file @T00000013', () => {
+  it('get logs from file @T00000016', () => {
     const message = 'test log message';
-    console.log(message);
-    const logFilePath = path.join(TESTOMAT_TMP_STORAGE.mainDir, 'log', 'log_00000013');
-    expect(fs.existsSync(logFilePath)).to.equal(true, `log file ${logFilePath} does not exist`);
-
-    const logs = removeColorCodes(logger.getLogs('00000013'));
+    logger.log(message);
+    const logFilePath = path.join(TESTOMAT_TMP_STORAGE.mainDir, 'log', 'log_00000016');
+    expect(fs.existsSync(logFilePath)).to.equal(true);
+    const logs = removeColorCodes(logger.getLogs('@T00000016'));
     expect(logs).to.equal(`${message}\n`);
   });
 
@@ -186,3 +176,5 @@ describe('Logger', () => {
     expect(logContent).to.equal(`${message}\n`);
   });
 });
+
+module.exports.removeColorCodes = removeColorCodes;

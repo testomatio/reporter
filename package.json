@@ -42,7 +42,6 @@
     "lint:fix": "eslint lib --fix",
     "test": "mocha tests/**",
     "init": "cd ./tests/adapter/examples/cucumber && npm i",
-    "test:unit": "mocha tests",
     "test:adapter": "mocha './tests/adapter/index.test.js'",
     "test:pipes": "mocha './tests/pipes/*_test.js'",
     "test:adapter:jest:example": "jest './tests/adapter/examples/jest/index.test.js' --config='./tests/adapter/examples/jest/jest.config.js'",
@@ -50,7 +49,7 @@
     "test:adapter:jasmine:example": "./tests/adapter/examples/jasmine/passReporterOpts.sh && jasmine './tests/adapter/examples/jasmine/index.test.js' --reporter=./../../../lib/adapter/jasmine.js",
     "test:adapter:codecept:example": "codeceptjs run --config='./tests/adapter/examples/codecept/codecept.conf.js'",
     "test:adapter:cucumber:example": "cd ./tests/adapter/examples/cucumber && npx cucumber-js",
-    "test:logger": "npx mocha ./tests/logger.test.js"
+    "test:storage": "npx mocha ./tests-storage/**"
   },
   "devDependencies": {
     "@cucumber/cucumber": "^9.3.0",
