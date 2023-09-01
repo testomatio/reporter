@@ -1,6 +1,7 @@
 # Logger
 
-- intercepts any logger messages (console, winston, etc., specified by user)
+- intercepts console logs by default
+- intercepts any logger messages (winston, pino, etc., specified by user))
 - attaches intercepted log messages to your report
 - provides own methods to add any info to your report (like `logger.info()`, `logger.debug()`, etc.)
 - has a varied and convenient syntax
@@ -8,11 +9,13 @@
 
 > Please check if your framework supported in the list below [Supported frameworks](#supported-frameworks)
 
+For proper logger work, your tests titles should contain testomatio test ids ([see details](https://docs.testomat.io/usage/continuous-integration/#assigning-ids)).
+
 The logger supports next methods: `assert`, `debug`, `error`, `info`, `log`, `trace` and `warn`.
 
 Logging functionality is represented by 2 entitites:
 
-- `logger` object - main logger object with ability to intercept other loggers and configuration [usage](#usage)
+- `logger` (or `testomatioLogger`) object - main logger object with ability to intercept other loggers and configuration [usage](#usage)
 - `log` function – simple function to log messages (`log('message')` or `log\`message`\`) [usage](#simple-syntax)
 
 ## Usage
@@ -20,7 +23,7 @@ Logging functionality is represented by 2 entitites:
 Log messages with different levels:
 
 ```javascript
-const { logger } = require('@testomatio/reporter');
+const { testomatioLogger } = require('@testomatio/reporter');
 logger.info('message');
 logger.error('message');
 ```
@@ -44,16 +47,14 @@ logger.intercept(console); // intercept console
 describe('Your suite @S12345678', () => {
   test('Your test @T12345678', async () => {
     await page.login();
-    console.log('Login successful'); // this message will be intercepted and added to your report
+    console.log('this message will be intercepted and added to your report'); // <<
     assert(something);
   });
 ```
 
 Pass the logger object you want to intercept, not its name:\
-✅ `logger.intercept(console)`\
-❌ `logger.intercept('console')`
-
-Logger can intercept any logger (e.g. pino, loglevel, morgan, tracer, winston, etc.). And even multiple loggers at the same time.
+✅ `logger.intercept(pino)`\
+❌ `logger.intercept('pino')`
 
 `console` is intercepted by default. To add console logs to your report just import logger in your test file and use console as usual.
 
@@ -82,9 +83,9 @@ const { testomatioLogger } = require('@testomatio/reporter');
 // or
 const { logger } = require('@testomatio/reporter');
 // or
-import { logger } from '@testomatio/reporter';
-// or
 import { testomatioLogger } from '@testomatio/reporter';
+// or
+import { logger } from '@testomatio/reporter';
 
 describe('Your suite @S12345678', () => {
   test('Your test @T12345678', async () => {
