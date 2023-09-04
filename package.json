@@ -25,7 +25,6 @@
     "humanize-duration": "^3.27.3",
     "is-valid-path": "^0.1.1",
     "json-cycle": "^1.3.0",
-    "lodash": "^4.17.21",
     "lodash.memoize": "^4.1.2",
     "lodash.merge": "^4.6.2",
     "uuid": "^9.0.0"
@@ -42,14 +41,14 @@
     "lint:fix": "eslint lib --fix",
     "test": "mocha tests/**",
     "init": "cd ./tests/adapter/examples/cucumber && npm i",
-    "test:unit": "mocha tests",
     "test:adapter": "mocha './tests/adapter/index.test.js'",
     "test:pipes": "mocha './tests/pipes/*_test.js'",
     "test:adapter:jest:example": "jest './tests/adapter/examples/jest/index.test.js' --config='./tests/adapter/examples/jest/jest.config.js'",
     "test:adapter:mocha:example": "mocha './tests/adapter/examples/mocha/index.test.js' --config='./tests/adapter/examples/mocha/mocha.config.js'",
     "test:adapter:jasmine:example": "./tests/adapter/examples/jasmine/passReporterOpts.sh && jasmine './tests/adapter/examples/jasmine/index.test.js' --reporter=./../../../lib/adapter/jasmine.js",
     "test:adapter:codecept:example": "codeceptjs run --config='./tests/adapter/examples/codecept/codecept.conf.js'",
-    "test:adapter:cucumber:example": "cd ./tests/adapter/examples/cucumber && npx cucumber-js"
+    "test:adapter:cucumber:example": "cd ./tests/adapter/examples/cucumber && npx cucumber-js",
+    "test:storage": "npx mocha ./tests-storage/**"
   },
   "devDependencies": {
     "@cucumber/cucumber": "^9.3.0",
@@ -66,6 +65,7 @@
     "jest": "^27.4.7",
     "mocha": "^9.2.0",
     "mock-http-server": "^1.4.5",
+    "pino": "^8.15.0",
     "prettier": "2.5.1",
     "puppeteer": "^13.1.2"
   },
