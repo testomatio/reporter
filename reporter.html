@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/accordionjs@2.1.2/accordion.min.css">
+    <title>Report ##{@run.public_uid} - Testomat.io</title>
+    <style>
+      body {
+        font-family: "Fira Sans", sans-serif;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50 pt-6 px-4 lg:pt-4 lg:px-40 h-full;">
+<div class="flex items-center flex-col space-y-4 md:flex-row md:justify-between md:h-14 mb-6">
+  <div class="flex flex-col md:flex-row space-x-3 items-center">
+    <h2 class="text-gray-900 leading-none text-3xl font-semibold mb-0">Report #<%= @run.public_uid %></h2>
+    <span class="text-sm text-gray-500"><%= @run.title %></span>
+  </div>
+
+  <div class="flex space-x-3 items-center">
+    <button class="inline-flex items-center border border-transparent rounded-md leading-none text-gray-900 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-100 cursor-pointer px-4 py-2 text-base leading-none" style="min-height: 38px" id="copy-url">Copy URL</button>
+    <a 
+      class="inline-flex items-center border border-transparent leading-none text-white bg-indigo-500 hover:bg-indigo-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer px-4 py-2 text-base leading-none" 
+      style="min-height: 38px"
+      href="<%= @run.url %>"
+    >
+      Full Report
+    </a>
+  </div>
+</div>
+
+<div class="bg-white border overflow-hidden rounded-lg divide-y divide-gray-200 mb-12">
+  <div class="flex flex-col lg:divide-x divide-gray-200 sm:flex-col md:flex-col lg:flex-row">
+
+    <div class="w-full">
+      <dl>
+        <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+          <dt class="text-sm font-medium text-gray-500">
+            Status
+          </dt>
+          <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+            <span class="run-report-status-badge-<%= @run.status %>"><%= @run.status %></span>
+          </dd>
+        </div>
+        <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+          <dt class="text-sm font-medium text-gray-500">
+            Project
+          </dt>
+          <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+            <a href="<%= '/projects/' + @run.project.slug  %>" target="_blank" class="leading-none border-b border-dashed hover:text-gray-700"><%= @run.project.title %></a> <%= "(#{@run.plan.title} plan)" if @run.plan %>
+          </dd>
+        </div>
+        <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+          <dt class="text-sm font-medium text-gray-500">
+            Duration
+          </dt>
+          <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+            <% if @run.running? %>
+              - - -
+            <% else %>
+              <%= (@run.finished_at - @run.created_at).round %>s
+            <% end %>
+          </dd>
+        </div>
+        <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+          <dt class="text-sm font-medium text-gray-500">
+            Started at
+          </dt>
+          <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+            <%= @run.created_at.to_s %>
+          </dd>
+        </div>
+        <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+          <dt class="text-sm font-medium text-gray-500">
+            Finished at
+          </dt>
+          <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+            <% if @run.finished? %>
+              <%= @run.finished_at.to_s %>
+            <% else %>
+              - - -
+            <% end %>
+          </dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+
+  <div class="px-4 py-5 lg:px-20 lg:py-5">
+    <div class="mb-2">
+      <h3 class="text-2xl leading-10 font-medium text-gray-900">
+        Tests (<%= @run.testruns.length %>)
+      </h3>
+    </div>
+
+    <ul class="accordionjs bg-gray-50 rounded-md divide-y divide-gray-200 text-gray-900">
+      <li class="pl-3 pr-4 py-3 text-sm cursor-pointer">
+        <h4 class="text-lg flex items-center space-x-1">
+          <span class="font-medium">Passed</span>
+          <span class="inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none bg-green-200 text-green-600 rounded-full">
+            <% if @run.passed_count.nil? %>
+              <%= @dataset['passed'] %>
+            <% else %>
+              <%= @run.passed_count %>
+            <% end %>
+          </span>
+        </h4>
+
+        <ul role="list" class="pl-2 divide-y divide-gray-200">
+          <% @testruns_passed.each do |testrun| %>
+            <li class="py-3 flex justify-between items-center">
+              <% if testrun.test %>
+
+                <div>
+                  <a class="testrun hover:underline" data-template="testrun-<%= testrun.id %>">
+                    <%= testrun&.test&.title %>
+                    title
+                  </a>
+                </div>
+
+              <% else %>
+
+                <i><%= testrun.title %></i>
+
+              <% end %>
+              <%= "#{testrun.run_time}s" if testrun.run_time %>
+            </li>
+          <% end %>
+        </ul>
+      </li>
+
+      <li class="pl-3 pr-4 py-3 text-sm cursor-pointer">
+        <h4 class="text-lg flex items-center space-x-1">
+          <span class="font-medium">Failed</span>
+          <span class="inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none bg-red-200 text-red-500 rounded-full">
+            <% if @run.failed_count.nil? %>
+              <%= @dataset['failed'] %>
+            <% else %>
+              <%= @run.skipped_count %>
+            <% end %>
+          </span>
+        </h4>
+
+        <ul role="list" class="pl-2 divide-y divide-gray-200">
+          <% @testruns_failed.each do |testrun| %>
+            <li class="py-3 flex justify-between items-center">
+              <div class="">
+                <% if testrun.test&.id %>
+                  <a class="testrun hover:underline" data-template="testrun-<%= testrun.id %>">
+                    <%= testrun&.test&.title %>
+                  </a>
+                <% else %>
+                  <i><%= testrun.title %></i>
+                <% end %>
+              </div>
+              <div class="">
+                <%= "#{testrun.run_time}s" if testrun.run_time %>
+              </div>
+            </li>
+          <% end %>
+        </ul>
+      </li>
+
+      <li class="pl-3 pr-4 py-3 text-sm cursor-pointer">
+        <h4 class="text-lg flex items-center space-x-1">
+          <span class="font-medium">Skipped</span>
+          <span class="inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none bg-yellow-200 text-yellow-600 rounded-full">
+            <% if @run.skipped_count.nil? %>
+              <%= @dataset['skipped'] %>
+            <% else %>
+              <%= @run.skipped_count %>
+            <% end %>
+          </span>
+        </h4>
+
+        <ul role="list" class="pl-2 divide-y divide-gray-200">
+          <% @testruns_skipped.each do |testrun| %>
+            <li class="py-3 flex justify-between items-center">
+
+              <% if testrun.test&.id %>
+                <a class="testrun hover:underline" data-template="testrun-<%= testrun.id %>">
+                  <%= testrun.test.title %>
+                </a>
+              <% else %>
+                <i><%= testrun.title %></i>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      </li>
+
+      <% if @testruns_pending %>
+        <li class="pl-3 pr-4 py-3 text-sm cursor-pointer">
+          <h4 class="text-lg flex items-center space-x-1">
+            <span class="font-medium">Pending</span>
+            <span class="inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none bg-gray-300 text-gray-500 rounded-full">
+              <%= @testruns_pending.count %>
+            </span>
+          </h4>
+
+          <ul role="list" class="pl-2 divide-y divide-gray-200">
+            <% @testruns_pending.each do |testrun| %>
+              <li class="py-3 flex justify-between items-center">
+
+                <% if testrun.test&.id %>
+                  <a class="testrun hover:underline" data-template="testrun-<%= testrun.id %>">
+                    <%= testrun.test.title %>
+                  </a>
+                <% else %>
+                  <i><%= testrun.title %></i>
+                <% end %>
+              </li>
+            <% end %>
+          </ul>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+</div>
+
+<div class="fixed bg-white border-t inset-x-0 bottom-0 mx-auto py-1 px-3 sm:px-6 lg:px-8 flex items-center justify-between flex-wrap">
+  <p class="ml-3 text-gray-500 text-xs lg:truncate">
+    This is a public report generated by <a class="hover:underline text-gray-700 font-semibold" href="https://testomat.io" target="_blank">Testomat.io</a>. Everyone who has this link can see this report.<br>
+  </p>
+</div>
+
+<div>
+  <% @run.testruns.each do |testrun| %>
+    <div class="hidden">
+      <% next unless testrun.test %>
+
+      <div id="testrun-<%= testrun.id %>">
+        <div class="px-2 divide-y divide-gray-200">
+          <div class="py-2 flex flex-col">
+            <span>
+              Test: <a class="text-gray-500 text-sm leading-none border-b border-dashed hover:text-gray-700" target="_blank" href="<%= @run.url + '/test/' + testrun.id.to_s %>"><%= testrun.test.public_uid %> →</a>
+            </span>
+
+            <span>
+              Suite: <%= testrun.test.suite.title %>
+            </span>
+          </div>
+
+          <% if testrun.example_id && testrun.example.present? %>
+            <div class="py-2 text-gray-500 text-xs">
+              <%= testrun.example.data %>
+            </div>
+          <% end %>
+
+          <% if testrun.message.present? %>
+            <div class="py-2">
+              <p class="<%= testrun.status %>">
+                <%= testrun.message %>
+                message
+              </p>
+            </div>
+          <% end %>
+
+          <% if testrun.test.description %>
+            <div class="py-2">
+              <%= markdown(testrun.test.description).html_safe %>
+            </div>
+          <% else %>
+            <div class="py-2">
+              No description provided
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>
+  </body>
+  <script type="module" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.3.2/chart.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/accordionjs@2.1.2/accordion.min.js"></script>
+  <script>
+    $(document).ready(function($) {
+      $(".accordionjs").accordionjs();
+  
+      $('#copy-url').on('click', () => {
+        navigator.clipboard.writeText(window.location.href);
+      })
+    });
+  </script>
+</html>
+
+
+
+
