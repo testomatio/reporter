@@ -13,8 +13,8 @@ describe('testing ipe/misc.js functions', () => {
             expect(result).to.equal('plan');
         });
 
-        it('should return "label" when input is "label-name"', () => {
-            const result = updateFilterType('label-name');
+        it('should return "label" when input is "label"', () => {
+            const result = updateFilterType('label');
             expect(result).to.equal('label');
         });
 
@@ -41,8 +41,8 @@ describe('testing ipe/misc.js functions', () => {
             expect(result).to.deep.equal({ type: 'plan', id: '456' });
         });
 
-        it('should parse "label-name" input correctly', () => {
-            const input = 'label-name=789';
+        it('should parse "label" input correctly', () => {
+            const input = 'label=789';
             const result = parseFilterParams(input);
             expect(result).to.deep.equal({ type: 'label', id: '789' });
         });
