@@ -22,6 +22,7 @@ edge-cases#tried = 12         | # of edge cases tried in current run
 seed = 7004898156813507962    | random seed to reproduce generated values
     `
     const files = fetchFilesFromStackTrace(stack);
+    console.log(files)
     expect(files).to.include(file1);
     expect(files).to.include(file2);
   });

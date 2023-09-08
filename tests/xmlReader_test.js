@@ -178,6 +178,32 @@ describe('XML Reader', () => {
     expect(failedTest.stack).to.include('(CalculatorTest.java:43')
   })
 
+  it('should parse Selenide JUnit XML', () => {
+    const reader = new XmlReader({ lang: 'java' });
+    const jsonData = reader.parse(path.join(__dirname, 'data/selenide.xml'))
+
+    reader.formatErrors();
+    reader.formatTests();
+
+    jsonData.tests.forEach(t => {
+      expect(t).to.contain.keys([
+        'stack',
+        'create',
+        'status',
+        'file',
+        'title',
+        'run_time',
+        'suite_title',
+      ])
+    })
+
+    const failedTests = jsonData.tests.filter(t => t.status === 'failed')
+    const failedTest = failedTests[0];
+    console.log(failedTest.stack)
+    expect(failedTest.stack).to.include('SUITE-BEFORE')
+    expect(failedTest.stack).to.include('SUITE ERR')
+  })  
+
   it('should parse JUnit XML and skipped tests', () => {
     const reader = new XmlReader();
     const jsonData = reader.parse(path.join(__dirname, 'data/junit_skipped.xml'))
