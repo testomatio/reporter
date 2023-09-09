@@ -4,7 +4,7 @@ const {
   fetchSourceCodeFromStackTrace,
   fetchIdFromCode,
   fetchIdFromOutput,
- } = require('../lib/util');
+ } = require('../lib/src/utils/util');
 
 describe('Utils', () => {
   it('#fetchFilesFromStackTrace | should match images from stack trace', () => {
