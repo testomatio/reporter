@@ -2,12 +2,14 @@ const { expect } = require('chai');
 const {
   fetchFilesFromStackTrace,
   fetchSourceCodeFromStackTrace,
+  fetchIdFromCode,
  } = require('../lib/util');
 
 describe('Utils', () => {
   it('#fetchFilesFromStackTrace | should match images from stack trace', () => {
     const file1 = `${process.cwd()}/tests/data/artifacts/failed_test.png`
     const file2 = `${process.cwd()}/tests/data/artifacts/screenshot1.png`
+    
     const stack = `
 PayrollPBTest:everyPayrollIsPositive =
                               |-------------------jqwik-------------------
@@ -22,10 +24,22 @@ edge-cases#tried = 12         | # of edge cases tried in current run
 seed = 7004898156813507962    | random seed to reproduce generated values
     `
     const files = fetchFilesFromStackTrace(stack);
-    console.log(files)
     expect(files).to.include(file1);
     expect(files).to.include(file2);
   });
+
+  it('#fetchFilesFromStackTrace | should match images with one /', () => {
+    const file1 = `${process.cwd()}/tests/data/artifacts/failed_test.png`
+    
+    const stack = `
+PayrollPBTest:everyPayrollIsPositive =
+                              |-------------------jqwik-------------------
+tries = 1000                  | # of calls to property
+  and file:${file1}
+    `
+    const files = fetchFilesFromStackTrace(stack);
+    expect(files).to.include(file1);
+  });  
 
   it('#fetchSourceCodeFromStackTrace | prefixed with at ', () => {
     const stack = `
@@ -47,6 +61,22 @@ ${process.cwd()}/tests/data/cli/RunCest.php:24
     const source = fetchSourceCodeFromStackTrace(stack);
     expect(source).to.include(`$I->executeCommand('run --colors tests/dummy/FileExistsCept.php');`);
     expect(source).to.include(`24 >`);
+  })
+
+
+  it('#fetchIdFromCode', () => {
+    const code = `
+    void sumIsNeutral(@ForAll double first, @ForAll double second) throws Exception {
+      // @T8acca9eb
+      double actual = calculator.Calculate(first, second, "+");
+      double actualPlusZero = calculator.Calculate(actual, 0.0, "+");
+
+      assertThat(actual, is(equalTo(actualPlusZero)));
+  }
+
+    `
+    const id = fetchIdFromCode(code);
+    expect(id).to.eql(`8acca9eb`);
   })
 
 });
