@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { parseFilterParams, updateFilterType, generateFilterRequestParams } = require('../../lib/src/utils/pipe_utils');
+const { parseFilterParams, updateFilterType, generateFilterRequestParams } = require('../../lib/utils/pipe_utils');
 
 describe('testing ipe/misc.js functions', () => {
     describe('updateFilterType function', () => {
