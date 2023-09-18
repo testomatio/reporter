@@ -3,6 +3,7 @@ const {
   fetchFilesFromStackTrace,
   fetchSourceCodeFromStackTrace,
   fetchIdFromCode,
+  fetchIdFromOutput,
  } = require('../lib/util');
 
 describe('Utils', () => {
@@ -63,7 +64,6 @@ ${process.cwd()}/tests/data/cli/RunCest.php:24
     expect(source).to.include(`24 >`);
   })
 
-
   it('#fetchIdFromCode', () => {
     const code = `
     void sumIsNeutral(@ForAll double first, @ForAll double second) throws Exception {
@@ -78,5 +78,19 @@ ${process.cwd()}/tests/data/cli/RunCest.php:24
     const id = fetchIdFromCode(code);
     expect(id).to.eql(`8acca9eb`);
   })
+
+  it('#fetchIdFromOutput', () => {
+    const code = `
+    linss
+    tid://@T8acca9eb
+
+      assertThat(actual, is(equalTo(actualPlusZero)));
+  }
+
+    `
+    const id = fetchIdFromOutput(code);
+    expect(id).to.eql(`8acca9eb`);
+  })
+
 
 });
