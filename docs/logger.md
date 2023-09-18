@@ -1,5 +1,7 @@
 # Logger
-- intercepts any logger messages (console, winston, etc., specified by user)
+
+- intercepts console logs by default
+- intercepts any logger messages (winston, pino, etc., specified by user))
 - attaches intercepted log messages to your report
 - provides own methods to add any info to your report (like `logger.info()`, `logger.debug()`, etc.)
 - has a varied and convenient syntax
@@ -7,21 +9,26 @@
 
 > Please check if your framework supported in the list below [Supported frameworks](#supported-frameworks)
 
+For proper logger work, your tests titles should contain testomatio test ids ([see details](https://docs.testomat.io/usage/continuous-integration/#assigning-ids)).
+
 The logger supports next methods: `assert`, `debug`, `error`, `info`, `log`, `trace` and `warn`.
 
-
 Logging functionality is represented by 2 entitites:
-- `logger` object - main logger object with ability to intercept other loggers and configuration [usage](#usage)
+
+- `logger` (or `testomatioLogger`) object - main logger object with ability to intercept other loggers and configuration [usage](#usage)
 - `log` function – simple function to log messages (`log('message')` or `log\`message`\`) [usage](#simple-syntax)
 
 ## Usage
+
 Log messages with different levels:
+
 ```javascript
-const { logger } = require('@testomatio/reporter')
+const { testomatioLogger } = require('@testomatio/reporter');
 logger.info('message');
 logger.error('message');
 ```
-<!-- 
+
+<!--
 Shorter syntax:
 ```javascript
 const { log } = require('@testomatio/reporter')
@@ -31,6 +38,7 @@ log('message');
 Logger allows configuration (See [Configuration](#configuration) section for details).
 
 ### Intercept logs from your logger (and attach them to testomatio report)
+
 ```javascript
 const { logger } = require('@testomatio/reporter')
 
@@ -39,25 +47,24 @@ logger.intercept(console); // intercept console
 describe('Your suite @S12345678', () => {
   test('Your test @T12345678', async () => {
     await page.login();
-    console.log('Login successful'); // this message will be intercepted and added to your report
+    console.log('this message will be intercepted and added to your report'); // <<
     assert(something);
   });
 ```
 
 Pass the logger object you want to intercept, not its name:\
-✅ ```logger.intercept(console)```\
-❌ ```logger.intercept('console')```
-
-Logger can intercept any logger (e.g. pino, loglevel, morgan, tracer, winston, etc.). And even multiple loggers at the same time.
+✅ `logger.intercept(pino)`\
+❌ `logger.intercept('pino')`
 
 `console` is intercepted by default. To add console logs to your report just import logger in your test file and use console as usual.
 
 ### Examples for other loggers intercepting
+
 ```javascript
 const logLevel = require('loglevel');
 const pino = require('pino')();
-const morgan = require('morgan')
-const tracer = require('tracer').console()
+const morgan = require('morgan');
+const tracer = require('tracer').console();
 const tracerColor = require('tracer').colorConsole();
 
 logger.intercept(logLevel);
@@ -70,8 +77,15 @@ logger.intercept(tracerColor);
 > Note: if you import testomatio logger as "logger", be sure not to import other loggers as "logger" too. Otherwise, you will get an error.
 
 ## Simple syntax
+
 ```javascript
-const { log } = require('./logger');
+const { testomatioLogger } = require('@testomatio/reporter');
+// or
+const { logger } = require('@testomatio/reporter');
+// or
+import { testomatioLogger } from '@testomatio/reporter';
+// or
+import { logger } from '@testomatio/reporter';
 
 describe('Your suite @S12345678', () => {
   test('Your test @T12345678', async () => {
@@ -82,40 +96,51 @@ describe('Your suite @S12345678', () => {
 ```
 
 Varied syntax is supported. Use which you prefer. Examples:
+
 - #### Tagged template
+
 ```javascript
 log`Successful login`
 log`Successful login with user ${userName}
 ```
+
 - #### Standard
+
 ```javascript
-log('Successful login')
-log(`Successful login with user ${userName}`)
+log('Successful login');
+log(`Successful login with user ${userName}`);
 ```
+
 - #### Standard with multiple arguments
+
 ```javascript
-log('Successful login with user', userName, userAge)
+log('Successful login with user', userName, userAge);
 ```
 
 You are not limited to log only text. Log anything you wish, including objects. Everything will be converted to human-readable format.
 
 ## Configuration
+
 After you import logger, you can configure it:
+
 ```javascript
-const { logger } = require('@testomatio/reporter')
+const { testomatioLogger } = require('@testomatio/reporter');
 loggger.configure({
   logLevel: 'WARN',
   prettyObjects: true,
-})
+});
 ```
 
 List of available options:
+
 - `prettyObjects` [boolean] - if true, objects will be printed on multiple lines (easier to read). Default: `false` (object are printed on one line)
 - `logLevel` [error, warn, log, info, debug, trace, verbose, all] - ignores messages below the log level set. Also could be set by `LOG_LEVEL` env variable. Default: `all`
 
 ### Supported frameworks
+
 This feature is under development right now. List of supported frameworks:
 🟢 - full support, 🟡 - partial support, 🔴 - no support
+
 - 🟢 CodeceptJS
 - 🔴 Cypress
 - 🟢 Cucumber
@@ -128,9 +153,12 @@ This feature is under development right now. List of supported frameworks:
 - 🔴 WebdriverIO
 
 ## Step
+
 You can add a step to your test:
+
 ```javascript
 const { step } = require('@testomatio/reporter');
+
 describe('Your suite @S12345678', () => {
   test('Your test @T12345678', async () => {
     await page.login();
@@ -138,7 +166,9 @@ describe('Your suite @S12345678', () => {
     assert(something);
   });
 ```
+
 It will also be attached to your report and helps to understand the test flow.
 
 #### Minor comments
+
 If you intercept logger, it does not affect your logger settings (e.g. log level). But if you start intercept multiple loggers, the last intercepted will be used as output to terminal where your tests executed.
