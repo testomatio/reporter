@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="tests.LoginTest" tests="1" skipped="0" failures="1" errors="0" timestamp="2023-09-05T12:34:10" hostname="MacBook-Pro-JustKas.local" time="39.722">
+<testsuite name="tests.LoginTest" tests="1" skipped="0" failures="1" errors="0" timestamp="2023-09-05T12:34:10" time="39.722">
   <properties/>
   <testcase name="canLogin()" classname="tests.LoginTest" time="39.722">
     <failure message="Element not found {[id=email]}&#10;Expected: editable&#10;Screenshot: file:/user/1693917289872.0.png&#10;Page source: file:/user/1693917289872.0.html&#10;Timeout: 30 s.&#10;Caused by: NoSuchElementException: no such element: Unable to locate element: {&quot;method&quot;:&quot;css selector&quot;,&quot;selector&quot;:&quot;[id=email]&quot;}" type="com.codeborne.selenide.ex.ElementNotFound">Element not found {[id=email]}
