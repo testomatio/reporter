@@ -1,4 +1,4 @@
-## 🧰 JUnit Reports
+## JUnit Reports
 
 JUnit XML format is standard among test runners on various platforms. Testomat.io can load XML reports from test runners and create tests in a project from it. If your framework is not supported yet, generate JUnit report and upload it into Testomat.io
 
@@ -78,7 +78,8 @@ Import report with this command:
 TESTOMATIO={API_KEY} npx report-xml "target/surefire-reports/*.xml" --java-tests
 ```
 
-> You can specify `--java-test` option to set a path to tests if they are located in path other than `src/test/java`
+> [!NOTE]
+> If your tests are located in a folder other other than `src/test/java`, specify a path to test files using `--java-tests` option: `--java-tests="path/to/tests"`
 
 Screenshots or videos from tests are uploaded if test contains output with a path to file of following format:
 
@@ -86,7 +87,7 @@ Screenshots or videos from tests are uploaded if test contains output with a pat
 file://path/to/screenshot.png
 ```
 
-Use `System.out.println` to print a path to file that should be uploaded as a screenshot.
+Use `System.out.println` to print an absulute path to file that should be uploaded as a screenshot.
 
 ```java
 System.out.println("file://" + pathToScreenshot);
@@ -124,7 +125,7 @@ If NUnit generates `<ResultFiles>` section in XML report, all items from it will
   </UnitTestResult>
 ```
 
-To upload an arbitrary file as artifact, print its path to console:
+To upload an arbitrary file as artifact, print its absulute path to console:
 
 ```c#
 Console.WriteLine("file://path/to/file.png");

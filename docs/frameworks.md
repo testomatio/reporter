@@ -1,4 +1,4 @@
-## Frameworks
+## JavaScript Frameworks
 
 Testomat.io reporter is NodeJS package that can be applied to all popular JavaScript test runners.
 
@@ -269,3 +269,142 @@ TESTOMATIO={API_KEY} npx start-test-run -c 'npx protractor conf.js'
 ```
 
 > 📑 [Example Project](https://github.com/testomatio/examples/tree/master/protractor)
+
+## Java Frameworks
+
+> 📐 This section describes reporting into [Testomat.io Application](https://app.testomat.io)
+
+Reporting from Java Frameworks is done via JUnit XML report. Install `@testomatio/reporter` NodeJS package to process reports:
+
+```
+npm init -y
+npm install @testomatio/reporter --save-dev
+```
+
+JUnit XML report can be created by test framework you use:
+
+### JUnit
+
+If you run JUnit tests via Maven you can use [Surefire Report Plugin](https://maven.apache.org/surefire/maven-surefire-report-plugin/usage.html) to generate JUnit XML report.
+
+For example, with Surefire Report Plugin in Maven, you can add the following configuration to your project's `pom.xml`:
+
+```xml
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>3.0.0-M5</version>
+        </plugin>
+    </plugins>
+</build>
+```
+In this case JUnit XML will be saved into `target/surefire-reports/`
+
+So you can import reports to Testomat.io by running:
+
+```
+TESTOMATIO={API_KEY} npx report-xml "target/surefire-reports/**.xml" --java-tests
+```
+
+> **Note**
+> If your tests are located in a folder other other than `src/test/java`, specify a path to test files using `--java-tests` option: `--java-tests="path/to/tests"`
+
+This will import test reports into Testomat.io. If a reporter can access source code of Java tests, the source code will also be imported into Testomat.io
+
+#### Test IDS
+
+It is possible to attach reported tests to the current tests in Testomat.io by their IDs. Copy Test ID of a test you want to match, and put it as a comment into a Java test you want to import.
+
+In this example, we added ID as a comment to `negativeNumbersCanBeSubtracted` test:
+
+```java
+  @Test
+  public void negativeNumbersCanBeSubtracted() throws Exception {
+      // @T8acca9eb
+      assertThat(calc.Calculate(-1.0, -3.0, "-"), equalTo(2.0));
+  }
+```
+To make this feature work, please ensure that source code of Java tests is accessible to `npx report-xml` command, use `--java-tests` option to specify the correct path. To check if source code of tests is available run reporter with DEBUG mode:
+
+```
+DEBUG=@testomatio/reporter:* TESTOMATIO={API_KEY} npx report-xml "target/surefire-reports/**.xml" --java-tests
+```
+
+Is a source code is not available, test IDs can be set from output. To set Test ID to a test, copy test ID and print it from a test:
+
+```java
+System.out.println("tid://" + TID);
+```
+
+For example, if your test id is `@T8acca9eb` you can print it:
+
+```java
+System.out.println("tid://@T8acca9eb");
+```
+
+#### Artifacts
+
+Screenshots or videos from tests are uploaded if test contains output with a path to file of following format:
+
+```
+file://path/to/screenshot.png
+```
+
+Use `System.out.println` to print an absulute path to file that should be uploaded as a screenshot.
+
+```java
+System.out.println("file://" + pathToScreenshot);
+```
+
+This will produce XML report which contains path to a file:
+
+```xml
+<testcase>
+  <system-out><![CDATA[
+    file://path/to/scrrenshot.png
+  ]]></system-out>
+</testcase>
+```
+
+When XML report is uploaded, all files from `file://` will be uploaded to corresponding tests.
+
+> 🖼 Read more how [Artifacts](./artifacts.md) work
+
+### Selenide
+
+Please refer to [JUnit](#junit) if you use JUnit as a test runner for Selenide tests.
+However, it is important to note, that Selenide automatically adds artifacts into JUnit reports printing them as `file://` into XML report. This means that no code changes should be made to publish artifacts to Testomat.io.
+
+### Cucumber Java
+
+If you use Java version of Cucumber Java you should import your feature files first using [check-cucumber](npmjs.com/package/check-cucumber).
+Provide a path to directory containing feature files by using `-d` option:
+
+```
+TESTOMATIO={API_KEY} npx check-cucumber -d features
+```
+
+It is recommended to set Test IDs for Cucumber scenarios to make reports match imported tests.
+
+```
+TESTOMATIO_TITLE_IDS=1 TESTOMATIO={API_KEY} npx check-cucumber -d features --update-ids
+```
+
+We use `--update-ids` option to write test IDs obtained from Testomat.io into source code
+Also we use `TESTOMATIO_TITLE_IDS=1` to write test IDs into scenario titles instead of scenario tags. This is important so JUnit report would contain test IDs.
+
+To generate JUnit reports, you can use the built-in Cucumber JUnit plugin. When you run your Cucumber tests the JUnit reports will be generated in the default directory (`build/reports/tests/test`) in XML format.
+
+To submit report to Testomat.io use `npx report-xml` command from `@testomatio/reporter` NodeJS package:
+
+```
+TESTOMATIO={API_KEY} npx report-xml "build/reports/tests/**/*.xml"
+```
+
+If you want to have artifacts attached, use `System.out.println` to print an absulute path to file that should be uploaded as a screenshot.
+
+```java
+System.out.println("file://" + pathToScreenshot);
+```
