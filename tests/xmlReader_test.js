@@ -139,7 +139,26 @@ describe('XML Reader', () => {
     const failedTests = jsonData.tests.filter(t => t.status === 'failed')
     const failedTest = failedTests[0];
     expect(failedTest.stack).to.include('public function')
-  })  
+  })
+
+  it('should parse simple JUnit XML', () => {
+    const reader = new XmlReader({ lang: 'java' });
+    const jsonData = reader.parse(path.join(__dirname, 'data/junit_simple.xml'))
+
+    expect(jsonData.status).to.eql('failed')
+    const stats = reader.calculateStats();
+    expect(stats.status).to.eql('failed')
+    expect(stats.tests_count).to.eql(1)
+
+
+    reader.formatErrors();
+    reader.formatTests();
+
+    const test = jsonData.tests[0];
+    expect(test.file).to.eql('tests/LoginTest.java');
+    expect(test.title).to.eql('Login');
+    expect(test.test_id).to.eql('8acca9eb');
+  })
 
   it('should parse JUnit XML', () => {
     const reader = new XmlReader({ lang: 'java' });
@@ -177,6 +196,32 @@ describe('XML Reader', () => {
     console.log(failedTest.stack)
     expect(failedTest.stack).to.include('(CalculatorTest.java:43')
   })
+
+  it('should parse Selenide JUnit XML', () => {
+    const reader = new XmlReader({ lang: 'java' });
+    const jsonData = reader.parse(path.join(__dirname, 'data/selenide.xml'))
+
+    reader.formatErrors();
+    reader.formatTests();
+
+    jsonData.tests.forEach(t => {
+      expect(t).to.contain.keys([
+        'stack',
+        'create',
+        'status',
+        'file',
+        'title',
+        'run_time',
+        'suite_title',
+      ])
+    })
+
+    const failedTests = jsonData.tests.filter(t => t.status === 'failed')
+    const failedTest = failedTests[0];
+    console.log(failedTest.stack)
+    expect(failedTest.stack).to.include('SUITE-BEFORE')
+    expect(failedTest.stack).to.include('SUITE ERR')
+  })  
 
   it('should parse JUnit XML and skipped tests', () => {
     const reader = new XmlReader();
