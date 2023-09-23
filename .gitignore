@@ -112,3 +112,6 @@ dist
 
 #Export files folder
 export/
+
+# tmp files generated
+testomatio_tmp/

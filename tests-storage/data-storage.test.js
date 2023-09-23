@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const { TESTOMAT_TMP_STORAGE } = require('../lib/constants');
 const { fileSystem, removeColorCodes } = require('../lib/util');
-const { DataStorage } = require('../lib/dataStorage');
+const { DataStorage } = require('../lib/storages/dataStorage');
 
 describe('Storage', () => {
   before(() => {
