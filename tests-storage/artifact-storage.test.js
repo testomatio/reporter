@@ -22,9 +22,28 @@ describe('Artifact storage', () => {
   });
 
   it('save artifact with absolute filepath @TA0000003', () => {
-    const artifact = path.resolve(process.cwd(), 'file/path/arifact2.txt');;
+    const artifact = path.resolve(process.cwd(), 'file/path/artifact2.txt');
     testomat.artifact(artifact);
     const artifacts = artifactStorage.get('@TA0000003');
+    expect(artifacts[0]).to.deep.equal(artifact);
+  });
+
+  it('save multiple artifacts @TA0000004', () => {
+    const artifacts = ['artifact1.txt', 'artifact2.txt'];
+    testomat.artifact(artifacts[0]);
+    testomat.artifact(artifacts[1]);
+    const retrievedArtifacts = artifactStorage.get('@TA0000004');
+    expect(retrievedArtifacts).to.deep.equal(artifacts);
+  });
+
+  it('save artifact with name and type @TA0000005', () => {
+    const artifact = {
+      name: 'artifact name 1',
+      type: 'log',
+      path: 'file/path/artifact1.txt',
+    };
+    testomat.artifact(artifact);
+    const artifacts = artifactStorage.get('@TA0000005');
     expect(artifacts[0]).to.deep.equal(artifact);
   });
 });
