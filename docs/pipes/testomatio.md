@@ -166,16 +166,24 @@ TESTOMATIO={API_KEY} npx start-test-run -c 'actual run command' --filter 'testom
 
 Filter tests using custom labels. Labels allow you to categorize tests for better management and execution.
 
-Label Filter Example:
+Label Filter (by label name) Example 1:
+![Label Filter Example 3](./images/by-label-1.png)
+
+Label Filter (by label id) Example 2:
 ![Label Filter Example 1](./images/by-label.png)
 
-Another Label Filter Example:
-![Label Filter Example 2](./images/by-label-2.png)
+Another Label Filter Example 3:
+![Label Filter Example 2](./images/by-label-3.png)
 
 _Command execution example_
 
 ```bash
 TESTOMATIO={API_KEY} npx start-test-run -c 'actual run command' --filter 'testomatio:label=new-label-test'
+```
+OR
+
+```bash
+TESTOMATIO={API_KEY} npx start-test-run -c 'actual run command' --filter 'testomatio:label=NEW label TEST'
 ```
 
 **Label Filter based on the Severity type**
@@ -198,6 +206,11 @@ _Command execution example_
 
 ```bash
 TESTOMATIO={API_KEY} npx start-test-run -c 'actual run command' --filter 'testomatio:label=severity-f1b11:🔥 Major'
+```
+OR
+
+```bash
+TESTOMATIO={API_KEY} npx start-test-run -c 'actual run command' --filter 'testomatio:label=NEW label TEST:💤 Trivial'
 ```
 
 **JIRA Ticket Filter**
