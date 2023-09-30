@@ -23,7 +23,7 @@ describe('Logger', () => {
       const logFilePath = path.join(TESTOMAT_TMP_STORAGE.mainDir, 'log', 'log_00000000');
       expect(fs.existsSync(logFilePath)).to.equal(true);
       const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
-      expect(logContent).to.equal(`${message}\n`);
+      expect(logContent).to.equal(`${message}`);
     });
 
     it('intercept console.warn @T00000001', () => {
@@ -32,7 +32,7 @@ describe('Logger', () => {
       const logFilePath = path.join(TESTOMAT_TMP_STORAGE.mainDir, 'log', 'log_00000001');
       expect(fs.existsSync(logFilePath)).to.equal(true);
       const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
-      expect(logContent).to.equal(`${message}\n`);
+      expect(logContent).to.equal(`${message}`);
     });
 
     it('intercept console.error @T00000002', () => {
@@ -41,7 +41,7 @@ describe('Logger', () => {
       const logFilePath = path.join(TESTOMAT_TMP_STORAGE.mainDir, 'log', 'log_00000002');
       expect(fs.existsSync(logFilePath)).to.equal(true);
       const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
-      expect(logContent).to.equal(`${message}\n`);
+      expect(logContent).to.equal(`${message}`);
     });
 
     it('intercept console.info @T00000003', () => {
@@ -50,7 +50,7 @@ describe('Logger', () => {
       const logFilePath = path.join(TESTOMAT_TMP_STORAGE.mainDir, 'log', 'log_00000003');
       expect(fs.existsSync(logFilePath)).to.equal(true);
       const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
-      expect(logContent).to.equal(`${message}\n`);
+      expect(logContent).to.equal(`${message}`);
     });
 
     it('intercept console.debug @T00000004', () => {
@@ -59,7 +59,7 @@ describe('Logger', () => {
       const logFilePath = path.join(TESTOMAT_TMP_STORAGE.mainDir, 'log', 'log_00000004');
       expect(fs.existsSync(logFilePath)).to.equal(true);
       const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
-      expect(logContent).to.equal(`${message}\n`);
+      expect(logContent).to.equal(`${message}`);
     });
 
     it.skip('intercept console.trace @T00000005', () => {
@@ -68,7 +68,7 @@ describe('Logger', () => {
       const logFilePath = path.join(TESTOMAT_TMP_STORAGE.mainDir, 'log', 'log_00000005');
       expect(fs.existsSync(logFilePath)).to.equal(true);
       const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
-      expect(logContent).to.include(`${message}\n`);
+      expect(logContent).to.include(`${message}`);
     });
   });
 
@@ -82,7 +82,7 @@ describe('Logger', () => {
       const logFilePath = path.join(TESTOMAT_TMP_STORAGE.mainDir, 'log', 'log_00000006');
       expect(fs.existsSync(logFilePath)).to.equal(true, 'log file does not exist');
       const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
-      expect(logContent).to.include(`${message}\n`);
+      expect(logContent).to.include(`${message}`);
     });
   });
 
@@ -105,7 +105,7 @@ describe('Logger', () => {
       console.error(errorMessage);
       const logFilePath = path.join(TESTOMAT_TMP_STORAGE.mainDir, 'log', 'log_00000012');
       const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
-      expect(logContent).to.equal(`${warnMessage}\n${errorMessage}\n`);
+      expect(logContent).to.equal(`${warnMessage}\n${errorMessage}`);
     });
   });
 
@@ -115,7 +115,7 @@ describe('Logger', () => {
     const logFilePath = path.join(TESTOMAT_TMP_STORAGE.mainDir, 'log', 'log_00000008');
     expect(fs.existsSync(logFilePath)).to.equal(true);
     const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
-    expect(logContent).to.equal(`> ${message}\n`);
+    expect(logContent).to.equal(`> ${message}`);
   });
 
   describe('Template literals', () => {
@@ -125,7 +125,7 @@ describe('Logger', () => {
       const logFilePath = path.join(TESTOMAT_TMP_STORAGE.mainDir, 'log', 'log_00000009');
       expect(fs.existsSync(logFilePath)).to.equal(true);
       const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
-      expect(logContent).to.equal(`${message}\n`);
+      expect(logContent).to.equal(`${message}`);
     });
 
     it('standard template string with variable @T00000010', () => {
@@ -135,7 +135,7 @@ describe('Logger', () => {
       const logFilePath = path.join(TESTOMAT_TMP_STORAGE.mainDir, 'log', 'log_00000010');
       expect(fs.existsSync(logFilePath)).to.equal(true);
       const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
-      expect(logContent).to.equal(`${message} ${someVar}\n`);
+      expect(logContent).to.equal(`${message} ${someVar}`);
     });
 
     it('standard with multiple variables @T00000011', () => {
@@ -146,7 +146,7 @@ describe('Logger', () => {
       const logFilePath = path.join(TESTOMAT_TMP_STORAGE.mainDir, 'log', 'log_00000011');
       expect(fs.existsSync(logFilePath)).to.equal(true);
       const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
-      expect(logContent).to.equal(`${message} ${someVar} ${someVar2}\n`);
+      expect(logContent).to.equal(`${message} ${someVar} ${someVar2}`);
     });
   });
 
@@ -156,7 +156,7 @@ describe('Logger', () => {
     const logFilePath = path.join(TESTOMAT_TMP_STORAGE.mainDir, 'log', 'log_00000016');
     expect(fs.existsSync(logFilePath)).to.equal(true);
     const logs = removeColorCodes(logger.getLogs('@T00000016'));
-    expect(logs).to.equal(`${message}\n`);
+    expect(logs).to.equal(`${message}`);
   });
 
   // TODO
@@ -164,7 +164,7 @@ describe('Logger', () => {
     const message = 'test log message';
     console.log(message);
     const logs = removeColorCodes(logger.getLogs());
-    expect(logs).to.equal(`${message}\n`);
+    expect(logs).to.equal(`${message}`);
   });
 
   it('intercept logger.log message @T00000015', () => {
@@ -173,7 +173,7 @@ describe('Logger', () => {
     const logFilePath = path.join(TESTOMAT_TMP_STORAGE.mainDir, 'log', 'log_00000015');
     expect(fs.existsSync(logFilePath)).to.equal(true);
     const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
-    expect(logContent).to.equal(`${message}\n`);
+    expect(logContent).to.equal(`${message}`);
   });
 });
 

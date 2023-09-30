@@ -23,7 +23,7 @@ describe('Storage', () => {
     const dataFilePath = path.join(TESTOMAT_TMP_STORAGE.mainDir, dataType, `${dataType}_B0000002`);
     expect(fs.existsSync(dataFilePath)).to.equal(true);
     const dataContent = fs.readFileSync(dataFilePath, 'utf8');
-    expect(dataContent).to.equal(data + '\n');
+    expect(dataContent).to.equal(data);
   });
 
   it('GET data from FILE storage @TB0000003', () => {
@@ -33,7 +33,7 @@ describe('Storage', () => {
     storage.putData(data, '@TB0000003');
 
     const retrievedData = storage.getData('@TB0000003');
-    expect(retrievedData).to.equal(data + '\n');
+    expect(retrievedData).to.equal(data);
   });
 
   it('PUT data to GLOBAL storage @TB0000005', () => {
