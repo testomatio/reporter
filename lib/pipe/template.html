@@ -6,6 +6,8 @@
         <link href="https://fonts.googleapis.com/css2?family=Fira+Mono:wght@400;500;700&display=swap" rel="stylesheet">
         <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/accordionjs@2.1.2/accordion.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <link rel="stylesheet" href="./style.css">
         <style>
             body {
                 font-family: "Fira Sans", sans-serif;
@@ -34,28 +36,26 @@
                         </a>
                     </div>
                 </div>
-                <div class="bg-white border overflow-hidden rounded-lg divide-y divide-gray-200 mb-12">
+                <!-- <div class="bg-white border overflow-hidden rounded-lg divide-y divide-gray-200 mb-12">
                     <div class="flex flex-col lg:divide-x divide-gray-200 sm:flex-col md:flex-col lg:flex-row">
                         <div class="w-full">
                             <dl>
                               <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                                 <dt class="text-sm font-medium text-gray-500">
-                                  Status
+                                  RUN Status
                                 </dt>
                                 <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                                     <span class="inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none bg-green-200 text-green-600 rounded-full">
                                         {{run.status}}
                                     </span>
-                                    <!-- TODO: maybe provide calculation: if all passed => pased, no => fail -->
                                 </dd>
                               </div>
                               <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                                 <dt class="text-sm font-medium text-gray-500">
-                                  Project
+                                    Number of suites
                                 </dt>
                                 <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                  <a href="<%= '/projects/' + @run.project.slug  %>" target="_blank" class="leading-none border-b border-dashed hover:text-gray-700">{{run.project}}</a>
-                                  <!--  TODO: need to find info- WHAT project link we should be USE???? -->
+                                    {{run.suites.length}}
                                 </dd>
                               </div>
                               <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -63,6 +63,9 @@
                                     Duration
                                 </dt>
                                 <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                    <span>
+                                        <i class="fa fa-clock-o"></i>
+                                    </span>
                                     {{calculateDuration run.start run.end}}
                                 </dd>
                               </div>
@@ -85,12 +88,94 @@
                             </dl>
                         </div>
                     </div>
+                </div> -->
+                <div class="bg-white border overflow-hidden rounded-lg divide-y divide-gray-200 mb-12">
+                    <div class="flex flex-col lg:divide-x divide-gray-200 sm:flex-col md:flex-col lg:flex-row">
+                        <div class="w-full lg:w-1/2">
+                            <!-- Ліва частина з графіком -->
+                            <div class="p-4">
+                                <h2 class="text-xl font-semibold mb-4">Testomatio Test Results</h2>
+                                <span class="text-sm text-gray-500 items-center">( 3/26/2023 )</span>
+                                <div class="hart-container" style="height: 200px;">
+                                    <canvas id="testomatio_chart"></canvas>
+                                    <div for="testomatio_chart"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="w-full lg:w-1/2">
+                            <!-- Права частина з інформацією -->
+                            <div class="p-4">
+                                <h2 class="text-xl font-semibold mb-4">Testomatio Run Info</h2>
+                                <dl>
+                                    <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                        <dt class="text-sm font-medium text-gray-500">
+                                          RUN Status
+                                        </dt>
+                                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                            <span class="inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none bg-green-200 text-green-600 rounded-full">
+                                                {{run.status}}
+                                            </span>
+                                        </dd>
+                                      </div>
+                                      <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                        <dt class="text-sm font-medium text-gray-500">
+                                            Number of suites
+                                        </dt>
+                                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                            {{run.suites.length}}
+                                        </dd>
+                                      </div>
+                                      <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                        <dt class="text-sm font-medium text-gray-500">
+                                            Duration
+                                        </dt>
+                                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                            <span>
+                                                <i class="fa fa-clock-o"></i>
+                                            </span>
+                                            {{calculateDuration run.start run.end}}
+                                        </dd>
+                                      </div>
+                                    </div>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+                
                 <div class="px-4 py-5 lg:px-20 lg:py-5">
-                    <div class="mb-2">
-                        <h3 class="text-2xl leading-10 font-medium text-gray-900">
-                          Tests {{run.tests.length}}
-                        </h3>
+                    <!-- TODO: maybe add a search section by test NAME!! -->
+                    <div class="px-4 py-5 lg:px-20 lg:py-5 border rounded-md mb-4">
+                        <div class="mb-2">
+                            <h3 class="text-2xl leading-10 font-medium text-gray-900">
+                                Search and Summary
+                            </h3>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <div class="relative">
+                                <!-- <span class="absolute inset-y-0 left-0 pl-1.5 flex items-center">
+                                    <i class="fa fa-search text-gray-500"></i>
+                                </span> -->
+                                <!-- TODO: need additional styling -->
+                                <input type="text" id="search-input" placeholder="Search by test title..." class="border rounded-md py-1 px-2 w-48 focus:outline-none focus:ring focus:border-blue-300">
+
+                            </div>
+                            <div class="test-status">
+                                <div class="flex items-center">
+                                    <span class="font-medium mr-2">All:</span>
+                                    <span class="text-blue-600 font-semibold">{{run.tests.length}}</span>
+                                    <span class="font-medium ml-4 mr-2">Passed:</span>
+                                    <span class="text-green-600 font-semibold">{{getTestsByStatus run.tests "PASS"}}</span>
+                                    <span class="font-medium ml-4 mr-2">Failed:</span>
+                                    <span class="text-red-600 font-semibold">{{getTestsByStatus run.tests "FAIL"}}</span>
+                                    <span class="font-medium ml-4 mr-2">Skipped:</span>
+                                    <span class="text-yellow-600 font-semibold">{{getTestsByStatus run.tests "SKIP"}}</span>
+                                    <span class="font-medium ml-4 mr-2">Pending:</span>
+                                    <span class="text-gray-600 font-semibold">{{getTestsByStatus run.tests "PENDING"}}</span>
+                                </div>
+                            </div>
+                            
+                        </div>
                     </div>
 
                     <ul class="accordionjs bg-gray-50 rounded-md divide-y divide-gray-200 text-gray-900">
@@ -98,7 +183,7 @@
                             <h4 class="text-lg flex items-center space-x-1">
                               <span class="font-medium">Passed</span>
                               <span class="inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none bg-green-200 text-green-600 rounded-full">
-                                {{getTestsByStatus run.tests "pass"}}
+                                {{getTestsByStatus run.tests "PASS"}}
                               </span>
                             </h4>
                             <ul role="list" class="pl-2 divide-y divide-gray-200">
@@ -107,13 +192,32 @@
                                         {{#eq status "PASS"}}
                                             <li class="py-3 flex justify-between items-center">
                                                 <div>
-                                                    <a class="testrun hover:underline" data-template="testrun-{{@index}}">
+                                                    <div class="success"></div>
+                                                    <!-- <a class="testrun hover:underline" data-template="test-{{title}}">
                                                         {{title}} title
-                                                    </a>
+                                                    </a> -->
+                                                    <a class="testrun hover:underline" data-toggle="test-{{id}}" data-target="test-code-{{id}}">
+                                                        {{title}} title
+                                                    </a>                                     
                                                 </div>
-                                                {{#if run_time}}
-                                                    {{run_time}}s
-                                                {{/if}}
+                                                <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                                    <span>
+                                                        <i class="fa fa-clock-o"></i>
+                                                    </span>
+                                                    {{#if run_time}}
+                                                        {{run_time}}s
+                                                    {{/if}}
+                                                </dd>
+                                                <!-- <div id="test-code-{{id}}" class="test-code-container test-code">
+                                                    {{code}}
+                                                </div>                                                 -->
+                                            </li>
+                                            <li class="py-3 test-code-container test-code" id="test-code-{{id}}">
+                                                <pre>
+                                                    <code>
+                                                        {{code}}
+                                                    </code>
+                                                </pre>
                                             </li>
                                         {{/eq}}
                                     {{/each}}
@@ -134,13 +238,19 @@
                                     {{#eq status "FAIL"}}
                                         <li class="py-3 flex justify-between items-center">
                                             <div>
-                                                <a class="testrun hover:underline" data-template="testrun-{{@index}}">
+                                                <div class="fail"></div>
+                                                <a class="testrun hover:underline" data-template="test-{{title}}">
                                                     {{title}} title
                                                 </a>
                                             </div>
-                                            {{#if run_time}}
-                                                {{run_time}}s
-                                            {{/if}}
+                                            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                                <span>
+                                                    <i class="fa fa-clock-o"></i>
+                                                </span>
+                                                {{#if run_time}}
+                                                    {{run_time}}s
+                                                {{/if}}
+                                            </dd>
                                         </li>
                                     {{/eq}}
                                 {{/each}}
@@ -160,7 +270,7 @@
                                     {{#eq status "SKIP"}}
                                         <li class="py-3 flex justify-between items-center">
                                             <div>
-                                                <a class="testrun hover:underline" data-template="testrun-{{@index}}">
+                                                <a class="testrun hover:underline" data-template="test-{{title}}">
                                                     {{title}} title
                                                 </a>
                                             </div>
@@ -190,6 +300,8 @@
     <script type="module" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.3.2/chart.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/accordionjs@2.1.2/accordion.min.js"></script>
+    <!-- Chart.js from a CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!-- Include Handlebars from a CDN -->
     <script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>
@@ -205,9 +317,59 @@
             })
         });
 
-        const template = Handlebars.compile($('#header_template').html());
+        // const template = Handlebars.compile($('#header_template').html());
 
-        $('#testomatio_report').html(template(result));
+        // $('#testomatio_report').html(template(result));
+
+        //Open code section handler
+        document.querySelectorAll('.test-code').forEach(element => {
+            element.style.display = 'none';
+        });
+        const testrunLinks = document.querySelectorAll('.testrun');
+
+        // Додайте обробник подій для кожного посилання
+        testrunLinks.forEach(link => {
+            link.addEventListener('click', function () {
+                // Отримайте значення атрибутів "data-toggle" та "data-target" з посилання
+                const toggleId = this.getAttribute('data-toggle');
+                const targetId = this.getAttribute('data-target');
+                
+                // Отримайте елементи секції "tests.code" та змінну стану відображення
+                const targetElement = document.querySelector(`#${targetId}`);
+                
+                // Змініть стан відображення секції "tests.code" при кожному кліку
+                if (targetElement.style.display === 'none') {
+                    targetElement.style.display = 'block';
+                } else {
+                    targetElement.style.display = 'none';
+                }
+            });
+        });
+
+        // document.addEventListener('DOMContentLoaded', function () {
+        //     var ctx = document.getElementById('testomatio-chart').getContext('2d');
+        //     var data = {
+        //         labels: ['Passed', 'Failed', 'Skipped'],
+        //         datasets: [{
+        //             data: [/* Додайте кількість тестів для кожного статусу */],
+        //             backgroundColor: ['green', 'red', 'yellow'], // Кольори для статусів
+        //         }]
+        //     };
+
+        //     new Chart(ctx, {
+        //         type: 'pie',
+        //         data: data,
+        //         options: {
+        //             plugins: {
+        //                 datalabels: {
+        //                     display: true,
+        //                     color: 'black', // Встановити бажаний колір
+        //                 }
+        //             }
+        //         }
+        //     });
+        // });
     </script>
+    <script type="text/javascript" src="./chart-my.js"></script>
 
 </html>
