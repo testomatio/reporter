@@ -317,9 +317,9 @@
             })
         });
 
-        // const template = Handlebars.compile($('#header_template').html());
+        const template = Handlebars.compile($('#header_template').html());
 
-        // $('#testomatio_report').html(template(result));
+        $('#testomatio_report').html(template(result));
 
         //Open code section handler
         document.querySelectorAll('.test-code').forEach(element => {
