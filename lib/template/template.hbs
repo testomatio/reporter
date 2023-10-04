@@ -7,7 +7,7 @@
         <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/accordionjs@2.1.2/accordion.min.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-        <title>Report {{run.public_uid}} - Testomat.io</title>
+        <title>Report {{runId}} - Testomat.io</title>
         <link rel="stylesheet" href="./style.css">
         {{!-- TODO: styling create as a new additional file instead of template => copy default one --}}
         <style>
@@ -21,16 +21,16 @@
         <div id="testomatio_report">                
             <div class="flex items-center flex-col space-y-4 md:flex-row md:justify-between md:h-14 mb-6">
                 <div class="flex flex-col md:flex-row space-x-3 items-center">
-                    <h2 class="text-gray-900 leading-none text-3xl font-semibold mb-0">{{run.public_uid}}
+                    <h2 class="text-gray-900 leading-none text-3xl font-semibold mb-0">{{runId}}
                     </h2>
-                    <span class="text-sm text-gray-500">
-                        {{run.title}}
-                    </span>
+                    {{!-- <span class="text-sm text-gray-500">
+                        {{executionDate}}
+                    </span> --}}
                 </div>
                 <div class="flex space-x-3 items-center">                       
                     <a class="inline-flex items-center border border-transparent leading-none text-white bg-indigo-500 hover:bg-indigo-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer px-4 py-2 text-base leading-none" 
                         style="min-height: 38px"
-                        href="{{run.link}}" 
+                        href="{{runUrl}}" 
                         target="_blank">
                         Full Report
                     </a>
@@ -42,7 +42,7 @@
                         <!-- Left chart section -->
                         <div class="p-4">
                             <h2 class="text-xl font-semibold mb-4">Testomatio Test Results</h2>
-                            <span class="text-sm text-gray-500 items-center">( 3/26/2023 )</span>
+                            <span class="text-sm text-gray-500 items-center">{{executionDate}}</span>
                             <div class="hart-container" style="height: 200px;">
                                 <canvas id="testomatio_chart"></canvas>
                                 <div for="testomatio_chart"></div>
@@ -60,16 +60,8 @@
                                     </dt>
                                     <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                                         <span class="inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none bg-green-200 text-green-600 rounded-full">
-                                            {{run.status}}
+                                            {{status}}
                                         </span>
-                                    </dd>
-                                    </div>
-                                    <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                                    <dt class="text-sm font-medium text-gray-500">
-                                        Number of suites
-                                    </dt>
-                                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                        {{run.suites.length}}
                                     </dd>
                                     </div>
                                     <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -80,7 +72,7 @@
                                         <span>
                                             <i class="fa fa-clock-o"></i>
                                         </span>
-                                        {{calculateDuration run.start run.end}}
+                                        {{executionTime}}
                                     </dd>
                                     </div>
                                 </div>
@@ -100,25 +92,19 @@
                     </div>
                     <div class="flex items-center space-x-4">
                         <div class="relative">
-                            <!-- <span class="absolute inset-y-0 left-0 pl-1.5 flex items-center">
-                                <i class="fa fa-search text-gray-500"></i>
-                            </span> -->
-                            <!-- TODO: need additional styling -->
                             <input type="text" id="search-input" placeholder="Search by test title..." class="border rounded-md py-1 px-2 w-48 focus:outline-none focus:ring focus:border-blue-300">
 
                         </div>
                         <div class="test-status">
                             <div class="flex items-center">
                                 <span class="font-medium mr-2">All:</span>
-                                <span class="text-blue-600 font-semibold">{{run.tests.length}}</span>
+                                <span class="text-blue-600 font-semibold">{{tests.length}}</span>
                                 <span class="font-medium ml-4 mr-2">Passed:</span>
-                                <span class="text-green-600 font-semibold">{{getTestsByStatus run.tests "PASS"}}</span>
+                                <span class="text-green-600 font-semibold">{{getTestsByStatus tests "PASSED"}}</span>
                                 <span class="font-medium ml-4 mr-2">Failed:</span>
-                                <span class="text-red-600 font-semibold">{{getTestsByStatus run.tests "FAIL"}}</span>
+                                <span class="text-red-600 font-semibold">{{getTestsByStatus tests "FAILED"}}</span>
                                 <span class="font-medium ml-4 mr-2">Skipped:</span>
-                                <span class="text-yellow-600 font-semibold">{{getTestsByStatus run.tests "SKIP"}}</span>
-                                <span class="font-medium ml-4 mr-2">Pending:</span>
-                                <span class="text-gray-600 font-semibold">{{getTestsByStatus run.tests "PENDING"}}</span>
+                                <span class="text-yellow-600 font-semibold">{{getTestsByStatus tests "SKIPPED"}}</span>
                             </div>
                         </div>
                         
@@ -130,17 +116,17 @@
                         <h4 class="text-lg flex items-center space-x-1">
                             <span class="font-medium">Passed</span>
                             <span class="inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none bg-green-200 text-green-600 rounded-full">
-                            {{getTestsByStatus run.tests "PASS"}}
+                            {{getTestsByStatus tests "PASSED"}}
                             </span>
                         </h4>
                         <ul role="list" class="pl-2 divide-y divide-gray-200">
-                            <ul role="list" class="pl-2 divide-y divide-gray-200">
-                                {{#each run.tests}}
-                                    {{#eq status "PASS"}}
+                            {{#each tests}}
+                                <ul role="list" class="pl-2 divide-y divide-gray-200">                                
+                                    {{#eq status "passed"}}
                                         <li class="py-3 flex justify-between items-center">
                                             <div>
                                                 <div class="success"></div>
-                                                <a class="testrun hover:underline" data-toggle="test-{{id}}" data-target="test-code-{{id}}">
+                                                <a class="testrun hover:underline" data-toggle="test-{{test_id}}" data-target="test-code-{{test_id}}">
                                                     {{title}} title
                                                 </a>                                     
                                             </div>
@@ -149,20 +135,20 @@
                                                     <i class="fa fa-clock-o"></i>
                                                 </span>
                                                 {{#if run_time}}
-                                                    {{run_time}}s
+                                                    {{run_time}}ms
                                                 {{/if}}
                                             </dd>
                                         </li>
-                                        <li class="py-3 test-code-container test-code" id="test-code-{{id}}">
+                                        <li class="py-3 test-code-container test-code" id="test-code-{{test_id}}">
                                             <pre>
                                                 <code>
-                                                    {{code}}
+                                                    {{steps}}
                                                 </code>
                                             </pre>
                                         </li>
                                     {{/eq}}
-                                {{/each}}
-                            </ul>                                
+                                </ul> 
+                            {{/each}}                               
                         </ul>                            
                     </li>
 
@@ -170,59 +156,40 @@
                         <h4 class="text-lg flex items-center space-x-1">
                             <span class="font-medium">Failed</span>
                             <span class="inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none bg-red-200 text-red-500 rounded-full">
-                            {{getTestsByStatus run.tests "fail"}}
+                            {{getTestsByStatus tests "FAILED"}}
                             </span>
                         </h4>
                 
                         <ul role="list" class="pl-2 divide-y divide-gray-200">
-                            {{#each run.tests}}
-                                {{#eq status "FAIL"}}
+                            {{#each tests}}
+                                {{#eq status "failed"}}
                                     <li class="py-3 flex justify-between items-center">
-                                        <div>
-                                            <div class="fail"></div>
-                                            <a class="testrun hover:underline" data-template="test-{{title}}">
-                                                {{title}} title
-                                            </a>
-                                        </div>
-                                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                            <span>
-                                                <i class="fa fa-clock-o"></i>
-                                            </span>
-                                            {{#if run_time}}
-                                                {{run_time}}s
-                                            {{/if}}
-                                        </dd>
-                                    </li>
+                                            <div>
+                                                <div class="fail"></div>
+                                                <a class="testrun hover:underline" data-toggle="test-{{test_id}}" data-target="test-code-{{test_id}}">
+                                                    {{title}} title
+                                                </a>                                     
+                                            </div>
+                                            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                                <span>
+                                                    <i class="fa fa-clock-o"></i>
+                                                </span>
+                                                {{#if run_time}}
+                                                    {{run_time}}ms
+                                                {{/if}}
+                                            </dd>
+                                        </li>
+                                        <li class="py-3 test-code-container test-code" id="test-code-{{test_id}}">
+                                            <pre>
+                                                <code>
+                                                    {{steps}}
+                                                </code>
+                                            </pre>
+                                        </li>
                                 {{/eq}}
                             {{/each}}
                         </ul>
                     </li>
-
-                    <li class="pl-3 pr-4 py-3 text-sm cursor-pointer">
-                        <h4 class="text-lg flex items-center space-x-1">
-                            <span class="font-medium">Skipped</span>
-                            <span class="inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none bg-yellow-200 text-yellow-600 rounded-full">
-                            {{getTestsByStatus run.tests "skip"}}
-                            </span>
-                        </h4>
-                
-                        <ul role="list" class="pl-2 divide-y divide-gray-200">
-                            {{#each run.tests}}
-                                {{#eq status "SKIP"}}
-                                    <li class="py-3 flex justify-between items-center">
-                                        <div>
-                                            <a class="testrun hover:underline" data-template="test-{{title}}">
-                                                {{title}} title
-                                            </a>
-                                        </div>
-                                        {{#if run_time}}
-                                            {{run_time}}s
-                                        {{/if}}
-                                    </li>
-                                {{/eq}}
-                            {{/each}}
-                        </ul>
-                        </li>
                 </ul>
             </div>
         </div>
@@ -254,8 +221,6 @@
                 navigator.clipboard.writeText(window.location.href);
             })
         });
-
-        //TODO: create dynamic as part of handlebars template
         //Open code section handler
         document.querySelectorAll('.test-code').forEach(element => {
             element.style.display = 'none';
@@ -281,5 +246,4 @@
         });
     </script>
     <script type="text/javascript" src="./chart-my.js"></script>
-    {{!-- TODO: remove and generate new as script section!!!! maybe --}}
 </html>
