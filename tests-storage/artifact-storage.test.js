@@ -1,4 +1,4 @@
-const artifactStorage = require('../lib/storages/artifactStorage');
+const artifactStorage = require('../lib/storages/artifact-storage');
 const { expect } = require('chai');
 const { fileSystem } = require('../lib/util');
 const path = require('path');
@@ -47,5 +47,11 @@ describe('Artifact storage', () => {
     expect(artifacts[0].name).to.equal(artifact.name);
     expect(artifacts[0].type).to.equal(artifact.type);
     expect(artifacts[0].path).to.equal(artifact.path);
+  });
+
+  // TODO: try to get artifacts for test without artifacts
+  it('get artifacts for test without artifacts @TA0000006', () => {
+    const artifacts = artifactStorage.get('@TA0000006');
+    expect(artifacts).to.deep.equal([]);
   });
 });
