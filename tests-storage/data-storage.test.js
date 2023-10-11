@@ -2,7 +2,7 @@ const { expect } = require('chai');
 const fs = require('fs');
 const path = require('path');
 const { TESTOMAT_TMP_STORAGE } = require('../lib/constants');
-const { fileSystem, removeColorCodes } = require('../lib/util');
+const { fileSystem, removeColorCodes } = require('../lib/utils/utils');
 const { DataStorage } = require('../lib/dataStorage');
 
 describe('Storage', () => {

@@ -124,3 +124,123 @@ To make report publicly available pass `TESTOMATIO_PUBLISH=1` variable:
 ```
 TESTOMATIO={API_KEY} TESTOMATIO_PUBLISH=1 <actual run command>
 ```
+## Additional Execution Options with Testomatio
+
+Testomatio allows you to enhance your test execution with the option to filter and manage test runs based on various criteria. This can help you efficiently organize and execute your tests. Below, we explain how to use the `--filter` option in conjunction with Testomatio for customized test runs.
+
+> The filtering functionality for test execution is currently available for the following frameworks: Playwright & CodeceptJS.
+
+To use the `--filter` option with Testomatio, follow the format:
+
+```bash
+TESTOMATIO={API_KEY} npx start-test-run -c <actual run command> --filter 'testomatio:{filter-type}={filter-value}'
+```
+
+### Available Filter Types
+
+**Tag Name Filter**
+
+Filter tests by tag names. Use this filter to select tests associated with specific tags.
+
+![Tag Name Filter](./images/by-tag-name.png)
+
+_Command execution example_
+
+```bash
+TESTOMATIO={API_KEY} npx start-test-run -c 'actual run command' --filter 'testomatio:tag-name=smoke'
+```
+
+**Plan ID Filter**
+
+Filter tests by Testomatio plan IDs. Use this filter to organize and execute tests based on plan IDs.
+
+![Plan ID Filter](./images/by-plan-id.png)
+
+_Command execution example_
+
+```bash
+TESTOMATIO={API_KEY} npx start-test-run -c 'actual run command' --filter 'testomatio:plan-id=b62f3170'
+```
+
+**Label Filter**
+
+Filter tests using custom labels. Labels allow you to categorize tests for better management and execution.
+
+Label Filter (by label name) Example 1:
+![Label Filter Example 3](./images/by-label-1.png)
+
+Label Filter (by label id) Example 2:
+![Label Filter Example 1](./images/by-label.png)
+
+Another Label Filter Example 3:
+![Label Filter Example 2](./images/by-label-3.png)
+
+_Command execution example_
+
+```bash
+TESTOMATIO={API_KEY} npx start-test-run -c 'actual run command' --filter 'testomatio:label=new-label-test'
+```
+OR
+
+```bash
+TESTOMATIO={API_KEY} npx start-test-run -c 'actual run command' --filter 'testomatio:label=NEW label TEST'
+```
+
+**Label Filter based on the Severity type**
+
+If you want to use a specific severity type, you should join the "severity" label id + severity type(e.g.: `s1-id2:⛔ Blocker`).
+
+Here's a list of available types that you can copy and add to the run command:
+
+- ⚠️ Critical
+- ⛔ Blocker
+- 🔥 Major
+- 👌 Normal
+- ❄️ Minor
+- 💤 Trivial
+
+Label Filter Example based on the Severity type:
+![Label Filter Example 3](./images/by-label-severity.png)
+
+_Command execution example_
+
+```bash
+TESTOMATIO={API_KEY} npx start-test-run -c 'actual run command' --filter 'testomatio:label=severity-f1b11:🔥 Major'
+```
+OR
+
+```bash
+TESTOMATIO={API_KEY} npx start-test-run -c 'actual run command' --filter 'testomatio:label=NEW label TEST:💤 Trivial'
+```
+
+**JIRA Ticket Filter**
+
+Filter tests linked to JIRA tickets. Use this filter to coordinate testing efforts with your JIRA workflow.
+
+![JIRA Ticket Filter](./images/by-jira-id.png)
+
+_Command execution example_
+
+```bash
+TESTOMATIO={API_KEY} npx start-test-run -c 'actual run command' --filter 'testomatio:jira-ticket=LMP-51'
+```
+
+**📚 Example Usage**
+
+For instance, if you want to run tests with a specific label named "new-label-test," you can use the following command:
+
+```bash
+TESTOMATIO={API_KEY} npx start-test-run -c 'npx codeceptjs run' --filter 'testomatio:label=new-label'
+```
+
+OR using Playwright:
+
+```bash
+TESTOMATIO={API_KEY} npx start-test-run -c 'npx playwright test' --filter 'testomatio:label=new-label'
+```
+
+> Remember to replace {API_KEY} with your actual Testomatio API key and adjust the <actual run command> according to your testing setup
+
+> It's important to note that the provided filter value must match exactly the corresponding tag name, plan ID, label, or JIRA ticket for the desired tests
+
+Please note that this functionality allows you to easily filter and execute tests based on specific criteria, enhancing your testing experience.
