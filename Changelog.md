@@ -1,4 +1,14 @@
 <!-- pending release updates -->
+# 1.0.14
+
+* Execute tests by tag names. Use this filter to select tests associated with specific tags.
+  
+  ```bash
+  TESTOMATIO={API_KEY} npx start-test-run -c 'actual run command' --filter 'testomatio:tag-name=smoke'
+  ```
+
+  * more instruction you can find in docs/pipes/testomatio.md
+
 # 1.0.13
 
 * JUnit improvements
