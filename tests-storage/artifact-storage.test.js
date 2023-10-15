@@ -2,7 +2,7 @@ const artifactStorage = require('../lib/storages/artifact-storage');
 const { expect } = require('chai');
 const { fileSystem } = require('../lib/util');
 const path = require('path');
-const { testomat } = require('../lib/reporter');
+const testomat = require('../lib/reporter').testomat;
 const { TESTOMAT_TMP_STORAGE } = require('../lib/constants');
 
 describe('Artifact storage', () => {
@@ -53,5 +53,9 @@ describe('Artifact storage', () => {
   it('get artifacts for test without artifacts @TA0000006', () => {
     const artifacts = artifactStorage.get('@TA0000006');
     expect(artifacts).to.deep.equal([]);
+  });
+
+  it('use artifact as reporter funcion @TA0000007', () => {
+    // TODO: implement
   });
 });

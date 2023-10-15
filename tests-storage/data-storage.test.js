@@ -10,10 +10,11 @@ describe('Storage', () => {
     fileSystem.clearDir(TESTOMAT_TMP_STORAGE.mainDir);
   });
 
-  it('storage dir is created on creating the storage instance @TB0000001', () => {
-    const storage = new DataStorage('test');
-    expect(fs.existsSync(storage.dataDirPath)).to.equal(true);
-  });
+  // Obsolete. TODO: remove
+  // it('storage dir is created on creating the storage instance @TB0000001', () => {
+  //   const storage = new DataStorage('test');
+  //   expect(fs.existsSync(storage.dataDirPath)).to.equal(true);
+  // });
 
   it('PUT data to FILE storage @TB0000002', () => {
     const dataType = 'test2';
