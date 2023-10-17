@@ -1,4 +1,14 @@
 <!-- pending release updates -->
+# 1.0.15
+
+* Attach Run to Jira Issue via `TESTOMATIO_JIRA_ID` env variable:
+
+```
+TESTOMATIO_JIRA_ID=TST-12 <actual run command>
+```
+
+* Mocha - removed requirement of TESTOMATIO API Key
+
 # 1.0.14
 
 * Execute tests by tag names. Use this filter to select tests associated with specific tags.
