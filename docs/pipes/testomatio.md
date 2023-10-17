@@ -124,7 +124,22 @@ To make report publicly available pass `TESTOMATIO_PUBLISH=1` variable:
 ```
 TESTOMATIO={API_KEY} TESTOMATIO_PUBLISH=1 <actual run command>
 ```
-## Additional Execution Options with Testomatio
+
+### Create Jira Issue for Run
+
+To automatically assign Run to Jira Issue pass the ID of that issue as `TESTOMATIO_JIRA_ID` variable
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_JIRA_ID={Jira_Issue_ID} <actual run command>
+```
+
+For example, if your Jira issue id is `TST-1`, command should be:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_JIRA_ID=TST-1 <actual run command>
+```
+
+### Filter Tests
 
 Testomatio allows you to enhance your test execution with the option to filter and manage test runs based on various criteria. This can help you efficiently organize and execute your tests. Below, we explain how to use the `--filter` option in conjunction with Testomatio for customized test runs.
 
@@ -136,7 +151,7 @@ To use the `--filter` option with Testomatio, follow the format:
 TESTOMATIO={API_KEY} npx start-test-run -c <actual run command> --filter 'testomatio:{filter-type}={filter-value}'
 ```
 
-### Available Filter Types
+#### Available Filter Types
 
 **Tag Name Filter**
 
