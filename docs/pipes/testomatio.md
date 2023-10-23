@@ -254,8 +254,8 @@ OR using Playwright:
 TESTOMATIO={API_KEY} npx start-test-run -c 'npx playwright test' --filter 'testomatio:label=new-label'
 ```
 
-> Remember to replace {API_KEY} with your actual Testomatio API key and adjust the <actual run command> according to your testing setup
+> Remember to replace {API_KEY} with your actual Testomatio API key and adjust the `<actual run command>` according to your testing setup
 
 > It's important to note that the provided filter value must match exactly the corresponding tag name, plan ID, label, or JIRA ticket for the desired tests
 
-Please note that this functionality allows you to easily filter and execute tests based on specific criteria, enhancing your testing experience.
+Please note, that this functionality allows you to easily filter and execute tests based on specific criteria, enhancing your testing experience.
