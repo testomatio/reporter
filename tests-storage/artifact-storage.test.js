@@ -49,13 +49,9 @@ describe('Artifact storage', () => {
     expect(artifacts[0].path).to.equal(artifact.path);
   });
 
-  // TODO: try to get artifacts for test without artifacts
   it('get artifacts for test without artifacts @TA0000006', () => {
     const artifacts = artifactStorage.get('@TA0000006');
     expect(artifacts).to.equal(null);
   });
 
-  it('use artifact as reporter funcion @TA0000007', () => {
-    // TODO: implement
-  });
 });

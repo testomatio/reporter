@@ -40,7 +40,7 @@ describe('Storage', () => {
 
     const retrievedData = storage.getData('@TB0000005');
     expect(storage.isFileStorage).to.equal(false);
-    expect(retrievedData).to.equal(data);
+    expect(retrievedData).to.deep.equal([data]);
   });
 });
 
