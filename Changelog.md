@@ -6,6 +6,7 @@
 ```
 TESTOMATIO_STACK_FILTER="tests/support/**.js" <actual-run-command>
 ```
+* Jest: fixed reporting tests without a suite title
 
 # 1.0.15
 
