@@ -28,7 +28,7 @@ describe('Storage', () => {
     storage.putData(data, '@TB0000003');
 
     const retrievedData = storage.getData('@TB0000003');
-    expect(retrievedData).to.equal(data);
+    expect(retrievedData).to.deep.equal([data]);
   });
 
   it('PUT data to GLOBAL storage @TB0000005', () => {
