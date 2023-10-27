@@ -7,7 +7,7 @@ const { TESTOMAT_TMP_STORAGE } = require('../lib/constants');
 
 describe('Artifact storage', () => {
   before(() => {
-    fileSystem.clearDir(TESTOMAT_TMP_STORAGE.mainDir);
+    fileSystem.clearDir(TESTOMAT_TMP_STORAGE.mainDir + '/artifacts');
   });
 
   it('artifact function is defined @TA0000001', () => {

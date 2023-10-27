@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { TESTOMAT_TMP_STORAGE } = require('../lib/constants');
 const { fileSystem, removeColorCodes } = require('../lib/util');
+const { testomat } = require('../lib/reporter');
 
 const pinoLogger = require('pino')();
 
@@ -171,6 +172,15 @@ describe('Logger', () => {
     const message = 'test log message';
     logger.log(message);
     const logFilePath = path.join(TESTOMAT_TMP_STORAGE.mainDir, 'log', 'log_00000015');
+    expect(fs.existsSync(logFilePath)).to.equal(true);
+    const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
+    expect(logContent).to.equal(`${message}`);
+  });
+
+  it('log using testomat.log function @T00000017', () => {
+    const message = 'test log message';
+    testomat.log(message);
+    const logFilePath = path.join(TESTOMAT_TMP_STORAGE.mainDir, 'log', 'log_00000017');
     expect(fs.existsSync(logFilePath)).to.equal(true);
     const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
     expect(logContent).to.equal(`${message}`);
