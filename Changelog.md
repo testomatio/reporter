@@ -1,4 +1,12 @@
 <!-- pending release updates -->
+# 1.0.16
+
+* Addded [stack trace configuration](./docs/stacktrace.md) and documentation:
+
+```
+TESTOMATIO_STACK_FILTER="tests/support/**.js" <actual-run-command>
+```
+
 # 1.0.15
 
 * Attach Run to Jira Issue via `TESTOMATIO_JIRA_ID` env variable:

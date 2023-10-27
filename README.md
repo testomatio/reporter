@@ -11,12 +11,12 @@ Testomat.io Reporter (this npm package) supports:
 
 * 🏄 Integarion with all popular [JavaScript/TypeScript frameworks](./docs/frameworks.md)
 * 🗄️ Screenshots, videos, traces [uploaded into S3 bucket](./docs/artifacts.md)
-* 🔎 Stack traces and error messages
-* 🐙 [GitHub](./docs/pipes/github.d) & [GitLab](./docs/pipes/gitlab.d) integration
+* 🔎 [Stack traces](./docs/stacktrace.md) and error messages
+* 🐙 [GitHub](./docs/pipes/github.md) & [GitLab](./docs/pipes/gitlab.md) integration
 * 🚅 Realtime reports
 * 🗃️ Other test frameworks supported via [JUNit XML](./docs/junit.md)
 * 🚶‍♀️ Steps *(work in progress)*
-* 📄 Logger *(work in progress, supports Jest for now)*
+* 📄 [Logger](./docs/logger.md) *(work in progress, supports Jest for now)*
 * ☁️ Custom properties and metadata *(work in progress)*
 * 💯 Free & open-source.
 * 📊 Public and private Run reports on cloud via [Testomat.io App](https://testomat.io) 👇
@@ -128,7 +128,7 @@ Bring this reporter on CI and never lose test results again!
 * 📓 [JUnit](./docs/junit.md)
 * 🗄️ [Artifacts](./docs/artifacts.md)
 * 🔂 [Workflows](./docs/workflows.md)
-* 🔂 [Logger](./docs/logger.md)
+* 🖊️ [Logger](./docs/logger.md)
 
 ## Development
 
