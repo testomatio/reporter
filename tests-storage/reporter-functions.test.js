@@ -36,7 +36,7 @@ describe('Testomat reporter functions', () => {
     const keyValue = {
       browser: 'chrome',
     };
-    testomat.keyValue(keyValue);
+    testomat.meta(keyValue);
     const filePath = path.join(TESTOMAT_TMP_STORAGE.mainDir, 'keyvalue', 'keyvalue_00000019');
     expect(fs.existsSync(filePath)).to.equal(true);
     const fileContent = fs.readFileSync(filePath, 'utf8');
@@ -55,8 +55,8 @@ describe('Testomat reporter functions', () => {
       runType: 'smoke',
     };
 
-    testomat.keyValue(keyValue);
-    testomat.keyValue(keyValue2);
+    testomat.meta(keyValue);
+    testomat.meta(keyValue2);
     const filePath = path.join(TESTOMAT_TMP_STORAGE.mainDir, 'keyvalue', 'keyvalue_00000020');
     expect(fs.existsSync(filePath)).to.equal(true);
     const fileContent = fs.readFileSync(filePath, 'utf8');
@@ -75,8 +75,8 @@ describe('Testomat reporter functions', () => {
       runType: 'smoke',
     };
 
-    testomat.keyValue(keyValue);
-    testomat.keyValue(keyValue2);
+    testomat.meta(keyValue);
+    testomat.meta(keyValue2);
     const retrievedKeyValue = keyValueStorage.get('@T00000021');
     expect(retrievedKeyValue).to.deep.equal({ ...keyValue, ...keyValue2 });
   });
