@@ -19,7 +19,7 @@ After you import and invoke `testomat`, autocompletion will help you to find the
 - [artifact](#artifact)
 - [log](#log)
 - [step](#step)
-- [keyValue](#keyvalue) _(functionality in progress...)_
+- [meta (key:value)](#meta)
 
 ### Artifact
 
@@ -75,5 +75,18 @@ describe('Your suite @S12345678', () => {
   });
 ```
 
-### Key:value
-_(functionality in progress...)_
+### Meta (key:value)
+
+Meta information is a key:value pair(s), which is used to add additional information to the test report. E.g. browser, environment, etc.
+
+```javascript
+const { testomat } = require('@testomatio/reporter');
+test('Your test @T12345678', async () => {
+  await page.login();
+  testomat.meta({
+    browser: 'chrome',
+    testType: 'smoke',
+  });
+  assert(something);
+});
+```
