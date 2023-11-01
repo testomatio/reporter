@@ -33,7 +33,7 @@ Supported frameworks:
 
 - 🟢 Jest
 - 🟢 CodeceptJS
-- 🟢 Playwright
+- 🔴 Playwright
 - 🟢 Cucumber
 - 🟢 Mocha
 
