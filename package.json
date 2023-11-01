@@ -11,7 +11,6 @@
     "@aws-sdk/client-s3": "^3.279.0",
     "@aws-sdk/lib-storage": "^3.279.0",
     "@octokit/rest": "^19.0.5",
-    "@playwright/test": "^1.39.0",
     "aws-sdk": "^2.1072.0",
     "axios": "^0.25.0",
     "callsite-record": "^4.1.4",
