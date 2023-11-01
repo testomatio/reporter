@@ -1,6 +1,6 @@
 const artifactStorage = require('../lib/storages/artifact-storage');
 const { expect } = require('chai');
-const { fileSystem } = require('../lib/util');
+const { fileSystem } = require('../lib/utils/utils');
 const path = require('path');
 const { testomat } = require('../lib/reporter');
 const { TESTOMAT_TMP_STORAGE_DIR } = require('../lib/constants');

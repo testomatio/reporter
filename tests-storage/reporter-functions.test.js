@@ -3,7 +3,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { TESTOMAT_TMP_STORAGE_DIR } = require('../lib/constants');
-const { fileSystem, removeColorCodes } = require('../lib/util');
+const { fileSystem, removeColorCodes } = require('../lib/utils/utils');
 const { testomat } = require('../lib/reporter');
 const keyValueStorage = require('../lib/storages/key-value-storage');
 
