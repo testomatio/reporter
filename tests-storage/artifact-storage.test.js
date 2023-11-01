@@ -3,11 +3,11 @@ const { expect } = require('chai');
 const { fileSystem } = require('../lib/util');
 const path = require('path');
 const { testomat } = require('../lib/reporter');
-const { TESTOMAT_TMP_STORAGE } = require('../lib/constants');
+const { TESTOMAT_TMP_STORAGE_DIR } = require('../lib/constants');
 
 describe('Artifact storage', () => {
   before(() => {
-    fileSystem.clearDir(TESTOMAT_TMP_STORAGE.mainDir + '/artifact');
+    fileSystem.clearDir(TESTOMAT_TMP_STORAGE_DIR + '/artifact');
   });
 
   it('artifact function is defined @TA0000001', () => {
