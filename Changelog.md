@@ -1,4 +1,61 @@
 <!-- pending release updates -->
+# 1.0.16.1
+
+Renamed `TESTOMATIO_STACK_FILTER` to `TESTOMATIO_STACK_IGNORE`
+
+# 1.0.16
+
+* Addded [stack trace configuration](./docs/stacktrace.md) and documentation:
+
+```
+TESTOMATIO_STACK_IGNORE="tests/support/**.js" <actual-run-command>
+```
+* Jest: fixed reporting tests without a suite title
+
+# 1.0.15
+
+* Attach Run to Jira Issue via `TESTOMATIO_JIRA_ID` env variable:
+
+```
+TESTOMATIO_JIRA_ID=TST-12 <actual run command>
+```
+
+* Mocha - removed requirement of TESTOMATIO API Key
+
+# 1.0.14
+
+* Execute tests by tag names. Use this filter to select tests associated with specific tags.
+  
+  ```bash
+  TESTOMATIO={API_KEY} npx start-test-run -c 'actual run command' --filter 'testomatio:tag-name=smoke'
+  ```
+
+  * more instruction you can find in docs/pipes/testomatio.md
+
+# 1.0.13
+
+* JUnit improvements
+  * Match test from source code by adding Test ID as a comment:
+
+  ```java
+  // @T8acca9eb
+  ```
+  * Match test from output by adding Test ID as output:
+
+  ```java
+  System.out.println("tid://@T8acca9eb");
+  ```
+  * Support for suite before and after output
+  * Improved support for artifacts
+
+# 1.0.12
+
+& Logger refactoring by @olexandr13 in #208
+* fix undefined logs by @olexandr13 in #210
+
+# 1.0.11
+
+* fix steps duplication for codecept report by @olexandr13 in #209
 
 # 1.0.10
 

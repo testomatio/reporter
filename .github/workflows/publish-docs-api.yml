@@ -25,3 +25,6 @@ jobs:
           publish_dir: .
           force_orphan: true
           exclude_assets: '.github,src,bin,test,LICENSE,README.md'
+      - name: Build docs.testomat.io
+        run: |
+          curl -X POST https://api.cloudflare.com/client/v4/pages/webhooks/deploy_hooks/c55b0f51-acc8-40a5-a6e3-34d8b1be1d5f
