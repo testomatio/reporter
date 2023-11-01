@@ -1,10 +1,14 @@
 <!-- pending release updates -->
+# 1.0.16.1
+
+Renamed `TESTOMATIO_STACK_FILTER` to `TESTOMATIO_STACK_IGNORE`
+
 # 1.0.16
 
 * Addded [stack trace configuration](./docs/stacktrace.md) and documentation:
 
 ```
-TESTOMATIO_STACK_FILTER="tests/support/**.js" <actual-run-command>
+TESTOMATIO_STACK_IGNORE="tests/support/**.js" <actual-run-command>
 ```
 * Jest: fixed reporting tests without a suite title
 
