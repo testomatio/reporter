@@ -3,11 +3,11 @@ const { expect } = require('chai');
 const { fileSystem } = require('../lib/util');
 const path = require('path');
 const { testomat } = require('../lib/reporter');
-const { TESTOMAT_TMP_STORAGE } = require('../lib/constants');
+const { TESTOMAT_TMP_STORAGE_DIR } = require('../lib/constants');
 
 describe('Artifact storage', () => {
   before(() => {
-    fileSystem.clearDir(TESTOMAT_TMP_STORAGE.mainDir + '/artifacts');
+    fileSystem.clearDir(TESTOMAT_TMP_STORAGE_DIR + '/artifact');
   });
 
   it('artifact function is defined @TA0000001', () => {
@@ -34,6 +34,7 @@ describe('Artifact storage', () => {
     testomat.artifact(artifacts[1]);
     const retrievedArtifacts = artifactStorage.get('@TA0000004');
     expect(retrievedArtifacts).to.deep.equal(artifacts);
+
   });
 
   it('save artifact with name and type @TA0000005', () => {
