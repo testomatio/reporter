@@ -5,7 +5,7 @@ You can pass environment variables to the testomat.io reporter using the followi
 
 When running on CI, use secrets.
 
-To read environment variables from `env` file, use [dotenv](https://www.npmjs.com/package/dotenv) package. And read the env file via:
+To read environment variables from `.env` file, use [dotenv](https://www.npmjs.com/package/dotenv) package. And read the env file via:
 ```javascript
 require('dotenv').config({ path: '.env' }); // or any other path
 ```
