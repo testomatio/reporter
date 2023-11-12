@@ -471,8 +471,8 @@
         }        
 
         // processing and adding test data to the template
-        function addOneTest(category,testInfo = {}){
-            const { suite, title, steps, message, files } = testInfo;
+        function addOneTest(category,testData = {}){
+            const { suite_title, title, steps, message, files } = testData;
             // radio btn test's count
             function incrementCount(element) {
                 let count = parseInt(element.textContent);
@@ -562,7 +562,7 @@
 
             const testitem__name = clone.querySelector('.testitem__name');
 
-            const fullTestName = suite ? suite + " - " + title : title;
+            const fullTestName = suite_title ? suite_title + " - " + title : title;
             testitem__name.textContent = fullTestName;
 
             const body = clone.querySelector('.testitem__body');
@@ -579,11 +579,16 @@
 
             let content_files = content.querySelector('div[type="files"]').querySelector('span');
 
-            if (files && files.length > 0) {
+            if (files.includes("This test has no files")) {
+                content_files.innerHTML = files;
+            }
+
+            if (!files.includes("This test has no files")) {
                 const filesList = document.createElement('ul');
                 content_files.innerHTML = "";
 
-                files.forEach((file) => {
+                if (Array.isArray(files) && files.length > 0) {
+                    files.forEach((file) => {
                     const listItem = document.createElement('li');
                     const fileLink = document.createElement('a');
                     fileLink.href = file.path;
@@ -594,10 +599,9 @@
                     filesList.appendChild(listItem);
                 });
 
-                content_files.appendChild(filesList);                
-            }
-            else {
-                content_files.innerHTML = "Files are not found for this test";
+                content_files.appendChild(filesList);
+
+                }                
             }
 
             const testitem__top = clone.querySelector('.testitem__top');
@@ -680,40 +684,11 @@
         search();        
 
         const executedTests = {{{ json tests }}};
-
-        // TODO: move to HTML pipe
-        function removeAnsiColorCodes(text) {
-            text = text.replace(/\u001b\[[0-9;]*m/g, '');
-            text = text.replace(/\n/g, '<br>');
-            
-            return text;
-        }
         
         for (let i = 0; i < executedTests.length; i++) {
             const status = executedTests[i].status;
-            const testInfo = {
-                suite: executedTests[i].suite_title,
-                title: executedTests[i].title,
-                steps: removeAnsiColorCodes(executedTests[i].steps),
-                message: executedTests[i].message,
-                files: executedTests[i].files,
-                status: status,
-            }
 
-            if (!testInfo.steps && testInfo.steps.trim() === "") {
-                testInfo.steps = "Step code is not found for this test";
-            }
-
-            if (!testInfo.message && testInfo.message.trim() === "") {
-                testInfo.message = "Message code is not found for this test";
-            }
-
-            if (!testInfo.suite && testInfo.suite.trim() === "") {
-                testInfo.suite = "Unknown suite";
-            }
-
-            // call the addOneTest() function for each test
-            addOneTest(status, testInfo);
+            addOneTest(status, executedTests[i]);
         }
     </script>
 </body>
