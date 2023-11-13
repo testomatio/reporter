@@ -1,5 +1,5 @@
 <!-- pending release updates -->
-# 1.0.16.1
+# 1.0.17
 
 Renamed `TESTOMATIO_STACK_FILTER` to `TESTOMATIO_STACK_IGNORE`
 
