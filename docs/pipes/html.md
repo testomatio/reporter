@@ -19,6 +19,8 @@ To enable HTML reports, set the TESTOMATIO_HTML_REPORT_SAVE environment variable
 * TESTOMATIO_HTML_REPORT_FOLDER: Specify the folder for HTML reports
 * TESTOMATIO_HTML_FILENAME: Set the desired filename for the HTML report
 
+_!!!Please note that the name must include the extension ".html". If the extension is missing, the report will be saved with the default name_
+
 ### Usage
 
 The HTML Pipe operates as part of the test execution process. When running your tests with the specified environment variables, the HTML Pipe will generate reports based on the test results.
