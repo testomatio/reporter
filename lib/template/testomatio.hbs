@@ -245,6 +245,29 @@
             font-size: 14px;
             white-space: pre-line;
         }
+        /* Passed TAB*/
+        #passedTest:not(:checked) + .btn-outline-dark {
+            background-color: #39BD2F;
+        }
+        #passedTest:checked + .btn-outline-dark {
+            background-color: #68cf61;
+            color: white;
+        }
+        /* Failed TAB*/
+        #failedTest:not(:checked) + .btn-outline-dark {
+            background-color: #F2230C;
+        }
+        #failedTest:checked + .btn-outline-dark {
+            background-color: #FA6E5E;
+            color: white;
+        }
+        /* Skipped TAB*/
+        #skippedTest:not(:checked) + .btn-outline-dark {
+            background-color: #F2C00C;
+        }
+        #skippedTest:checked + .btn-outline-dark {
+            background-color: #dfc155;
+        }
     </style>
 </head>
 

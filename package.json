@@ -20,6 +20,7 @@
     "debug": "^4.3.4",
     "dotenv": "^16.0.1",
     "fast-xml-parser": "^4.0.8",
+    "file-url": "3.0.0",
     "glob": "^10.3",
     "handlebars": "^4.7.8",
     "has-flag": "^5.0.1",
