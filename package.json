@@ -66,6 +66,7 @@
     "eslint-plugin-import": "^2.25.4",
     "jasmine": "^3.10.0",
     "jest": "^27.4.7",
+    "jsdom": "^22.1.0",
     "mocha": "^9.2.0",
     "mock-http-server": "^1.4.5",
     "pino": "^8.15.0",
