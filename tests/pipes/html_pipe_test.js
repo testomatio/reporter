@@ -81,7 +81,16 @@ describe('HTML report tests', () => {
 
             const htmlPipe = new HtmlPipe({}, {});
             // call the buildReport function
-            htmlPipe.buildReport(DATA, filepath, template, "");
+            htmlPipe.buildReport({
+                runParams:{
+                    status: "failed",
+                    parallel: "false"
+                },
+                tests: DATA.tests, 
+                outputPath: filepath, 
+                templatePath: template, 
+                warningMsg: ""
+            });
 
             expect(fs.existsSync(filepath)).equal(true);
     });
@@ -89,10 +98,20 @@ describe('HTML report tests', () => {
         const htmlContent = fs.readFileSync(filepath, 'utf-8');
         const dom = new JSDOM(htmlContent);
         const document = dom.window.document;
-
-        expect(document.querySelector('title').textContent).to.include('Report #51eb2798 - Testomat.io');
-        expect(document.querySelector('.header__case > span').textContent).to.equal('#51eb2798');
-        expect(document.querySelector('.statdesc__row > span').textContent).to.equal('0h 0m 0s 328ms');
-        expect(document.querySelectorAll('.statdesc__row span')[2].textContent).to.equal('(30/07/2023 11:11:11)');
+        // if no runID & status
+        expect(document.querySelector('title').textContent).to.include('Report Testomat.io');
+        expect(document.querySelector('.statdesc__row > span').textContent).to.equal('0h 0m 0s 297ms');
+        expect(document.querySelectorAll('.statdesc__row span')[2].textContent)
+            .to.include(getCurrentDate());
     });
+    // TODO: Add more tests when you have free time
 });
+
+function getCurrentDate() {
+    const currentDate = new Date();
+    const day = currentDate.getDate().toString().padStart(2, '0');
+    const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
+    const year = currentDate.getFullYear();
+
+    return `(${day}/${month}/${year}`;
+}
