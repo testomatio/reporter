@@ -32,7 +32,7 @@
         }
         p, span{
             font-weight: 400;
-            font-size: 12px;
+            font-size: 14px;
             color: grey;
             margin: 0;
         }
@@ -245,6 +245,10 @@
             font-size: 14px;
             white-space: pre-line;
         }
+        .test__empty__list {
+            margin-bottom: 10px;
+            color: grey;
+        }
         /* Passed TAB*/
         #passedTest:not(:checked) + .btn-outline-dark {
             background-color: #39BD2F;
@@ -389,72 +393,78 @@
 
             <div class="row level_5">
                 <div class="col-12">
+                    {{#if tests.length}}
+                        <div class="testWrapp">
+                            {{#each tests}}
 
-                    <div class="testWrapp">
-                        {{#each tests}}
+                                <div class="testitem d-none" name="testitem" type="dummy" category="false">
 
-                            <div class="testitem d-none" name="testitem" type="dummy" category="false">
-
-                                <div class="testitem__top">
-                                    <div class="testitem__icon">
-                                        <i class="fa-solid fa-chevron-right testitem__ico testitem__ico_right"></i>
-                                        <i class="fa-solid fa-chevron-down d-none testitem__ico testitem__ico_down"></i>
+                                    <div class="testitem__top">
+                                        <div class="testitem__icon">
+                                            <i class="fa-solid fa-chevron-right testitem__ico testitem__ico_right"></i>
+                                            <i class="fa-solid fa-chevron-down d-none testitem__ico testitem__ico_down"></i>
+                                        </div>
+                                        <p class="testitem__name">Test</p>
                                     </div>
-                                    <p class="testitem__name">Test</p>
+
+                                    <div class="testitem__body d-none">
+
+                                        <div class="testitem__menu">
+                                            <span type="steps" class="testitem__mitem testitem__mitem_active">Steps <i class="fa-solid fa-arrow-right"></i></span>
+                                            <span type="status" class="testitem__mitem">Status <i class="fa-solid fa-arrow-right"></i></span>
+                                            <span type="message" class="testitem__mitem">Message <i class="fa-solid fa-arrow-right"></i></span>
+                                            <span type="files" class="testitem__mitem">Files <i class="fa-solid fa-arrow-right"></i></span>
+                                        </div>
+
+                                        <div class="testitem__content">
+
+                                            <!-- 1 -->
+                                            <div class="testitem__case" type="steps">
+                                                <p class="testitem__title">Steps</p>
+                                                <div class="testitem__block">
+                                                    <span>...</span>
+                                                </div>
+                                            </div>
+                                            <!-- 1 -->
+
+                                            <!-- 2 -->
+                                            <div class="testitem__case d-none" type="status">
+                                                <p class="testitem__title">Status</p>
+                                                <div class="testitem__block">
+                                                    <span>...</span>                                               
+                                                </div>
+                                            </div>
+                                            <!-- 2 -->
+
+                                            <!-- 3 -->
+                                            <div class="testitem__case d-none" type="message">
+                                                <p class="testitem__title">Message</p>
+                                                <div class="testitem__block">
+                                                    <span>...</span> 
+                                                </div>
+                                            </div>
+                                            <!-- 3 -->
+
+                                            <!-- 4 -->
+                                            <div class="testitem__case d-none" type="files">
+                                                <p class="testitem__title">Files</p>
+                                                <div class="testitem__block">
+                                                    <span>...</span>                                               
+                                                </div>
+                                            </div>
+                                            <!-- 4 -->
+                                        </div>
+                                    </div>
                                 </div>
-
-                                <div class="testitem__body d-none">
-
-                                    <div class="testitem__menu">
-                                        <span type="steps" class="testitem__mitem testitem__mitem_active">Steps <i class="fa-solid fa-arrow-right"></i></span>
-                                        <span type="status" class="testitem__mitem">Status <i class="fa-solid fa-arrow-right"></i></span>
-                                        <span type="message" class="testitem__mitem">Message <i class="fa-solid fa-arrow-right"></i></span>
-                                        <span type="files" class="testitem__mitem">Files <i class="fa-solid fa-arrow-right"></i></span>
-                                    </div>
-
-                                    <div class="testitem__content">
-
-                                        <!-- 1 -->
-                                        <div class="testitem__case" type="steps">
-                                            <p class="testitem__title">Steps</p>
-                                            <div class="testitem__block">
-                                                <span>...</span>
-                                            </div>
-                                        </div>
-                                        <!-- 1 -->
-
-                                        <!-- 2 -->
-                                        <div class="testitem__case d-none" type="status">
-                                            <p class="testitem__title">Status</p>
-                                            <div class="testitem__block">
-                                                <span>...</span>                                               
-                                            </div>
-                                        </div>
-                                        <!-- 2 -->
-
-                                        <!-- 3 -->
-                                        <div class="testitem__case d-none" type="message">
-                                            <p class="testitem__title">Message</p>
-                                            <div class="testitem__block">
-                                                <span>...</span> 
-                                            </div>
-                                        </div>
-                                        <!-- 3 -->
-
-                                        <!-- 4 -->
-                                        <div class="testitem__case d-none" type="files">
-                                            <p class="testitem__title">Files</p>
-                                            <div class="testitem__block">
-                                                <span>...</span>                                               
-                                            </div>
-                                        </div>
-                                        <!-- 4 -->
-                                    </div>
-                                </div>
+                            {{/each}}
+                        </div>            
+                    {{else}}
+                        <div class="row">
+                            <div class="col-12 test__empty__list">
+                                <p>No tests found to display  😔</p>
                             </div>
-                        {{/each}}
-                    </div>            
-
+                        </div>
+                    {{/if}}
                 </div>
             </div>
 
@@ -469,23 +479,33 @@
         
         // Draw the chart and set the chart values
         function drawChart() {
+            let data = {};
             const passedTests = {{getTestsByStatus tests "PASSED"}};
             const failedTests = {{getTestsByStatus tests "FAILED"}};
             const skippedTests = {{getTestsByStatus tests "SKIPPED"}};
 
-            const data = google.visualization.arrayToDataTable([
+            if (passedTests === 0 && failedTests === 0 && skippedTests === 0) {
+                data = google.visualization.arrayToDataTable([
+                    ['Task', 'Tests'],
+                    ['No Tests', 1]
+                ])
+            }
+            else {
+                data = google.visualization.arrayToDataTable([
                 ['Task', 'Tests'],
+                ['No Tests', 0],
                 ['Passed', passedTests],
                 ['Failed', failedTests],
                 ['Skipped', skippedTests], 
             ]);
+            }
         
             // Optional: add a title and set the width and height of the chart
             const options = {
                 'title':'',
                 'width':550,
                 'height':300,
-                'colors': ['#39BD2F', '#F2230C', '#F2C00C']
+                'colors': ['#939992', '#39BD2F', '#F2230C', '#F2C00C']
             };
         
             // Display the chart inside the <div> element with id="piechart"
