@@ -4,22 +4,21 @@ The Testomat.io HTML Pipe is a feature that allows you to generate and save HTML
 
 ### Prerequisites
 
-Before utilizing the HTML Pipe, you need to set the TESTOMATIO environment variable with the API key provided by Testomat.io. This key authenticates your interactions with the Testomat.io application.
-
-**🔌 To enable Testomat.io pipe set `TESTOMATIO` environment variable with API key provided by Testomatio.**
+**🔌 TESTOMATIO users now have the option to generate an HTML report based on their test execution results. If a user hasn't SET `TESTOMATIO` environment, the report will still be generated**
 
 ```
-TESTOMATIO={API_KEY} <actual run command>
+TESTOMATIO_HTML_REPORT_SAVE=1 <actual run command>
 ```
 
 ### Enabling HTML Reports
 
 To enable HTML reports, set the TESTOMATIO_HTML_REPORT_SAVE environment variable to 1. Additionally, you can customize the HTML report folder and filename using the following variables:
 
+* TESTOMATIO_HTML_REPORT_SAVE=1
 * TESTOMATIO_HTML_REPORT_FOLDER: Specify the folder for HTML reports
 * TESTOMATIO_HTML_FILENAME: Set the desired filename for the HTML report
 
-_!!!Please note that the name must include the extension ".html". If the extension is missing, the report will be saved with the default name_
+_!!!Please note that the name must include the extension ".html". If the extension is missing, the report will be saved with the default name = testomatio-report.html_
 
 ### Usage
 
