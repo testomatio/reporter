@@ -5,7 +5,7 @@ export interface FileType {
   type: string,
   title?: string,
   testId?: string
-} 
+}
 
 /**
  * Object representing a unit test result that can be sent to a reporting service.
@@ -117,6 +117,16 @@ export interface PipeResult {
   pipe: string;
 
   /** the result that pipe returned */
-  result?: any; 
+  result?: any;
 }
 
+declare global {
+  namespace NodeJS {
+    interface Global {
+      currentlyRunningTestTitle?: string;
+      testomatioDataStore?: any;
+      testomatioRunningEnvironment?: string;
+      testTitle?: string;
+    } 
+  }
+}
