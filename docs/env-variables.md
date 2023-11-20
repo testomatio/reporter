@@ -20,7 +20,8 @@ require('dotenv').config({ path: '.env' }); // or any other path
 | `TESTOMATIO_CREATE` | Create test ids. |
 | `TESTOMATIO_TITLE_IDS` |  |
 | `TESTOMATIO_RUN` | Add Report to Run by ID |
-| `TESTOMATIO_PROCEED` | Do Not Finalize Run |
+| `TESTOMATIO_PROCEED` | Do Not Finalize Run | `TESTOMATIO_PREPEND_DIR="MyTESTS" TESTOMATIO=1111111 npx check-tests CodeceptJS "**/*{.,_}{test,spec}.js"`
+| `TESTOMATIO_PREPEND_DIR` | Put all imported tests into a specific suite (folder) |
 | `TESTOMATIO_TITLE` | Setting Report Title | `TESTOMATIO={API_KEY} TESTOMATIO_TITLE="title for the report" <actual run command>`
 | `TESTOMATIO_SHARED_RUN` | Reporting Parallel Execution to To Same Run | `TESTOMATIO={API_KEY} TESTOMATIO_TITLE="report for commit ${GIT_COMMIT}" TESTOMATIO_SHARED_RUN=1 <actual run command>`
 | `TESTOMATIO_RUNGROUP_TITLE` | Adding Report to RunGroup | `TESTOMATIO={API_KEY} TESTOMATIO_RUNGROUP_TITLE="Build ${BUILD_ID}" <actual run command>`
