@@ -6,7 +6,7 @@ const ANSI_REGEX = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-
 describe('Client', () => {
 
   afterEach(() => {
-    process.env.TESTOMATIO_STACK_FILTER = null;
+    process.env.TESTOMATIO_STACK_IGNORE = null;
   })
 
   it('should include filter for stack trace', () => {
@@ -16,14 +16,14 @@ describe('Client', () => {
     let stack = client.formatError(error);
     expect(stack).to.include('client_test.js');
 
-    process.env.TESTOMATIO_STACK_FILTER = '**/client_test.js';
+    process.env.TESTOMATIO_STACK_IGNORE = '**/client_test.js';
   
     error = new Error('Test error');
     stack = client.formatError(error);
     expect(stack).not.to.include('client_test.js');
 
     try {
-      process.env.TESTOMATIO_STACK_FILTER = null;
+      process.env.TESTOMATIO_STACK_IGNORE = null;
       errorFn();
       expect.fail('Should throw error');
     } catch (e) {
@@ -35,7 +35,7 @@ describe('Client', () => {
 
 
     try {
-      process.env.TESTOMATIO_STACK_FILTER = '**/src/error.js';
+      process.env.TESTOMATIO_STACK_IGNORE = '**/src/error.js';
       errorFn();
       expect.fail('Should throw error');
     } catch (e) {
