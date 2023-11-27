@@ -23,9 +23,9 @@ describe('csv pipe confirmation tests', () => {
     before(() => {
         dir = path.resolve(process.cwd(), "export");
     });
-    afterEach(() => {
+    afterEach(async () => {
         try {
-            fs.rmdirSync(dir, { recursive: true });
+            await fs.promises.rm(dir, { recursive: true });
           } catch (err) {
             console.error(`Unknown error while deleting ${dir}.`);
           }
