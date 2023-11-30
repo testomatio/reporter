@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link href="https://fonts.googleapis.com/css2?family=Fira+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+        <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/accordionjs@2.1.2/accordion.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <title>Report {{runId}} - Testomat.io</title>
+        <link rel="stylesheet" href="./style.css">
+        {{!-- TODO: styling create as a new additional file instead of template => copy default one --}}
+        <style>
+            body {
+                font-family: "Fira Sans", sans-serif;
+            }
+        </style>
+    </head>
+
+    <body class="bg-gray-50 pt-6 px-4 lg:pt-4 lg:px-40 h-full;">
+        <div id="testomatio_report">                
+            <div class="flex items-center flex-col space-y-4 md:flex-row md:justify-between md:h-14 mb-6">
+                <div class="flex flex-col md:flex-row space-x-3 items-center">
+                    <h2 class="text-gray-900 leading-none text-3xl font-semibold mb-0">{{runId}}
+                    </h2>
+                    {{!-- <span class="text-sm text-gray-500">
+                        {{executionDate}}
+                    </span> --}}
+                </div>
+                <div class="flex space-x-3 items-center">                       
+                    <a class="inline-flex items-center border border-transparent leading-none text-white bg-indigo-500 hover:bg-indigo-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer px-4 py-2 text-base leading-none" 
+                        style="min-height: 38px"
+                        href="{{runUrl}}" 
+                        target="_blank">
+                        Full Report
+                    </a>
+                </div>
+            </div>
+            <div class="bg-white border overflow-hidden rounded-lg divide-y divide-gray-200 mb-12">
+                <div class="flex flex-col lg:divide-x divide-gray-200 sm:flex-col md:flex-col lg:flex-row">
+                    <div class="w-full lg:w-1/2">
+                        <!-- Left chart section -->
+                        <div class="p-4">
+                            <h2 class="text-xl font-semibold mb-4">Testomatio Test Results</h2>
+                            <span class="text-sm text-gray-500 items-center">{{executionDate}}</span>
+                            <div class="hart-container" style="height: 200px;">
+                                <canvas id="testomatio_chart"></canvas>
+                                <div for="testomatio_chart"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="w-full lg:w-1/2">
+                        <!-- Right chart section -->
+                        <div class="p-4">
+                            <h2 class="text-xl font-semibold mb-4">Testomatio Run Info</h2>
+                            <dl>
+                                <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                    <dt class="text-sm font-medium text-gray-500">
+                                        RUN Status
+                                    </dt>
+                                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                        <span class="inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none bg-green-200 text-green-600 rounded-full">
+                                            {{status}}
+                                        </span>
+                                    </dd>
+                                    </div>
+                                    <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                    <dt class="text-sm font-medium text-gray-500">
+                                        Duration
+                                    </dt>
+                                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                        <span>
+                                            <i class="fa fa-clock-o"></i>
+                                        </span>
+                                        {{executionTime}}
+                                    </dd>
+                                    </div>
+                                </div>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="px-4 py-5 lg:px-20 lg:py-5">
+                <!-- TODO: maybe add a search section by test NAME!! -->
+                <div class="px-4 py-5 lg:px-20 lg:py-5 border rounded-md mb-4">
+                    <div class="mb-2">
+                        <h3 class="text-2xl leading-10 font-medium text-gray-900">
+                            Search and Summary
+                        </h3>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="relative">
+                            <input type="text" id="search-input" placeholder="Search by test title..." class="border rounded-md py-1 px-2 w-48 focus:outline-none focus:ring focus:border-blue-300">
+
+                        </div>
+                        <div class="test-status">
+                            <div class="flex items-center">
+                                <span class="font-medium mr-2">All:</span>
+                                <span class="text-blue-600 font-semibold">{{tests.length}}</span>
+                                <span class="font-medium ml-4 mr-2">Passed:</span>
+                                <span class="text-green-600 font-semibold">{{getTestsByStatus tests "PASSED"}}</span>
+                                <span class="font-medium ml-4 mr-2">Failed:</span>
+                                <span class="text-red-600 font-semibold">{{getTestsByStatus tests "FAILED"}}</span>
+                                <span class="font-medium ml-4 mr-2">Skipped:</span>
+                                <span class="text-yellow-600 font-semibold">{{getTestsByStatus tests "SKIPPED"}}</span>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+
+                <ul class="accordionjs bg-gray-50 rounded-md divide-y divide-gray-200 text-gray-900">
+                    <li class="pl-3 pr-4 py-3 text-sm cursor-pointer">
+                        <h4 class="text-lg flex items-center space-x-1">
+                            <span class="font-medium">Passed</span>
+                            <span class="inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none bg-green-200 text-green-600 rounded-full">
+                            {{getTestsByStatus tests "PASSED"}}
+                            </span>
+                        </h4>
+                        <ul role="list" class="pl-2 divide-y divide-gray-200">
+                            {{#each tests}}
+                                <ul role="list" class="pl-2 divide-y divide-gray-200">                                
+                                    {{#eq status "passed"}}
+                                        <li class="py-3 flex justify-between items-center">
+                                            <div>
+                                                <div class="success"></div>
+                                                <a class="testrun hover:underline" data-toggle="test-{{test_id}}" data-target="test-code-{{test_id}}">
+                                                    {{title}} title
+                                                </a>                                     
+                                            </div>
+                                            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                                <span>
+                                                    <i class="fa fa-clock-o"></i>
+                                                </span>
+                                                {{#if run_time}}
+                                                    {{run_time}}ms
+                                                {{/if}}
+                                            </dd>
+                                        </li>
+                                        <li class="py-3 test-code-container test-code" id="test-code-{{test_id}}">
+                                            <pre>
+                                                <code>
+                                                    {{steps}}
+                                                </code>
+                                            </pre>
+                                        </li>
+                                    {{/eq}}
+                                </ul> 
+                            {{/each}}                               
+                        </ul>                            
+                    </li>
+
+                    <li class="pl-3 pr-4 py-3 text-sm cursor-pointer">
+                        <h4 class="text-lg flex items-center space-x-1">
+                            <span class="font-medium">Failed</span>
+                            <span class="inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none bg-red-200 text-red-500 rounded-full">
+                            {{getTestsByStatus tests "FAILED"}}
+                            </span>
+                        </h4>
+                
+                        <ul role="list" class="pl-2 divide-y divide-gray-200">
+                            {{#each tests}}
+                                {{#eq status "failed"}}
+                                    <li class="py-3 flex justify-between items-center">
+                                            <div>
+                                                <div class="fail"></div>
+                                                <a class="testrun hover:underline" data-toggle="test-{{test_id}}" data-target="test-code-{{test_id}}">
+                                                    {{title}} title
+                                                </a>                                     
+                                            </div>
+                                            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                                <span>
+                                                    <i class="fa fa-clock-o"></i>
+                                                </span>
+                                                {{#if run_time}}
+                                                    {{run_time}}ms
+                                                {{/if}}
+                                            </dd>
+                                        </li>
+                                        <li class="py-3 test-code-container test-code" id="test-code-{{test_id}}">
+                                            <pre>
+                                                <code>
+                                                    {{steps}}
+                                                </code>
+                                            </pre>
+                                        </li>
+                                {{/eq}}
+                            {{/each}}
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div
+            class="fixed bg-white border-t inset-x-0 bottom-0 mx-auto py-1 px-3 sm:px-6 lg:px-8 flex items-center justify-between flex-wrap">
+            <p class="ml-3 text-gray-500 text-xs lg:truncate">
+                This is a public report generated by <a class="hover:underline text-gray-700 font-semibold"
+                    href="https://testomat.io" target="_blank">Testomat.io</a>. Everyone who has accesse to this link can
+                see this report.<br>
+            </p>
+        </div>
+
+    </body>
+    <!-- Jquery from a CDN -->
+    <script type="module" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.3.2/chart.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/accordionjs@2.1.2/accordion.min.js"></script>
+    <!-- Chart.js from a CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Include Handlebars from a CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>
+    <!-- Handlebars tamplate actions -->
+    <script>
+        $(document).ready(function ($) {
+            $(".accordionjs").accordionjs();
+
+            $('#copy-url').on('click', () => {
+                navigator.clipboard.writeText(window.location.href);
+            })
+        });
+        //Open code section handler
+        document.querySelectorAll('.test-code').forEach(element => {
+            element.style.display = 'none';
+        });
+        const testrunLinks = document.querySelectorAll('.testrun');
+
+        testrunLinks.forEach(link => {
+            link.addEventListener('click', function () {
+                // get "data-toggle" & "data-target" from link env
+                const toggleId = this.getAttribute('data-toggle');
+                const targetId = this.getAttribute('data-target');
+                
+                // get "tests.code" elements and change view
+                const targetElement = document.querySelector(`#${targetId}`);
+                
+                // SET "tests.code" viewing after each click
+                if (targetElement.style.display === 'none') {
+                    targetElement.style.display = 'block';
+                } else {
+                    targetElement.style.display = 'none';
+                }
+            });
+        });
+    </script>
+    <script type="text/javascript" src="./chart-my.js"></script>
+</html>

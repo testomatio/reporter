@@ -20,7 +20,9 @@
     "debug": "^4.3.4",
     "dotenv": "^16.0.1",
     "fast-xml-parser": "^4.0.8",
+    "file-url": "3.0.0",
     "glob": "^10.3",
+    "handlebars": "^4.7.8",
     "has-flag": "^5.0.1",
     "humanize-duration": "^3.27.3",
     "is-valid-path": "^0.1.1",
@@ -28,7 +30,8 @@
     "lodash.memoize": "^4.1.2",
     "lodash.merge": "^4.6.2",
     "minimatch": "^9.0.3",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "promise-retry": "^2.0.1"
   },
   "files": [
     "bin",
@@ -64,6 +67,7 @@
     "eslint-plugin-import": "^2.25.4",
     "jasmine": "^3.10.0",
     "jest": "^27.4.7",
+    "jsdom": "^22.1.0",
     "mocha": "^9.2.0",
     "mock-http-server": "^1.4.5",
     "pino": "^8.15.0",
