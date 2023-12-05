@@ -1,4 +1,12 @@
 <!-- pending release updates -->
+# 1.1.0
+
+* Assign Run by label:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_LABEL="release,module:checkout" <actual run command>
+```
+
 # 1.0.18
 
 * Fixed stack traces for CodeceptJS
