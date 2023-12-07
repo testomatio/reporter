@@ -17,6 +17,9 @@ export interface TestData {
   /** The title of the test suite to which the test case belongs. Required when creating a new test suite inside Testomat.io. */
   suite_title?: string;
 
+  /** file in which test is located */
+  file?: string;
+
   /** The unique identifier from Testomat.io of the test suite to which the test case belongs. */
   suite_id?: string;
 
