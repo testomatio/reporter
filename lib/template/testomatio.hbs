@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css" integrity="sha512-SzlrxWUlpfuzQ+pcUCosxcglQRNAq/DZjVsC0lE40xsADsfeQoEypE+enwcOiGjk/bSuGGKHEyjSoQ1zVisanQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    {{#if runId}}
+        <title>Report #{{runId}} - Testomat.io</title>
+    {{else}}
+        <title>Report Testomat.io</title>
+    {{/if}}
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+        }
+
+        header,
+        div,
+        p,
+        form,
+        input,
+        a,
+        span,
+        button {
+            box-sizing: border-box;
+        }
+        img {
+            width: 100%;
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+        p, span{
+            font-weight: 400;
+            font-size: 14px;
+            color: grey;
+            margin: 0;
+        }
+        .report{
+            padding-top: 15px;
+        }
+        .level_1{
+            margin-bottom: 20px;
+            border-bottom: 1px solid grey;
+            padding-bottom: 10px;
+        }
+        .header{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header__point{
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 15px;
+        }
+        .header__point_red{
+            background: red;
+        }
+        .header__block{
+            display: flex;
+            align-items: center;
+        }
+        .header__case{
+            display: flex;
+            align-items: center;
+            margin-right: 15px;
+        }
+        .header__case p{
+            margin-right: 7px;
+        }
+        .header__case span{
+            color: black;
+        }
+        .header__block button{
+            margin-left: 15px;
+        }
+        .header__type{
+            background: #0d6efd;
+            color: #FFF;
+            border-radius: 10px;
+            padding: 1px 5px;
+            margin-right: 15px;
+        }
+        .header__case i{
+            color: grey;
+            margin-right: 5px;
+        }
+        .title{
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .title p{
+            color: black;
+            font-size: 20px;
+            margin-right: 5px;
+        }
+        .statright{
+            display: flex;
+        }
+        .statdesc{
+            display: flex;
+            flex-direction: column;
+        }
+        .statdesc__row{
+            padding: 15px 10px;
+            display: flex;
+        }
+        .statdesc__row_first{
+            width: 150px;
+        }
+        .statdesc__row:nth-child(odd){
+            background: #F4F5FF;
+        }
+        .statdesc__row p{
+            font-weight: bold;
+        }
+        .statdesc{
+            width: 100%;
+        }
+        .statstatus{
+            display: flex;
+            align-items: center;
+        }
+        .statstatus p{
+            font-weight: bold;
+        }
+        .statstatus div{
+            font-weight: bold;
+        }
+        .statstatus_failed div{
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .statstatus_failed p{
+            color: red;
+            text-transform: uppercase;
+        }
+        .statstatus_failed div{
+            background: red;
+        }
+        .statstatus_passed div{
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+            text-transform: uppercase;
+        }
+        .statstatus_passed div {
+            background: green;
+        }
+        .statstatus_passed p {
+            color: green;
+            text-transform: uppercase;
+        }
+        .statstatus_skipped div{
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+            text-transform: uppercase;
+        }
+        .statstatus_skipped div {
+            background: yellow;
+        }
+        .statstatus_skipped p {
+            color: yellow;
+            text-transform: uppercase;
+        }
+        .fa-magnifying-glass{
+            font-size: 24px;
+            color: gray;
+        }
+        .level_5{
+            margin-top: 20px;
+        }
+        .numTest{
+            font-weight: 700;
+            font-size: 16px;
+            color:#0d6efd;
+        }
+        .testitem{
+            border: 1px solid grey;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        .testitem__top{
+            width: 100%;
+            display: flex;
+            background: #e9ecef;
+            padding: 3px 0;
+            border-radius:10px;
+            cursor: pointer;
+        }
+        .testitem__icon{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            margin-right: 15px;
+        }
+        .testitem__ico{
+            font-size: 18px;
+        }
+        .testitem__name{
+            font-weight: 700;
+            color: black;
+            font-size: 16px;
+        }
+        .testitem__body{
+            display: flex;
+            border-top: 1px solid grey;
+        }
+        .testitem__menu{
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid grey;
+            padding: 15px;
+        }
+        .testitem__mitem{
+            margin-bottom: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            color: grey;
+        }
+        .testitem__mitem_active{
+            color: green;
+        }
+        .testitem__case{
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+        }
+        .testitem__title{
+            font-size: 18px;
+            color: black;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-decoration: underline;
+        }
+        .testitem__block p{
+            font-size: 14px;
+            white-space: pre-line;
+        }
+        .test__empty__list {
+            margin-bottom: 10px;
+            color: grey;
+        }
+        /* Passed TAB*/
+        #passedTest:not(:checked) + .btn-outline-dark {
+            background-color: #39BD2F;
+        }
+        #passedTest:checked + .btn-outline-dark {
+            background-color: #68cf61;
+            color: white;
+        }
+        /* Failed TAB*/
+        #failedTest:not(:checked) + .btn-outline-dark {
+            background-color: #F2230C;
+        }
+        #failedTest:checked + .btn-outline-dark {
+            background-color: #FA6E5E;
+            color: white;
+        }
+        /* Skipped TAB*/
+        #skippedTest:not(:checked) + .btn-outline-dark {
+            background-color: #F2C00C;
+        }
+        #skippedTest:checked + .btn-outline-dark {
+            background-color: #dfc155;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 pt-6 px-4 lg:pt-4 lg:px-40 h-full;">
+    <section class="report" id="report">
+        <div class="container">
+            <!-- top -->
+            <div class="row level_1">
+                <div class="col-12">
+                    <div class="header">
+                        <div class="header__block">
+                            {{#if runId}}
+                                <div class="header__case">
+                                    <p>Run</p>
+                                    <span><strong>#</strong>{{runId}}</span>
+                                </div>
+                            {{/if}}
+                            <p class="header__type">
+                                <i class="fa-solid fa-face-smile"></i>
+                                automated job
+                            </p>
+                        </div>
+                        <div class="header__block">
+                            {{#if runUrl}}
+                                <a href="{{runUrl}}" target="_blank" class="btn btn-primary">
+                                    Full Report
+                                </a>
+                            {{else}}
+                                <button class="btn btn-primary" disabled>
+                                    Full Report
+                                </button>
+                            {{/if}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- top -->
+
+            <div class="row level_2">
+                <div class="col-12">
+                    <div class="title">
+                        <p>Testomatio Run Information</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Schedule and information -->
+            <div class="row level_3">
+                <div class="col-6">
+                    <div class="statleft">
+                        <div id="graff"></div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="statright">
+                        <div class="statdesc">
+                            <!-- 1 -->
+                            <div class="statdesc__row">
+                                <div class="statdesc__row_first">
+                                    <p>Status</p>
+                                </div>
+                                <div class="statstatus statstatus_{{status}}">
+                                    <div></div>
+                                    <p>{{status}}</p>
+                                </div>
+                            </div>
+                            <!-- 1 -->
+                            <!-- 1 -->
+                            <div class="statdesc__row">
+                                <div class="statdesc__row_first">
+                                    <p>Execution Duration</p>
+                                </div>
+                                <span>{{executionTime}}</span>
+                            </div>
+                            <!-- 1 -->
+                            <!-- 1 -->
+                            <div class="statdesc__row">
+                                <div class="statdesc__row_first">
+                                    <p>Tests</p>
+                                </div>
+                                <span>{{tests.length}}</span>
+                            </div>
+                            <!-- 1 -->
+                            <!-- 1 -->
+                            <div class="statdesc__row">
+                                <div class="statdesc__row_first">
+                                    <p>Start Execution Date</p>
+                                </div>
+                                <span>{{executionDate}}</span>
+                            </div>
+                            <!-- 1 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Schedule and information -->
+            <div class="row level_4">
+                <div class="col-6">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="basic-addon1">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </span>
+                        </div>
+                        <input type="text" class="form-control inputSearch" placeholder="Search" aria-label="Search" aria-describedby="basic-addon1">
+                    </div>
+                </div>
+
+                <div class="col-6 d-flex justify-content-end">
+                        <div class="btn-group menuTests" role="group" aria-label="Basic radio toggle button group">
+
+                            <input type="radio" class="btn-check" name="groupTest" id="allTest" autocomplete="off" category="all" checked>
+                            <label class="btn btn-outline-dark" for="allTest">All <span class="numTest" name="numTest" lcategory="all">0</span></label>
+                        
+                            <input type="radio" class="btn-check" name="groupTest" id="passedTest" autocomplete="off" category="passed">
+                            <label class="btn btn-outline-dark" for="passedTest">Passed <span class="numTest" name="numTest" lcategory="passed">0</span></label>
+                        
+                            <input type="radio" class="btn-check" name="groupTest" id="failedTest" autocomplete="off" category="failed">
+                            <label class="btn btn-outline-dark" for="failedTest">Failed <span class="numTest" name="numTest" lcategory="failed">0</span></label>
+
+                            <input type="radio" class="btn-check" name="groupTest" id="skippedTest" autocomplete="off" category="skipped">
+                            <label class="btn btn-outline-dark" for="skippedTest" >Skipped <span class="numTest" name="numTest" lcategory="skipped">0</span></label>
+
+                        </div>
+                </div>
+            </div>
+
+            <div class="row level_5">
+                <div class="col-12">
+                    {{#if tests.length}}
+                        <div class="testWrapp">
+                            {{#each tests}}
+
+                                <div class="testitem d-none" name="testitem" type="dummy" category="false">
+
+                                    <div class="testitem__top">
+                                        <div class="testitem__icon">
+                                            <i class="fa-solid fa-chevron-right testitem__ico testitem__ico_right"></i>
+                                            <i class="fa-solid fa-chevron-down d-none testitem__ico testitem__ico_down"></i>
+                                        </div>
+                                        <p class="testitem__name">Test</p>
+                                    </div>
+
+                                    <div class="testitem__body d-none">
+
+                                        <div class="testitem__menu">
+                                            <span type="steps" class="testitem__mitem testitem__mitem_active">Steps <i class="fa-solid fa-arrow-right"></i></span>
+                                            <span type="status" class="testitem__mitem">Status <i class="fa-solid fa-arrow-right"></i></span>
+                                            <span type="message" class="testitem__mitem">Message <i class="fa-solid fa-arrow-right"></i></span>
+                                            <span type="files" class="testitem__mitem">Files <i class="fa-solid fa-arrow-right"></i></span>
+                                        </div>
+
+                                        <div class="testitem__content">
+
+                                            <!-- 1 -->
+                                            <div class="testitem__case" type="steps">
+                                                <p class="testitem__title">Steps</p>
+                                                <div class="testitem__block">
+                                                    <span>...</span>
+                                                </div>
+                                            </div>
+                                            <!-- 1 -->
+
+                                            <!-- 2 -->
+                                            <div class="testitem__case d-none" type="status">
+                                                <p class="testitem__title">Status</p>
+                                                <div class="testitem__block">
+                                                    <span>...</span>                                               
+                                                </div>
+                                            </div>
+                                            <!-- 2 -->
+
+                                            <!-- 3 -->
+                                            <div class="testitem__case d-none" type="message">
+                                                <p class="testitem__title">Message</p>
+                                                <div class="testitem__block">
+                                                    <span>...</span> 
+                                                </div>
+                                            </div>
+                                            <!-- 3 -->
+
+                                            <!-- 4 -->
+                                            <div class="testitem__case d-none" type="files">
+                                                <p class="testitem__title">Files</p>
+                                                <div class="testitem__block">
+                                                    <span>...</span>                                               
+                                                </div>
+                                            </div>
+                                            <!-- 4 -->
+                                        </div>
+                                    </div>
+                                </div>
+                            {{/each}}
+                        </div>            
+                    {{else}}
+                        <div class="row">
+                            <div class="col-12 test__empty__list">
+                                <p>No tests found to display  😔</p>
+                            </div>
+                        </div>
+                    {{/if}}
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+        // Load google charts
+        google.charts.load('current', {'packages':['corechart']});
+        google.charts.setOnLoadCallback(drawChart);
+        
+        // Draw the chart and set the chart values
+        function drawChart() {
+            let data = {};
+            const passedTests = {{getTestsByStatus tests "PASSED"}};
+            const failedTests = {{getTestsByStatus tests "FAILED"}};
+            const skippedTests = {{getTestsByStatus tests "SKIPPED"}};
+
+            if (passedTests === 0 && failedTests === 0 && skippedTests === 0) {
+                data = google.visualization.arrayToDataTable([
+                    ['Task', 'Tests'],
+                    ['No Tests', 1]
+                ])
+            }
+            else {
+                data = google.visualization.arrayToDataTable([
+                ['Task', 'Tests'],
+                ['No Tests', 0],
+                ['Passed', passedTests],
+                ['Failed', failedTests],
+                ['Skipped', skippedTests], 
+            ]);
+            }
+        
+            // Optional: add a title and set the width and height of the chart
+            const options = {
+                'title':'',
+                'width':550,
+                'height':300,
+                'colors': ['#939992', '#39BD2F', '#F2230C', '#F2C00C']
+            };
+        
+            // Display the chart inside the <div> element with id="piechart"
+            const chart = new google.visualization.PieChart(document.getElementById('graff'));
+            chart.draw(data, options);
+        }        
+
+        // processing and adding test data to the template
+        function addOneTest(category,testData = {}){
+            const { suite_title, title, steps, message, files } = testData;
+            // radio btn test's count
+            function incrementCount(element) {
+                let count = parseInt(element.textContent);
+                count++;
+                element.textContent = count;
+            }
+
+            function addCountToRadio(page,category){
+                const menuTests = page.querySelector('.menuTests');
+                const all = menuTests.querySelector('span[name="numTest"][lcategory="all"]');
+                
+                incrementCount(all);
+
+                const elemCat = menuTests.querySelector('span[name="numTest"][lcategory="' + category + '"]');
+
+                if (elemCat) {
+                    incrementCount(elemCat);
+                }              
+            }
+            // collapse - expand block
+            function collapse_expand(top){
+                const block = top.closest('.testitem');
+                const icon = top.querySelector('.testitem__icon');
+                const testitem__ico_right = icon.querySelector('.testitem__ico_right');
+                const testitem__ico_down = icon.querySelector('.testitem__ico_down');
+                const body = block.querySelector('.testitem__body');
+
+                if(body.classList.contains('d-none')){
+                    body.classList.remove('d-none');
+                    testitem__ico_right.classList.add('d-none');
+                    testitem__ico_down.classList.remove('d-none');
+                }
+                else{
+                    body.classList.add('d-none');
+                    testitem__ico_down.classList.add('d-none');
+                    testitem__ico_right.classList.remove('d-none');
+                }
+            }
+
+            function menu(clone){
+
+                function removeAddActive(elem){
+                    const menu = elem.closest('.testitem__menu');
+                    const item = menu.querySelectorAll('.testitem__mitem');
+
+                    for(let i=0; i<item.length; i++){
+                        item[i].classList.remove('testitem__mitem_active');
+                    }
+                    elem.classList.add('testitem__mitem_active');
+                }
+
+                function show_content(elem){
+                    removeAddActive(elem);
+
+                    const body = elem.closest('.testitem__body');
+                    const content = body.querySelector('.testitem__content');
+                    const blocks = content.querySelectorAll('.testitem__case');
+
+                    for(let i=0; i<blocks.length; i++){
+                        blocks[i].classList.add('d-none');
+                    }
+
+                    const type = elem.getAttribute('type');
+                    const show_elem = content.querySelector('div[type="'+type+'"]');
+                    show_elem.classList.remove('d-none');
+                }
+                
+                const menu = clone.querySelector('.testitem__menu');
+                const item = menu.querySelectorAll('.testitem__mitem');
+
+                for(let i=0; i<item.length; i++){
+                    item[i].addEventListener('click',function(){
+                        show_content(item[i])
+                    })
+                }
+            }
+
+            const page = document.querySelector('.report');
+            const wrapp = page.querySelector('.testWrapp');
+            const dummy = wrapp.querySelector('div[name="testitem"][type="dummy"]');
+            const clone = dummy.cloneNode(true);
+
+            clone.setAttribute('type','clone');
+            clone.setAttribute('category',category);
+            clone.classList.remove('d-none');
+            wrapp.append(clone);
+
+            const testitem__name = clone.querySelector('.testitem__name');
+
+            const fullTestName = suite_title ? suite_title + " - " + title : title;
+            testitem__name.textContent = fullTestName;
+
+            const body = clone.querySelector('.testitem__body');
+            let content = body.querySelector('.testitem__content');
+
+            let content_error = content.querySelector('div[type="steps"]').querySelector('span');
+            content_error.innerHTML = steps;
+
+            let content_status = content.querySelector('div[type="status"]').querySelector('span');
+            content_status.innerHTML = category;
+
+            let content_message = content.querySelector('div[type="message"]').querySelector('span');
+            content_message.innerHTML = message;
+
+            let content_files = content.querySelector('div[type="files"]').querySelector('span');
+
+            if (files.includes("This test has no files")) {
+                content_files.innerHTML = files;
+            }
+
+            if (!files.includes("This test has no files")) {
+                const filesList = document.createElement('ul');
+                content_files.innerHTML = "";
+
+                if (Array.isArray(files) && files.length > 0) {
+                    files.forEach((file) => {
+                    const listItem = document.createElement('li');
+                    const fileLink = document.createElement('a');
+                    fileLink.href = file.path;
+                    fileLink.target = '_blank';
+                    fileLink.textContent = file.path;
+                    
+                    listItem.appendChild(fileLink);
+                    filesList.appendChild(listItem);
+                });
+
+                content_files.appendChild(filesList);
+
+                }                
+            }
+
+            const testitem__top = clone.querySelector('.testitem__top');
+
+            testitem__top.addEventListener("click", function(){
+                collapse_expand(testitem__top);
+            });
+
+            menu(clone);
+            addCountToRadio(page,category);
+        }
+
+        function radioMenuStart(){
+            function showBlockForCat(input){
+                const page = input.closest('.report');
+                const wrapp = page.querySelector('.testWrapp');
+                const clone = wrapp.querySelectorAll('div[name="testitem"][type="clone"]');
+
+                for(let i=0; i<clone.length; i++){
+                    clone[i].classList.add('d-none');
+                }
+
+                const category = input.getAttribute('category');
+
+                if(category == 'all'){
+                    for(let i=0; i<clone.length; i++){
+                        clone[i].classList.remove('d-none');
+                    }
+                }
+                else{
+                    for(let i=0; i<clone.length; i++){
+                        if(clone[i].getAttribute('category') == category){
+                            clone[i].classList.remove('d-none');
+                        }
+                    }
+                }
+            }
+
+            const page = document.querySelector('.report');
+            const menuTests = page.querySelector('.menuTests');
+            const items = menuTests.querySelectorAll('input[name="groupTest"]');
+
+            for(let i=0; i<items.length; i++){
+                items[i].addEventListener('change',function(){
+                    showBlockForCat(items[i])
+                })
+            }
+        }
+        radioMenuStart();
+
+        function search(){
+            function searchBlock(input){
+                const value = input.value;
+
+                const page = input.closest('.report');
+                const wrapp = page.querySelector('.testWrapp');
+                const clone = wrapp.querySelectorAll('div[name="testitem"][type="clone"]');
+
+                for(let i=0; i<clone.length; i++){
+                    clone[i].classList.add('d-none');
+                }
+
+                for(let i=0; i<clone.length; i++){
+                    let testitem__name = clone[i].querySelector('.testitem__name');
+                    let nameInBlock = testitem__name.textContent;
+
+                    if(nameInBlock.includes(value)){
+                        clone[i].classList.remove('d-none');
+                    }
+                }
+
+            }
+            const page = document.querySelector('.report');
+            const inputSearch = page.querySelector('.inputSearch');
+
+            inputSearch.addEventListener('input',function(){
+                searchBlock(inputSearch)
+            })
+        }
+        search();        
+
+        const executedTests = {{{ json tests }}};
+        
+        for (let i = 0; i < executedTests.length; i++) {
+            const status = executedTests[i].status;
+
+            addOneTest(status, executedTests[i]);
+        }
+    </script>
+</body>
+</html>

@@ -125,6 +125,27 @@ To make report publicly available pass `TESTOMATIO_PUBLISH=1` variable:
 TESTOMATIO={API_KEY} TESTOMATIO_PUBLISH=1 <actual run command>
 ```
 
+### Assign Label To Run
+
+To assign a label to run, a **label with scope `runs` must exist**.
+Then a label can be passed via `TESTOMATIO_LABEL` variable:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_LABEL=release <actual run command>
+```
+
+There is a way to pass a value to label via `:`:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_LABEL="module:checkout" <actual run command>
+```
+
+Or you can set multiple labels separating them with comma:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_LABEL="release,module:checkout" <actual run command>
+```
+
 ### Create Jira Issue for Run
 
 To automatically assign Run to Jira Issue pass the ID of that issue as `TESTOMATIO_JIRA_ID` variable
