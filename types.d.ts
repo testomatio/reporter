@@ -123,7 +123,6 @@ export interface PipeResult {
 declare global {
   namespace NodeJS {
     interface Global {
-      currentlyRunningTestTitle?: string;
       testomatioArtifacts?: any;
       testomatioDataStore?: any;
       testomatioRunningEnvironment?: string;
