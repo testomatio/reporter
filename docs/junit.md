@@ -105,6 +105,33 @@ This will produce XML report which contains path to a file:
 
 When XML report is uploaded, all files from `file://` will be uploaded to corresponding tests.
 
+### Assign Test ID
+
+To link test in source code with test in Testomat.io add Test ID as a comment:
+
+```java
+  @Test
+  public void testAddition() {
+    // @T8acca9eb
+    MyMath myMath = new MyMath();
+    int result = myMath.add(2, 3);
+    assertEquals(5, result);
+}
+```
+In this case `@TT8acca9eb` is ID of existing test inside Testomat.io project
+
+Alternatively, if the code can't be imported by a reported, use output inside a test to print its ID:
+
+
+```java
+public void testAddition() {
+  MyMath myMath = new MyMath();
+  int result = myMath.add(2, 3);
+  System.out.println("tid://@T8acca9eb"); // here we print test ID
+  assertEquals(5, result);
+}
+```
+
 ## NUnit
 
 Generate NUnit XML report and run the following code:
@@ -131,6 +158,16 @@ To upload an arbitrary file as artifact, print its absulute path to console:
 Console.WriteLine("file://path/to/file.png");
 ```
 
+### Assign Test ID
+
+To link test in source code with test in Testomat.io print a Test ID inside a test:
+
+```java
+Console.WriteLine("tid://@T8acca9eb"); // here we print test ID
+```
+
+Use `tid://` prefix with a existing Test ID to match test with ID.
+
 ## Ruby Minitest
 
 ```ruby
@@ -154,6 +191,16 @@ Import reports from `test/reports` directory:
 ```
 TESTOMATIO={API_KEY} npx report-xml "test/reports/*.xml" --lang ruby
 ```
+
+### Assign Test ID
+
+To link test in source code with test in Testomat.io print a Test ID inside a test:
+
+```java
+puts "tid://@T8acca9eb" // here we print test ID
+```
+
+Use `tid://` prefix with a existing Test ID to match test with ID.
 
 ## PHPUnit
 
