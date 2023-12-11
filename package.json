@@ -1,6 +1,6 @@
 {
   "name": "@testomatio/reporter",
-  "version": "1.1.0-beta.mocha-create.5",
+  "version": "1.1.0-beta.mocha-create.7",
   "description": "Testomatio Reporter Client",
   "main": "./lib/reporter.js",
   "typings": "typings/index.d.ts",
