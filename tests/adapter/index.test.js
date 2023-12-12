@@ -126,6 +126,7 @@ describe('Adapters', () => {
 
       describe('negative tests', () => {
         before(function (done) {
+          process.env.TESTOMATIO = '';
           this.timeout(10000);
 
           registerHandlers(server, RUN_ID);
