@@ -4,6 +4,7 @@ const {
   fetchSourceCodeFromStackTrace,
   fetchIdFromCode,
   fetchIdFromOutput,
+  fetchSourceCode,
  } = require('../lib/utils/utils');
 
 describe('Utils', () => {
@@ -90,6 +91,33 @@ ${process.cwd()}/tests/data/cli/RunCest.php:24
     `
     const id = fetchIdFromOutput(code);
     expect(id).to.eql(`8acca9eb`);
+  })
+
+  it('#fetchSourceCode for complex java example', () => {
+
+    const code = `
+    import org.junit.jupiter.api.Assertions;
+    import org.junit.jupiter.api.DisplayName;
+    import org.junit.jupiter.api.Test;
+    
+    @Slf4j
+    public class UserLoginTests extends BaseTest {
+    ;
+        @Test
+        @DisplayName("UserLogin")
+        public void testUserLogin() {
+            // @Te4e19da3
+            MainSearchScreen mainSearchScreen = new MainSearchScreen(driver);
+        }
+    }    
+    `
+
+    const test = fetchSourceCode(code, { lang: 'java', title: 'UserLogin' });
+    // console.log(test);
+
+    expect(test).to.include(`UserLogin`);
+    expect(test).to.include(`@Te4e19da3`);
+
   })
 
 
