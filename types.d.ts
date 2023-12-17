@@ -49,6 +49,9 @@ export interface TestData {
 
   /** A one-line result message, usually error.message. */
   message?: string;
+
+  /** Logs catched by logger */
+  logs?: string;
 }
 
 /**
