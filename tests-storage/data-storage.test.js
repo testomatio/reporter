@@ -12,18 +12,18 @@ describe('Storage', () => {
 
   it('PUT data to FILE storage @TB0000002', () => {
     const dataType = 'test2';
-    const storage = new DataStorage(dataType);
+    const storage = new DataStorage(dataType, { isFileStorage: true });
     const data = 'test data';
     storage.putData(data, '@TB0000002');
-    const dataFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, dataType, `${dataType}_B0000002`);
+    const dataFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, dataType, `${dataType}_TB0000002`);
     expect(fs.existsSync(dataFilePath)).to.equal(true);
-    const dataContent = fs.readFileSync(dataFilePath, 'utf8');
+    const dataContent = fs.readFileSync(dataFilePath, 'futf8');
     expect(dataContent).to.equal(data);
   });
 
   it('GET data from FILE storage @TB0000003', () => {
     const dataType = 'test3';
-    const storage = new DataStorage(dataType);
+    const storage = new DataStorage(dataType, { isFileStorage: true });
     const data = 'test data';
     storage.putData(data, '@TB0000003');
 
@@ -33,7 +33,7 @@ describe('Storage', () => {
 
   it('PUT data to GLOBAL storage @TB0000005', () => {
     const dataType = 'test5';
-    const storage = new DataStorage(dataType);
+    const storage = new DataStorage(dataType, { isFileStorage: false });
     storage.isFileStorage = false;
     const data = 'test data';
     storage.putData(data, '@TB0000005');
