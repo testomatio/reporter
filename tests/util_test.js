@@ -120,5 +120,30 @@ ${process.cwd()}/tests/data/cli/RunCest.php:24
 
   })
 
+  it('#fetchSourceCode takes DisplayName into account', () => {
+    const code = `
+    import org.junit.jupiter.api.Assertions;
+    import org.junit.jupiter.api.DisplayName;
+    import org.junit.jupiter.api.Test;
+    
+    public class BookingAppointmentTests extends BaseTest {
+        @Test
+        @DisplayName("BookingBySearch")
+        public void testBookingAppointmentBySearch() {
+            // @Tb60ca408
+            MainSearchScreen mainSearchScreen = new MainSearchScreen(driver);
+        }
+    }
+    `
+
+    const test = fetchSourceCode(code, { lang: 'java', title: 'BookingBySearch' });
+    // console.log(test);
+
+    expect(test).to.include(`BookingBySearch`);
+    expect(test).to.include(`@Tb60ca408`);
+
+
+  })
+
 
 });
