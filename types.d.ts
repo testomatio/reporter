@@ -49,6 +49,9 @@ export interface TestData {
 
   /** A one-line result message, usually error.message. */
   message?: string;
+
+  /** Logs catched by logger */
+  logs?: string;
 }
 
 /**
@@ -123,7 +126,6 @@ export interface PipeResult {
 declare global {
   namespace NodeJS {
     interface Global {
-      currentlyRunningTestTitle?: string;
       testomatioArtifacts?: any;
       testomatioDataStore?: any;
       testomatioRunningEnvironment?: string;

@@ -15,7 +15,7 @@ describe('Storage', () => {
     const storage = new DataStorage(dataType);
     const data = 'test data';
     storage.putData(data, '@TB0000002');
-    const dataFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, dataType, `${dataType}_B0000002`);
+    const dataFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, dataType, `${dataType}_TB0000002`);
     expect(fs.existsSync(dataFilePath)).to.equal(true);
     const dataContent = fs.readFileSync(dataFilePath, 'utf8');
     expect(dataContent).to.equal(data);
@@ -39,6 +39,18 @@ describe('Storage', () => {
     storage.putData(data, '@TB0000005');
 
     const retrievedData = storage.getData('@TB0000005');
+    expect(storage.isFileStorage).to.equal(false);
+    expect(retrievedData).to.deep.equal([data]);
+  });
+
+  it('GET data from GLOBAL storage @TB0000006', () => {
+    const dataType = 'test6';
+    const storage = new DataStorage(dataType);
+    storage.isFileStorage = false;
+    const data = 'test data';
+    storage.putData(data, '@TB0000006');
+
+    const retrievedData = storage.getData('@TB0000006');
     expect(storage.isFileStorage).to.equal(false);
     expect(retrievedData).to.deep.equal([data]);
   });
