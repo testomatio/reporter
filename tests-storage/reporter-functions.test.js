@@ -5,7 +5,7 @@ const path = require('path');
 const { TESTOMAT_TMP_STORAGE_DIR } = require('../lib/constants');
 const { fileSystem, removeColorCodes } = require('../lib/utils/utils');
 const { testomat } = require('../lib/reporter');
-const keyValueStorage = require('../lib/storages/key-value-storage');
+const { keyValueStorage } = require('../lib/storages/key-value-storage');
 
 describe('Testomat reporter functions', () => {
   before(() => {
@@ -14,8 +14,9 @@ describe('Testomat reporter functions', () => {
 
   it('step using testomat.step function @T00000018', () => {
     const message = 'test step message';
+    testomat._setContext('@T00000018');
     testomat.step(message);
-    const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', 'log_00000018');
+    const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', 'log_T00000018');
     expect(fs.existsSync(logFilePath)).to.equal(true);
     const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
     expect(logContent).to.equal(`> ${message}`);
@@ -25,8 +26,9 @@ describe('Testomat reporter functions', () => {
     const keyValue = {
       browser: 'chrome',
     };
+    testomat._setContext('@T00000019');
     testomat.meta(keyValue);
-    const filePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'keyvalue', 'keyvalue_00000019');
+    const filePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'keyvalue', 'keyvalue_T00000019');
     expect(fs.existsSync(filePath)).to.equal(true);
     const fileContent = fs.readFileSync(filePath, 'utf8');
     expect(fileContent).to.equal(JSON.stringify(keyValue));
@@ -43,10 +45,10 @@ describe('Testomat reporter functions', () => {
       os: 'windows',
       runType: 'smoke',
     };
-
+    testomat._setContext('@T00000020');
     testomat.meta(keyValue);
     testomat.meta(keyValue2);
-    const filePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'keyvalue', 'keyvalue_00000020');
+    const filePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'keyvalue', 'keyvalue_T00000020');
     expect(fs.existsSync(filePath)).to.equal(true);
     const fileContent = fs.readFileSync(filePath, 'utf8');
     expect(fileContent).to.equal(JSON.stringify(keyValue) + os.EOL + JSON.stringify(keyValue2));
@@ -63,7 +65,7 @@ describe('Testomat reporter functions', () => {
       os: 'windows',
       runType: 'smoke',
     };
-
+    testomat._setContext('@T00000021');
     testomat.meta(keyValue);
     testomat.meta(keyValue2);
     const retrievedKeyValue = keyValueStorage.get('@T00000021');

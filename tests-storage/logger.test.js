@@ -5,8 +5,6 @@ const path = require('path');
 const { TESTOMAT_TMP_STORAGE_DIR } = require('../lib/constants');
 const { fileSystem, removeColorCodes } = require('../lib/utils/utils');
 const { testomat } = require('../lib/reporter');
-const { Logger } = require('../lib/storages/logger');
-const loggerInstance = new Logger({ isFileStorage: true });
 
 const pinoLogger = require('pino')();
 
@@ -20,8 +18,8 @@ describe('Logger', () => {
   });
 
   describe('Console log methods', () => {
-    it.only('intercept console.log @T00000000', () => {
-      loggerInstance.setContext('@T00000000');
+    it('intercept console.log @T00000000', () => {
+      logger.setContext('@T00000000');
       const message = 'test log message';
       console.log(message);
       const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', 'log_T00000000');
@@ -194,8 +192,7 @@ describe('Logger', () => {
     expect(logContent).to.equal(`${message}`);
   });
 
-  // could be tested only when adapter is used
-  it.skip('log using testomat.log function @T00000017', () => {
+  it('log using testomat.log function @T00000017', () => {
     logger.setContext('@T00000017');
     const message = 'test log message';
     testomat.log(message);
