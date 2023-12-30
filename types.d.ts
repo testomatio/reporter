@@ -129,7 +129,7 @@ declare global {
       testomatioArtifacts?: any;
       testomatioDataStore?: any;
       TESTOMATIO_LOGGER_CONSOLE_INTERCEPTED?: boolean;
-      testTitle?: string;
+      testomatioTestTitle?: string;
     }
   }
 }
