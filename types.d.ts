@@ -52,6 +52,9 @@ export interface TestData {
 
   /** Logs catched by logger */
   logs?: string;
+
+  /** Manually attached artifacts */
+  manuallyAttachedArtifacts?: (string | { path: string, type: string })[];
 }
 
 /**
