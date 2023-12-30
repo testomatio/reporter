@@ -128,9 +128,8 @@ declare global {
     interface Global {
       testomatioArtifacts?: any;
       testomatioDataStore?: any;
-      testomatioRunningEnvironment?: string;
       TESTOMATIO_LOGGER_CONSOLE_INTERCEPTED?: boolean;
-      testTitle?: string;
+      testomatioTestTitle?: string;
     }
   }
 }
