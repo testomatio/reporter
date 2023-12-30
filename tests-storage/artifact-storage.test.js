@@ -61,6 +61,6 @@ describe('Artifact storage', () => {
   it('get artifacts for test without artifacts @TA0000006', () => {
     artifactStorage.setContext('@TA0000006');
     const artifacts = artifactStorage.get('@TA0000006');
-    expect(artifacts).to.equal(null);
+    expect(artifacts).to.deep.equal([]);
   });
 });
