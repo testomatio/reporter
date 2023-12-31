@@ -55,6 +55,9 @@ export interface TestData {
 
   /** Manually attached artifacts */
   manuallyAttachedArtifacts?: (string | { path: string, type: string })[];
+
+  /** Meta information (key: value) */
+  meta?: { [key: string]: string } | {};
 }
 
 /**
