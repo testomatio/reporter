@@ -1,7 +1,5 @@
 Testomat functions gives you more flexibility in reporting and make your reports more powerful.
 
-> For proper testomat functions work, your tests titles should contain testomat test ids ([see details](https://docs.testomat.io/usage/continuous-integration/#assigning-ids)). _(will not be required soon...)_
-
 ### Usage example
 
 ```javascript
