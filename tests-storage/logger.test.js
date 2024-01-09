@@ -5,6 +5,7 @@ const path = require('path');
 const { TESTOMAT_TMP_STORAGE_DIR } = require('../lib/constants');
 const { fileSystem, removeColorCodes } = require('../lib/utils/utils');
 const { testomat } = require('../lib/reporter');
+const { dataStorage } = require('../lib/data-storage');
 
 const pinoLogger = require('pino')();
 
@@ -19,7 +20,7 @@ describe('Logger', () => {
 
   describe('Console log methods', () => {
     it('intercept console.log @T00000000', () => {
-      logger.setContext('@T00000000');
+      dataStorage.setContext('@T00000000');
       const message = 'test log message';
       console.log(message);
       const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', 'log_T00000000');
@@ -29,7 +30,7 @@ describe('Logger', () => {
     });
 
     it('intercept console.warn @T00000001', () => {
-      logger.setContext('@T00000001');
+      dataStorage.setContext('@T00000001');
       const message = 'test warn message';
       console.warn(message);
       const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', 'log_T00000001');
@@ -39,7 +40,7 @@ describe('Logger', () => {
     });
 
     it('intercept console.error @T00000002', () => {
-      logger.setContext('@T00000002');
+      dataStorage.setContext('@T00000002');
       const message = 'test error message';
       console.error(message);
       const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', 'log_T00000002');
@@ -49,7 +50,7 @@ describe('Logger', () => {
     });
 
     it('intercept console.info @T00000003', () => {
-      logger.setContext('@T00000003');
+      dataStorage.setContext('@T00000003');
       const message = 'test info message';
       console.info(message);
       const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', 'log_T00000003');
@@ -59,7 +60,7 @@ describe('Logger', () => {
     });
 
     it('intercept console.debug @T00000004', () => {
-      logger.setContext('@T00000004');
+      dataStorage.setContext('@T00000004');
       const message = 'test debug message';
       console.debug(message);
       const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', 'log_T00000004');
@@ -69,7 +70,7 @@ describe('Logger', () => {
     });
 
     it.skip('intercept console.trace @T00000005', () => {
-      logger.setContext('@T00000005');
+      dataStorage.setContext('@T00000005');
       const message = 'test trace message';
       console.trace(message);
       const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', 'log_T00000005');
@@ -81,7 +82,7 @@ describe('Logger', () => {
 
   describe('External loggers', () => {
     it('pino log @T00000006', () => {
-      logger.setContext('@T00000006');
+      dataStorage.setContext('@T00000006');
       logger.intercept(pinoLogger);
 
       const message = 'pino logger message';
@@ -96,7 +97,7 @@ describe('Logger', () => {
 
   describe('Configuration', () => {
     it('logger could be configured @T00000007', () => {
-      logger.setContext('@T00000007');
+      dataStorage.setContext('@T00000007');
       logger.configure({ logLevel: 'warn', prettyObjects: false });
 
       expect(logger.prettyObjects).to.equal(false);
@@ -104,7 +105,7 @@ describe('Logger', () => {
     });
 
     it('logger intercepts messages according to log level @T00000012', () => {
-      logger.setContext('@T00000012');
+      dataStorage.setContext('@T00000012');
       logger.configure({ logLevel: 'warn' });
       const infoMessage = 'this is info message';
       const warnMessage = 'this is warn message';
@@ -120,7 +121,7 @@ describe('Logger', () => {
   });
 
   it('log step @T00000008', () => {
-    logger.setContext('@T00000008');
+    dataStorage.setContext('@T00000008');
     const message = 'test step message';
     step(message);
     const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', 'log_T00000008');
@@ -131,7 +132,7 @@ describe('Logger', () => {
 
   describe('Template literals', () => {
     it('tagged template @T00000009', () => {
-      logger.setContext('@T00000009');
+      dataStorage.setContext('@T00000009');
       const message = 'tagged template message';
       log`tagged template message`;
       const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', 'log_T00000009');
@@ -141,7 +142,7 @@ describe('Logger', () => {
     });
 
     it('standard template string with variable @T00000010', () => {
-      logger.setContext('@T00000010');
+      dataStorage.setContext('@T00000010');
       const message = 'standard template message';
       const someVar = 'variable value';
       log`standard template message ${someVar}`;
@@ -152,7 +153,7 @@ describe('Logger', () => {
     });
 
     it('standard with multiple variables @T00000011', () => {
-      logger.setContext('@T00000011');
+      dataStorage.setContext('@T00000011');
       const message = 'standard message';
       const someVar = 'variable value';
       const someVar2 = 'variable value2';
@@ -165,7 +166,7 @@ describe('Logger', () => {
   });
 
   it('get logs from file @T00000016', () => {
-    logger.setContext('@T00000016');
+    dataStorage.setContext('@T00000016');
     const message = 'test log message';
     logger.log(message);
     const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', 'log_T00000016');
@@ -183,7 +184,7 @@ describe('Logger', () => {
   });
 
   it('intercept logger.log message @T00000015', () => {
-    logger.setContext('@T00000015');
+    dataStorage.setContext('@T00000015');
     const message = 'test log message';
     logger.log(message);
     const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', 'log_T00000015');
@@ -193,7 +194,7 @@ describe('Logger', () => {
   });
 
   it('log using testomat.log function @T00000017', () => {
-    logger.setContext('@T00000017');
+    dataStorage.setContext('@T00000017');
     const message = 'test log message';
     testomat.log(message);
     const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', 'log_T00000017');

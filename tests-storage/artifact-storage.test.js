@@ -4,6 +4,7 @@ const { fileSystem } = require('../lib/utils/utils');
 const path = require('path');
 const { testomat } = require('../lib/reporter');
 const { TESTOMAT_TMP_STORAGE_DIR } = require('../lib/constants');
+const { dataStorage } = require('../lib/data-storage');
 
 describe('Artifact storage', () => {
   before(() => {
@@ -11,13 +12,13 @@ describe('Artifact storage', () => {
   });
 
   it('artifact function is defined @TA0000001', () => {
-    artifactStorage.setContext('@TA0000001');
+    dataStorage.setContext('@TA0000001');
     expect(testomat.artifact).to.exist;
   });
 
   it('save artifact with relative filepath @TA0000002', () => {
     const artifact = '../../relative/filepath/artifact1.txt';
-    artifactStorage.setContext('@TA0000002');
+    dataStorage.setContext('@TA0000002');
     testomat.artifact(artifact);
     const artifacts = artifactStorage.get('@TA0000002');
     expect(artifacts).to.exist;
@@ -26,7 +27,7 @@ describe('Artifact storage', () => {
 
   it('save artifact with absolute filepath @TA0000003', () => {
     const artifact = path.resolve(process.cwd(), 'file/path/artifact2.txt');
-    artifactStorage.setContext('@TA0000003');
+    dataStorage.setContext('@TA0000003');
     testomat.artifact(artifact);
     const artifacts = artifactStorage.get('@TA0000003');
     expect(artifacts).to.exist;
@@ -35,7 +36,7 @@ describe('Artifact storage', () => {
 
   it('save multiple artifacts @TA0000004', () => {
     const artifacts = ['artifact1.txt', 'artifact2.txt'];
-    artifactStorage.setContext('@TA0000004');
+    dataStorage.setContext('@TA0000004');
     testomat.artifact(artifacts[0]);
     testomat.artifact(artifacts[1]);
     const retrievedArtifacts = artifactStorage.get('@TA0000004');
@@ -49,7 +50,7 @@ describe('Artifact storage', () => {
       type: 'log',
       path: 'file/path/artifact1.txt',
     };
-    artifactStorage.setContext('@TA0000005');
+    dataStorage.setContext('@TA0000005');
     testomat.artifact(artifact);
     const artifacts = artifactStorage.get('@TA0000005');
     expect(artifacts).to.exist;
@@ -59,7 +60,7 @@ describe('Artifact storage', () => {
   });
 
   it('get artifacts for test without artifacts @TA0000006', () => {
-    artifactStorage.setContext('@TA0000006');
+    dataStorage.setContext('@TA0000006');
     const artifacts = artifactStorage.get('@TA0000006');
     expect(artifacts).to.deep.equal([]);
   });
