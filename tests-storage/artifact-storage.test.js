@@ -1,4 +1,4 @@
-const { artifactStorage } = require('../lib/storages/artifact-storage');
+const { artifactStorage } = require('../lib/services/artifacts');
 const { expect } = require('chai');
 const { fileSystem } = require('../lib/utils/utils');
 const path = require('path');
