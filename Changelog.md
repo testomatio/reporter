@@ -1,11 +1,45 @@
 <!-- pending release updates -->
 # 1.1.0
 
+* Rewritten logger and artifacts storage. Test reports contain logs, steps, stack traces.
+* Added custom method to log data:
+
+```js
+const { log } = require('@testomatio/reporter');
+// or 
+import { log } from '@testomatio/reporter';
+
+log`your message`;
+```
+
+* Added custom function to add a step:
+
+```js
+const { step } = require('@testomatio/reporter');
+// or 
+import { step } from '@testomatio/reporter';
+
+
+step`Login started`;
+
+step`Login successful`;
+```
+
+* Mocha: improved creating tests with `TESTOMATIO_CREATE=1`
+* JUnit XML: improved parsing Java tests that contain `@DisplayName` annotation
+* Cypress: Fixed repoting stacktraces & tests duration (for Cypress version 13+)
+* Cypress: Fixed uploading artifacts.
+* Added retries while uploading artifacts to S3 storage
+* Added `TESTOMATIO_TOKEN` and `TESTOMATIO_API_KEY` as aliases to `TESTOMATIO` environment variable to pass project key to reporter
 * Assign Run by label:
 
-```
+```bash
 TESTOMATIO={API_KEY} TESTOMATIO_LABEL="release,module:checkout" <actual run command>
 ```
+
+Documentation updates:
+* [List of enviroment variables](https://github.com/testomatio/reporter/blob/master/docs/env-variables.md)
+* [List of user API functions](https://github.com/testomatio/reporter/blob/master/docs/functions.md)
 
 # 1.0.18
 
