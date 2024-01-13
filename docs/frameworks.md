@@ -25,6 +25,7 @@ TESTOMATIO={API_KEY} npx codeceptjs run
 
 > 🖼 Screenshots of failed tests and videos (for Playwright helper) will be automatically uploaded as [Artifacts](./artifacts.md)
 
+
 #### CodeceptJS Parallel Run
 
 If tests run parallel, like workers in CodeceptJS use `start-test-run` command to get proper reports:
@@ -38,6 +39,7 @@ TESTOMATIO={API_KEY} npx start-test-run -c 'npx codeceptjs run-workers 2'
 Use `--env-file <envfile>` option to load environment variables from .env file. Inside env file TESTOMATIO credentials like `TESTOMATIO` api key or [S3 config for artifacts](./artifacts).
 
 Command `start-test-run` is used to initiate a single run report before all workers are started. Each worker will report to the same Run, and after all workers and codeceptjs finishes, this will finish the run report.
+
 
 > 📑 [Example Project](https://github.com/testomatio/examples/tree/master/codeceptJS) | 🗄 [CodeceptJS API Example](https://github.com/testomatio/examples/tree/master/codeceptJSApi) | 🥒 [CodeceptJS Cucumber Example](https://github.com/testomatio/examples/tree/master/codeceptjs-cucumber)
 
@@ -75,9 +77,7 @@ TESTOMATIO={API_KEY} npx playwright test
 
 > 📐 When used with [Testomat.io Application](https://app.testomat.io) it is recommended to import automated tests first via [check-tests](https://github.com/testomatio/check-tests#cli). To create items on the fly set `TESTOMATIO_CREATE=1` env variable.
 
-<details>
-  <summary> For Cypress <code>< 10.0.0</code> <i>(click to expand)</i></summary>
-  Register `cypress-plugin` in `cypress/plugins/index.js`:
+Register `cypress-plugin` in `cypress/plugins/index.js`:
 
 ```javascript
 const testomatioReporter = require('@testomatio/reporter/lib/adapter/cypress-plugin');
@@ -95,16 +95,6 @@ module.exports = (on, config) => {
 };
 ```
 
-</details>
-
-For Cypress >= `10.0.0` use `setupNodeEvents` in `cypress.config.js(ts)`
-
-```javascript
-setupNodeEvents(on, config) {
-  return require('@testomatio/reporter/lib/adapter/cypress-plugin')(on, config)
-}
-```
-
 Run the following command from you project folder:
 
 ```bash
@@ -118,6 +108,7 @@ TESTOMATIO={API_KEY} npx cypress run
 ### Mocha
 
 > 📐 When used with [Testomat.io Application](https://app.testomat.io) it is recommended to import automated tests first via [check-tests](https://github.com/testomatio/check-tests#cli). To create items on the fly set `TESTOMATIO_CREATE=1` env variable.
+
 
 Run the following command from you project folder:
 
@@ -150,6 +141,7 @@ TESTOMATIO={API_KEY} npx jest
 
 > 📺 [Video](https://www.youtube.com/watch?v=RKfIfnEuGys)
 
+
 ### WebdriverIO
 
 > 📐 When used with [Testomat.io Application](https://app.testomat.io) it is recommended to import automated tests first via [check-tests](https://github.com/testomatio/check-tests#cli). To create items on the fly set `TESTOMATIO_CREATE=1` env variable.
@@ -170,6 +162,7 @@ exports.config = {
   ]
 }
 ```
+
 
 For making screenshots on failed tests add the following hook to `wdio.conf.js`:
 
@@ -226,8 +219,10 @@ To report Newman tests a separate package is required:
 npm i newman-reporter-testomatio --save-dev
 ```
 
-> **Note** > `newman` and `newman-reporter-testomatio` should be installed in the same directory. If you run your tests using globally installed newman (`newman run ...`), intall `newman-reporter-testomatio` globally too (`npm i newman-reporter-testomatio -g`). If you use locally installed newman (within the project) (`npx newman run ...`), install `newman-reporter-testomatio` locally (`npm i newman-reporter-testomatio`).
-> You can verify installed packages via `npm list` or `npm list -g`.
+> **Note**
+> `newman` and `newman-reporter-testomatio` should be installed in the same directory. If you run your tests using globally installed newman (`newman run ...`), intall `newman-reporter-testomatio` globally too (`npm i newman-reporter-testomatio -g`). If you use locally installed newman (within the project) (`npx newman run ...`), install `newman-reporter-testomatio` locally (`npm i newman-reporter-testomatio`).
+You can verify installed packages via `npm list` or `npm list -g`.
+
 
 Run collection and specify `testomatio` as reporter:
 
@@ -236,6 +231,7 @@ TESTOMATIO={API_KEY} npx newman run {collection_name.json} -r testomatio
 ```
 
 > 📑 [Example Project](https://github.com/testomatio/examples/tree/master/newman)
+
 
 ### Detox
 
@@ -304,7 +300,6 @@ For example, with Surefire Report Plugin in Maven, you can add the following con
     </plugins>
 </build>
 ```
-
 In this case JUnit XML will be saved into `target/surefire-reports/`
 
 So you can import reports to Testomat.io by running:
@@ -331,7 +326,6 @@ In this example, we added ID as a comment to `negativeNumbersCanBeSubtracted` te
       assertThat(calc.Calculate(-1.0, -3.0, "-"), equalTo(2.0));
   }
 ```
-
 To make this feature work, please ensure that source code of Java tests is accessible to `npx report-xml` command, use `--java-tests` option to specify the correct path. To check if source code of tests is available run reporter with DEBUG mode:
 
 ```
