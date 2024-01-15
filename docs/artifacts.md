@@ -119,24 +119,24 @@ Testomat.io Reporter has built-in support for test artifacts of following framew
 
 If a screenshot, a video, or a trace was saved and attached to test, Testomat.io reporter will automatically upload any of these as artifacts.
 
-Usually, artifacts are stored automatically for failed test cases. To send arbitrary files as artifacts use `addArtifact` function from `@testomatio/reporter` package.
+Usually, artifacts are stored automatically for failed test cases. To send arbitrary files as artifacts use [`artifact`](./functions.md#artifact) method from testomat functions `@testomatio/reporter` package.
 
 ```js
-const { addArtifact } = require('@testomatio/reporter');
+const { testomat } = require('@testomatio/reporter');
 
-addArtifact(pathToFile)
+testomat.artifact('<path_to_file>');
 ```
 
 Use this syntax to also add a name for uploading artifact:
 
 ```js
-addArtifact({ name: 'Screenshot', path: './img/file.png' });
+testomat.artifact({ name: 'Screenshot', path: './img/file.png' });
 ```
 
 Common use case would be to make a screenshot and add it to current test. Here is the sample code for it:
 
 ```js
-const { addArtifact } = require('@testomatio/reporter');
+const { testomat } = require('@testomatio/reporter');
 
 
 // inside test
@@ -147,7 +147,7 @@ test('my test', async () => {
   const pathToFile = await saveScreenshot();
   // 
   // Ensure, that file at `pathToFile` exists, and is not a promise. 
-  addArtifact(pathToFile);
+  testomat.artifact(pathToFile);
 })
 ```
 
