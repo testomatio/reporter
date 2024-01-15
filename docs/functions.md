@@ -10,6 +10,16 @@ test('my test', async () => {
 });
 ```
 
+Or
+
+```javascript
+import { artifact } from '@testomatio/reporter';
+
+test('my test', async () => {
+  artifact('path/to/file');
+});
+```
+
 After you import and invoke `testomat`, autocompletion will help you to find the right function.
 
 ### Available functions
