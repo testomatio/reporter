@@ -155,10 +155,6 @@ test('my test', async () => {
 If S3 credentials are not set, artfact file will be ignored.
 
 
-> **Warning**
-> `addArtifact` doesn't work (yet) in parallel mode for `mocha` or `jest` frameworks. We are working to support for these frameworks in next versions.
-
-
 ### Other Frameworks
 
 For tests in **Java**, **Python**, **C#** and other languages, which are not (yet) integrated into Testomat.io Reporter, **use [JUnit format](./junit) for reporting**.
