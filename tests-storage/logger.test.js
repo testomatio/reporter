@@ -1,10 +1,11 @@
-const { logger, log, step } = require('../lib/reporter');
+const { step, log } = require('../lib/reporter');
 const { expect } = require('chai');
 const fs = require('fs');
 const path = require('path');
 const { TESTOMAT_TMP_STORAGE_DIR } = require('../lib/constants');
 const { fileSystem, removeColorCodes } = require('../lib/utils/utils');
-const { testomat } = require('../lib/reporter');
+const testomat = require('../lib/reporter');
+const { logger } = require('../lib/services/logger');
 const { dataStorage } = require('../lib/data-storage');
 
 const pinoLogger = require('pino')();
@@ -168,7 +169,7 @@ describe('Logger', () => {
   it('get logs from file @T00000016', () => {
     dataStorage.setContext('@T00000016');
     const message = 'test log message';
-    logger.log(message);
+    testomat.log(message);
     const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', 'log_T00000016');
     expect(fs.existsSync(logFilePath)).to.equal(true);
     const logs = removeColorCodes(logger.getLogs('@T00000016').join('\n'));
@@ -186,7 +187,7 @@ describe('Logger', () => {
   it('intercept logger.log message @T00000015', () => {
     dataStorage.setContext('@T00000015');
     const message = 'test log message';
-    logger.log(message);
+    testomat.log(message);
     const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', 'log_T00000015');
     expect(fs.existsSync(logFilePath)).to.equal(true);
     const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
