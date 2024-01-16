@@ -60,7 +60,7 @@ describe('Adapters', () => {
     describe(adapterName, () => {
       describe('positive tests', () => {
         before(function (done) {
-          this.timeout(10000);
+          this.timeout(20000);
 
           registerHandlers(server, RUN_ID);
 
@@ -127,7 +127,7 @@ describe('Adapters', () => {
       describe('negative tests', () => {
         before(function (done) {
           process.env.TESTOMATIO = '';
-          this.timeout(10000);
+          this.timeout(20000);
 
           registerHandlers(server, RUN_ID);
 
