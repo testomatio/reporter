@@ -119,49 +119,6 @@ If a screenshot, a video, or a trace was saved and attached to test, Testomat.io
 
 Usually, artifacts are stored automatically for failed test cases. To send arbitrary files as artifacts use [`artifact`](./functions.md#artifact) method from testomat functions `@testomatio/reporter` package.
 
-```js
-const { testomat } = require('@testomatio/reporter');
-
-testomat.artifact('<path_to_file>');
-
-// OR
-
-const { artifact } = require('@testomatio/reporter');
-
-artifact('<path_to_file>');
-```
-
-Use this syntax to also add a name for uploading artifact:
-
-```js
-testomat.artifact({ name: 'Screenshot', path: './img/file.png' });
-```
-
-Common use case would be to make a screenshot and add it to current test. Here is the sample code for it:
-
-```js
-const { testomat } = require('@testomatio/reporter');
-
-// inside test
-test('my test', async () => {
-  // saveScreenshot is a custom function that makes a screenshot,
-  // saves it to file, and returns a path to this file
-  const pathToFile = await saveScreenshot();
-  // Ensure, that file at `pathToFile` exists, and is not a promise.
-  testomat.artifact(pathToFile);
-});
-
-// OR
-
-const { artifact } = require('@testomatio/reporter');
-
-// inside test
-test('my test', async () => {
-  const pathToFile = await saveScreenshot();
-  artifact(pathToFile);
-});
-```
-
 If S3 credentials are not set, artfact file will be ignored.
 
 ### Other Frameworks
