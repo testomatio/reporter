@@ -61,8 +61,10 @@ describe('HTML report tests', () => {
     after(async () => {
         try {
             await fs.promises.rm(testOutputDir, { recursive: true });
+            // remove default html-report/ folder
+            await fs.promises.rm(path.resolve(__dirname, '../..', 'html-report'), { recursive: true });
         } catch (err) {
-            console.error(`Unknown error while deleting ${dir}.`);
+            console.error(`Unknown error while deleting "html-report" folder. Error: ${err}`);
         }
     });
     it('buildReport function should save HTML report based on the testomatio.hbs template' +
