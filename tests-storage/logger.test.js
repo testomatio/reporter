@@ -217,3 +217,7 @@ describe('Logger', () => {
 });
 
 module.exports.removeColorCodes = removeColorCodes;
+
+
+// TODO: test for reinterception (intercept console, then intercept pino, then intercept console again)
+// TODO: test for stop interception
