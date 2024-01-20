@@ -93,6 +93,9 @@ describe('Logger', () => {
       expect(fs.existsSync(logFilePath)).to.equal(true, 'log file does not exist');
       const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
       expect(logContent).to.include(`${message}`);
+
+      // postcondition - intercept console
+      logger.intercept(console);
     });
   });
 
@@ -103,6 +106,9 @@ describe('Logger', () => {
 
       expect(logger.prettyObjects).to.equal(false);
       expect(logger.logLevel).to.equal('WARN');
+
+      // reset settings
+      logger.configure({ logLevel: 'DEBUG', prettyObjects: true });
     });
 
     it('logger intercepts messages according to log level @T00000012', () => {
@@ -118,6 +124,9 @@ describe('Logger', () => {
       const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', 'log_T00000012');
       const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
       expect(logContent).to.equal(`${warnMessage}\n${errorMessage}`);
+
+      // reset settings
+      logger.configure({ logLevel: 'DEBUG' });
     });
   });
 
@@ -203,8 +212,8 @@ describe('Logger', () => {
     const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
     expect(logContent).to.equal(`${message}`);
   });
-});
 
-// TODO: test > logs are not intercepted for jest if TESTOMATIO_INTERCEPT_CONSOLE_LOGS is not set
+
+});
 
 module.exports.removeColorCodes = removeColorCodes;
