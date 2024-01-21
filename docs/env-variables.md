@@ -21,6 +21,7 @@ require('dotenv').config({ path: '.env' }); // or any other path
 | `TESTOMATIO_STACK_FILTER`                                  |                                                       |
 | `TESTOMATIO_CREATE`                                        | Create test ids.                                      |
 | `TESTOMATIO_ENV`                                           | Adding Environments to Run                            | `TESTOMATIO={API_KEY} TESTOMATIO_ENV="Windows, Chrome" <actual run command>`                                           |
+| `TESTOMATIO_PLAYWRIGHT_EXCLUDE_TESTS_FROM_REPORT_REGEX`   | Exclude tests from report by regex | `TESTOMATIO_PLAYWRIGHT_EXCLUDE_TESTS_FROM_REPORT_REGEX="\.setup\.(ts\|js)$" <actual run command>`                                           |
 | `TESTOMATIO_PROCEED`                                       | Do Not Finalize Run                                   | `TESTOMATIO_PREPEND_DIR="MyTESTS" TESTOMATIO=1111111 npx check-tests CodeceptJS "**/*{.,_}{test,spec}.js"`             |
 | `TESTOMATIO_PREPEND_DIR`                                   | Put all imported tests into a specific suite (folder) |
 | `TESTOMATIO_RUN`                                           | Add Report to Run by ID                               |
