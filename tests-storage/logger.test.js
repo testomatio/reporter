@@ -6,7 +6,7 @@ const { TESTOMAT_TMP_STORAGE_DIR } = require('../lib/constants');
 const { fileSystem, removeColorCodes } = require('../lib/utils/utils');
 const testomat = require('../lib/reporter');
 const { logger } = require('../lib/services/logger');
-const { dataStorage, stringToMD5Hash } = require('../lib/data-storage');
+const { dataStorage } = require('../lib/data-storage');
 
 const pinoLogger = require('pino')();
 
@@ -21,55 +21,50 @@ describe('Logger', () => {
 
   describe('Console log methods', () => {
     it('intercept console.log @T00000000', () => {
-      dataStorage.setContext('intercept console.log @T00000000');
+      dataStorage.setContext('@T00000000');
       const message = 'test log message';
       console.log(message);
-      const contextHash = stringToMD5Hash('intercept console.log @T00000000');
-      const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', `log_${contextHash}`);
+      const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', 'log_T00000000');
       expect(fs.existsSync(logFilePath)).to.equal(true);
       const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
       expect(logContent).to.equal(`${message}`);
     });
 
     it('intercept console.warn @T00000001', () => {
-      dataStorage.setContext('intercept console.warn @T00000001');
+      dataStorage.setContext('@T00000001');
       const message = 'test warn message';
       console.warn(message);
-      const contextHash = stringToMD5Hash('intercept console.warn @T00000001');
-      const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', `log_${contextHash}`);
+      const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', 'log_T00000001');
       expect(fs.existsSync(logFilePath)).to.equal(true);
       const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
       expect(logContent).to.equal(`${message}`);
     });
 
     it('intercept console.error @T00000002', () => {
-      dataStorage.setContext('intercept console.error @T00000002');
+      dataStorage.setContext('@T00000002');
       const message = 'test error message';
       console.error(message);
-      const contextHash = stringToMD5Hash('intercept console.error @T00000002');
-      const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', `log_${contextHash}`);
+      const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', 'log_T00000002');
       expect(fs.existsSync(logFilePath)).to.equal(true);
       const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
       expect(logContent).to.equal(`${message}`);
     });
 
     it('intercept console.info @T00000003', () => {
-      dataStorage.setContext('intercept console.info @T00000003');
+      dataStorage.setContext('@T00000003');
       const message = 'test info message';
       console.info(message);
-      const contextHash = stringToMD5Hash('intercept console.info @T00000003');
-      const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', `log_${contextHash}`);
+      const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', 'log_T00000003');
       expect(fs.existsSync(logFilePath)).to.equal(true);
       const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
       expect(logContent).to.equal(`${message}`);
     });
 
     it('intercept console.debug @T00000004', () => {
-      dataStorage.setContext('intercept console.debug @T00000004');
+      dataStorage.setContext('@T00000004');
       const message = 'test debug message';
       console.debug(message);
-      const contextHash = stringToMD5Hash('intercept console.debug @T00000004');
-      const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', `log_${contextHash}`);
+      const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', 'log_T00000004');
       expect(fs.existsSync(logFilePath)).to.equal(true);
       const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
       expect(logContent).to.equal(`${message}`);
@@ -88,14 +83,13 @@ describe('Logger', () => {
 
   describe('External loggers', () => {
     it('pino log @T00000006', () => {
-      dataStorage.setContext('pino log @T00000006');
+      dataStorage.setContext('@T00000006');
       logger.intercept(pinoLogger);
 
       const message = 'pino logger message';
       pinoLogger.warn(message);
 
-      const contextHash = stringToMD5Hash('pino log @T00000006');
-      const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', `log_${contextHash}`);
+      const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', 'log_T00000006');
       expect(fs.existsSync(logFilePath)).to.equal(true, 'log file does not exist');
       const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
       expect(logContent).to.include(`${message}`);
@@ -104,6 +98,7 @@ describe('Logger', () => {
 
   describe('Configuration', () => {
     it('logger could be configured @T00000007', () => {
+      dataStorage.setContext('@T00000007');
       logger.configure({ logLevel: 'warn', prettyObjects: false });
 
       expect(logger.prettyObjects).to.equal(false);
@@ -120,9 +115,7 @@ describe('Logger', () => {
       console.info(infoMessage);
       console.warn(warnMessage);
       console.error(errorMessage);
-
-      const contextHash = stringToMD5Hash('@T00000012');
-      const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', `log_${contextHash}`);
+      const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', 'log_T00000012');
       const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
       expect(logContent).to.equal(`${warnMessage}\n${errorMessage}`);
     });
@@ -132,8 +125,7 @@ describe('Logger', () => {
     dataStorage.setContext('@T00000008');
     const message = 'test step message';
     step(message);
-    const contextHash = stringToMD5Hash('@T00000008');
-    const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', `log_${contextHash}`);
+    const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', 'log_T00000008');
     expect(fs.existsSync(logFilePath)).to.equal(true);
     const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
     expect(logContent).to.equal(`> ${message}`);
@@ -144,8 +136,7 @@ describe('Logger', () => {
       dataStorage.setContext('@T00000009');
       const message = 'tagged template message';
       log`tagged template message`;
-      const contextHash = stringToMD5Hash('@T00000009');
-      const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', `log_${contextHash}`);
+      const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', 'log_T00000009');
       expect(fs.existsSync(logFilePath)).to.equal(true);
       const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
       expect(logContent).to.equal(`${message}`);
@@ -156,8 +147,7 @@ describe('Logger', () => {
       const message = 'standard template message';
       const someVar = 'variable value';
       log`standard template message ${someVar}`;
-      const contextHash = stringToMD5Hash('@T00000010');
-      const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', `log_${contextHash}`);
+      const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', 'log_T00000010');
       expect(fs.existsSync(logFilePath)).to.equal(true);
       const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
       expect(logContent).to.equal(`${message} ${someVar}`);
@@ -169,8 +159,7 @@ describe('Logger', () => {
       const someVar = 'variable value';
       const someVar2 = 'variable value2';
       log(message, someVar, someVar2);
-      const contextHash = stringToMD5Hash('@T00000011');
-      const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', `log_${contextHash}`);
+      const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', 'log_T00000011');
       expect(fs.existsSync(logFilePath)).to.equal(true);
       const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
       expect(logContent).to.equal(`${message} ${someVar} ${someVar2}`);
@@ -181,8 +170,7 @@ describe('Logger', () => {
     dataStorage.setContext('@T00000016');
     const message = 'test log message';
     testomat.log(message);
-    const contextHash = stringToMD5Hash('@T00000016');
-    const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', `log_${contextHash}`);
+    const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', 'log_T00000016');
     expect(fs.existsSync(logFilePath)).to.equal(true);
     const logs = removeColorCodes(logger.getLogs('@T00000016').join('\n'));
     expect(logs).to.equal(`${message}`);
@@ -200,8 +188,7 @@ describe('Logger', () => {
     dataStorage.setContext('@T00000015');
     const message = 'test log message';
     testomat.log(message);
-    const contextHash = stringToMD5Hash('@T00000015');
-    const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', `log_${contextHash}`);
+    const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', 'log_T00000015');
     expect(fs.existsSync(logFilePath)).to.equal(true);
     const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
     expect(logContent).to.equal(`${message}`);
@@ -211,8 +198,7 @@ describe('Logger', () => {
     dataStorage.setContext('@T00000017');
     const message = 'test log message';
     testomat.log(message);
-    const contextHash = stringToMD5Hash('@T00000017');
-    const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', `log_${contextHash}`);
+    const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', 'log_T00000017');
     expect(fs.existsSync(logFilePath)).to.equal(true);
     const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
     expect(logContent).to.equal(`${message}`);
