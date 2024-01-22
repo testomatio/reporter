@@ -205,4 +205,6 @@ describe('Logger', () => {
   });
 });
 
+// TODO: test > logs are not intercepted for jest if TESTOMATIO_INTERCEPT_CONSOLE_LOGS is not set
+
 module.exports.removeColorCodes = removeColorCodes;

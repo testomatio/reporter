@@ -1,6 +1,6 @@
 {
   "name": "@testomatio/reporter",
-  "version": "1.1.1-file-upload.1",
+  "version": "1.1.0",
   "description": "Testomatio Reporter Client",
   "main": "./lib/reporter.js",
   "typings": "typings/index.d.ts",
@@ -52,7 +52,7 @@
     "test:adapter:jasmine:example": "./tests/adapter/examples/jasmine/passReporterOpts.sh && jasmine './tests/adapter/examples/jasmine/index.test.js' --reporter=./../../../lib/adapter/jasmine.js",
     "test:adapter:codecept:example": "codeceptjs run --config='./tests/adapter/examples/codecept/codecept.conf.js'",
     "test:adapter:cucumber:example": "cd ./tests/adapter/examples/cucumber && npx cucumber-js",
-    "test:storage": "npx mocha tests-storage/artifact-storage.test.js && npx mocha tests-storage/data-storage.test.js && npx mocha tests-storage/logger.test.js && npx mocha tests-storage/reporter-functions.test.js"
+    "test:storage": "npx mocha tests-storage/artifact-storage.test.js && npx mocha tests-storage/data-storage.test.js && TESTOMATIO_INTERCEPT_CONSOLE_LOGS=true npx mocha tests-storage/logger.test.js && npx mocha tests-storage/reporter-functions.test.js"
   },
   "devDependencies": {
     "@cucumber/cucumber": "^9.3.0",

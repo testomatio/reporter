@@ -72,7 +72,7 @@ Pass the logger object you want to intercept, not its name:\
 ✅ `logger.intercept(pino)`\
 ❌ `logger.intercept('pino')`
 
-NodeJS `console` is intercepted by default. To add console logs to your report just import logger in your test file and use console as usual.
+NodeJS `console` is intercepted by default for some frameworks (CodeceptJS, Cucumber), to add console logs to your report just import logger in your test file and use console as usual. For other frameworks you need to set `TESTOMATIO_INTERCEPT_CONSOLE_LOGS` env variable to any truthy value. Or intercept console (or any other logger) manually (see examples above or below).
 
 ### Examples for other loggers intercepting
 
