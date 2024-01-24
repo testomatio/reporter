@@ -65,13 +65,16 @@ yarn add @testomatio/reporter --dev
 
 ### 1️⃣ Attach Reporter to the Test Runner
 
+| | | |
+|--|--|--|
 | [Playwright](./docs/frameworks.md#playwright) | [CodeceptJS](./docs/frameworks.md#CodeceptJS) | [Cypress](./docs/frameworks.md#Cypress) |
 | [Jest](./docs/frameworks.md#Jest) | [Mocha](./docs/frameworks.md#Mocha) | [WebDriverIO](./docs/frameworks.md#WebDriverIO) |
 | [TestCafe](./docs/frameworks.md#TestCafe) | [Detox](./docs/frameworks.md#Detox) | [Codeception](https://github.com/testomatio/php-reporter) |
 | [Newman (Postman)](./docs/frameworks.md#Newman) | [JUnit](./docs/junit.md#junit) | [NUnit](./docs/junit.md#nunit) |
 | [PyTest](./docs/junit.md#pytest) | [PHPUnit](./docs/junit.md#phpunit) | [Protractor](./docs/frameworks.md#protractor) |
 
-or any [other via JUnit](./docs/junit.md) report....
+
+or **any [other via JUnit](./docs/junit.md)** report....
 
 ### 2️⃣ Configure Reports
 
