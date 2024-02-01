@@ -234,7 +234,8 @@ describe('Logger', () => {
     console.log('message 2');
     logger.intercept(console);
     console.log('message 3');
-    const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', 'log_T00000019');
+    const contextHash = stringToMD5Hash('@T00000019');
+    const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', `log_${contextHash}`);
     expect(fs.existsSync(logFilePath)).to.equal(true);
     const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
     expect(logContent).to.include('message 1\nmessage 3');
@@ -244,4 +245,3 @@ describe('Logger', () => {
 module.exports.removeColorCodes = removeColorCodes;
 
 // TODO: test for reinterception (intercept console, then intercept pino, then intercept console again)
-// TODO: test for stop interception
