@@ -99,6 +99,9 @@ describe('Logger', () => {
       expect(fs.existsSync(logFilePath)).to.equal(true, 'log file does not exist');
       const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
       expect(logContent).to.include(`${message}`);
+
+      // postcondition - intercept console
+      logger.intercept(console);
     });
   });
 
@@ -108,6 +111,9 @@ describe('Logger', () => {
 
       expect(logger.prettyObjects).to.equal(false);
       expect(logger.logLevel).to.equal('WARN');
+
+      // reset settings
+      logger.configure({ logLevel: 'DEBUG', prettyObjects: true });
     });
 
     it('logger intercepts messages according to log level @T00000012', () => {
@@ -125,6 +131,9 @@ describe('Logger', () => {
       const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', `log_${contextHash}`);
       const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
       expect(logContent).to.equal(`${warnMessage}\n${errorMessage}`);
+
+      // reset settings
+      logger.configure({ logLevel: 'DEBUG' });
     });
   });
 
@@ -217,8 +226,22 @@ describe('Logger', () => {
     const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
     expect(logContent).to.equal(`${message}`);
   });
+
+  it('stop/restore intercetion @T00000019', () => {
+    dataStorage.setContext('@T00000019');
+    console.log('message 1');
+    logger.stopInterception();
+    console.log('message 2');
+    logger.intercept(console);
+    console.log('message 3');
+    const contextHash = stringToMD5Hash('@T00000019');
+    const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', `log_${contextHash}`);
+    expect(fs.existsSync(logFilePath)).to.equal(true);
+    const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
+    expect(logContent).to.include('message 1\nmessage 3');
+  });
 });
 
-// TODO: test > logs are not intercepted for jest if TESTOMATIO_INTERCEPT_CONSOLE_LOGS is not set
-
 module.exports.removeColorCodes = removeColorCodes;
+
+// TODO: test for reinterception (intercept console, then intercept pino, then intercept console again)
