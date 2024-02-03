@@ -13,6 +13,22 @@ TESTOMATIO={API_KEY} <actual run command>
 
 Here are some possible use cases where you can use additional configuration on reporter:
 
+- [Create Unmatched Tests](#create-unmatched-tests)
+- [Add Report to Run by ID](#add-report-to-run-by-id)
+- [Do Not Finalize Run](#do-not-finalize-run)
+- [Setting Report Title](#setting-report-title)
+- [Reporting Parallel Execution to To Same Run](#reporting-parallel-execution-to-to-same-run)
+- [Adding Report to RunGroup](#adding-report-to-rungroup)
+- [Adding Environments to Run](#adding-environments-to-run)
+- [Starting an Empty Run](#starting-an-empty-run)
+- [Manually Finishing Run](#manually-finishing-run)
+- [Setting Build URL](#setting-build-url)
+- [Publish Run](#publish-run)
+- [Assign Label To Run](#assign-label-to-run)
+- [Create Jira Issue for Run](#create-jira-issue-for-run)
+- [Filter Tests](#filter-tests)
+
+
 ### Create Unmatched Tests
 
 Testomat.io will not create tests from the report if they have not been previously imported. To create tests during the report `TESTOMATIO_CREATE` option can be used:
@@ -280,3 +296,19 @@ TESTOMATIO={API_KEY} npx start-test-run -c 'npx playwright test' --filter 'testo
 > It's important to note that the provided filter value must match exactly the corresponding tag name, plan ID, label, or JIRA ticket for the desired tests
 
 Please note, that this functionality allows you to easily filter and execute tests based on specific criteria, enhancing your testing experience.
+
+### Exclude Tests from Report by Glob Pattern
+
+To exclude tests from the report by [glob pattern](https://www.npmjs.com/package/glob) use `TESTOMATIO_EXCLUDE_FILES_FROM_REPORT_GLOB_PATTERN` environment variable (see environment variables [list](../env-variables.md)):
+
+```bash
+TESTOMATIO={API_KEY} TESTOMATIO_EXCLUDE_FILES_FROM_REPORT_GLOB_PATTERN="**/*.setup.ts" <actual run command>
+```
+
+You can use multiple patterns separated by `;`:
+
+```bash
+TESTOMATIO={API_KEY} TESTOMATIO_EXCLUDE_FILES_FROM_REPORT_GLOB_PATTERN="**/*.setup.ts;tests/*.auth.js" <actual run command>
+```
+
+(Any files in `node_modules` will be ignored).
