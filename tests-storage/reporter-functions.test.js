@@ -6,7 +6,7 @@ const { TESTOMAT_TMP_STORAGE_DIR } = require('../lib/constants');
 const { fileSystem, removeColorCodes } = require('../lib/utils/utils');
 const testomat = require('../lib/reporter');
 const { keyValueStorage } = require('../lib/services/key-values');
-const { dataStorage } = require('../lib/data-storage');
+const { dataStorage, stringToMD5Hash } = require('../lib/data-storage');
 
 describe('Testomat reporter functions', () => {
   before(() => {
@@ -17,7 +17,8 @@ describe('Testomat reporter functions', () => {
     const message = 'test step message';
     dataStorage.setContext('@T00000018');
     testomat.step(message);
-    const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', 'log_T00000018');
+    const contextHash = stringToMD5Hash('@T00000018');
+    const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', `log_${contextHash}`);
     expect(fs.existsSync(logFilePath)).to.equal(true);
     const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
     expect(logContent).to.equal(`> ${message}`);
@@ -29,7 +30,8 @@ describe('Testomat reporter functions', () => {
     };
     dataStorage.setContext('@T00000019');
     testomat.meta(keyValue);
-    const filePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'keyvalue', 'keyvalue_T00000019');
+    const contextHash = stringToMD5Hash('@T00000019');
+    const filePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'keyvalue', `keyvalue_${contextHash}`);
     expect(fs.existsSync(filePath)).to.equal(true);
     const fileContent = fs.readFileSync(filePath, 'utf8');
     expect(fileContent).to.equal(JSON.stringify(keyValue));
@@ -49,7 +51,8 @@ describe('Testomat reporter functions', () => {
     dataStorage.setContext('@T00000020');
     testomat.meta(keyValue);
     testomat.meta(keyValue2);
-    const filePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'keyvalue', 'keyvalue_T00000020');
+    const contextHash = stringToMD5Hash('@T00000020');
+    const filePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'keyvalue', `keyvalue_${contextHash}`);
     expect(fs.existsSync(filePath)).to.equal(true);
     const fileContent = fs.readFileSync(filePath, 'utf8');
     expect(fileContent).to.equal(JSON.stringify(keyValue) + os.EOL + JSON.stringify(keyValue2));
@@ -66,10 +69,10 @@ describe('Testomat reporter functions', () => {
       os: 'windows',
       runType: 'smoke',
     };
-    dataStorage.setContext('@T00000021');
+    dataStorage.setContext('get key value pairs using testomat functions @T00000021');
     testomat.meta(keyValue);
     testomat.meta(keyValue2);
-    const retrievedKeyValue = keyValueStorage.get('@T00000021');
+    const retrievedKeyValue = keyValueStorage.get('get key value pairs using testomat functions @T00000021');
     expect(retrievedKeyValue).to.deep.equal({ ...keyValue, ...keyValue2 });
   });
 });
