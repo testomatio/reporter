@@ -32,15 +32,41 @@ The HTML report includes essential information, such as run ID, status, parallel
 
 #### Example Command
 
-This command triggers the test execution process and enables the HTML Pipe to generate reports based on the test results.
+📊 Generate a report without triggering the TESTOMATIO pipe (no data sent to the client)
 
-_Command execution example_
+_Execute the following command to generate a report without sending data to TESTOMATIO:_
+
+
+```
+TESTOMATIO_HTML_REPORT_SAVE=1 npx codeceptjs run
+
+```
+
+
+📝 Generate a report based on the default folder/html-file name: This command triggers the test execution process and enables the HTML Pipe to generate reports based on the test results:
+
+* Output folder: html-report/
+* Output file: testomatio-report.html
+
+_Execute the following command to generate a report with default settings:_
 
 ```
 TESTOMATIO_HTML_REPORT_SAVE=1 TESTOMATIO={API_KEY} npx codeceptjs run
 
 ```
 
-An example of a report can be seen in the screenshot
+
+📂 Generate a report based on a custom HTML folder/html-file name.
+**!!!You can SET only one of the following parameters if needed: folder or file name**
+
+_Execute the following command to generate a report with both folder & file names:_
+
+```
+TESTOMATIO_HTML_REPORT_SAVE=1 TESTOMATIO_HTML_REPORT_FOLDER=user-html-reporter TESTOMATIO_HTML_FILENAME=custom.html TESTOMATIO={API_KEY} npx codeceptjs run
+
+```
+
+
+🖥️ An example of a report can be seen in the screenshot below:
 
 ![HTML example](./images/html-pipe.png)
