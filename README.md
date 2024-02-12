@@ -97,7 +97,21 @@ GitHub report published as a comment to Pull Request:
 
 Intercept your logger messages or log anything with our [Logger](./docs/logger.md) (_work in progress_).
 
-### 5️⃣ Add to CI Pipeline
+### 5️⃣ TESTOMATIO HTML Report
+
+Testomatio now features a custom reporting tool that allows you to generate a standalone HTML/CSS report for easy visualization of your test runs. This mode provides a quick way to gain a clear and visually appealing overview of your test execution.
+
+With our reporter, you can:
+
+- Easily analyze the results of your test runs in a convenient HTML format.
+- Visualize data on successful and failed tests, including statistics and error details.
+- Quickly share reports with your team members or stakeholders.
+
+![HTML report](./docs/images/html_reporter_example.gif)
+
+Learn more about generating HTML reports [here](./docs/pipes/html.md)
+
+### 6️⃣ Add to CI Pipeline
 
 After you tested reporter locally add it to your CI pipeline.
 
@@ -118,6 +132,7 @@ Bring this reporter on CI and never lose test results again!
   * [GitHub](./docs/pipes/github.md)
   * [Gitlab](./docs/pipes/gitlab.md)
   * [CSV](./docs/pipes/csv.md)
+  * [HTML report](./docs/pipes/html.md)
 * 📓 [JUnit](./docs/junit.md)
 * 🗄️ [Artifacts](./docs/artifacts.md)
 * 🔂 [Workflows](./docs/workflows.md)
