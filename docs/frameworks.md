@@ -71,8 +71,6 @@ TESTOMATIO={API_KEY} npx playwright test
 
 > 📑 [Example Project](https://github.com/testomatio/examples/tree/master/playwright) | 🥒 [Playwright + Cucumber Example](https://github.com/testomatio/examples/tree/master/playwright-cucumber-js)
 
-If you want to exclude some tests from the report (usually it is setup/teardown tests like login), you can use `TESTOMATIO_PLAYWRIGHT_EXCLUDE_TESTS_FROM_REPORT_REGEX` env variable ([see details](./env-variables.md#testomatio_playwright_exclude_tests_from_report_regex)):
-
 ### Cypress
 
 > 📐 When used with [Testomat.io Application](https://app.testomat.io) it is recommended to import automated tests first via [check-tests](https://github.com/testomatio/check-tests#cli). To create items on the fly set `TESTOMATIO_CREATE=1` env variable.
