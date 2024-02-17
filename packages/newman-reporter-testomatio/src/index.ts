@@ -8,7 +8,7 @@ import {
   NewmanRunOptions,
   NewmanRunSummary,
 } from 'newman';
-import { getGroupPath, getPrettyTimeFromTimestamp, getTestIdFromTestName } from './helpers';
+import { getGroupPath, getPrettyTimeFromTimestamp } from './helpers';
 import { AnyObject } from './types';
 import { filesize } from 'filesize';
 
