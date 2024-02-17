@@ -27,7 +27,8 @@ describe('Client', () => {
       expect.fail('Should throw error');
     } catch (e) {
       stack = client.formatError(e);
-      expect(stack.replace(ANSI_REGEX, '')).to.include("throw new Error('Test error')");
+      // prettier-ignore
+      expect(stack.replace(ANSI_REGEX, '')).to.include('throw new Error(\'Test error\')');
       expect(stack).to.include('data/src/error.js');
       expect(stack).to.include('client_test.js');
     }
@@ -39,7 +40,8 @@ describe('Client', () => {
     } catch (e) {
       stack = client.formatError(e);
 
-      expect(stack).not.to.include("throw new Error('Test error')");
+      // prettier-ignore
+      expect(stack).not.to.include('throw new Error(\'Test error\')');
       expect(stack).not.to.include('data/src/error.js');
       expect(stack).to.include('client_test.js');
     }
