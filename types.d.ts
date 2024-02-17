@@ -1,10 +1,10 @@
 declare module '@testomatio/reporter';
 
 export interface FileType {
-  path: string,
-  type: string,
-  title?: string,
-  testId?: string
+  path: string;
+  type: string;
+  title?: string;
+  testId?: string;
 }
 
 /**
@@ -57,7 +57,7 @@ export interface TestData {
   logs?: string;
 
   /** Manually attached artifacts */
-  manuallyAttachedArtifacts?: (string | { path: string, type: string })[];
+  manuallyAttachedArtifacts?: (string | { path: string; type: string })[];
 
   /** Meta information (key: value) */
   meta?: { [key: string]: string } | {};
@@ -88,8 +88,8 @@ export interface RunData {
   /** The number of test cases that were skipped in the test run. */
   skipped_count?: number;
 
-  /** 
-   * An array of `TestData` objects representing the individual test cases in the test run. 
+  /**
+   * An array of `TestData` objects representing the individual test cases in the test run.
    * Used for JUNit report when we don't send the tests in realtime but in a batch as a part of final result */
   tests?: TestData[];
 }
@@ -97,19 +97,18 @@ export interface RunData {
 export enum TestStatus {
   Passed = 'passed',
   Failed = 'failed',
-  Skipped = 'skipped'
+  Skipped = 'skipped',
 }
 
 export enum RunStatus {
   Passed = 'passed',
   Failed = 'failed',
-  Finished = 'finished'
+  Finished = 'finished',
 }
 
 export interface Pipe {
-
   isEnabled: boolean;
-  store: {},
+  store: {};
 
   /** starts run  */
   createRun(): Promise<void>;

@@ -1,43 +1,55 @@
 import debug from 'debug';
 import TestomatioReporter from '@testomatio/reporter';
 import chalk from 'chalk';
-import { ConsoleEvent, NewmanRunExecution, NewmanRunExecutionAssertion, NewmanRunOptions, NewmanRunSummary } from 'newman';
+import {
+  ConsoleEvent,
+  NewmanRunExecution,
+  NewmanRunExecutionAssertion,
+  NewmanRunOptions,
+  NewmanRunSummary,
+} from 'newman';
 import { getGroupPath, getPrettyTimeFromTimestamp, getTestIdFromTestName } from './helpers';
-import { AnyObject } from "./types";
+import { AnyObject } from './types';
 import { filesize } from 'filesize';
 
 const log = debug('newman-reporter-testomatio');
 type TestStatus = 'passed' | 'failed' | 'skipped' | 'finished';
-type ResponseSize = { body: number, header: number, total: number };
+type ResponseSize = { body: number; header: number; total: number };
 // FIXME: when add chulk to package.json, this reporter does not work. have to investigate and try to fix
 
 const APP_PREFIX = chalk.gray('[TESTOMATIO-NEWMAN-REPORTER]');
 
 /**
- * 
+ *
  * @param emitter is an event emitter that triggers the following events: https://github.com/postmanlabs/newman#newmanrunevents
  * @param reporterOptions is an object of the reporter specific options. See usage examples below for more details.
  * @param collectionRunOptions is an object of all the collection run options: https://github.com/postmanlabs/newman#newmanrunoptions-object--callback-function--run-eventemitter
  */
-function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject, collectionRunOptions: NewmanRunOptions) {
+function TestomatioNewmanReporter(
+  emitter: AnyObject,
+  reporterOptions: AnyObject,
+  collectionRunOptions: NewmanRunOptions,
+) {
   // initialize Testomatio reporter
   const testomatioReporter = new TestomatioReporter.TestomatClient({ ...reporterOptions, createNewTests: true });
-  const collectionName = typeof collectionRunOptions.collection === 'string' ?
-    collectionRunOptions.collection : collectionRunOptions.collection.name || 'Unnamed collection';
+  const collectionName =
+    typeof collectionRunOptions.collection === 'string'
+      ? collectionRunOptions.collection
+      : collectionRunOptions.collection.name || 'Unnamed collection';
   let newmanItemStore: {
-    authType: string,
-    assertionErrorTextColorized: string,
-    cookies: string,
-    responseCodeAndStatusColorized: string,
-    responseBody: string,
-    responseSize: number,
-    responseTime: number,
-    requestBody: string,
-    requestHeaders: string,
-    requestURL: string,
-    startTime: number,
-    suites: string[],
-    testStatus: string,
+    authType: string;
+    assertionErrorTextColorized: string;
+    cookies: string;
+    responseCodeAndStatusColorized: string;
+    responseBody: string;
+    responseSize: number;
+    responseTime: number;
+    requestBody: string;
+    requestHeaders: string;
+    requestURL: string;
+    startTime: number;
+    suites: string[];
+    testStatus: string;
   } = {
     authType: '',
     assertionErrorTextColorized: '',
@@ -84,8 +96,6 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
       testStatus: '',
     };
 
-
-
     // Generate "suites"
     const suites = [collectionName];
 
@@ -102,7 +112,6 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
       suites.push(...groupPath);
     }
     newmanItemStore.suites = suites;
-
   });
 
   // response received
@@ -114,7 +123,10 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
 
     newmanItemStore.authType = result.request.auth?.toJSON().type || '';
     newmanItemStore.cookies = result.response.cookies.toString();
-    newmanItemStore.responseCodeAndStatusColorized = result.response.code < 300 ? chalk.green(result.response.code, result.response.status) : chalk.red(result.response.code, result.response.status);
+    newmanItemStore.responseCodeAndStatusColorized =
+      result.response.code < 300
+        ? chalk.green(result.response.code, result.response.status)
+        : chalk.red(result.response.code, result.response.status);
     newmanItemStore.requestBody = result.request.body?.toString() || '';
     newmanItemStore.requestURL = result.request.url.toString();
     newmanItemStore.requestHeaders = result.request.headers.toString();
@@ -151,7 +163,9 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
     steps += newmanItemStore.requestBody ? `\n${chalk.bold('request body:')}\n${newmanItemStore.requestBody}` : '';
 
     // add response status name and code
-    steps += newmanItemStore.responseCodeAndStatusColorized ? `\n\n\n${chalk.bold('Response')}\n${newmanItemStore.responseCodeAndStatusColorized}` : '';
+    steps += newmanItemStore.responseCodeAndStatusColorized
+      ? `\n\n\n${chalk.bold('Response')}\n${newmanItemStore.responseCodeAndStatusColorized}`
+      : '';
 
     // response time
     steps += newmanItemStore.responseTime ? `\nTime: ${newmanItemStore.responseTime} ms` : '';
@@ -173,13 +187,16 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
       const eventScripts = event.script.exec;
 
       // sometimes first script element is empty string
-      if (eventScripts?.length && eventScripts[0].length) code += `\n\n\n${chalk.blue.bold(eventName)}\n${eventScripts?.join('\n')}`;
+      if (eventScripts?.length && eventScripts[0].length)
+        code += `\n\n\n${chalk.blue.bold(eventName)}\n${eventScripts?.join('\n')}`;
     });
     steps += code;
 
     // add execution time
     const executionTime = new Date().getTime() - newmanItemStore.startTime;
-    steps += newmanItemStore.startTime ? `\n\n\n${chalk.bold('Execution time: ')}${getPrettyTimeFromTimestamp(executionTime)}s` : '';
+    steps += newmanItemStore.startTime
+      ? `\n\n\n${chalk.bold('Execution time: ')}${getPrettyTimeFromTimestamp(executionTime)}s`
+      : '';
 
     // set the closest folder name as suite title
     const suiteTitle = newmanItemStore.suites[newmanItemStore.suites.length - 1] || '';
@@ -203,7 +220,7 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
     log('Test data sent:', testData);
 
     // notify Testomatio about the item result
-    testomatioReporter.addTestRun(newmanItemStore.testStatus || 'passed' as TestStatus, testData);
+    testomatioReporter.addTestRun(newmanItemStore.testStatus || ('passed' as TestStatus), testData);
   });
 
   // test assertion
@@ -227,13 +244,19 @@ function TestomatioNewmanReporter(emitter: AnyObject, reporterOptions: AnyObject
 
     const status = summary.run.failures.length ? 'failed' : 'passed';
     console.log(APP_PREFIX, chalk.blue('Run result:', status));
-    testomatioReporter.updateRunStatus(status).then(() => {
-      debug(chalk.blue('Run status updated:', status));
-    }).catch((err: any) => {
-      debug('Run status update failed');
-      debug(err);
-    });
-    log('Collection run completed', status === 'passed' ? 'without failures' : `with ${summary.run.failures.length} failures`);
+    testomatioReporter
+      .updateRunStatus(status)
+      .then(() => {
+        debug(chalk.blue('Run status updated:', status));
+      })
+      .catch((err: any) => {
+        debug('Run status update failed');
+        debug(err);
+      });
+    log(
+      'Collection run completed',
+      status === 'passed' ? 'without failures' : `with ${summary.run.failures.length} failures`,
+    );
   });
 }
 
