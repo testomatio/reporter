@@ -33,6 +33,7 @@ logger.error('message');
 Logger allows configuration (See [Configuration](#configuration) section for details).
 
 ### Convenient syntax with "log" function
+
 ```javascript
 const { log } = require('@testomatio/reporter');
 
@@ -42,16 +43,17 @@ test('Your test @T12345678', async () => {
   assert(loggedIn);
 });
 ```
+
 More examples:
+
 ```javascript
 const { log } = require('@testomatio/reporter');
-// or 
+// or
 import { log } from '@testomatio/reporter';
 
 log`your message`;
 log`your message ${variable}`;
 ```
-
 
 ### Intercept logs from your logger (and attach them to testomatio report)
 

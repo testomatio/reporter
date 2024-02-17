@@ -1,49 +1,50 @@
 <!-- pending release updates -->
+
 # 1.1.0
 
-* Rewritten logger and artifacts storage. Test reports contain logs, steps, stack traces.
-* Added custom method to log data:
+- Rewritten logger and artifacts storage. Test reports contain logs, steps, stack traces.
+- Added custom method to log data:
 
 ```js
 const { log } = require('@testomatio/reporter');
-// or 
+// or
 import { log } from '@testomatio/reporter';
 
 log`your message`;
 ```
 
-* Added custom function to add a step:
+- Added custom function to add a step:
 
 ```js
 const { step } = require('@testomatio/reporter');
-// or 
+// or
 import { step } from '@testomatio/reporter';
-
 
 step`Login started`;
 
 step`Login successful`;
 ```
 
-* Mocha: improved creating tests with `TESTOMATIO_CREATE=1`
-* JUnit XML: improved parsing Java tests that contain `@DisplayName` annotation
-* Cypress: Fixed repoting stacktraces & tests duration (for Cypress version 13+)
-* Cypress: Fixed uploading artifacts.
-* Added retries while uploading artifacts to S3 storage
-* Added `TESTOMATIO_TOKEN` and `TESTOMATIO_API_KEY` as aliases to `TESTOMATIO` environment variable to pass project key to reporter
-* Assign Run by label:
+- Mocha: improved creating tests with `TESTOMATIO_CREATE=1`
+- JUnit XML: improved parsing Java tests that contain `@DisplayName` annotation
+- Cypress: Fixed repoting stacktraces & tests duration (for Cypress version 13+)
+- Cypress: Fixed uploading artifacts.
+- Added retries while uploading artifacts to S3 storage
+- Added `TESTOMATIO_TOKEN` and `TESTOMATIO_API_KEY` as aliases to `TESTOMATIO` environment variable to pass project key to reporter
+- Assign Run by label:
 
 ```bash
 TESTOMATIO={API_KEY} TESTOMATIO_LABEL="release,module:checkout" <actual run command>
 ```
 
 Documentation updates:
-* [List of enviroment variables](https://github.com/testomatio/reporter/blob/master/docs/env-variables.md)
-* [List of user API functions](https://github.com/testomatio/reporter/blob/master/docs/functions.md)
+
+- [List of enviroment variables](https://github.com/testomatio/reporter/blob/master/docs/env-variables.md)
+- [List of user API functions](https://github.com/testomatio/reporter/blob/master/docs/functions.md)
 
 # 1.0.18
 
-* Fixed stack traces for CodeceptJS
+- Fixed stack traces for CodeceptJS
 
 # 1.0.17
 
@@ -51,200 +52,204 @@ Renamed `TESTOMATIO_STACK_FILTER` to `TESTOMATIO_STACK_IGNORE`
 
 # 1.0.16
 
-* Addded [stack trace configuration](./docs/stacktrace.md) and documentation:
+- Addded [stack trace configuration](./docs/stacktrace.md) and documentation:
 
 ```
 TESTOMATIO_STACK_IGNORE="tests/support/**.js" <actual-run-command>
 ```
-* Jest: fixed reporting tests without a suite title
+
+- Jest: fixed reporting tests without a suite title
 
 # 1.0.15
 
-* Attach Run to Jira Issue via `TESTOMATIO_JIRA_ID` env variable:
+- Attach Run to Jira Issue via `TESTOMATIO_JIRA_ID` env variable:
 
 ```
 TESTOMATIO_JIRA_ID=TST-12 <actual run command>
 ```
 
-* Mocha - removed requirement of TESTOMATIO API Key
+- Mocha - removed requirement of TESTOMATIO API Key
 
 # 1.0.14
 
-* Execute tests by tag names. Use this filter to select tests associated with specific tags.
-  
+- Execute tests by tag names. Use this filter to select tests associated with specific tags.
+
   ```bash
   TESTOMATIO={API_KEY} npx start-test-run -c 'actual run command' --filter 'testomatio:tag-name=smoke'
   ```
 
-  * more instruction you can find in docs/pipes/testomatio.md
+  - more instruction you can find in docs/pipes/testomatio.md
 
 # 1.0.13
 
-* JUnit improvements
-  * Match test from source code by adding Test ID as a comment:
+- JUnit improvements
+
+  - Match test from source code by adding Test ID as a comment:
 
   ```java
   // @T8acca9eb
   ```
-  * Match test from output by adding Test ID as output:
+
+  - Match test from output by adding Test ID as output:
 
   ```java
   System.out.println("tid://@T8acca9eb");
   ```
-  * Support for suite before and after output
-  * Improved support for artifacts
+
+  - Support for suite before and after output
+  - Improved support for artifacts
 
 # 1.0.12
 
 & Logger refactoring by @olexandr13 in #208
-* fix undefined logs by @olexandr13 in #210
+
+- fix undefined logs by @olexandr13 in #210
 
 # 1.0.11
 
-* fix steps duplication for codecept report by @olexandr13 in #209
+- fix steps duplication for codecept report by @olexandr13 in #209
 
 # 1.0.10
 
-* Added `TESTOMATIO_PUBLISH=1` variable to automatically publish run report
+- Added `TESTOMATIO_PUBLISH=1` variable to automatically publish run report
 
 # 1.0.9
 
-* Support XUnit format
-* Improved support for parametrized Java tests
+- Support XUnit format
+- Improved support for parametrized Java tests
 
-# 1.0.8 
+# 1.0.8
 
-* Fixed `Can't read push of undefined` when logging steps
+- Fixed `Can't read push of undefined` when logging steps
 
 # 1.0.6
 
-* Testomat.io. Auto-detect current build url and report it to Testomat.io. Manually url can be set with `BUILD_URL` variable:
+- Testomat.io. Auto-detect current build url and report it to Testomat.io. Manually url can be set with `BUILD_URL` variable:
 
 ```
 BUILD_URL=https://.... TESTOMATIO=apiKey <actual test command>
 ```
 
-# 1.0.5 
+# 1.0.5
 
-* Fix "create tests" params processing for testomatio pipe
+- Fix "create tests" params processing for testomatio pipe
 
 # 1.0.4
 
-* Fixed parallel run
+- Fixed parallel run
 
 # 1.0.3
 
-* Fixed reporting parallel runs
+- Fixed reporting parallel runs
 
 # 1.0.0
 
-
-* Added [`TESTOMATIO_SHARED_RUN` option](https://github.com/testomatio/reporter/blob/master/docs/pipes.md#reporting-parallel-execution-to-to-same-run) to use a shared run for parallel executions
-* Reworked [documentation](https://github.com/testomatio/reporter/tree/master#readme).
-* Added an option to obtain [S3 configuration](https://github.com/testomatio/reporter/blob/master/docs/artifacts.md#configuration) from Testomat.io
-* Introduced [pipes](https://github.com/testomatio/reporter/blob/master/docs/pipes.md):
-  * GitHub
-  * GitLab
-  * CSV Pipe
-
+- Added [`TESTOMATIO_SHARED_RUN` option](https://github.com/testomatio/reporter/blob/master/docs/pipes.md#reporting-parallel-execution-to-to-same-run) to use a shared run for parallel executions
+- Reworked [documentation](https://github.com/testomatio/reporter/tree/master#readme).
+- Added an option to obtain [S3 configuration](https://github.com/testomatio/reporter/blob/master/docs/artifacts.md#configuration) from Testomat.io
+- Introduced [pipes](https://github.com/testomatio/reporter/blob/master/docs/pipes.md):
+  - GitHub
+  - GitLab
+  - CSV Pipe
 
 # 0.7.6
 
-* Updated to use AWS S3 3.0 SDK for uploading
+- Updated to use AWS S3 3.0 SDK for uploading
 
 # 0.7.5
 
-* Fixed reporting skipped tests in mocha
+- Fixed reporting skipped tests in mocha
 
 # 0.7.4
 
-* Fixed parsing source code in JUnit files
+- Fixed parsing source code in JUnit files
 
 # 0.7.3
 
-* CodeceptJS: Upload all traces and videos from artifacts
-* Fixed reporting skipped test in XML
-* added `--timelimit` option to `report-xml` command line
+- CodeceptJS: Upload all traces and videos from artifacts
+- Fixed reporting skipped test in XML
+- added `--timelimit` option to `report-xml` command line
 
 # 0.7.2
 
-* Fixed uploading non-existing file
+- Fixed uploading non-existing file
 
 # 0.7.1
 
-* Support for NUnit XML v3 format
+- Support for NUnit XML v3 format
 
 # 0.7.0
 
-* Support for `@cucumber/cucumber` (>= 7.0) added
-* Initial support for C# and NUnit  
+- Support for `@cucumber/cucumber` (>= 7.0) added
+- Initial support for C# and NUnit
 
 # 0.6.10
 
-* Fixed uploading multilpe artifacts in Playwright
+- Fixed uploading multilpe artifacts in Playwright
 
 # 0.6.9
 
-* Fixed pending tests reports for Cypress
+- Fixed pending tests reports for Cypress
 
 # 0.6.8
+
 # 0.6.7
 
-* Pytest: fixed creating suites from reports
+- Pytest: fixed creating suites from reports
 
 # 0.6.6
 
-* JUnit reporter: prefer suite title over testcase classname in a report
+- JUnit reporter: prefer suite title over testcase classname in a report
 
 # 0.6.5
 
-* Fixed test statuses for runs in JUnit reporter
+- Fixed test statuses for runs in JUnit reporter
 
 # 0.6.4
 
-* Added `TESTOMATIO_PROCEED=1` param to not close current run
-* Fixed priority of commands from `npx @testomatio/reporter`
+- Added `TESTOMATIO_PROCEED=1` param to not close current run
+- Fixed priority of commands from `npx @testomatio/reporter`
 
 # 0.6.3
 
-* Fixed `npx start-test-run` to launch commands
+- Fixed `npx start-test-run` to launch commands
 
 # 0.6.2
 
-* Added `--env-file` option to load env variables from env file
+- Added `--env-file` option to load env variables from env file
 
 # 0.6.1
 
-* Fixed creating RunGroup with JUnit reporter
+- Fixed creating RunGroup with JUnit reporter
 
 # 0.6.0
 
-* JUnit reporter support
+- JUnit reporter support
 
 # 0.5.10
 
-* Fixed reporting Scenario Outline in Cypress-Cucumber
-* Fixed error reports for Cypress when running in Chrome
+- Fixed reporting Scenario Outline in Cypress-Cucumber
+- Fixed error reports for Cypress when running in Chrome
 
 # 0.5.9
 
-* Added environment on Cypress report
+- Added environment on Cypress report
 
 # 0.5.8
 
-* Fixed Cypress.io reporting
+- Fixed Cypress.io reporting
 
 # 0.5.7
 
-* Fixed webdriverio artifacts
+- Fixed webdriverio artifacts
 
 # 0.5.6
 
-* Unmark failed CodeceptJS tests as skipped
+- Unmark failed CodeceptJS tests as skipped
 
 # 0.5.5
 
-* Fixed `BeforeSuite` failures in CodeceptJS
+- Fixed `BeforeSuite` failures in CodeceptJS
 
 # 0.5.4
 
@@ -256,20 +261,20 @@ TESTOMATIO_CREATE=1 TESTOMATIO=apiKey npx codeceptjs run
 
 # 0.5.3
 
-* Fixed parsing suites
+- Fixed parsing suites
 
 # 0.5.2
 
-* Fixed multiple upload of artifacts in Cypress.io
+- Fixed multiple upload of artifacts in Cypress.io
 
 # 0.5.1
 
-* Fixed Cypress.io to report tests inside nested suites
+- Fixed Cypress.io to report tests inside nested suites
 
 # 0.5.0
 
-* Added Cypress.io plugin
-* Added artifacts upload to webdriverio
+- Added Cypress.io plugin
+- Added artifacts upload to webdriverio
 
 # 0.4.6
 
