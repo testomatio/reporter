@@ -99,8 +99,9 @@ Testomatio now features a custom reporting tool that allows you to generate a st
 With our reporter, you can:
 
 - Easily analyze the results of your test runs in a convenient HTML format.
-- Visualize data on successful and failed tests, including statistics and error details.
-- Quickly share reports with your team members or stakeholders.
+
+* Visualize data on successful and failed tests, including statistics and error details.
+* Quickly share reports with your team members or stakeholders.
 
 ![HTML report](./docs/images/html_reporter_example.gif)
 
