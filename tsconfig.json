@@ -8,16 +8,10 @@
     "noImplicitAny": false,
     "noImplicitThis": false,
     "noEmit": true,
-    "types": [
-        "node"
-    ],
+    "types": ["node"],
     "target": "es2022"
   },
   "compileOnSave": true,
-  "include": [
-    "lib", "types.d.ts"  
-  ],
-  "exclude": [
-    "typings/tests"
-  ]
+  "include": ["lib", "types.d.ts"],
+  "exclude": ["typings/tests"]
 }

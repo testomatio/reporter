@@ -20,21 +20,21 @@ DEBUG=* npx codeceptjs run
 
 Reporter consists of many modules, so you can enable debug logs for any of them. The most useful are:
 
-| Module | Value |
-| ------ | ----- |
+| Module           | Value                                     |
+| ---------------- | ----------------------------------------- |
 | **▼ Testomatio** |
-| client | `@testomatio/reporter:client` |
-| storage | `@testomatio/reporter:storage` |
-| **▼ Pipes** |
-| Testomatio | `@testomatio/reporter:pipe:testomatio` |
-| GitHub | `@testomatio/reporter:pipe:github` |
-| SCV | `@testomatio/reporter:pipe:csv` |
-| GitLab | `@testomatio/reporter:pipe:gitlab` |
-| HTML | `@testomatio/reporter:pipe:html` |
-| **▼ Adapters** |
-| Codecept | `@testomatio/reporter:adapter:codeceptjs` |
-| Jest | `@testomatio/reporter:adapter-jest` |
-| **▼ Services** |
-| Artifacts | `@testomatio/reporter:services-artifacts` |
+| client           | `@testomatio/reporter:client`             |
+| storage          | `@testomatio/reporter:storage`            |
+| **▼ Pipes**      |
+| Testomatio       | `@testomatio/reporter:pipe:testomatio`    |
+| GitHub           | `@testomatio/reporter:pipe:github`        |
+| SCV              | `@testomatio/reporter:pipe:csv`           |
+| GitLab           | `@testomatio/reporter:pipe:gitlab`        |
+| HTML             | `@testomatio/reporter:pipe:html`          |
+| **▼ Adapters**   |
+| Codecept         | `@testomatio/reporter:adapter:codeceptjs` |
+| Jest             | `@testomatio/reporter:adapter-jest`       |
+| **▼ Services**   |
+| Artifacts        | `@testomatio/reporter:services-artifacts` |
 | Meta (key-value) | `@testomatio/reporter:services-key-value` |
-| Logger | `@testomatio/reporter:services-logger` |
+| Logger           | `@testomatio/reporter:services-logger`    |

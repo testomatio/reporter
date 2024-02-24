@@ -69,8 +69,8 @@ describe('Adapters', () => {
             if (process.env.DEBUG) {
               console.log(stdout);
               console.log(stderr);
-            }                        
-            done()
+            }
+            done();
           });
         });
 

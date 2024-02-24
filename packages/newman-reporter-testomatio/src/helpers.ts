@@ -1,4 +1,4 @@
-import { AnyObject, KeyValueObject } from "./types";
+import { AnyObject, KeyValueObject } from './types';
 import _ from 'lodash';
 
 export function beatifyVariablesList(varsList: KeyValueObject[]) {
@@ -17,12 +17,14 @@ export function getPrettyTimeFromTimestamp(timestamp: number) {
 }
 
 /**
- * 
+ *
  * @param item represents postman collection item, which could be collection itself, folder or request
  * @returns path to postman request (through the folders)
  */
 export function getGroupPath(item: any) {
-  if (_.isEmpty(item) || !_.isFunction(item.parent) || !_.isFunction(item.forEachParent)) { return []; }
+  if (_.isEmpty(item) || !_.isFunction(item.parent) || !_.isFunction(item.forEachParent)) {
+    return [];
+  }
 
   const chain = [];
   item.forEachParent(function (parent: any) {

@@ -14,9 +14,9 @@ TESTOMATIO_HTML_REPORT_SAVE=1 <actual run command>
 
 To enable HTML reports, set the TESTOMATIO_HTML_REPORT_SAVE environment variable to 1. Additionally, you can customize the HTML report folder and filename using the following variables:
 
-* TESTOMATIO_HTML_REPORT_SAVE=1
-* TESTOMATIO_HTML_REPORT_FOLDER: Specify the folder for HTML reports
-* TESTOMATIO_HTML_FILENAME: Set the desired filename for the HTML report
+- TESTOMATIO_HTML_REPORT_SAVE=1
+- TESTOMATIO_HTML_REPORT_FOLDER: Specify the folder for HTML reports
+- TESTOMATIO_HTML_FILENAME: Set the desired filename for the HTML report
 
 _!!!Please note that the name must include the extension ".html". If the extension is missing, the report will be saved with the default name = testomatio-report.html_
 
@@ -36,17 +36,15 @@ The HTML report includes essential information, such as run ID, status, parallel
 
 _Execute the following command to generate a report without sending data to TESTOMATIO:_
 
-
 ```
 TESTOMATIO_HTML_REPORT_SAVE=1 npx codeceptjs run
 
 ```
 
-
 📝 Generate a report based on the default folder/html-file name: This command triggers the test execution process and enables the HTML Pipe to generate reports based on the test results:
 
-* Output folder: html-report/
-* Output file: testomatio-report.html
+- Output folder: html-report/
+- Output file: testomatio-report.html
 
 _Execute the following command to generate a report with default settings:_
 
@@ -54,7 +52,6 @@ _Execute the following command to generate a report with default settings:_
 TESTOMATIO_HTML_REPORT_SAVE=1 TESTOMATIO={API_KEY} npx codeceptjs run
 
 ```
-
 
 📂 Generate a report based on a custom HTML folder/html-file name.
 **!!!You can SET only one of the following parameters if needed: folder or file name**
@@ -65,7 +62,6 @@ _Execute the following command to generate a report with both folder & file name
 TESTOMATIO_HTML_REPORT_SAVE=1 TESTOMATIO_HTML_REPORT_FOLDER=user-html-reporter TESTOMATIO_HTML_FILENAME=custom.html TESTOMATIO={API_KEY} npx codeceptjs run
 
 ```
-
 
 🖥️ An example of a report can be seen in the screenshot below:
 

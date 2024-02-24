@@ -1,6 +1,5 @@
 name: Publish TESTCAFE reporter
-on: 
-  workflow_dispatch
+on: workflow_dispatch
 jobs:
   publish:
     runs-on: ubuntu-latest

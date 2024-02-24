@@ -14,7 +14,7 @@ describe('Storage', () => {
     const dataType = 'test2';
     const data = 'test data';
     dataStorage.putData(dataType, data, 'PUT data to FILE storage @TB0000002');
-    const contextHash = stringToMD5Hash('PUT data to FILE storage @TB0000002')
+    const contextHash = stringToMD5Hash('PUT data to FILE storage @TB0000002');
     const dataFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, dataType, `${dataType}_${contextHash}`);
     expect(fs.existsSync(dataFilePath)).to.equal(true);
     const dataContent = fs.readFileSync(dataFilePath, 'utf8');

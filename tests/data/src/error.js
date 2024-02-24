@@ -1,3 +1,3 @@
-module.exports = function() {
-  throw new Error('Test error')
-}
+module.exports = function () {
+  throw new Error('Test error');
+};
