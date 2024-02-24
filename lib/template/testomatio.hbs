@@ -25,42 +25,292 @@
       <title>Report Testomat.io</title>
     {{/if}}
     <style>
-      body { padding: 0; margin: 0; } header, div, p, form, input, a, span, button { box-sizing: border-box; } img {
-      width: 100%; display: block; max-width: 100%; height: auto; } p, span{ font-weight: 400; font-size: 14px; color:
-      grey; margin: 0; } .report{ padding-top: 15px; } .level_1{ margin-bottom: 20px; border-bottom: 1px solid grey;
-      padding-bottom: 10px; } .header{ display: flex; justify-content: space-between; align-items: center; }
-      .header__point{ width: 8px; height: 8px; border-radius: 50%; margin-right: 15px; } .header__point_red{ background:
-      red; } .header__block{ display: flex; align-items: center; } .header__case{ display: flex; align-items: center;
-      margin-right: 15px; } .header__case p{ margin-right: 7px; } .header__case span{ color: black; } .header__block
-      button{ margin-left: 15px; } .header__type{ background: #0d6efd; color: #FFF; border-radius: 10px; padding: 1px
-      5px; margin-right: 15px; } .header__case i{ color: grey; margin-right: 5px; } .title{ display: flex;
-      margin-bottom: 20px; } .title p{ color: black; font-size: 20px; margin-right: 5px; } .statright{ display: flex; }
-      .statdesc{ display: flex; flex-direction: column; } .statdesc__row{ padding: 15px 10px; display: flex; }
-      .statdesc__row_first{ width: 150px; } .statdesc__row:nth-child(odd){ background: #F4F5FF; } .statdesc__row p{
-      font-weight: bold; } .statdesc{ width: 100%; } .statstatus{ display: flex; align-items: center; } .statstatus p{
-      font-weight: bold; } .statstatus div{ font-weight: bold; } .statstatus_failed div{ width: 10px; height: 10px;
-      border-radius: 50%; margin-right: 5px; } .statstatus_failed p{ color: red; text-transform: uppercase; }
-      .statstatus_failed div{ background: red; } .statstatus_passed div{ width: 10px; height: 10px; border-radius: 50%;
-      margin-right: 5px; text-transform: uppercase; } .statstatus_passed div { background: green; } .statstatus_passed p
-      { color: green; text-transform: uppercase; } .statstatus_skipped div{ width: 10px; height: 10px; border-radius:
-      50%; margin-right: 5px; text-transform: uppercase; } .statstatus_skipped div { background: yellow; }
-      .statstatus_skipped p { color: yellow; text-transform: uppercase; } .fa-magnifying-glass{ font-size: 24px; color:
-      gray; } .level_5{ margin-top: 20px; } .numTest{ font-weight: 700; font-size: 16px; color:#0d6efd; } .testitem{
-      border: 1px solid grey; border-radius: 10px; margin-bottom: 15px; } .testitem__top{ width: 100%; display: flex;
-      background: #e9ecef; padding: 3px 0; border-radius:10px; cursor: pointer; } .testitem__icon{ display: flex;
-      align-items: center; justify-content: center; width: 30px; margin-right: 15px; } .testitem__ico{ font-size: 18px;
-      } .testitem__name{ font-weight: 700; color: black; font-size: 16px; } .testitem__body{ display: flex; border-top:
-      1px solid grey; } .testitem__menu{ display: flex; flex-direction: column; border-right: 1px solid grey; padding:
-      15px; } .testitem__mitem{ margin-bottom: 10px; font-size: 14px; cursor: pointer; color: grey; }
-      .testitem__mitem_active{ color: green; } .testitem__case{ display: flex; flex-direction: column; padding: 10px; }
-      .testitem__title{ font-size: 18px; color: black; font-weight: 700; margin-bottom: 15px; text-decoration:
-      underline; } .testitem__block p{ font-size: 14px; white-space: pre-line; } .test__empty__list { margin-bottom:
-      10px; color: grey; } /* Passed TAB*/ #passedTest:not(:checked) + .btn-outline-dark { background-color: #39BD2F; }
-      #passedTest:checked + .btn-outline-dark { background-color: #68cf61; color: white; } /* Failed TAB*/
-      #failedTest:not(:checked) + .btn-outline-dark { background-color: #F2230C; } #failedTest:checked +
-      .btn-outline-dark { background-color: #FA6E5E; color: white; } /* Skipped TAB*/ #skippedTest:not(:checked) +
-      .btn-outline-dark { background-color: #F2C00C; } #skippedTest:checked + .btn-outline-dark { background-color:
-      #dfc155; }
+        body {
+            padding: 0;
+            margin: 0;
+        }
+
+        header,
+        div,
+        p,
+        form,
+        input,
+        a,
+        span,
+        button {
+            box-sizing: border-box;
+        }
+        img {
+            width: 100%;
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+        p, span {
+            font-weight: 400;
+            font-size: 14px;
+            color: grey;
+            margin: 0;
+        }
+        .report {
+            padding-top: 15px;
+        }
+        .level_1 {
+            margin-bottom: 20px;
+            border-bottom: 1px solid grey;
+            padding-bottom: 10px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header__point {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 15px;
+        }
+        .header__point_red {
+            background: red;
+        }
+        .header__block {
+            display: flex;
+            align-items: center;
+        }
+        .header__case {
+            display: flex;
+            align-items: center;
+            margin-right: 15px;
+        }
+        .header__case p {
+            margin-right: 7px;
+        }
+        .header__case span {
+            color: black;
+        }
+        .header__block button {
+            margin-left: 15px;
+        }
+        .header__type {
+            background: #0d6efd;
+            color: #FFF;
+            border-radius: 10px;
+            padding: 1px 5px;
+            margin-right: 15px;
+        }
+        .header__case i {
+            color: grey;
+            margin-right: 5px;
+        }
+        .title {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .title p {
+            color: black;
+            font-size: 20px;
+            margin-right: 5px;
+        }
+        .statright {
+            display: flex;
+        }
+        .statdesc {
+            display: flex;
+            flex-direction: column;
+        }
+        .statdesc__row {
+            padding: 15px 10px;
+            display: flex;
+        }
+        .statdesc__row_first {
+            width: 150px;
+        }
+        .statdesc__row:nth-child(odd) {
+            background: #F4F5FF;
+        }
+        .statdesc__row p {
+            font-weight: bold;
+        }
+        .statdesc {
+            width: 100%;
+        }
+        .statstatus {
+            display: flex;
+            align-items: center;
+        }
+        .statstatus p {
+            font-weight: bold;
+        }
+        .statstatus div {
+            font-weight: bold;
+        }
+        .statstatus_failed div {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .statstatus_failed p {
+            color: red;
+            text-transform: uppercase;
+        }
+        .statstatus_failed div {
+            background: red;
+        }
+        .statstatus_passed div {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+            text-transform: uppercase;
+        }
+        .statstatus_passed div {
+            background: green;
+        }
+        .statstatus_passed p {
+            color: green;
+            text-transform: uppercase;
+        }
+        .statstatus_skipped div{
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+            text-transform: uppercase;
+        }
+        .statstatus_skipped div {
+            background: yellow;
+        }
+        .statstatus_skipped p {
+            color: yellow;
+            text-transform: uppercase;
+        }
+        .fa-magnifying-glass {
+            font-size: 24px;
+            color: gray;
+        }
+        .level_5 {
+            margin-top: 20px;
+        }
+        .numTest {
+            font-weight: 700;
+            font-size: 16px;
+            color:#0d6efd;
+        }
+        .testitem {
+            border: 1px solid grey;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        .testitem__top {
+            width: 100%;
+            display: flex;
+            background: #e9ecef;
+            padding: 3px 0;
+            border-radius:10px;
+            cursor: pointer;
+        }
+        .testitem__icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            margin-right: 15px;
+        }
+        .testitem__ico {
+            font-size: 18px;
+        }
+        .testitem__name {
+            font-weight: 700;
+            color: black;
+            font-size: 16px;
+        }
+        .testitem__body {
+            display: flex;
+            border-top: 1px solid grey;
+        }
+        .testitem__menu {
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid grey;
+            padding: 15px;
+        }
+        .testitem__mitem {
+            margin-bottom: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            color: grey;
+        }
+        .testitem__mitem_active {
+            color: green;
+        }
+        .testitem__case {
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+        }
+        .testitem__title {
+            font-size: 18px;
+            color: black;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-decoration: underline;
+        }
+        .testitem__block p {
+            font-size: 14px;
+            white-space: pre-line;
+        }
+        .test__empty__list {
+            margin-bottom: 10px;
+            color: grey;
+        }
+        /* Passed TAB*/
+        #passedTest:not(:checked) + .btn-outline-dark {
+            background-color: #39BD2F;
+        }
+        #passedTest:checked + .btn-outline-dark {
+            background-color: #68cf61;
+            color: white;
+        }
+        /* Failed TAB*/
+        #failedTest:not(:checked) + .btn-outline-dark {
+            background-color: #F2230C;
+        }
+        #failedTest:checked + .btn-outline-dark {
+            background-color: #FA6E5E;
+            color: white;
+        }
+        /* Skipped TAB*/
+        #skippedTest:not(:checked) + .btn-outline-dark {
+            background-color: #F2C00C;
+        }
+        #skippedTest:checked + .btn-outline-dark {
+            background-color: #dfc155;
+        }
+        /* Pagination component styles*/
+        .page-link {
+            color: black;
+            background: #f5f5f8;
+        }
+        .page-link:hover {
+            color: black;
+        }
+        .form-select:focus {
+            border-color: #adadad;
+            box-shadow: 0 0 0 0.25rem rgb(67 71 78 / 25%);
+        }
+        .page-item.active .page-link {
+            background: #d1d1d2;
+            border-color: #adadad;
+        }
+        .noData {
+            background: #e9ecef;
+            text-align: center;
+            height: 100px;
+            padding-top: 39px;
+            border-radius: 5px;
+        }
     </style>
   </head>
 
@@ -227,162 +477,570 @@
           </div>
         </div>
 
-        <div class='row level_5'>
-          <div class='col-12'>
-            {{#if tests.length}}
-              <div class='testWrapp'>
-                {{#each tests}}
-
-                  <div class='testitem d-none' name='testitem' type='dummy' category='false'>
-
-                    <div class='testitem__top'>
-                      <div class='testitem__icon'>
-                        <i class='fa-solid fa-chevron-right testitem__ico testitem__ico_right'></i>
-                        <i class='fa-solid fa-chevron-down d-none testitem__ico testitem__ico_down'></i>
-                      </div>
-                      <p class='testitem__name'>Test</p>
-                    </div>
-
-                    <div class='testitem__body d-none'>
-
-                      <div class='testitem__menu'>
-                        <span type='steps' class='testitem__mitem testitem__mitem_active'>Steps
-                          <i class='fa-solid fa-arrow-right'></i></span>
-                        <span type='status' class='testitem__mitem'>Status
-                          <i class='fa-solid fa-arrow-right'></i></span>
-                        <span type='message' class='testitem__mitem'>Message
-                          <i class='fa-solid fa-arrow-right'></i></span>
-                        <span type='files' class='testitem__mitem'>Files <i class='fa-solid fa-arrow-right'></i></span>
-                      </div>
-
-                      <div class='testitem__content'>
-
-                        <!-- 1 -->
-                        <div class='testitem__case' type='steps'>
-                          <p class='testitem__title'>Steps</p>
-                          <div class='testitem__block'>
-                            <span>...</span>
-                          </div>
-                        </div>
-                        <!-- 1 -->
-
-                        <!-- 2 -->
-                        <div class='testitem__case d-none' type='status'>
-                          <p class='testitem__title'>Status</p>
-                          <div class='testitem__block'>
-                            <span>...</span>
-                          </div>
-                        </div>
-                        <!-- 2 -->
-
-                        <!-- 3 -->
-                        <div class='testitem__case d-none' type='message'>
-                          <p class='testitem__title'>Message</p>
-                          <div class='testitem__block'>
-                            <span>...</span>
-                          </div>
-                        </div>
-                        <!-- 3 -->
-
-                        <!-- 4 -->
-                        <div class='testitem__case d-none' type='files'>
-                          <p class='testitem__title'>Files</p>
-                          <div class='testitem__block'>
-                            <span>...</span>
-                          </div>
-                        </div>
-                        <!-- 4 -->
-                      </div>
-                    </div>
-                  </div>
-                {{/each}}
-              </div>
-            {{else}}
-              <div class='row'>
-                <div class='col-12 test__empty__list'>
-                  <p>No tests found to display 😔</p>
+        <div class="row level_5">
+            <div class="col-12">
+                {{#if tests.length}}
+                <!-- TOP pagination & select components -->
+                <div class="mt-5 mb-3 d-flex justify-content-between" style="height: 40px;">
+                    <nav id="pagination">
+                        <ul class="pagination">
+                        </ul>
+                    </nav>
+                    {{ select }}
                 </div>
-              </div>
-            {{/if}}
-          </div>
+                    <!-- Test data section -->
+                    <div class="testWrapp">
+                        {{#each tests}}
+
+                            <div class="testitem d-none" name="testitem" type="dummy" category="false">
+
+                                <div class="testitem__top">
+                                    <div class="testitem__icon">
+                                        <i class="fa-solid fa-chevron-right testitem__ico testitem__ico_right"></i>
+                                        <i class="fa-solid fa-chevron-down d-none testitem__ico testitem__ico_down"></i>
+                                    </div>
+                                    <p class="testitem__name">Test</p>
+                                </div>
+
+                                <div class="testitem__body d-none">
+
+                                    <div class='testitem__menu'>
+                                        <span type='steps' class='testitem__mitem testitem__mitem_active'>Steps
+                                        <i class='fa-solid fa-arrow-right'></i></span>
+                                        <span type='status' class='testitem__mitem'>Status
+                                        <i class='fa-solid fa-arrow-right'></i></span>
+                                        <span type='message' class='testitem__mitem'>Message
+                                        <i class='fa-solid fa-arrow-right'></i></span>
+                                        <span type='files' class='testitem__mitem'>Files <i class='fa-solid fa-arrow-right'></i></span>
+                                    </div>
+
+                                    <div class="testitem__content">
+                                        <!-- 1 -->
+                                        <div class="testitem__case" type="steps">
+                                            <p class="testitem__title">Steps</p>
+                                            <div class="testitem__block">
+                                                <span>...</span>
+                                            </div>
+                                        </div>
+                                        <!-- 1 -->
+
+                                        <!-- 2 -->
+                                        <div class='testitem__case d-none' type='status'>
+                                            <p class='testitem__title'>Status</p>
+                                            <div class='testitem__block'>
+                                                <span>...</span>
+                                            </div>
+                                        </div>
+                                        <!-- 2 -->
+
+                                        <!-- 3 -->
+                                        <div class='testitem__case d-none' type='message'>
+                                            <p class='testitem__title'>Message</p>
+                                            <div class='testitem__block'>
+                                                <span>...</span>
+                                            </div>
+                                        </div>
+                                        <!-- 3 -->
+
+                                        <!-- 4 -->
+                                        <div class='testitem__case d-none' type='files'>
+                                            <p class='testitem__title'>Files</p>
+                                            <div class='testitem__block'>
+                                                <span>...</span>
+                                            </div>
+                                        </div>
+                                        <!-- 4 -->
+                                    </div>
+                                </div>
+                            </div>
+                        {{/each}}
+                    </div>
+                    <!-- BOTTOM pagination & select components -->
+                    <nav class="mt-2">
+                        <ul class="pagination">
+                        </ul>
+                    </nav> 
+                {{else}}
+                    <!-- No tests found section -->
+                    {{ noDataBlock }}
+                {{/if}}
+            </div>
         </div>
 
       </div>
     </section>
 
-    <script type='text/javascript' src='https://www.gstatic.com/charts/loader.js'></script>
-    <script type='text/javascript'>
-      // Load google charts google.charts.load('current', {'packages':['corechart']});
-      google.charts.setOnLoadCallback(drawChart); // Draw the chart and set the chart values function drawChart() { let
-      data = {}; const passedTests =
-      {{getTestsByStatus tests 'PASSED'}}; const failedTests =
-      {{getTestsByStatus tests 'FAILED'}}; const skippedTests =
-      {{getTestsByStatus tests 'SKIPPED'}}; if (passedTests === 0 && failedTests === 0 && skippedTests === 0) { data =
-      google.visualization.arrayToDataTable([ ['Task', 'Tests'], ['No Tests', 1] ]) } else { data =
-      google.visualization.arrayToDataTable([ ['Task', 'Tests'], ['No Tests', 0], ['Passed', passedTests], ['Failed',
-      failedTests], ['Skipped', skippedTests], ]); } // Optional: add a title and set the width and height of the chart
-      const options = { 'title':'', 'width':550, 'height':300, 'colors': ['#939992', '#39BD2F', '#F2230C', '#F2C00C'] };
-      // Display the chart inside the <div> element with id="piechart" const chart = new
-      google.visualization.PieChart(document.getElementById('graff')); chart.draw(data, options); } // processing and
-      adding test data to the template function addOneTest(category,testData = {}){ const { suite_title, title, steps,
-      message, files } = testData; // radio btn test's count function incrementCount(element) { let count =
-      parseInt(element.textContent); count++; element.textContent = count; } function addCountToRadio(page,category){
-      const menuTests = page.querySelector('.menuTests'); const all =
-      menuTests.querySelector('span[name="numTest"][lcategory="all"]'); incrementCount(all); const elemCat =
-      menuTests.querySelector('span[name="numTest"][lcategory="' + category + '"]'); if (elemCat) {
-      incrementCount(elemCat); } } // collapse - expand block function collapse_expand(top){ const block =
-      top.closest('.testitem'); const icon = top.querySelector('.testitem__icon'); const testitem__ico_right =
-      icon.querySelector('.testitem__ico_right'); const testitem__ico_down = icon.querySelector('.testitem__ico_down');
-      const body = block.querySelector('.testitem__body'); if(body.classList.contains('d-none')){
-      body.classList.remove('d-none'); testitem__ico_right.classList.add('d-none');
-      testitem__ico_down.classList.remove('d-none'); } else{ body.classList.add('d-none');
-      testitem__ico_down.classList.add('d-none'); testitem__ico_right.classList.remove('d-none'); } } function
-      menu(clone){ function removeAddActive(elem){ const menu = elem.closest('.testitem__menu'); const item =
-      menu.querySelectorAll('.testitem__mitem'); for(let i=0; i<item.length; i++){
-      item[i].classList.remove('testitem__mitem_active'); } elem.classList.add('testitem__mitem_active'); } function
-      show_content(elem){ removeAddActive(elem); const body = elem.closest('.testitem__body'); const content =
-      body.querySelector('.testitem__content'); const blocks = content.querySelectorAll('.testitem__case'); for(let i=0;
-      i<blocks.length; i++){ blocks[i].classList.add('d-none'); } const type = elem.getAttribute('type'); const
-      show_elem = content.querySelector('div[type="'+type+'"]'); show_elem.classList.remove('d-none'); } const menu =
-      clone.querySelector('.testitem__menu'); const item = menu.querySelectorAll('.testitem__mitem'); for(let i=0;
-      i<item.length; i++){ item[i].addEventListener('click',function(){ show_content(item[i]) }) } } const page =
-      document.querySelector('.report'); const wrapp = page.querySelector('.testWrapp'); const dummy =
-      wrapp.querySelector('div[name="testitem"][type="dummy"]'); const clone = dummy.cloneNode(true);
-      clone.setAttribute('type','clone'); clone.setAttribute('category',category); clone.classList.remove('d-none');
-      wrapp.append(clone); const testitem__name = clone.querySelector('.testitem__name'); const fullTestName =
-      suite_title ? suite_title + " - " + title : title; testitem__name.textContent = fullTestName; const body =
-      clone.querySelector('.testitem__body'); let content = body.querySelector('.testitem__content'); let content_error
-      = content.querySelector('div[type="steps"]').querySelector('span'); content_error.innerHTML = steps; let
-      content_status = content.querySelector('div[type="status"]').querySelector('span'); content_status.innerHTML =
-      category; let content_message = content.querySelector('div[type="message"]').querySelector('span');
-      content_message.innerHTML = message; let content_files =
-      content.querySelector('div[type="files"]').querySelector('span'); if (files.includes("This test has no files")) {
-      content_files.innerHTML = files; } if (!files.includes("This test has no files")) { const filesList =
-      document.createElement('ul'); content_files.innerHTML = ""; if (Array.isArray(files) && files.length > 0) {
-      files.forEach((file) => { const listItem = document.createElement('li'); const fileLink =
-      document.createElement('a'); fileLink.href = file.path; fileLink.target = '_blank'; fileLink.textContent =
-      file.path; listItem.appendChild(fileLink); filesList.appendChild(listItem); });
-      content_files.appendChild(filesList); } } const testitem__top = clone.querySelector('.testitem__top');
-      testitem__top.addEventListener("click", function(){ collapse_expand(testitem__top); }); menu(clone);
-      addCountToRadio(page,category); } function radioMenuStart(){ function showBlockForCat(input){ const page =
-      input.closest('.report'); const wrapp = page.querySelector('.testWrapp'); const clone =
-      wrapp.querySelectorAll('div[name="testitem"][type="clone"]'); for(let i=0; i<clone.length; i++){
-      clone[i].classList.add('d-none'); } const category = input.getAttribute('category'); if(category == 'all'){
-      for(let i=0; i<clone.length; i++){ clone[i].classList.remove('d-none'); } } else{ for(let i=0; i<clone.length;
-      i++){ if(clone[i].getAttribute('category') == category){ clone[i].classList.remove('d-none'); } } } } const page =
-      document.querySelector('.report'); const menuTests = page.querySelector('.menuTests'); const items =
-      menuTests.querySelectorAll('input[name="groupTest"]'); for(let i=0; i<items.length; i++){
-      items[i].addEventListener('change',function(){ showBlockForCat(items[i]) }) } } radioMenuStart(); function
-      search(){ function searchBlock(input){ const value = input.value; const page = input.closest('.report'); const
-      wrapp = page.querySelector('.testWrapp'); const clone =
-      wrapp.querySelectorAll('div[name="testitem"][type="clone"]'); for(let i=0; i<clone.length; i++){
-      clone[i].classList.add('d-none'); } for(let i=0; i<clone.length; i++){ let testitem__name =
-      clone[i].querySelector('.testitem__name'); let nameInBlock = testitem__name.textContent;
-      if(nameInBlock.includes(value)){ clone[i].classList.remove('d-none'); } } } const page =
-      document.querySelector('.report'); const inputSearch = page.querySelector('.inputSearch');
-      inputSearch.addEventListener('input',function(){ searchBlock(inputSearch) }) } search(); const executedTests =
-      {{{json tests}}}; for (let i = 0; i < executedTests.length; i++) { const status = executedTests[i].status;
-      addOneTest(status, executedTests[i]); }
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+        // Load google charts
+        google.charts.load('current', {'packages':['corechart']});
+        google.charts.setOnLoadCallback(drawChart);
+        
+        // Draw the chart and set the chart values
+        function drawChart() {
+            let data = {};
+            const passedTests = {{getTestsByStatus tests "PASSED"}};
+            const failedTests = {{getTestsByStatus tests "FAILED"}};
+            const skippedTests = {{getTestsByStatus tests "SKIPPED"}};
+
+            if (passedTests === 0 && failedTests === 0 && skippedTests === 0) {
+                data = google.visualization.arrayToDataTable([
+                    ['Task', 'Tests'],
+                    ['No Tests', 1]
+                ])
+            }
+            else {
+                data = google.visualization.arrayToDataTable([
+                    ['Task', 'Tests'],
+                    ['No Tests', 0],
+                    ['Passed', passedTests],
+                    ['Failed', failedTests],
+                    ['Skipped', skippedTests], 
+                ]);
+            }        
+            // Optional: add a title and set the width and height of the chart
+            const options = {
+                'title':'',
+                'width':550,
+                'height':300,
+                'colors': ['#939992', '#39BD2F', '#F2230C', '#F2C00C']
+            };        
+            // Display the chart inside the <div> element with id="piechart"
+            const chart = new google.visualization.PieChart(document.getElementById('graff'));
+            chart.draw(data, options);
+        }
+
+        // processing and adding test data to the template
+        function addOneTest(category,testData = {}){
+            const { suite_title, title, steps, message, files } = testData;
+            // collapse - expand block
+            function collapse_expand(top){
+                const block = top.closest('.testitem');
+                const icon = top.querySelector('.testitem__icon');
+                const testitem__ico_right = icon.querySelector('.testitem__ico_right');
+                const testitem__ico_down = icon.querySelector('.testitem__ico_down');
+                const body = block.querySelector('.testitem__body');
+
+                if(body.classList.contains('d-none')){
+                    body.classList.remove('d-none');
+                    testitem__ico_right.classList.add('d-none');
+                    testitem__ico_down.classList.remove('d-none');
+                }
+                else{
+                    body.classList.add('d-none');
+                    testitem__ico_down.classList.add('d-none');
+                    testitem__ico_right.classList.remove('d-none');
+                }
+            }
+
+            function menu(clone){
+
+                function removeAddActive(elem){
+                    const menu = elem.closest('.testitem__menu');
+                    const item = menu.querySelectorAll('.testitem__mitem');
+
+                    for(let i=0; i<item.length; i++){
+                        item[i].classList.remove('testitem__mitem_active');
+                    }
+                    elem.classList.add('testitem__mitem_active');
+                }
+
+                function show_content(elem){
+                    removeAddActive(elem);
+
+                    const body = elem.closest('.testitem__body');
+                    const content = body.querySelector('.testitem__content');
+                    const blocks = content.querySelectorAll('.testitem__case');
+
+                    for(let i=0; i<blocks.length; i++){
+                        blocks[i].classList.add('d-none');
+                    }
+
+                    const type = elem.getAttribute('type');
+                    const show_elem = content.querySelector('div[type="'+type+'"]');
+                    show_elem.classList.remove('d-none');
+                }
+
+                const menu = clone.querySelector('.testitem__menu');
+                const item = menu.querySelectorAll('.testitem__mitem');
+
+                for(let i=0; i<item.length; i++){
+                    item[i].addEventListener('click',function(){
+                        show_content(item[i])
+                    })
+                }
+            }
+
+            const page = document.querySelector('.report');
+            const wrapp = page.querySelector('.testWrapp');
+            const dummy = wrapp.querySelector('div[name="testitem"][type="dummy"]');
+            const clone = dummy.cloneNode(true);
+
+            clone.setAttribute('type','clone');
+            clone.setAttribute('category',category);
+            clone.classList.remove('d-none');
+            wrapp.append(clone);
+
+            const testitem__name = clone.querySelector('.testitem__name');
+
+            const fullTestName = suite_title ? suite_title + " - " + title : title;
+            testitem__name.innerHTML = fullTestName;
+
+            const body = clone.querySelector('.testitem__body');
+            let content = body.querySelector('.testitem__content');
+
+            let content_error = content.querySelector('div[type="steps"]').querySelector('span');
+            content_error.innerHTML = steps;
+
+            let content_status = content.querySelector('div[type="status"]').querySelector('span');
+            content_status.innerHTML = category;
+
+            let content_message = content.querySelector('div[type="message"]').querySelector('span');
+            content_message.innerHTML = message;
+
+            let content_files = content.querySelector('div[type="files"]').querySelector('span');
+
+            if (files.includes("This test has no files")) {
+                content_files.innerHTML = files;
+            }
+
+            if (!files.includes("This test has no files")) {
+                const filesList = document.createElement('ul');
+                content_files.innerHTML = "";
+
+                if (Array.isArray(files) && files.length > 0) {
+                    files.forEach((file) => {
+                    const listItem = document.createElement('li');
+                    const fileLink = document.createElement('a');
+                    fileLink.href = file.path;
+                    fileLink.target = '_blank';
+                    fileLink.innerHTML = file.path;
+
+                    listItem.appendChild(fileLink);
+                    filesList.appendChild(listItem);
+                });
+
+                content_files.appendChild(filesList);
+
+                }
+            }
+
+            const testitem__top = clone.querySelector('.testitem__top');
+
+            testitem__top.addEventListener("click", function(){
+                collapse_expand(testitem__top);
+            });
+
+            menu(clone);
+        }
+
+        // GET test data
+        const executedTests = {{{ pageStructure tests }}}; //TODO: rename pageStructure & executedTests
+        const allTests = executedTests['totalTests'];
+
+        if (allTests.length === 0) {
+            const searchEl = document.querySelector('.input-group');
+            const radioEl = document.querySelector('.menuTests');
+            searchEl.classList.add('d-none')
+            radioEl.classList.add('d-none')
+        } 
+        else {
+            function search(array, executedTests) {
+                const handleSearch = (input) => {
+                    const value = input.value.trim().toLowerCase();
+                    const select = document.querySelector('.form-select');
+                    const pagination = document.querySelectorAll('nav');
+
+                    if (value) {
+                        select.classList.add('d-none');
+                        pagination.forEach(item => item.classList.add('d-none'));
+                    } 
+                    else {
+                        select.classList.remove('d-none');
+                        pagination.forEach(item => item.classList.remove('d-none'));
+
+                        remove(array);
+
+                        const paginationCount = select.value;
+                        const category = select.getAttribute('status');
+                        
+                        if (executedTests[category][paginationCount][0]) {
+                            add(executedTests[category][paginationCount][0]);
+                        }
+                    }
+
+                    remove(array);
+
+                    const filteredTests = array.filter(test => test.title.toLowerCase().includes(value) || test.suite_title.toLowerCase().includes(value));
+
+                    const existingNoDataElement = document.querySelector('.noResults');
+
+                    if (filteredTests.length === 0) {
+                        if (!existingNoDataElement) {
+                            const testElement = document.createElement('div');
+                            testElement.classList.add('noData', 'noResults');
+                            testElement.innerHTML = 'NO SEARCH RESULTS';
+                            document.querySelector('.testWrapp').appendChild(testElement);
+                        }
+                    } 
+                    else {
+                        const paginationCount = select.value;
+                        const category = select.getAttribute('status');
+
+                        if (existingNoDataElement) existingNoDataElement.remove();
+
+                        if (executedTests[category][paginationCount][0]) {
+                            add(filteredTests);
+                            if (!value) {
+                                remove(filteredTests);
+                                add(executedTests[category][paginationCount][0]);
+                            }
+                        } else {
+                            if (value) add(filteredTests);
+                            else {
+                                if (!existingNoDataElement) {
+                                    select.classList.add('d-none');
+                                    const testElement = document.createElement('div');
+                                    testElement.classList.add('noData', 'noResults');
+                                    testElement.innerHTML = 'NO RESULTS';
+                                    document.querySelector('.testWrapp').appendChild(testElement);
+                                }
+                            }
+                        }
+                    }
+                };
+
+                const inputSearch = document.querySelector('.report .inputSearch');
+                inputSearch.addEventListener('input', () => handleSearch(inputSearch));
+            }
+
+            function radioMenuStart() {
+                function showBlockForCat(input) {
+                    const element = document.querySelector('.form-select')
+                    let category = 'all';
+
+                    remove(executedTests[category][0][0]);
+                    category = input.getAttribute('category');
+                    element.setAttribute('status', category);
+                    displayPagination(executedTests, element.value, category);
+
+                    if (executedTests[category][0][0]) {
+                        element.classList.remove('d-none');
+
+                        const existingNoDataElement = document.querySelector('.noResults');
+
+                        if (existingNoDataElement) {
+                            existingNoDataElement.remove();
+                        }
+
+                        add(executedTests[category][element.value][0]);
+                    } 
+                    else {
+                        const existingNoDataElement = document.querySelector('.noResults');
+                        element.classList.add('d-none');
+
+                        if (existingNoDataElement) {
+                            existingNoDataElement.remove();
+                        }
+
+                        const testElement = document.createElement('div');
+                        const testWrapp = document.querySelector('.testWrapp');
+
+                        testElement.classList.add('noData');
+                        testElement.classList.add('noResults');
+                        testElement.innerHTML = 'NO RESULTS';                        
+                        testWrapp.appendChild(testElement);
+                    }
+                }
+
+                const page = document.querySelector('.report');
+                const menuTests = page.querySelector('.menuTests');
+                const items = menuTests.querySelectorAll('input[name="groupTest"]');
+
+                for (let i = 0; i < items.length; i++) {
+                    items[i].addEventListener('change', function() {
+                        showBlockForCat(items[i])
+                    })
+                }
+            }
+            radioMenuStart();
+
+            search(allTests, executedTests);
+
+            const radioCount = (allTests) => {
+                const allRadio = document.querySelectorAll('.numTest');
+
+                allRadio.forEach((radio) => {
+                    const attribute = radio.getAttribute('lcategory');
+
+                    if (attribute === 'all') {
+                        radio.innerHTML = allTests.length;
+                    }
+
+                    if (attribute === 'passed') {
+                        const passedCount = allTests.filter(test => test.status === 'passed').length;
+                        radio.innerHTML = passedCount;
+                    }
+
+                    if (attribute === 'failed') {
+                        const passedCount = allTests.filter(test => test.status === 'failed').length;
+                        radio.innerHTML = passedCount;
+                    }
+
+                    if (attribute === 'skipped') {
+                        const passedCount = allTests.filter(test => test.status === 'skipped').length;
+                        radio.innerHTML = passedCount;
+                    }
+                });
+            }
+
+            radioCount(allTests);
+
+            function removeTest(category) {
+                const page = document.querySelector('.report');
+                const wrapp = page.querySelector('.testWrapp');
+                const clones = wrapp.querySelectorAll('div[name="testitem"][type="clone"]');
+
+                clones.forEach((clone) => {
+                    if (clone.getAttribute('category') === category) clone.remove();
+                });
+            }
+
+            const add = (array) => {
+                for (let i = 0; i < array.length; i++) {
+                    const status = array[i].status;
+                    addOneTest(status, array[i]);
+                }
+            }
+
+            const remove = (array) => {
+                for (let i = 0; i < array.length; i++) {
+                    const status = array[i].status;
+                    removeTest(status, array[i]);
+                }
+            }
+
+            add(executedTests['all'][0][0]);
+
+            const selectElement = document.querySelector('.form-select');
+
+            selectElement.setAttribute('status', 'all');
+            selectElement.addEventListener('change', function() {
+                let value = 0;
+                const category = selectElement.getAttribute('status');
+
+                remove(executedTests[category][value][0]);
+                value = parseInt(this.value);
+                add(executedTests[category][value][0]);
+
+                displayPagination(executedTests, value, category);
+            });
+
+            const displayPagination = (executedTests, index, category) => {
+                let totalPages = executedTests[category][index].length;
+                let currentPage = 1;
+
+                function createPagination() {
+                    const paginationContainers = document.querySelectorAll('.pagination');
+                    paginationContainers.forEach((paginationContainer) => {
+                        paginationContainer.innerHTML = '';
+
+                        let startPage = 1;
+                        let endPage = totalPages;
+                        if (totalPages > 10) {
+                            if (currentPage > 5) {
+                                startPage = currentPage - 1;
+                                endPage = currentPage + 1;
+                            } 
+                            else {
+                                endPage = 5;
+                            }
+                        }
+
+                        if (startPage > 1) {
+                            const startEllipsis = document.createElement('li');
+
+                            startEllipsis.classList.add('page-item');
+                            startEllipsis.innerHTML = '<a class="page-link" href="#pagination">...</a>';
+                            startEllipsis.addEventListener('click', () => {
+                                remove(executedTests[category][index][currentPage - 1]);
+                                currentPage = 1;
+                                add(executedTests[category][index][currentPage - 1]);
+                                createPagination();
+                            });
+
+                            paginationContainer.appendChild(startEllipsis);
+                        }
+
+                        for (let i = startPage; i <= endPage; i++) {
+                            if (i <= totalPages) {
+                                const pageButton = document.createElement('li');
+                                pageButton.classList.add('page-item');
+
+                                if (i === currentPage) {
+                                    pageButton.classList.add('active');
+                                }
+
+                                pageButton.innerHTML = `<a class="page-link" href="#pagination">${i}</a>`;
+                                pageButton.addEventListener('click', () => {
+                                    remove(executedTests[category][index][currentPage - 1]);
+                                    currentPage = i;
+                                    add(executedTests[category][index][currentPage - 1]);
+                                    createPagination();
+                                });
+
+                                paginationContainer.appendChild(pageButton);
+                            }
+                        }
+
+                        if (endPage < totalPages) {
+                            const endEllipsis = document.createElement('li');
+                            endEllipsis.classList.add('page-item');
+                            endEllipsis.innerHTML = '<a class="page-link" href="#pagination">...</a>';
+                            endEllipsis.addEventListener('click', () => {
+                                remove(executedTests[category][index][currentPage - 1]);
+                                currentPage = totalPages;
+                                add(executedTests[category][index][currentPage - 1]);
+                                createPagination();
+                            });
+
+                            paginationContainer.appendChild(endEllipsis);
+                        }
+
+                        if (currentPage > 1) {
+                            const prevButton = document.createElement('li');
+                            prevButton.classList.add('page-item');
+                            prevButton.innerHTML = '<a class="page-link" href="#pagination">Previous</a>';
+                            prevButton.addEventListener('click', () => {
+                                remove(executedTests[category][index][currentPage - 1]);
+                                currentPage--;
+                                add(executedTests[category][index][currentPage - 1]);
+                                createPagination();
+                            });
+
+                            paginationContainer.insertBefore(prevButton, paginationContainer.firstChild);
+                        }
+                        if (currentPage < totalPages) {
+                            const nextButton = document.createElement('li');
+
+                            nextButton.classList.add('page-item');
+                            nextButton.innerHTML = '<a class="page-link" href="#pagination">Next</a>';
+                            nextButton.addEventListener('click', () => {
+                                remove(executedTests[category][index][currentPage - 1]);
+                                currentPage++;
+                                add(executedTests[category][index][currentPage - 1]);
+                                createPagination();
+                            });
+
+                            paginationContainer.appendChild(nextButton);
+                        }
+                    });
+                }
+                createPagination();
+            }
+            displayPagination(executedTests, 0, 'all');
+        }
+
     </script>
   </body>
 </html>
