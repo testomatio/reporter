@@ -6,15 +6,13 @@ Testomat.io will not only create a run report but also collect all information a
 
 Tested Frameworks:
 
-* JUnit (JUnit)
-* Python (Pytest)
-* Minitest (Ruby)
-* PHPUnit (PHP)
-* NUnit (C#)
-
+- JUnit (JUnit)
+- Python (Pytest)
+- Minitest (Ruby)
+- PHPUnit (PHP)
+- NUnit (C#)
 
 To enable Testomatio Reporter install `@testomatio/reporter` package
-
 
 Use one of your favorite package managers:
 
@@ -38,17 +36,16 @@ Then import XML report into Testomat.io
 npx report-xml "{pattern}" --lang={lang}
 ```
 
-* `pattern` - is a glob pattern to match all XML files from report. For instance, `"test/report/**.xml"` or just `report.xml`
-* `--lang` option can be specified to identify source code of the project. Example: `--lang=Ruby` or `--lang=Java` or `--lang=Python`. Possible values:
-  * `c#`
-  * `java`
-  * `ruby`
-  * `python`
-  * `php`
-* `--java-tests` option is avaiable for Java projects, and can be set if path to tests is different then `src/test/java`. When this option is enable, `lang` option is automatically set to `java`
-* `--env-file <envfile>` option to load environment variables from .env file. Inside env file TESTOMATIO credentials like `TESTOMATIO` api key or [bucket config for artifats](./artifacts).
-* `--timelimit <time>` set a timer to silently kill a long-running reporter process due to network or other issues. For instance, use `--set-timeout=3` to stop process after 3 secs.
-
+- `pattern` - is a glob pattern to match all XML files from report. For instance, `"test/report/**.xml"` or just `report.xml`
+- `--lang` option can be specified to identify source code of the project. Example: `--lang=Ruby` or `--lang=Java` or `--lang=Python`. Possible values:
+  - `c#`
+  - `java`
+  - `ruby`
+  - `python`
+  - `php`
+- `--java-tests` option is avaiable for Java projects, and can be set if path to tests is different then `src/test/java`. When this option is enable, `lang` option is automatically set to `java`
+- `--env-file <envfile>` option to load environment variables from .env file. Inside env file TESTOMATIO credentials like `TESTOMATIO` api key or [bucket config for artifats](./artifacts).
+- `--timelimit <time>` set a timer to silently kill a long-running reporter process due to network or other issues. For instance, use `--set-timeout=3` to stop process after 3 secs.
 
 ## Pytest
 
@@ -118,10 +115,10 @@ To link test in source code with test in Testomat.io add Test ID as a comment:
     assertEquals(5, result);
 }
 ```
+
 In this case `@TT8acca9eb` is ID of existing test inside Testomat.io project
 
 Alternatively, if the code can't be imported by a reported, use output inside a test to print its ID:
-
 
 ```java
 public void testAddition() {
@@ -209,4 +206,3 @@ Generate PHPUnit XML and import it
 ```
 TESTOMATIO={API_KEY} npx report-xml "report.xml" --lang php
 ```
-

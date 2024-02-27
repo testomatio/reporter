@@ -22,7 +22,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CreateRunData"
+              $ref: '#/components/schemas/CreateRunData'
       responses:
         200:
           description: OK
@@ -59,7 +59,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UpdateRunData"
+              $ref: '#/components/schemas/UpdateRunData'
       responses:
         '200':
           description: OK
@@ -86,7 +86,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/TestData"
+              $ref: '#/components/schemas/TestData'
       responses:
         '200':
           description: OK
@@ -104,11 +104,11 @@ components:
       enum:
         - passed
         - failed
-        - skipped  
+        - skipped
     RunStatusEvent:
-      description: 
-        The final status of the run. Suffix _parallel and marks that only one part of this run has finished. To finish parallel run, send additional request with status=finish. 
-        Set status explicitly with `pass` or `fail` statuses or use `finish` status to calculate final status from test run results. 
+      description:
+        The final status of the run. Suffix _parallel and marks that only one part of this run has finished. To finish parallel run, send additional request with status=finish.
+        Set status explicitly with `pass` or `fail` statuses or use `finish` status to calculate final status from test run results.
       type: string
       enum:
         - pass
@@ -142,7 +142,7 @@ components:
       type: object
       properties:
         status_event:
-          $ref: "#/components/schemas/RunStatusEvent"
+          $ref: '#/components/schemas/RunStatusEvent'
           description: The final status of the run. Suffix _parallel and marks that only one part of this run has finished.
         create_tests:
           type: boolean
@@ -162,13 +162,13 @@ components:
         tests:
           type: array
           items:
-            $ref: "#/components/schemas/TestData"
-          description: The details of each test        
+            $ref: '#/components/schemas/TestData'
+          description: The details of each test
     TestData:
       type: object
       properties:
         status:
-          $ref: "#/components/schemas/TestStatus"
+          $ref: '#/components/schemas/TestStatus'
           description: The status of the test
         title:
           type: string

@@ -6,12 +6,26 @@ Testomat.io Pipe sends data to [Testomat.io Application](https://app.testomat.io
 
 **🔌 To enable Testomat.io pipe set `TESTOMATIO` environment variable with API key provided by Testomatio.**
 
-
 ```
 TESTOMATIO={API_KEY} <actual run command>
 ```
 
 Here are some possible use cases where you can use additional configuration on reporter:
+
+- [Create Unmatched Tests](#create-unmatched-tests)
+- [Add Report to Run by ID](#add-report-to-run-by-id)
+- [Do Not Finalize Run](#do-not-finalize-run)
+- [Setting Report Title](#setting-report-title)
+- [Reporting Parallel Execution to To Same Run](#reporting-parallel-execution-to-to-same-run)
+- [Adding Report to RunGroup](#adding-report-to-rungroup)
+- [Adding Environments to Run](#adding-environments-to-run)
+- [Starting an Empty Run](#starting-an-empty-run)
+- [Manually Finishing Run](#manually-finishing-run)
+- [Setting Build URL](#setting-build-url)
+- [Publish Run](#publish-run)
+- [Assign Label To Run](#assign-label-to-run)
+- [Create Jira Issue for Run](#create-jira-issue-for-run)
+- [Filter Tests](#filter-tests)
 
 ### Create Unmatched Tests
 
@@ -33,7 +47,7 @@ TESTOMATIO={API_KEY} TESTOMATIO_RUN={RUN_ID} <actual run command>
 
 ### Do Not Finalize Run
 
-If multiple reports are added to the same run, each of them should not finalize the run. 
+If multiple reports are added to the same run, each of them should not finalize the run.
 In this case use `TESTOMATIO_PROCEED=1` environment variable, so the Run will be shown as `Running`
 
 ```
@@ -63,7 +77,6 @@ TESTOMATIO={API_KEY} TESTOMATIO_TITLE="report for commit ${GIT_COMMIT}" TESTOMAT
 ```
 
 We recommend using a commit hash as a title to create a new Run. In this case we ensure that run title is unique and will be the same for all parallel jobs running exactly for this commit.
-
 
 ### Adding Report to RunGroup
 
@@ -105,11 +118,11 @@ TESTOMATIO={API_KEY} TESTOMATIO_RUN={RUN_ID} npx start-test-run --finish
 
 When running on CI reporter tries to detect automatically the URL of the current build. This URL will be set to Run report. Reporter automatically detects build URL for following CI services:
 
-* GitHub Actions
-* Azure Devops
-* Jenkins
-* CircleCi
-* Gitlab CI
+- GitHub Actions
+- Azure Devops
+- Jenkins
+- CircleCi
+- Gitlab CI
 
 If you are using a different CI or you want to override build url run tests with `BUILD_URL` environment variable:
 
@@ -216,6 +229,7 @@ _Command execution example_
 ```bash
 TESTOMATIO={API_KEY} npx start-test-run -c 'actual run command' --filter 'testomatio:label=new-label-test'
 ```
+
 OR
 
 ```bash
@@ -243,6 +257,7 @@ _Command execution example_
 ```bash
 TESTOMATIO={API_KEY} npx start-test-run -c 'actual run command' --filter 'testomatio:label=severity-f1b11:🔥 Major'
 ```
+
 OR
 
 ```bash
@@ -280,3 +295,19 @@ TESTOMATIO={API_KEY} npx start-test-run -c 'npx playwright test' --filter 'testo
 > It's important to note that the provided filter value must match exactly the corresponding tag name, plan ID, label, or JIRA ticket for the desired tests
 
 Please note, that this functionality allows you to easily filter and execute tests based on specific criteria, enhancing your testing experience.
+
+### Exclude Tests from Report by Glob Pattern
+
+To exclude tests from the report by [glob pattern](https://www.npmjs.com/package/glob) use `TESTOMATIO_EXCLUDE_FILES_FROM_REPORT_GLOB_PATTERN` environment variable (see environment variables [list](../env-variables.md)):
+
+```bash
+TESTOMATIO={API_KEY} TESTOMATIO_EXCLUDE_FILES_FROM_REPORT_GLOB_PATTERN="**/*.setup.ts" <actual run command>
+```
+
+You can use multiple patterns separated by `;`:
+
+```bash
+TESTOMATIO={API_KEY} TESTOMATIO_EXCLUDE_FILES_FROM_REPORT_GLOB_PATTERN="**/*.setup.ts;tests/*.auth.js" <actual run command>
+```
+
+(Any files in `node_modules` will be ignored).

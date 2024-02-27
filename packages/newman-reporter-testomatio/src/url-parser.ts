@@ -3,15 +3,15 @@ but later easier ways were found
 for now this functionality is not used but may be used for later (e.g. for test code parsing)
 so decided to leave*/
 
-import { AnyObject, KeyValueObject } from "./types";
+import { AnyObject, KeyValueObject } from './types';
 
 export type URL = {
-  protocol: string,
-  path: string[],
-  host: string[],
-  query: KeyValueObject[],
-  variable: { [key: string]: any }[],
-}
+  protocol: string;
+  path: string[];
+  host: string[];
+  query: KeyValueObject[];
+  variable: { [key: string]: any }[];
+};
 
 function stringifyQueryParams(queryParams: KeyValueObject[], vars: AnyObject): string {
   queryParams = JSON.parse(JSON.stringify(queryParams));
@@ -29,7 +29,7 @@ function stringifyQueryParams(queryParams: KeyValueObject[], vars: AnyObject): s
       paramValue = vars[varName];
     }
 
-    stringifiedQueryParams += (param.key + '=' + paramValue);
+    stringifiedQueryParams += param.key + '=' + paramValue;
   }
   return stringifiedQueryParams;
 }
@@ -54,5 +54,5 @@ export function stringifyURL(url: URL, vars: AnyObject): string {
       path.push(vars[varName]);
     } else path.push(pathItem);
   }
-  return `${protocol}${host.join('.')}/${path.join('/')}${stringifyQueryParams(url.query, vars)}`
+  return `${protocol}${host.join('.')}/${path.join('/')}${stringifyQueryParams(url.query, vars)}`;
 }

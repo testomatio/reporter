@@ -1,6 +1,6 @@
 {
   "name": "@testomatio/reporter",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Testomatio Reporter Client",
   "main": "./lib/reporter.js",
   "typings": "typings/index.d.ts",
@@ -12,7 +12,8 @@
     "@aws-sdk/lib-storage": "^3.279.0",
     "@octokit/rest": "^19.0.5",
     "aws-sdk": "^2.1072.0",
-    "axios": "^0.25.0",
+    "axios": "^1.6.2",
+    "axios-retry": "^3.9.1",
     "callsite-record": "^4.1.4",
     "chalk": "^4.1.0",
     "commander": "^4.1.1",
@@ -30,8 +31,8 @@
     "lodash.memoize": "^4.1.2",
     "lodash.merge": "^4.6.2",
     "minimatch": "^9.0.3",
-    "uuid": "^9.0.0",
-    "promise-retry": "^2.0.1"
+    "promise-retry": "^2.0.1",
+    "uuid": "^9.0.0"
   },
   "files": [
     "bin",
@@ -40,9 +41,11 @@
   ],
   "scripts": {
     "clear-exportdir": "rm -rf export/",
-    "pretty": "prettier --write .",
+    "pretty": "prettier --check .",
+    "pretty:fix": "prettier --write .",
     "lint": "eslint lib",
     "lint:fix": "eslint lib --fix",
+    "format": "npm run lint:fix && npm run pretty:fix",
     "test": "mocha tests/**",
     "init": "cd ./tests/adapter/examples/cucumber && npm i",
     "test:adapter": "mocha './tests/adapter/index.test.js'",
@@ -52,7 +55,7 @@
     "test:adapter:jasmine:example": "./tests/adapter/examples/jasmine/passReporterOpts.sh && jasmine './tests/adapter/examples/jasmine/index.test.js' --reporter=./../../../lib/adapter/jasmine.js",
     "test:adapter:codecept:example": "codeceptjs run --config='./tests/adapter/examples/codecept/codecept.conf.js'",
     "test:adapter:cucumber:example": "cd ./tests/adapter/examples/cucumber && npx cucumber-js",
-    "test:storage": "npx mocha tests-storage/artifact-storage.test.js && npx mocha tests-storage/data-storage.test.js && TESTOMATIO_INTERCEPT_CONSOLE_LOGS=true npx mocha tests-storage/logger.test.js && npx mocha tests-storage/reporter-functions.test.js"
+    "test:storage": "npx mocha tests-storage/artifact-storage.test.js && npx mocha tests-storage/data-storage.test.js && TESTOMATIO_INTERCEPT_CONSOLE_LOGS=true npx mocha tests-storage/logger.test.js && npx mocha tests-storage/logger-2.test.js && npx mocha tests-storage/reporter-functions.test.js"
   },
   "devDependencies": {
     "@cucumber/cucumber": "^9.3.0",

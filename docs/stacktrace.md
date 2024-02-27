@@ -26,7 +26,7 @@ This stack trace will not include any lines from `node_modules` or from NodeJS i
 
 ### Configuration
 
-* `TESTOMATIO_STACK_IGNORE` - allows to ignore some files or paths from a stack trace. This might be useful if you use custom assertion libraries or other files you would like to not be printed as source of the exception. `TESTOMATIO_STACK_IGNORE` environment variable accepts file name as well `glob` pattern.
+- `TESTOMATIO_STACK_IGNORE` - allows to ignore some files or paths from a stack trace. This might be useful if you use custom assertion libraries or other files you would like to not be printed as source of the exception. `TESTOMATIO_STACK_IGNORE` environment variable accepts file name as well `glob` pattern.
 
 Example:
 
@@ -35,4 +35,3 @@ Reject all js files from `tests/support` dir:
 ```
 TESTOMATIO_STACK_IGNORE="tests/support/**.js" <actual-run-command>
 ```
-
