@@ -654,7 +654,7 @@
                 content_files = content.querySelector('div[type="files"]').querySelector('span');
 
             content_error.innerHTML = steps;
-            content_status.innerHTML = category;
+            content_status.innerHTML = category.toUpperCase();
             content_message.innerHTML = message;
             //if no file - empty message, else - files
             (files.includes("This test has no files"))
@@ -688,10 +688,11 @@
 
         function createFileItemContainer(file) {
             let fileIcon;
-            const fileName = createFileName(file),
-                fileItemContainer = document.createElement('div');
 
-            const fileExtension = file.path.split('.').pop().toLowerCase();
+            const filepath = file?.path || file;
+            const fileName = createFileName(file);
+            const fileItemContainer = document.createElement('div');
+            const fileExtension = filepath.split('.').pop().toLowerCase();
 
             fileItemContainer.classList.add('d-flex', 'flex-column', 'align-items-center', 'mr-3');
 
@@ -782,22 +783,26 @@
         }
 
         function createImagePreview(file) {
+            //TODO: consider using "../${file}", maybe we should get full paths when generating artifacts in Mocha!
+            const filepath = file?.path || `../${file}`;
             const imagePreview = document.createElement('img');
             // component styles
-            imagePreview.src = file.path;
+            imagePreview.src = filepath;
             imagePreview.alt = 'Image Preview';
-            imagePreview.style.maxWidth = '150px';
-            imagePreview.style.height = '200px';
+            imagePreview.style.maxWidth = '200px';
+            imagePreview.style.height = '150px';
             imagePreview.style.cursor = 'pointer';
 
             imagePreview.addEventListener('click', () => {
-                window.open(file.path, '_blank');
+                window.open(filepath, '_blank');
             });
 
             return imagePreview;
         }
 
         function createFileIcon(file, svg) {
+            //TODO: consider using "../${file}", maybe we should get full paths when generating artifacts in Mocha!
+            const filepath = file?.path || `../${file}`;
             const fileIcon = document.createElement('div');
             // component styles
             fileIcon.innerHTML = svg;
@@ -806,23 +811,25 @@
             fileIcon.style.cursor = 'pointer';
 
             fileIcon.addEventListener('click', () => {
-                window.open(file.path, '_blank');
+                window.open(filepath, '_blank');
             });
 
             return fileIcon;
         }
 
         function createFileName(file) {
+            //TODO: consider using "../${file}", maybe we should get full paths when generating artifacts in Mocha!
+            const filepath = file?.path || `../${file}`;
             const fileName = document.createElement('div');
             // component styles
             fileName.style.fontSize = '14px';
             fileName.style.marginTop = '10px';
             fileName.style.cursor = 'pointer';
 
-            fileName.textContent = file.path.split('/').pop().split('.').slice(0, -1).join('.');
+            fileName.textContent = filepath.split('/').pop();
 
             fileName.addEventListener('click', () => {
-                window.open(file.path, '_blank');
+                window.open(filepath, '_blank');
             });
 
             return fileName;
