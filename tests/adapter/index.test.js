@@ -114,12 +114,23 @@ describe('Adapters', () => {
 
           for (const req of reqs) {
             assert.isObject(req.body);
-            assert.includeMembers(Object.keys(req.body), expectedRequiredBodyKeys);
-
             assert.strictEqual(req.body.api_key, TESTOMATIO);
-            assert.isString(req.body.status);
-            assert.isString(req.body.title);
-            assert.isNumber(req.body.run_time);
+            if (req.body.tests) {
+              // add array of tests
+              assert.isArray(req.body.tests);
+              for (const test of req.body.tests) {
+                assert.includeMembers(Object.keys(test), expectedRequiredBodyKeys);
+                assert.isString(test.status);
+                assert.isString(test.title);
+                assert.isNumber(test.run_time);
+              }
+            } else {
+              // add single test
+              assert.includeMembers(Object.keys(req.body), expectedRequiredBodyKeys);
+              assert.isString(req.body.status);
+              assert.isString(req.body.title);
+              assert.isNumber(req.body.run_time);
+            }
           }
         });
       });
