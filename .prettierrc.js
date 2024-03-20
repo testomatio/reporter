@@ -8,6 +8,6 @@ module.exports = {
   trailingComma: 'all',
   bracketSpacing: true,
   arrowParens: 'avoid',
-  // endOfLine: 'lf',
+  endOfLine: 'lf',
   printWidth: 120,
 };
