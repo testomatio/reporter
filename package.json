@@ -41,7 +41,7 @@
   ],
   "scripts": {
     "clear-exportdir": "rm -rf export/",
-    "pretty": "npx prettier --check --debug-check --list-different .",
+    "pretty": "npx prettier --debug-check --list-different .",
     "pretty:fix": "prettier --write .",
     "lint": "eslint lib",
     "lint:fix": "eslint lib --fix",
