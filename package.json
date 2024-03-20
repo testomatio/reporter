@@ -41,7 +41,7 @@
   ],
   "scripts": {
     "clear-exportdir": "rm -rf export/",
-    "pretty": "prettier --check .",
+    "pretty": "npx prettier --debug-check --check .",
     "pretty:fix": "prettier --write .",
     "lint": "eslint lib",
     "lint:fix": "eslint lib --fix",
@@ -74,7 +74,7 @@
     "mocha": "^9.2.0",
     "mock-http-server": "^1.4.5",
     "pino": "^8.15.0",
-    "prettier": "2.5.1",
+    "prettier": "^3.2.5",
     "puppeteer": "^13.1.2"
   },
   "bin": {
