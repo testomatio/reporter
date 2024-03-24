@@ -7,6 +7,9 @@
       content='width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0'
     />
     <meta http-equiv='X-UA-Compatible' content='ie=edge' />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
     <link
       href='https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css'
       rel='stylesheet'
@@ -29,6 +32,7 @@
         body {
             padding: 0;
             margin: 0;
+            font-family: "Inter", sans-serif;
         }
 
         header,
@@ -102,6 +106,9 @@
             padding: 5px 35px;
             margin-right: 15px;
         }
+        .btn {
+            box-shadow:none!important;
+        }
         .btn-report {
             text-decoration: none;
             font-weight: 600;
@@ -150,10 +157,12 @@
             color: #A0CAFF!important;
             background: #FFF!important;
             border: 1px solid #A0CAFF!important;
+            font-weight:700!important;
         }
         .btn-all:hover span,
         .btn-all:focus span {
             color: #A0CAFF!important;
+            font-weight:700!important;
         }
         .allTest:checked + .btn-all span {
             color: #A0CAFF!important;
@@ -162,60 +171,73 @@
             color:#A0CAFF!important;
             background: #FFF!important;
             border: 1px solid #A0CAFF!important;
+            font-weight:700!important;
         }
         .btn-passed:hover,
         .btn-passed:focus {
             color: #75B583!important;
             border: 1px solid #75B583!important;
             background: #FFF!important;
+            font-weight:700!important;
         }
         .btn-passed:hover span,
         .btn-passed:focus span {
             color: #75B583!important;
+            font-weight:700!important;
         }
         .passedTest:checked + .btn-passed span {
             color: #75B583!important;
+            font-weight:700!important;
         }
         .passedTest:checked + .btn-passed {
             color: #75B583!important;
             border: 1px solid #75B583!important;
             background: #FFF!important;
+            font-weight:700!important;
         }
         .btn-failed:hover,
         .btn-failed:focus {
             color: #FF6363!important;
             border: 1px solid #FF6363!important;
             background: #FFF!important;
+            font-weight:700!important;
         }
         .btn-failed:hover span,
         .btn-failed:focus span {
             color: #FF6363!important;
+            font-weight:700!important;
         }
         .failedTest:checked + .btn-failed span {
             color: #FF6363!important;
+            font-weight:700!important;
         }
         .failedTest:checked + .btn-failed {
             color: #FF6363!important;
             border: 1px solid #FF6363!important;
             background: #FFF!important;
+            font-weight:700!important;
         }
         .btn-skipped:hover,
         .btn-skipped:focus {
             color: #FFC350!important;
             border: 1px solid #FFC350!important;
             background: #FFF!important;
+            font-weight:700!important;
         }
         .btn-skipped:hover span,
         .btn-skipped:focus span {
             color: #FFC350!important;
+            font-weight:700!important;
         }
         .skippedTest:checked + .btn-skipped span {
             color: #FFC350!important;
+            font-weight:700!important;
         }
         .skippedTest:checked + .btn-skipped {
             color: #FFC350!important;
             border: 1px solid #FFC350!important;
             background: #FFF!important;
+            font-weight:700!important;
         }
         .passed {
             color: #75B583;
@@ -223,8 +245,11 @@
         .failed {
             color: #FF6363;
         }
+        .skipped {
+            color: #FFC350;
+        }
         .testWrapp {
-            margin-top: 57px;
+            margin-top: 45px;
         }
         .fa-arrow-right {
             display: none!important;
@@ -241,7 +266,7 @@
             margin-bottom: 20px;
         }
         .title p {
-            color: black;
+            color: #262523;
             font-size: 15px;
             font-weight: 500;
             margin-right: 5px;
@@ -254,8 +279,9 @@
             flex-direction: column;
         }
         .statdesc__row {
-            padding: 15px 10px;
+            padding: 15px 25px;
             display: flex;
+            border-radius:5px;
         }
         .statdesc__row_first {
             width: 150px;
@@ -263,8 +289,10 @@
         .statdesc__row:nth-child(odd) {
             background: #F6FAFF;
         }
-        .statdesc__row p {
-            font-weight: bold;
+        .statdesc__row p,
+        .statdesc__row span {
+            font-weight: semi-bold;
+            font-size: 11px;
         }
         .statdesc {
             width: 100%;
@@ -338,7 +366,7 @@
             width: 100%;
             display: flex;
             background: #F6FAFF;
-            padding: 15px 13px;
+            padding: 15px 13px 15px 30px;
             border-radius: 10px;
             cursor: pointer;
             justify-content: space-between;
@@ -360,27 +388,29 @@
         }
         .testitem__body {
             display: flex;
-            background-color: #F6FAFF;
+            background-color: #FFF;
             margin-top: 10px;
-            border: 1px solid grey;
-            border-top: 1px solid grey;
         }
         .testitem__menu {
             display: flex;
             flex-direction: column;
-            border-right: 1px solid grey;
             padding: 21px 51px 21px 51px;
         }
         .testitem__mitem {
-            margin-bottom: 10px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
-            color: #565656;
-            text-alight: center;
+            color: #808080;
+            width: 170px;
+            height: 65px;
+            text-align: center;
+            padding-top: 20px;
+            padding-bottom: 20px;
         }
         .testitem__mitem_active {
-            color: #AA9F9F;
+            background: #F6FAFF;
+            color: #4D4C4C;
+            font-weight: 700;
         }
         .testitem__case {
             display: flex;
@@ -410,6 +440,8 @@
             color: black;
             background-color: #F6FAFF;
             padding: 7px 19px;
+            font-weight: 600;
+            border-radius: 3px;
         }
         .page-link:hover {
             color: black;
@@ -422,7 +454,7 @@
             box-shadow: 0 0 0 0.25rem rgb(67 71 78 / 25%);
         }
         .page-item:not(:first-child) {
-            margin-left:15px;
+            margin-left: 15px;
         }
         .page-item.active .page-link {
             background: #F6FAFF;
@@ -434,9 +466,11 @@
             align-items: center;
             flex-direction: column;
             justify-content: center;
+            margin-bottom: 150px;
         }
         .noDataText {
-            font-size: 54px;
+            font-weight: 600;
+            font-size: 20px;
             color: #A1A1A1;
         }
     </style>
@@ -538,16 +572,16 @@
             <!-- Schedule and information -->
             <div class='row level_4'>
                 <div class='col-12'>
-                    <div class='input-group mt-5' style='position:relative'>
-                        <div class='input-group-prepend' style='position:absolute;z-index:1;border:none'>
-                            <span class='hover-search input-group-text' id='basic-addon1' style='height:54px;background:#F6FAFF;border-right:none;border-left:none'>
-                                <i class='fa-solid fa-magnifying-glass' style='color:#474646';font-size:21px></i>
+                    <div class='input-group' style='position:relative;width:100%;margin-top:45px'>
+                        <div class='input-group-prepend' style='position:absolute;z-index:1;border:none;left:20px'>
+                            <span class='hover-search input-group-text' id='basic-addon1' style='height:54px;background:#F6FAFF;border:none'>
+                                <i class='fa-solid fa-magnifying-glass' style='color:#474646;font-size:30px'></i>
                                 <span style='padding-left:15px;color:#474646;font-size:15px;font-weight:500;'>Search</span>
                             </span>
                         </div>
                         <input
                             type='text'
-                            style='height:54px;background:#F6FAFF'
+                            style='height:54px;background:#F6FAFF;border:1px solid #474646;font-weight:600;font-size:15px;'
                             class='form-control inputSearch'
                             aria-label='Search'
                             aria-describedby='basic-addon1'
@@ -569,8 +603,8 @@
                             checked
                         />
 
-                        <label class='btn btn-all' for='allTest' style='margin-right:9px;background:#A0CAFF;color:#fff;border:none;padding:7px 11px'>All
-                            <span style='color:#fff' class='numTest numAll' name='numTest' lcategory='all'>0</span>
+                        <label class='btn btn-all' for='allTest' style='margin-right:8px;background:#A0CAFF;color:#fff;border:none;text-align:center;border-radius:3px;font-weight:600;font-size:12px;width:83px;height:37px'>All
+                            <span style='color:#fff;font-weight:600;font-size:12px;' class='numTest numAll' name='numTest' lcategory='all'>0</span>
                         </label>
 
                         <input
@@ -582,8 +616,8 @@
                             category='passed'
                         />
 
-                        <label class='btn btn-passed' for='passedTest' style='background:#75B583;color:#fff;border:none;padding:7px 11px'>Passed
-                            <span style='color:#fff' class='numTest numPassed' name='numTest' lcategory='passed'>0</span>
+                        <label class='btn btn-passed' for='passedTest' style='background:#75B583;color:#fff;border:none;text-align:center;border-radius:3px;font-weight:600;font-size:12px;width:83px;height:37px'>Passed
+                            <span style='color:#fff;font-weight:600;font-size:12px;' class='numTest numPassed' name='numTest' lcategory='passed'>0</span>
                         </label>
 
                         <input
@@ -595,8 +629,8 @@
                             category='failed'
                         />
 
-                        <label class='btn btn-failed' for='failedTest' style='margin-left:9px;background:#FF6363;color:#fff;border:none;padding:7px 11px'>Failed
-                            <span style='color:#fff' class='numTest numFailed' name='numTest' lcategory='failed'>0</span>
+                        <label class='btn btn-failed' for='failedTest' style='margin-left:9px;background:#FF6363;color:#fff;border:none;text-align:center;border-radius:3px;font-weight:600;font-size:12px;width:83px;height:37px'>Failed
+                            <span style='color:#fff;font-weight:600;font-size:12px;' class='numTest numFailed' name='numTest' lcategory='failed'>0</span>
                         </label>
 
                         <input
@@ -608,8 +642,8 @@
                             category='skipped'
                         />
                         
-                        <label class='btn btn-skipped' for='skippedTest' style='margin-left:9px;background:#FFC350;color:#fff;border:none;padding:7px 11px'>Skipped
-                            <span style='color:#fff' class='numTest numSkipped' name='numTest' lcategory='skipped'>0</span>
+                        <label class='btn btn-skipped' for='skippedTest' style='margin-left:9px;background:#FFC350;color:#fff;border:none;text-align:center;border-radius:3px;font-weight:600;font-size:12px;width:83px;height:37px'>Skipped
+                            <span style='color:#fff;font-weight:600;font-size:12px;' class='numTest numSkipped' name='numTest' lcategory='skipped'>0</span>
                         </label>
                     </div>
                 </div>
@@ -619,7 +653,7 @@
                 <div class="col-12">
                     {{#if tests.length}}
                     <!-- TOP pagination & select components -->
-                    <div class="mt-5 mb-3 d-flex justify-content-between" style="height: 40px;">
+                    <div class="d-flex justify-content-between" style="height: 40px;margin-top:45px">
                         <nav id="pagination">
                             <ul class="pagination">
                             </ul>
@@ -639,7 +673,7 @@
                                         <p class="testitem__name">Test</p>
                                     </div>
 
-                                    <svg class='folderSvg' width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <svg class='folderSvg' width="17" height="17" style='margin-right:20px;margin-top: 3px' viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M16.6161 1.64526H9.84355C9.62419 1.64526 9.43226 1.64526 9.2129 1.9743L8.85645 2.46784H0.85C0.383871 2.46784 0 2.90655 0 3.37268V14.1485C0 14.6146 0.383871 15.0807 0.85 15.0807H16.15C16.6161 15.0807 17 14.6146 17 14.1485V5.81301V3.4001V1.9743C17 1.78236 16.8355 1.64526 16.6161 1.64526Z" fill="#6D6D6D"/>
                                         <path d="M16.6435 12.7227C16.8629 12.5582 17 12.3114 17 12.0372V5.81301V3.4001V1.9743C17 1.78236 16.8355 1.64526 16.6161 1.64526H9.84355C9.62419 1.64526 9.43226 1.64526 9.2129 1.9743L8.85645 2.46784H0.85C0.41129 2.46784 0.0548387 2.8243 0 3.23559L16.6435 12.7227Z" fill="#565656"/>
                                         <path d="M0.575806 3.56445L16.6435 12.6677C16.8629 12.5032 17 12.3112 17 12.037V5.81284V4.27736L15.9581 3.56445H0.575806Z" fill="#474646"/>
@@ -703,7 +737,7 @@
                     <nav class="mt-2">
                         <ul class="pagination">
                         </ul>
-                    </nav> 
+                    </nav>
                     {{else}}
                         <!-- No tests found section -->
                         {{ emptyDataComponent }}
@@ -718,7 +752,7 @@
         // Load google charts
         google.charts.load('current', {'packages':['corechart']});
         google.charts.setOnLoadCallback(drawChart);
-        
+
         // Draw the chart and set the chart values
         function drawChart() {
             let data = {};
@@ -738,16 +772,17 @@
                     ['No Tests', 0],
                     ['Passed', passedTests],
                     ['Failed', failedTests],
-                    ['Skipped', skippedTests], 
+                    ['Skipped', skippedTests],
                 ]);
-            }        
+            }    
             // Optional: add a title and set the width and height of the chart
             const options = {
-                'title':'',
-                'width':550,
-                'height':300,
+                'title': '',
+                'width': 550,
+                'height': 300,
                 'colors': ['#A9C7FF', '#75B583', '#FF6363', '#FFC350'],
-                'legend': 'bottom'
+                'legend': 'bottom',
+                'is3D': true
             };        
             // Display the chart inside the <div> element with id="piechart"
             const chart = new google.visualization.PieChart(document.getElementById('graff'));
@@ -791,6 +826,9 @@
 
             if(category === 'passed') {
                 image.classList.add('passed');
+            }
+            else if(category === 'skipped') {
+                image.classList.add('skipped');
             }
             else {
                 image.classList.add('failed');
@@ -857,7 +895,7 @@
                     fileIcon = createImagePreview(file);
                     break;
                 case 'zip':
-                    const svgZipCode = 
+                    const svgZipCode =
                         `<svg width="95" height="94" viewBox="0 0 95 94" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                          <rect x="0.5" width="94" height="94" fill="url(#pattern0)"/>
                          <defs>
@@ -873,7 +911,7 @@
                 case 'avi':
                 case 'mov':
                 case 'webm':
-                    const svgVideoCode = 
+                    const svgVideoCode =
                         `<svg width="95" height="95" viewBox="0 0 95 95" fill="none" xmlns="http://www.w3.org/2000/svg">
                          <g clip-path="url(#clip0_212_104)">
                          <path d="M35.75 27.4702V67.5298L65.125 47.5L35.75 27.4702ZM39.6667 34.8844L58.1729 47.5L39.6667 60.1156V34.8844ZM4.41666 12.25V82.75H90.5833V12.25H4.41666ZM86.6667 78.8333H8.33333V16.1667H86.6667V78.8333Z" fill="#474646"/>
@@ -887,7 +925,7 @@
                     fileIcon = createFileIcon(file, svgVideoCode);
                     break;
                 default:
-                    const svgFileCode = 
+                    const svgFileCode =
                         `<svg width="95" height="94" viewBox="0 0 95 94" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                          <rect x="0.5" width="94" height="94" fill="url(#pattern0)"/>
                          <defs>
@@ -1071,7 +1109,7 @@
                             testElement.classList.add('noData', 'noResults');
                             testElement.innerHTML = 
                             `<div class='noData'>
-                                <svg width="350" height="350" viewBox="0 0 370 370" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <svg width="185" height="185" viewBox="0 0 370 370" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <g clip-path="url(#clip0_215_375)">
                                 <path opacity="0.1" d="M185 369.998C287.173 369.998 370.001 287.171 370.001 184.999C370.001 82.8268 287.173 0 185 0C82.8274 0 0 82.8268 0 184.999C0 287.171 82.8274 369.998 185 369.998Z" fill="#A9C7FF"/>
                                 <path d="M104.96 129.507C105.629 128.757 106.439 128.147 107.344 127.71C108.249 127.273 109.231 127.019 110.234 126.961C111.237 126.904 112.242 127.045 113.191 127.376C114.14 127.707 115.014 128.221 115.764 128.89L140.183 150.67L129.997 162.091L105.577 140.311C104.827 139.642 104.216 138.832 103.779 137.927C103.342 137.022 103.088 136.04 103.031 135.037C102.974 134.034 103.114 133.029 103.446 132.08C103.777 131.132 104.291 130.257 104.96 129.507Z" fill="white"/>
