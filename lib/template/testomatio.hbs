@@ -58,8 +58,8 @@
         }
         .level_1 {
             margin-bottom: 20px;
-            border-bottom: 1px solid grey;
-            padding-bottom: 10px;
+            border-bottom: 2px solid #ABABAB;
+            padding-bottom: 20px;
         }
         .header {
             display: flex;
@@ -94,11 +94,143 @@
             margin-left: 15px;
         }
         .header__type {
-            background: #0d6efd;
+            font-size: 15px;
+            font-weight: 600;
+            background: #CA95FF;
             color: #FFF;
-            border-radius: 10px;
-            padding: 1px 5px;
+            border-radius: 5px;
+            padding: 5px 35px;
             margin-right: 15px;
+        }
+        .btn-report {
+            text-decoration: none;
+            font-weight: 600;
+            background: #CA95FF;
+            color: #FFF!important;
+            border-radius: 5px;
+            padding: 9px 37px;
+            font-size: 15px;
+        }
+        .run-style {
+            color: #5D5C5D;
+        }
+        .run-span {
+            font-weight: 800!important;
+            color: #5D5C5D!important;
+        }
+        .btn-report:hover {
+            background: #B468FF;
+        }
+        .border-none {
+            border: none;
+        }
+        .level_4 {
+            height: 53px!important;
+        }
+        .inputSearch:focus {
+            box-shadow: none;
+            border: 1px solid black;
+            border-radius: 5px;
+            background: #FFF!important;
+        }
+        .btn-all {
+            border: 1px solid #A0CAFF!important;
+        }
+        .btn-passed {
+            border: 1px solid #75B583!important;
+        }
+        .btn-failed {
+            border: 1px solid #FF6363!important;
+        }
+        .btn-skipped {
+            border: 1px solid #FFC350!important;
+        }
+        .btn-all:hover,
+        .btn-all:focus {
+            color: #A0CAFF!important;
+            background: #FFF!important;
+            border: 1px solid #A0CAFF!important;
+        }
+        .btn-all:hover span,
+        .btn-all:focus span {
+            color: #A0CAFF!important;
+        }
+        .allTest:checked + .btn-all span {
+            color: #A0CAFF!important;
+        }
+        .allTest:checked + .btn-all {
+            color:#A0CAFF!important;
+            background: #FFF!important;
+            border: 1px solid #A0CAFF!important;
+        }
+        .btn-passed:hover,
+        .btn-passed:focus {
+            color: #75B583!important;
+            border: 1px solid #75B583!important;
+            background: #FFF!important;
+        }
+        .btn-passed:hover span,
+        .btn-passed:focus span {
+            color: #75B583!important;
+        }
+        .passedTest:checked + .btn-passed span {
+            color: #75B583!important;
+        }
+        .passedTest:checked + .btn-passed {
+            color: #75B583!important;
+            border: 1px solid #75B583!important;
+            background: #FFF!important;
+        }
+        .btn-failed:hover,
+        .btn-failed:focus {
+            color: #FF6363!important;
+            border: 1px solid #FF6363!important;
+            background: #FFF!important;
+        }
+        .btn-failed:hover span,
+        .btn-failed:focus span {
+            color: #FF6363!important;
+        }
+        .failedTest:checked + .btn-failed span {
+            color: #FF6363!important;
+        }
+        .failedTest:checked + .btn-failed {
+            color: #FF6363!important;
+            border: 1px solid #FF6363!important;
+            background: #FFF!important;
+        }
+        .btn-skipped:hover,
+        .btn-skipped:focus {
+            color: #FFC350!important;
+            border: 1px solid #FFC350!important;
+            background: #FFF!important;
+        }
+        .btn-skipped:hover span,
+        .btn-skipped:focus span {
+            color: #FFC350!important;
+        }
+        .skippedTest:checked + .btn-skipped span {
+            color: #FFC350!important;
+        }
+        .skippedTest:checked + .btn-skipped {
+            color: #FFC350!important;
+            border: 1px solid #FFC350!important;
+            background: #FFF!important;
+        }
+        .passed {
+            color: #75B583;
+        }
+        .failed {
+            color: #FF6363;
+        }
+        .testWrapp {
+            margin-top: 57px;
+        }
+        .fa-arrow-right {
+            display: none!important;
+        }
+        .header__type:hover {
+            background: #B468FF;
         }
         .header__case i {
             color: grey;
@@ -110,7 +242,8 @@
         }
         .title p {
             color: black;
-            font-size: 20px;
+            font-size: 15px;
+            font-weight: 500;
             margin-right: 5px;
         }
         .statright {
@@ -128,7 +261,7 @@
             width: 150px;
         }
         .statdesc__row:nth-child(odd) {
-            background: #F4F5FF;
+            background: #F6FAFF;
         }
         .statdesc__row p {
             font-weight: bold;
@@ -191,13 +324,10 @@
             font-size: 24px;
             color: gray;
         }
-        .level_5 {
-            margin-top: 20px;
-        }
         .numTest {
-            font-weight: 700;
+            font-weight: 500;
             font-size: 16px;
-            color:#0d6efd;
+            color: #0D6EFD;
         }
         .testitem {
             border: 1px solid grey;
@@ -207,17 +337,18 @@
         .testitem__top {
             width: 100%;
             display: flex;
-            background: #e9ecef;
-            padding: 3px 0;
-            border-radius:10px;
+            background: #F6FAFF;
+            padding: 15px 13px;
+            border-radius: 10px;
             cursor: pointer;
+            justify-content: space-between;
         }
         .testitem__icon {
             display: flex;
             align-items: center;
             justify-content: center;
             width: 30px;
-            margin-right: 15px;
+            margin-right: 5px;
         }
         .testitem__ico {
             font-size: 18px;
@@ -229,22 +360,27 @@
         }
         .testitem__body {
             display: flex;
+            background-color: #F6FAFF;
+            margin-top: 10px;
+            border: 1px solid grey;
             border-top: 1px solid grey;
         }
         .testitem__menu {
             display: flex;
             flex-direction: column;
             border-right: 1px solid grey;
-            padding: 15px;
+            padding: 21px 51px 21px 51px;
         }
         .testitem__mitem {
             margin-bottom: 10px;
-            font-size: 14px;
+            font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
-            color: grey;
+            color: #565656;
+            text-alight: center;
         }
         .testitem__mitem_active {
-            color: green;
+            color: #AA9F9F;
         }
         .testitem__case {
             display: flex;
@@ -269,51 +405,39 @@
         .testitem__content {
             width: 92%;
         }
-        /* Passed TAB*/
-        #passedTest:not(:checked) + .btn-outline-dark {
-            background-color: #39BD2F;
-        }
-        #passedTest:checked + .btn-outline-dark {
-            background-color: #68cf61;
-            color: white;
-        }
-        /* Failed TAB*/
-        #failedTest:not(:checked) + .btn-outline-dark {
-            background-color: #F2230C;
-        }
-        #failedTest:checked + .btn-outline-dark {
-            background-color: #FA6E5E;
-            color: white;
-        }
-        /* Skipped TAB*/
-        #skippedTest:not(:checked) + .btn-outline-dark {
-            background-color: #F2C00C;
-        }
-        #skippedTest:checked + .btn-outline-dark {
-            background-color: #dfc155;
-        }
         /* Pagination component styles*/
         .page-link {
             color: black;
-            background: #f5f5f8;
+            background-color: #F6FAFF;
+            padding: 7px 19px;
         }
         .page-link:hover {
             color: black;
         }
+        .form-select {
+            background-color:#F6FAFF;
+        }
         .form-select:focus {
-            border-color: #adadad;
+            border-color: #ADADAD;
             box-shadow: 0 0 0 0.25rem rgb(67 71 78 / 25%);
         }
+        .page-item:not(:first-child) {
+            margin-left:15px;
+        }
         .page-item.active .page-link {
-            background: #d1d1d2;
-            border-color: #adadad;
+            background: #F6FAFF;
+            border: 2px solid #4384FE;
+            color: black;
         }
         .noData {
-            background: #e9ecef;
-            text-align: center;
-            height: 100px;
-            padding-top: 39px;
-            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .noDataText {
+            font-size: 54px;
+            color: #A1A1A1;
         }
     </style>
 </head>
@@ -323,49 +447,50 @@
         <div class='container'>
             <!-- top -->
             <div class='row level_1'>
-            <div class='col-12'>
-                <div class='header'>
-                <div class='header__block'>
-                    {{#if runId}}
-                    <div class='header__case'>
-                        <p>Run</p>
-                        <span><strong>#</strong>{{runId}}</span>
+                <div class='col-12'>
+                    <div class='header'>
+                        <div class='header__block'>
+                            <p class='header__type'>
+                                automated job
+                            </p>
+                        </div>
+                        <div class='header__block'>
+                        {{#if runId}}
+                            <div class='header__case run-style'>
+                            <p>Run</p>
+                            <span class='run-span'><strong>#</strong>{{runId}}</span>
+                            </div>
+                        {{/if}}
+                        </div>
+                        <div class='header__block'>
+                        {{#if runUrl}}
+                            <a href='{{runUrl}}' target='_blank' class='btn-report'>
+                                Full Report
+                            </a>
+                            {{else}}
+                            <button class='btn-report border-none' disabled>
+                                Full Report
+                            </button>
+                        {{/if}}
+                        </div>
                     </div>
-                    {{/if}}
-                    <p class='header__type'>
-                    <i class='fa-solid fa-face-smile'></i>
-                    automated job
-                    </p>
                 </div>
-                <div class='header__block'>
-                    {{#if runUrl}}
-                    <a href='{{runUrl}}' target='_blank' class='btn btn-primary'>
-                        Full Report
-                    </a>
-                    {{else}}
-                    <button class='btn btn-primary' disabled>
-                        Full Report
-                    </button>
-                    {{/if}}
-                </div>
-                </div>
-            </div>
             </div>
             <!-- top -->
 
             <div class='row level_2'>
-            <div class='col-12'>
-                <div class='title'>
-                <p>Testomatio Run Information</p>
+                <div class='col-12'>
+                    <div class='title'>
+                        <p>Testomatio Run Information</p>
+                    </div>
                 </div>
-            </div>
             </div>
 
             <!-- Schedule and information -->
             <div class='row level_3'>
                 <div class='col-6'>
                     <div class='statleft'>
-                    <div id='graff'></div>
+                        <div id='graff'></div>
                     </div>
                 </div>
             <div class='col-6'>
@@ -412,78 +537,83 @@
             </div>
             <!-- Schedule and information -->
             <div class='row level_4'>
-                <div class='col-6'>
-                    <div class='input-group'>
-                    <div class='input-group-prepend'>
-                        <span class='input-group-text' id='basic-addon1'>
-                        <i class='fa-solid fa-magnifying-glass'></i>
-                        </span>
-                    </div>
-                    <input
-                        type='text'
-                        class='form-control inputSearch'
-                        placeholder='Search'
-                        aria-label='Search'
-                        aria-describedby='basic-addon1'
-                    />
+                <div class='col-12'>
+                    <div class='input-group mt-5' style='position:relative'>
+                        <div class='input-group-prepend' style='position:absolute;z-index:1;border:none'>
+                            <span class='hover-search input-group-text' id='basic-addon1' style='height:54px;background:#F6FAFF;border-right:none;border-left:none'>
+                                <i class='fa-solid fa-magnifying-glass' style='color:#474646';font-size:21px></i>
+                                <span style='padding-left:15px;color:#474646;font-size:15px;font-weight:500;'>Search</span>
+                            </span>
+                        </div>
+                        <input
+                            type='text'
+                            style='height:54px;background:#F6FAFF'
+                            class='form-control inputSearch'
+                            aria-label='Search'
+                            aria-describedby='basic-addon1'
+                        />
                     </div>
                 </div>
+            </div>
 
-                <div class='col-6 d-flex justify-content-end'>
+            <div class='row'>
+                <div class='col-12 d-flex justify-content-start' style='margin-top:100px;'>
                     <div class='btn-group menuTests' role='group' aria-label='Basic radio toggle button group'>
-
                         <input
                             type='radio'
-                            class='btn-check'
+                            class='btn-check allTest'
                             name='groupTest'
                             id='allTest'
                             autocomplete='off'
                             category='all'
                             checked
                         />
-                        <label class='btn btn-outline-dark' for='allTest'>All
-                            <span class='numTest' name='numTest' lcategory='all'>0</span>
+
+                        <label class='btn btn-all' for='allTest' style='margin-right:9px;background:#A0CAFF;color:#fff;border:none;padding:7px 11px'>All
+                            <span style='color:#fff' class='numTest numAll' name='numTest' lcategory='all'>0</span>
                         </label>
 
                         <input
                             type='radio'
-                            class='btn-check'
+                            class='btn-check passedTest'
                             name='groupTest'
                             id='passedTest'
                             autocomplete='off'
                             category='passed'
                         />
-                        <label class='btn btn-outline-dark' for='passedTest'>Passed
-                            <span class='numTest' name='numTest' lcategory='passed'>0</span>
+
+                        <label class='btn btn-passed' for='passedTest' style='background:#75B583;color:#fff;border:none;padding:7px 11px'>Passed
+                            <span style='color:#fff' class='numTest numPassed' name='numTest' lcategory='passed'>0</span>
                         </label>
 
                         <input
                             type='radio'
-                            class='btn-check'
+                            class='btn-check failedTest'
                             name='groupTest'
                             id='failedTest'
                             autocomplete='off'
                             category='failed'
                         />
-                        <label class='btn btn-outline-dark' for='failedTest'>Failed
-                            <span class='numTest' name='numTest' lcategory='failed'>0</span>
+
+                        <label class='btn btn-failed' for='failedTest' style='margin-left:9px;background:#FF6363;color:#fff;border:none;padding:7px 11px'>Failed
+                            <span style='color:#fff' class='numTest numFailed' name='numTest' lcategory='failed'>0</span>
                         </label>
 
                         <input
                             type='radio'
-                            class='btn-check'
+                            class='btn-check skippedTest'
                             name='groupTest'
                             id='skippedTest'
                             autocomplete='off'
                             category='skipped'
                         />
-                        <label class='btn btn-outline-dark' for='skippedTest'>Skipped
-                            <span class='numTest' name='numTest' lcategory='skipped'>0</span>
+                        
+                        <label class='btn btn-skipped' for='skippedTest' style='margin-left:9px;background:#FFC350;color:#fff;border:none;padding:7px 11px'>Skipped
+                            <span style='color:#fff' class='numTest numSkipped' name='numTest' lcategory='skipped'>0</span>
                         </label>
-
                     </div>
                 </div>
-            </div>
+            </div>                
 
             <div class="row level_5">
                 <div class="col-12">
@@ -496,85 +626,90 @@
                         </nav>
                         {{ selectComponent }}
                     </div>
-                        <!-- Test data section -->
-                        <div class="testWrapp">
-                            {{#each tests}}
-
-                                <div class="testitem d-none" name="testitem" type="dummy" category="false">
-
-                                    <div class="testitem__top">
+                    <!-- Test data section -->
+                    <div class="testWrapp">
+                        {{#each tests}}
+                            <div class="testitem d-none" name="testitem" type="dummy" category="false">
+                                <div class="testitem__top">
+                                    <div class='d-flex'>
                                         <div class="testitem__icon">
-                                            <i class="fa-solid fa-chevron-right testitem__ico testitem__ico_right"></i>
-                                            <i class="fa-solid fa-chevron-down d-none testitem__ico testitem__ico_down"></i>
+                                            <i class="fa-solid fa-circle-chevron-right testitem__ico testitem__ico_right ml-2"></i>
+                                            <i class="fa-solid fa-circle-chevron-down d-none testitem__ico testitem__ico_down ml-2"></i>
                                         </div>
                                         <p class="testitem__name">Test</p>
                                     </div>
 
-                                    <div class="testitem__body d-none">
+                                    <svg class='folderSvg' width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M16.6161 1.64526H9.84355C9.62419 1.64526 9.43226 1.64526 9.2129 1.9743L8.85645 2.46784H0.85C0.383871 2.46784 0 2.90655 0 3.37268V14.1485C0 14.6146 0.383871 15.0807 0.85 15.0807H16.15C16.6161 15.0807 17 14.6146 17 14.1485V5.81301V3.4001V1.9743C17 1.78236 16.8355 1.64526 16.6161 1.64526Z" fill="#6D6D6D"/>
+                                        <path d="M16.6435 12.7227C16.8629 12.5582 17 12.3114 17 12.0372V5.81301V3.4001V1.9743C17 1.78236 16.8355 1.64526 16.6161 1.64526H9.84355C9.62419 1.64526 9.43226 1.64526 9.2129 1.9743L8.85645 2.46784H0.85C0.41129 2.46784 0.0548387 2.8243 0 3.23559L16.6435 12.7227Z" fill="#565656"/>
+                                        <path d="M0.575806 3.56445L16.6435 12.6677C16.8629 12.5032 17 12.3112 17 12.037V5.81284V4.27736L15.9581 3.56445H0.575806Z" fill="#474646"/>
+                                        <path d="M15.629 3.56445H1.37097V13.9838H15.629V3.56445Z" fill="white"/>
+                                        <path d="M15.629 3.56445H8.77417V13.9838H15.629V3.56445Z" fill="#EFEFEF"/>
+                                        <path d="M17 14.5323C17 14.9984 16.6161 15.3549 16.15 15.3549H0.85C0.383871 15.3549 0 14.9984 0 14.5323L0.274194 5.84039C0.274194 5.37426 0.658064 4.93555 1.12419 4.93555H15.9032C16.3694 4.93555 16.7532 5.37426 16.7532 5.84039L17 14.5323Z" fill="#A1A1A1"/>
+                                        <path d="M16.8903 14.9437L0.329032 5.53882C0.274194 5.6485 0.274194 5.78559 0.274194 5.89527L0 14.5324C0 14.9985 0.383871 15.3549 0.85 15.3549H16.15C16.4516 15.3549 16.7258 15.1904 16.8903 14.9437Z" fill="#565656"/>
+                                        <path d="M6.77259 13.2161C6.71775 13.2161 6.63549 13.1887 6.55323 13.1613C6.41613 13.1064 6.30646 12.9693 6.30646 12.8048V7.67739C6.30646 7.54029 6.41613 7.37577 6.55323 7.32093C6.69033 7.2661 6.85484 7.2661 6.99194 7.34835L10.4742 9.92577C10.5839 10.008 10.6387 10.1177 10.6387 10.2548C10.6387 10.3919 10.5839 10.5016 10.4742 10.5838L6.99194 13.1613C6.9371 13.2161 6.85484 13.2161 6.77259 13.2161Z" fill="white"/>
+                                    </svg>
+                                </div>
 
-                                        <div class='testitem__menu'>
-                                            <span type='steps' class='testitem__mitem testitem__mitem_active'>Steps
+                                <div class="testitem__body d-none">
+                                    <div class='testitem__menu'>
+                                        <span type='steps' class='testitem__mitem testitem__mitem_active'>Steps
                                             <i class='fa-solid fa-arrow-right'></i></span>
-                                            <span type='status' class='testitem__mitem'>Status
+                                        <span type='status' class='testitem__mitem'>Status
                                             <i class='fa-solid fa-arrow-right'></i></span>
-                                            <span type='message' class='testitem__mitem'>Message
+                                        <span type='message' class='testitem__mitem'>Message
                                             <i class='fa-solid fa-arrow-right'></i></span>
-                                            <span type='files' class='testitem__mitem'>Files <i class='fa-solid fa-arrow-right'></i></span>
+                                        <span type='files' class='testitem__mitem'>Files <i class='fa-solid fa-arrow-right'></i></span>
+                                    </div>
+
+                                    <div class="testitem__content">
+                                        <!-- 1 -->
+                                        <div class="testitem__case" type="steps">
+                                            <div class="testitem__block">
+                                                <span>...</span>
+                                            </div>
                                         </div>
+                                        <!-- 1 -->
 
-                                        <div class="testitem__content">
-                                            <!-- 1 -->
-                                            <div class="testitem__case" type="steps">
-                                                <p class="testitem__title">Steps</p>
-                                                <div class="testitem__block">
-                                                    <span>...</span>
-                                                </div>
+                                        <!-- 2 -->
+                                        <div class='testitem__case d-none' type='status'>
+                                            <div class='testitem__block'>
+                                                <span>...</span>
                                             </div>
-                                            <!-- 1 -->
-
-                                            <!-- 2 -->
-                                            <div class='testitem__case d-none' type='status'>
-                                                <p class='testitem__title'>Status</p>
-                                                <div class='testitem__block'>
-                                                    <span>...</span>
-                                                </div>
-                                            </div>
-                                            <!-- 2 -->
-
-                                            <!-- 3 -->
-                                            <div class='testitem__case d-none' type='message'>
-                                                <p class='testitem__title'>Message</p>
-                                                <div class='testitem__block'>
-                                                    <span>...</span>
-                                                </div>
-                                            </div>
-                                            <!-- 3 -->
-
-                                            <!-- 4 -->
-                                            <div class='testitem__case d-none' type='files'>
-                                                <p class='testitem__title'>Files</p>
-                                                <div class='testitem__block'>
-                                                    <span>...</span>
-                                                </div>
-                                            </div>
-                                            <!-- 4 -->
                                         </div>
+                                        <!-- 2 -->
+
+                                        <!-- 3 -->
+                                        <div class='testitem__case d-none' type='message'>
+                                            <div class='testitem__block'>
+                                                <span>...</span>
+                                            </div>
+                                        </div>
+                                        <!-- 3 -->
+
+                                        <!-- 4 -->
+                                        <div class='testitem__case d-none' type='files'>
+                                            <div class='testitem__block'>
+                                                <span>...</span>
+                                            </div>
+                                        </div>
+                                        <!-- 4 -->
                                     </div>
                                 </div>
-                            {{/each}}
-                        </div>
-                        <!-- BOTTOM pagination & select components -->
-                        <nav class="mt-2">
-                            <ul class="pagination">
-                            </ul>
-                        </nav> 
+                            </div>
+                        {{/each}}
+                    </div>
+                    <!-- BOTTOM pagination & select components -->
+                    <nav class="mt-2">
+                        <ul class="pagination">
+                        </ul>
+                    </nav> 
                     {{else}}
                         <!-- No tests found section -->
                         {{ emptyDataComponent }}
                     {{/if}}
                 </div>
             </div>
-
         </div>
     </section>
 
@@ -587,9 +722,9 @@
         // Draw the chart and set the chart values
         function drawChart() {
             let data = {};
-            const passedTests = {{getTestsByStatus tests "PASSED"}};
-            const failedTests = {{getTestsByStatus tests "FAILED"}};
-            const skippedTests = {{getTestsByStatus tests "SKIPPED"}};
+            const passedTests = {{ getTestsByStatus tests "PASSED" }};
+            const failedTests = {{ getTestsByStatus tests "FAILED" }};
+            const skippedTests = {{ getTestsByStatus tests "SKIPPED" }};
 
             if (passedTests === 0 && failedTests === 0 && skippedTests === 0) {
                 data = google.visualization.arrayToDataTable([
@@ -611,7 +746,8 @@
                 'title':'',
                 'width':550,
                 'height':300,
-                'colors': ['#939992', '#39BD2F', '#F2230C', '#F2C00C']
+                'colors': ['#A9C7FF', '#75B583', '#FF6363', '#FFC350'],
+                'legend': 'bottom'
             };        
             // Display the chart inside the <div> element with id="piechart"
             const chart = new google.visualization.PieChart(document.getElementById('graff'));
@@ -648,9 +784,19 @@
         }
 
         function setTestItemContent(clone, steps, category, message, files) {
-            const body = clone.querySelector('.testitem__body');
+            const body = clone.querySelector('.testitem__body'),
+                top = clone.querySelector('.testitem__top'),
+                image = top.querySelector('.testitem__icon'),
+                folderSvg = top.querySelector('.folderSvg');
 
-            let content = body.querySelector('.testitem__content'),
+            if(category === 'passed') {
+                image.classList.add('passed');
+            }
+            else {
+                image.classList.add('failed');
+            }
+
+            const content = body.querySelector('.testitem__content'),
                 content_error = content.querySelector('div[type="steps"]').querySelector('span'),
                 content_status = content.querySelector('div[type="status"]').querySelector('span'),
                 content_message = content.querySelector('div[type="message"]').querySelector('span'),
@@ -660,9 +806,13 @@
             content_status.innerHTML = category.toUpperCase();
             content_message.innerHTML = message;
             //if no file - empty message, else - files
-            (files.includes("This test has no files"))
-                ? content_files.innerHTML = files
-                : addFilesToContent(content_files, files);
+            if (files.includes("This test has no files")){
+                content_files.innerHTML = files
+                folderSvg.classList.add('d-none');
+            }
+            else {
+                addFilesToContent(content_files, files);
+            }
         }
 
         function addFilesToContent(content_files, files) {
@@ -708,27 +858,15 @@
                     break;
                 case 'zip':
                     const svgZipCode = 
-                        `<?xml version="1.0" encoding="iso-8859-1"?>
-                        <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-                            viewBox="0 0 512 512" xml:space="preserve">
-                        <path style="fill:#FDCC77;" d="M511.344,274.266C511.77,268.231,512,262.143,512,256C512,114.615,397.385,0,256,0S0,114.615,0,256
-                        c0,117.769,79.53,216.949,187.809,246.801L511.344,274.266z"/>
-                        <path style="fill:#FCB433;" d="M511.344,274.266L314.991,77.913L119.096,434.087l68.714,68.714C209.522,508.787,232.385,512,256,512
-                        C391.243,512,501.976,407.125,511.344,274.266z"/>
-                        <polygon style="fill:#FFFFFF;" points="278.328,333.913 255.711,77.913 119.096,77.913 119.096,311.652 "/>
-                        <polygon style="fill:#E8E6E6;" points="392.904,311.652 392.904,155.826 337.252,133.565 314.991,77.913 255.711,77.913
-                        256.067,333.913 "/>
-                        <polygon style="fill:#FFFFFF;" points="314.991,155.826 314.991,77.913 392.904,155.826 "/>
-                        <rect x="119.096" y="311.652" style="fill:#9E7120;" width="273.809" height="122.435"/>
-                        <g>
-                        <path style="fill:#FFFFFF;" d="M210.927,388.691h28.759v10.671h-46.771v-8.627l28.38-33.677H193.9v-10.671h45.332v8.627
-                            L210.927,388.691z"/>
-                        <path style="fill:#FFFFFF;" d="M249.075,399.362v-52.975h13.471v52.975H249.075z"/>
-                        <path style="fill:#FFFFFF;" d="M298.118,346.387c13.546,0,21.341,6.659,21.341,18.465c0,12.412-7.796,19.601-21.341,19.601h-9.612
-                            v14.909h-13.471v-52.975L298.118,346.387L298.118,346.387z M288.505,373.858h8.93c5.904,0,9.307-2.952,9.307-8.552
-                            c0-5.525-3.405-8.324-9.307-8.324h-8.93V373.858z"/>
-                        </g>
-                        </svg>`;
+                        `<svg width="95" height="94" viewBox="0 0 95 94" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                         <rect x="0.5" width="94" height="94" fill="url(#pattern0)"/>
+                         <defs>
+                         <pattern id="pattern0" patternContentUnits="objectBoundingBox" width="1" height="1">
+                         <use xlink:href="#image0_212_109" transform="scale(0.01)"/>
+                         </pattern>
+                         <image id="image0_212_109" width="100" height="100" xlink:href="data:image/png;base64,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"/>
+                         </defs>
+                         </svg>`;
                     fileIcon = createFileIcon(file,svgZipCode);
                     break;
                 case 'mp4':
@@ -736,46 +874,29 @@
                 case 'mov':
                 case 'webm':
                     const svgVideoCode = 
-                        `<?xml version="1.0" encoding="iso-8859-1"?>
-                        <svg height="150px" width="150px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-                                viewBox="0 0 503.467 503.467" xml:space="preserve">
-                            <g transform="translate(5 1)">
-                            <path style="fill:#F2EDDA;" d="M460.067,122.733v341.333c0,18.773-15.36,34.133-34.133,34.133h-358.4
-                                c-18.773,0-34.133-15.36-34.133-34.133V37.4c0-18.773,15.36-34.133,34.133-34.133H340.6V88.6c0,18.773,15.36,34.133,34.133,34.133
-                                H460.067z"/>
-                            <path style="fill:#FFD0A1;" d="M460.067,122.733h-85.333c-18.773,0-34.133-15.36-34.133-34.133V3.267L460.067,122.733z"/>
-                            <path style="fill:#80D6FA;" d="M246.733,191c61.44,0,110.933,49.493,110.933,110.933s-49.493,110.933-110.933,110.933
-                                c-61.44,0-110.933-49.493-110.933-110.933S185.293,191,246.733,191L246.733,191z"/>
-                            <polygon style="fill:#ECF4F7;" points="280.867,301.933 221.133,336.067 221.133,267.8 	"/>
-                            </g>
-                            <path style="fill:#51565F;" d="M430.933,503.467h-358.4c-21.333,0-38.4-17.067-38.4-38.4V38.4C34.133,17.067,51.2,0,72.533,0H345.6
-                            c0.853,0,2.56,0.853,3.413,0.853l85.333,85.333c1.707,1.707,1.707,4.267,0,5.973c-1.707,1.707-4.267,1.707-5.973,0l-84.48-84.48
-                            H72.533c-16.213,0-29.867,13.653-29.867,29.867v426.667c0,16.213,13.653,29.867,29.867,29.867h358.4
-                            c16.213,0,29.867-13.653,29.867-29.867V127.147h-81.067c-21.333,0-38.4-17.067-38.4-38.4V46.08c0-2.56,1.707-4.267,4.267-4.267
-                            s4.267,1.707,4.267,4.267v42.667c0,16.213,13.653,29.867,29.867,29.867h85.333c2.56,0,4.267,1.707,4.267,4.267v341.333
-                            C469.333,486.4,452.267,503.467,430.933,503.467z M251.733,418.133c-63.147,0-115.2-52.053-115.2-115.2s52.053-115.2,115.2-115.2
-                            s115.2,52.053,115.2,115.2S314.88,418.133,251.733,418.133z M251.733,196.267c-58.88,0-106.667,47.787-106.667,106.667
-                            S192.853,409.6,251.733,409.6S358.4,361.813,358.4,302.933S310.613,196.267,251.733,196.267z M226.133,341.333
-                            c-0.853,0-1.707,0-2.56-0.853c-1.707-0.853-1.707-2.56-1.707-3.413V268.8c0-1.707,0.853-2.56,1.707-3.413
-                            c1.707-0.853,2.56-0.853,4.267,0l59.733,34.133c1.707,0.853,2.56,2.56,2.56,3.413s-0.853,2.56-2.56,3.413L227.84,340.48
-                            C227.84,341.333,226.987,341.333,226.133,341.333z M230.4,276.48v53.76l46.933-26.453L230.4,276.48z"/>
-                        </svg>`;
+                        `<svg width="95" height="95" viewBox="0 0 95 95" fill="none" xmlns="http://www.w3.org/2000/svg">
+                         <g clip-path="url(#clip0_212_104)">
+                         <path d="M35.75 27.4702V67.5298L65.125 47.5L35.75 27.4702ZM39.6667 34.8844L58.1729 47.5L39.6667 60.1156V34.8844ZM4.41666 12.25V82.75H90.5833V12.25H4.41666ZM86.6667 78.8333H8.33333V16.1667H86.6667V78.8333Z" fill="#474646"/>
+                         </g>
+                         <defs>
+                         <clipPath id="clip0_212_104">
+                         <rect width="94" height="94" fill="white" transform="translate(0.5 0.5)"/>
+                         </clipPath>
+                         </defs>
+                         </svg>`;
                     fileIcon = createFileIcon(file, svgVideoCode);
                     break;
                 default:
                     const svgFileCode = 
-                        `<?xml version="1.0" encoding="iso-8859-1"?>
-                        <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-                                viewBox="0 0 512 512" xml:space="preserve">
-                            <polygon style="fill:#72C6EF;" points="384,448 128,448 128,64 288,64 288,160 384,160 "/>
-                            <path style="fill:#00384E;" d="M310.624,0H64v512h384V137.376L310.624,0z M320,54.624L393.376,128H320V54.624z M96,480V32h192v128
-                            h128v320H96z"/>
-                            <g>
-                            <rect x="176" y="368" style="fill:#00384D;" width="160" height="32"/>
-                            <rect x="176" y="304" style="fill:#00384D;" width="160" height="32"/>
-                            <rect x="176" y="240" style="fill:#00384D;" width="160" height="32"/>
-                            </g>
-                        </svg>`;
+                        `<svg width="95" height="94" viewBox="0 0 95 94" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                         <rect x="0.5" width="94" height="94" fill="url(#pattern0)"/>
+                         <defs>
+                         <pattern id="pattern0" patternContentUnits="objectBoundingBox" width="1" height="1">
+                         <use xlink:href="#image0_212_112" transform="scale(0.01)"/>
+                         </pattern>
+                         <image id="image0_212_112" width="100" height="100" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAAAXNSR0IArs4c6QAABtNJREFUeAHtnE2IHEUUxzeiHhQUUcQPPKjgQfxkRRQV10y9/+vZdQUhC+JBQYngQRBB9OBhQTEiigqCgh78AL0IHuLJPXgRJAcRRBYvEo0gBvE7Go0xqzW7NVQ/ume6a7vq9SwVGLrr4733r9+/M8vMdNfcXP6XCWQCmUAmkAkkJsDAxoy9PlteWDgnMaZ05WbMDHfxrBPRBekoJaw0o4ZswJgvb9+9+8KEqNKUmlVDrG4QHQRwcRpSiapIQxKVbV1G6vTa3wyHw0tbJ+xrgLew0fvzrOj0dYPou+FweHlftbfS5S/MnrcKTjhZ6qxofw/gioSS4pSSC4tTZftZpU4iekv2MXC4KIqrtl9NMYNclKKUiaUrdO5i5pdlP4h+YubrJybr86BcUF+11ui0prwoxxj4pSiKG/u6lom65GImTlYcnKSTgafkOANHmPk2RclhpeVCwrLEj5qmswBW5RwQ/cHMJr66DivIRXSYutNUTXQy82NyHoj+Koju6FRMzGRyATFrbSd3U50F8KicC6K/C6I7t1M/WawUn6xwy0JtdAJ4kIETIuYYgD0ty6afLkTPzAfDaaSYeS+I/vXXB6LjzHzPtFjVcV+wPVcVM6F4iE5mvpuBf/xYawqA+yaU0h3yxe40QyxZAHdJU+zbGYCHdMnXVN/phmyZsoeBY2KtJ5j54Roset1C5I56y/KpMvMSA0flegvgCX+e+rkUqC6oRkAXOpm5APCnzMVEz9SUTd8txaVX0KxiVzqHRLcy8LvM1xtTpLBmeNLP6lJnYczNIPpV5mSi5+bm5nalX51XUYryhnp12rVOIrqOiX6UeYnoldXV1ZPUFi8FqQmZUjiGzqEx1zLzDzI3M7+mZooUM4WL2nAsnfa3ePubvMzPzO8sLCycnHzBUkhyAQ0LSp0p2gDebSivu2lyYd1l7jaT1Jmq3e0qGmSTC2sQojJF6kzVTr5YubDkAhoWlDpTtRvK626aXFh3mWczkzoPdQE9802dh7qAbEiZQDakZzyyIdmQMoGetdQvUHUB2ZAygWxIz3hkQ7IhZQI9a6lfoOoCsiFlAtmQnvHIhuxAQwCcWwBfNX1ZBGzMfn8+Ed3k0Nhf6kD0hRsH8In9SdXvc2N1RwAXuXxtjuoXaBcC7DYXMs+ktgUE4HEx5wUHjplvKY0xPz+KsQ/gNNybZTAYXOLytTnK/G1iO5nbhYAQQ+y2GKO70bcAE9HX7hYcAE+WdDFfbRc7eiIqGzLd98FgcDaAtfGL6GAJKLA+HgPWXEYm+tCfZ+8CsWNMdMD1w5hP3fz/b935wOVhYN3NscetbTbGGpj5fBfX5ujntOdtYjuZG0NAAezz8wJ4oEqsfVbDn2fvszXGnOn/z6m7S93mFLH7qmq07fNz2vO28dueH0NAU0MAnA5jfnMaCuBj+zyga9tH0er2xsqGtLC+qSE2ZQG84RlwnIE3XZuB9+rKZkPqyFT0tzKEaOAZYP8WWFNGG+EAWK5IP+rKhtSRqehvY4j9fMFEh5wJ3vHw/Pz8KRXpsyF1UOr62xhicwB42jNicxu/zTvR60rYmPxHvZaOGAgw5FlpSEH0iEhbamZDSjgmN9oYsvWVyLfSEPs5Y1KVbMgkOmKsjSFEhAozRm9bQ2NuEKnHzWzIGMX0kzaGAHh7bIgx+/3PJQBer6uWDakjU9Hf1BD7wdB/3m+0JYYx748NAo4Mh8MzKkrkP+pVUOr6Whhyrwd/Y3EwuKwA7vf77BYZVXXy/5AqKjV9LQxZG8MnOmTTLS4unlfao4ToQFWZbEgVlZq+JobIr98BvOrSEdFHY6OADSK6xo25YzbEkWhwbGKI3GzM/5pEwgbwkiwr59iack5I278Q7HlIjm3FxBDQxBAAn3u1jy4vL5/mFrK0tHSW/abXG//ZH7fzsiGOVoPjojFXFkQr7iV/Tl1ZWTnVjdkjAJJp7ecTf479EcyfY3P647amPx567l0EOjt9qwsIJRcpTp2HuoBIYEPTqvNQFxBKLlKcOg91AZHAhqZV56EuIJRcpDh1HuoCIoENTavOQ11AKLlIceo81AVEAhuaVp2HuoBQcpHi1HmoC4gENjStOg91AaHkIsWp81AXEAlsaFp1HuoCQslFilPnoS4gEtjQtOo81AWEkosUp85DXUAksKFp1XmoCwglFylOnYe6gEhgQ9Oq81AXEEouUpw6D3UBkcCGplXnoS4glFykOHUe6gIigQ1Nq85DXUAouUhx6jzUBUQCG5pWnYcUkNubTwA7DqHGBse5wvlYNsLxCAYbGugK52M2ZPPx54a7+2hdMKEXeo7LBDKBTCATyARCCfwHp/izMKqRVXgAAAAASUVORK5CYII="/>
+                         </defs>
+                         </svg>`;
                     fileIcon = createFileIcon(file, svgFileCode);
             }
             
@@ -812,6 +933,7 @@
             fileIcon.style.width = '150px';
             fileIcon.style.height = '150px';
             fileIcon.style.cursor = 'pointer';
+            fileIcon.style.textAlign = 'center';
 
             fileIcon.addEventListener('click', () => {
                 window.open(filepath, '_blank');
@@ -909,8 +1031,8 @@
             const searchEl = document.querySelector('.input-group');
             const radioEl = document.querySelector('.menuTests');
 
-            searchEl.classList.add('d-none')
-            radioEl.classList.add('d-none')
+            searchEl.classList.add('d-none');
+            radioEl.classList.add('d-none');
         } 
         else {
             function search(array, testEntries) {
@@ -947,7 +1069,34 @@
                         if (!existingNoDataElement) {
                             const testElement = document.createElement('div');
                             testElement.classList.add('noData', 'noResults');
-                            testElement.innerHTML = 'NO SEARCH RESULTS';
+                            testElement.innerHTML = 
+                            `<div class='noData'>
+                                <svg width="350" height="350" viewBox="0 0 370 370" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <g clip-path="url(#clip0_215_375)">
+                                <path opacity="0.1" d="M185 369.998C287.173 369.998 370.001 287.171 370.001 184.999C370.001 82.8268 287.173 0 185 0C82.8274 0 0 82.8268 0 184.999C0 287.171 82.8274 369.998 185 369.998Z" fill="#A9C7FF"/>
+                                <path d="M104.96 129.507C105.629 128.757 106.439 128.147 107.344 127.71C108.249 127.273 109.231 127.019 110.234 126.961C111.237 126.904 112.242 127.045 113.191 127.376C114.14 127.707 115.014 128.221 115.764 128.89L140.183 150.67L129.997 162.091L105.577 140.311C104.827 139.642 104.216 138.832 103.779 137.927C103.342 137.022 103.088 136.04 103.031 135.037C102.974 134.034 103.114 133.029 103.446 132.08C103.777 131.132 104.291 130.257 104.96 129.507Z" fill="white"/>
+                                <path d="M130.056 163.157L105.074 140.874C104.25 140.139 103.579 139.249 103.099 138.255C102.619 137.261 102.34 136.182 102.277 135.079C102.214 133.977 102.368 132.873 102.732 131.831C103.096 130.788 103.661 129.828 104.396 129.004C105.131 128.18 106.021 127.508 107.015 127.028C108.009 126.548 109.088 126.269 110.191 126.206C111.293 126.143 112.397 126.298 113.439 126.661C114.482 127.025 115.443 127.59 116.267 128.325L141.251 150.608L130.056 163.157ZM110.677 127.703C110.544 127.703 110.409 127.707 110.275 127.714C108.913 127.792 107.605 128.273 106.516 129.094C105.427 129.916 104.607 131.042 104.158 132.329C103.709 133.617 103.652 135.01 103.994 136.33C104.336 137.65 105.062 138.84 106.08 139.747L129.936 161.024L139.117 150.731L115.261 129.454C114.002 128.325 112.371 127.701 110.68 127.703H110.677Z" fill="#474646"/>
+                                <path d="M240 162.09L229.814 150.669L254.234 128.89C255.748 127.539 257.737 126.845 259.763 126.961C261.789 127.076 263.686 127.992 265.037 129.507C266.388 131.021 267.082 133.01 266.966 135.036C266.85 137.062 265.935 138.96 264.42 140.31L240 162.09Z" fill="white"/>
+                                <path d="M239.942 163.157L228.749 150.608L253.733 128.325C255.397 126.841 257.583 126.079 259.809 126.206C262.035 126.333 264.12 127.34 265.604 129.004C267.088 130.668 267.851 132.853 267.723 135.079C267.596 137.306 266.59 139.39 264.926 140.874L239.942 163.157ZM230.883 150.73L240.064 161.023L263.92 139.747C264.596 139.144 265.146 138.414 265.54 137.599C265.934 136.783 266.163 135.898 266.214 134.994C266.266 134.09 266.139 133.185 265.841 132.329C265.543 131.474 265.079 130.686 264.476 130.011C263.873 129.335 263.143 128.784 262.328 128.391C261.512 127.997 260.627 127.768 259.723 127.716C258.819 127.664 257.913 127.791 257.058 128.09C256.203 128.388 255.415 128.852 254.739 129.454L230.883 150.73Z" fill="#474646"/>
+                                <path d="M250.171 176.257C255.618 200.379 263.075 215.898 259.362 224.811C257.41 229.495 253.403 233.424 246.771 233.424C236.433 233.424 236.433 221.232 226.095 221.232C215.756 221.232 215.758 233.424 205.42 233.424C195.083 233.424 195.084 221.232 184.748 221.232C174.411 221.232 174.411 233.424 164.074 233.424C153.737 233.424 153.738 221.232 143.401 221.232C133.065 221.232 133.066 233.424 122.731 233.424C116.595 233.424 113.126 229.81 110.926 225.633C105.639 215.6 117.96 193.521 122.731 174.051C128.002 152.536 127.558 125.739 128.265 109.576C129.629 78.4083 153.554 53.0876 184.755 53.0876C215.955 53.0876 238.971 78.4613 241.244 109.576C242.469 126.351 245.184 154.176 250.171 176.257Z" fill="white"/>
+                                <path d="M246.771 234.186C241.249 234.186 238.506 230.95 235.852 227.818C233.311 224.822 230.911 221.992 226.095 221.992C221.278 221.992 218.882 224.822 216.339 227.818C213.685 230.948 210.942 234.186 205.42 234.186C199.899 234.186 197.156 230.95 194.503 227.818C191.962 224.822 189.562 221.992 184.748 221.992C179.933 221.992 177.535 224.822 174.992 227.818C172.339 230.948 169.596 234.186 164.074 234.186C158.552 234.186 155.808 230.95 153.16 227.822C150.619 224.825 148.219 221.995 143.404 221.995C138.589 221.995 136.191 224.825 133.65 227.822C130.998 230.951 128.255 234.189 122.734 234.189C117.243 234.189 113.161 231.508 110.254 225.992C106.568 218.996 110.995 206.627 115.683 193.534C118.011 187.03 120.416 180.305 121.994 173.874C126.21 156.668 126.743 136.45 127.172 120.204C127.272 116.362 127.368 112.732 127.51 109.548C128.186 94.1198 134.32 79.7607 144.785 69.1146C149.986 63.7845 156.204 59.5527 163.071 56.6697C169.937 53.7867 177.313 52.3113 184.76 52.3308C192.159 52.3133 199.486 53.7933 206.298 56.6817C213.11 59.5701 219.267 63.8071 224.399 69.1377C234.622 79.6633 240.876 94.0076 242.01 109.526C243.102 124.489 245.712 153.033 250.92 176.094C252.686 183.916 254.663 190.825 256.407 196.921C260.048 209.651 262.679 218.848 260.069 225.109C258.652 228.498 255.046 234.186 246.771 234.186ZM226.095 220.47C231.617 220.47 234.361 223.705 237.014 226.837C239.556 229.834 241.956 232.664 246.771 232.664C254.162 232.664 257.391 227.561 258.658 224.519C261.062 218.751 258.489 209.769 254.935 197.338C253.188 191.222 251.203 184.292 249.428 176.428C244.198 153.268 241.58 124.639 240.484 109.635C238.161 77.833 214.203 53.8517 184.754 53.8517C154.874 53.8517 130.395 78.3441 129.024 109.612C128.885 112.782 128.789 116.406 128.686 120.241C128.278 135.699 127.72 156.869 123.465 174.234C121.871 180.742 119.45 187.505 117.109 194.046C112.538 206.815 108.22 218.877 111.594 225.28C114.212 230.248 117.853 232.662 122.725 232.662C127.54 232.662 129.938 229.832 132.48 226.836C135.132 223.706 137.875 220.468 143.396 220.468C148.916 220.468 151.661 223.704 154.313 226.836C156.854 229.832 159.253 232.662 164.068 232.662C168.884 232.662 171.284 229.832 173.824 226.836C176.478 223.706 179.221 220.468 184.742 220.468C190.263 220.468 193.007 223.704 195.659 226.836C198.2 229.832 200.599 232.662 205.415 232.662C210.23 232.662 212.63 229.832 215.171 226.836C217.83 223.708 220.573 220.47 226.095 220.47Z" fill="#474646"/>
+                                <path d="M163.527 113.221C166.986 113.221 169.789 110.418 169.789 106.96C169.789 103.501 166.986 100.698 163.527 100.698C160.069 100.698 157.266 103.501 157.266 106.96C157.266 110.418 160.069 113.221 163.527 113.221Z" fill="#474646"/>
+                                <path d="M206.465 113.221C209.923 113.221 212.726 110.418 212.726 106.96C212.726 103.501 209.923 100.698 206.465 100.698C203.006 100.698 200.203 103.501 200.203 106.96C200.203 110.418 203.006 113.221 206.465 113.221Z" fill="#474646"/>
+                                <path d="M196.211 123.859C196.573 123.859 196.93 123.938 197.256 124.093C197.583 124.247 197.871 124.473 198.1 124.752C198.329 125.032 198.492 125.36 198.578 125.71C198.665 126.061 198.672 126.427 198.599 126.781C197.256 133.059 191.677 137.005 184.998 137.005C178.319 137.005 172.74 133.061 171.397 126.781C171.324 126.427 171.331 126.061 171.418 125.71C171.504 125.359 171.668 125.032 171.896 124.752C172.125 124.472 172.413 124.247 172.74 124.093C173.067 123.938 173.424 123.858 173.785 123.859H196.211Z" fill="white"/>
+                                <path d="M184.997 137.767C177.802 137.767 172.037 133.416 170.652 126.94C170.553 126.479 170.559 126.002 170.67 125.543C170.78 125.085 170.992 124.657 171.29 124.292C171.59 123.919 171.97 123.618 172.402 123.412C172.834 123.206 173.306 123.099 173.785 123.1H196.212C196.691 123.099 197.164 123.206 197.595 123.412C198.027 123.618 198.407 123.919 198.707 124.292C199.005 124.657 199.217 125.085 199.327 125.543C199.438 126.002 199.444 126.479 199.345 126.94C197.958 133.416 192.192 137.767 184.997 137.767ZM173.784 124.621C173.532 124.621 173.284 124.677 173.057 124.786C172.83 124.894 172.631 125.052 172.473 125.248C172.318 125.437 172.208 125.659 172.151 125.897C172.093 126.135 172.09 126.382 172.141 126.622C173.371 132.377 178.537 136.243 184.996 136.243C191.455 136.243 196.621 132.377 197.852 126.622C197.903 126.382 197.899 126.135 197.842 125.897C197.784 125.659 197.674 125.437 197.519 125.248C197.361 125.052 197.162 124.894 196.935 124.786C196.708 124.677 196.46 124.621 196.209 124.621H173.784Z" fill="#474646"/>
+                                <path d="M332.184 297.095C298.385 341.408 245.033 370 185.003 370C124.973 370 71.6211 341.408 37.8223 297.095C76.4052 282.579 128.135 273.704 185.003 273.704C241.872 273.704 293.598 282.579 332.184 297.095Z" fill="#A9C7FF"/>
+                                <path d="M347.711 96.8905L252.766 96.4848C252.766 80.628 261.697 77.5062 271.192 74.931C280.687 72.3558 284.959 54.9269 301.458 53.9351C311.202 53.3491 316.312 55.8566 320.544 59.0855C320.549 59.0911 320.549 59.0967 320.555 59.0967C331.158 70.5047 340.281 83.2025 347.711 96.8905Z" fill="white"/>
+                                <path d="M76.8801 214.712L2.43035 215.033C1.15867 207.26 0.386967 199.413 0.119995 191.541C16.4277 189.231 14.7598 176.27 34.2344 177.448C48.6825 178.316 52.4355 193.581 60.7471 195.835C69.0587 198.089 76.8801 200.83 76.8801 214.712Z" fill="white"/>
+                                </g>
+                                <defs>
+                                <clipPath id="clip0_215_375">
+                                <rect width="370" height="370" fill="white"/>
+                                </clipPath>
+                                </defs>
+                                </svg>
+
+                                <div class='noDataText'>NO SEARCH RESULTS</div>
+                            </div>`;
                             document.querySelector('.testWrapp').appendChild(testElement);
                         }
                     } 
@@ -989,7 +1138,7 @@
             }
 
             function radioMenuStart(){
-                function showBlockForCat(input){
+                function showBlockForCategory(input){
                     const searchEl = document.querySelector('.input-group'),
                         element = document.querySelector('.form-select')
                     let category = 'all';
@@ -1045,7 +1194,7 @@
 
                 for(let i=0; i<items.length; i++){
                     items[i].addEventListener('change',function(){
-                        showBlockForCat(items[i])
+                        showBlockForCategory(items[i])
                     })
                 }
             }
@@ -1230,7 +1379,6 @@
             }
             displayPagination(testEntries, 0, 'all');
         }
-
     </script>
 </body>
 </html>
