@@ -136,7 +136,7 @@
         }
         .inputSearch:focus {
             box-shadow: none;
-            border: 1px solid black;
+            border: 1px solid black!important;
             border-radius: 5px;
             background: #FFF!important;
         }
@@ -157,12 +157,12 @@
             color: #A0CAFF!important;
             background: #FFF!important;
             border: 1px solid #A0CAFF!important;
-            font-weight:700!important;
+            font-weight: 700!important;
         }
         .btn-all:hover span,
         .btn-all:focus span {
             color: #A0CAFF!important;
-            font-weight:700!important;
+            font-weight: 700!important;
         }
         .allTest:checked + .btn-all span {
             color: #A0CAFF!important;
@@ -171,73 +171,73 @@
             color:#A0CAFF!important;
             background: #FFF!important;
             border: 1px solid #A0CAFF!important;
-            font-weight:700!important;
+            font-weight: 700!important;
         }
         .btn-passed:hover,
         .btn-passed:focus {
             color: #75B583!important;
             border: 1px solid #75B583!important;
             background: #FFF!important;
-            font-weight:700!important;
+            font-weight: 700!important;
         }
         .btn-passed:hover span,
         .btn-passed:focus span {
             color: #75B583!important;
-            font-weight:700!important;
+            font-weight: 700!important;
         }
         .passedTest:checked + .btn-passed span {
             color: #75B583!important;
-            font-weight:700!important;
+            font-weight: 700!important;
         }
         .passedTest:checked + .btn-passed {
             color: #75B583!important;
             border: 1px solid #75B583!important;
             background: #FFF!important;
-            font-weight:700!important;
+            font-weight: 700!important;
         }
         .btn-failed:hover,
         .btn-failed:focus {
             color: #FF6363!important;
             border: 1px solid #FF6363!important;
             background: #FFF!important;
-            font-weight:700!important;
+            font-weight: 700!important;
         }
         .btn-failed:hover span,
         .btn-failed:focus span {
             color: #FF6363!important;
-            font-weight:700!important;
+            font-weight: 700!important;
         }
         .failedTest:checked + .btn-failed span {
             color: #FF6363!important;
-            font-weight:700!important;
+            font-weight: 700!important;
         }
         .failedTest:checked + .btn-failed {
             color: #FF6363!important;
             border: 1px solid #FF6363!important;
             background: #FFF!important;
-            font-weight:700!important;
+            font-weight: 700!important;
         }
         .btn-skipped:hover,
         .btn-skipped:focus {
             color: #FFC350!important;
             border: 1px solid #FFC350!important;
             background: #FFF!important;
-            font-weight:700!important;
+            font-weight: 700!important;
         }
         .btn-skipped:hover span,
         .btn-skipped:focus span {
             color: #FFC350!important;
-            font-weight:700!important;
+            font-weight: 700!important;
         }
         .skippedTest:checked + .btn-skipped span {
             color: #FFC350!important;
-            font-weight:700!important;
+            font-weight: 700!important;
         }
         .skippedTest:checked + .btn-skipped {
             color: #FFC350!important;
             border: 1px solid #FFC350!important;
             background: #FFF!important;
-            font-weight:700!important;
+            font-weight: 700!important;
         }
         .passed {
             color: #75B583;
@@ -281,7 +281,7 @@
         .statdesc__row {
             padding: 15px 25px;
             display: flex;
-            border-radius:5px;
+            border-radius: 5px;
         }
         .statdesc__row_first {
             width: 150px;
@@ -359,7 +359,7 @@
         }
         .testitem {
             border: 1px solid grey;
-            border-radius: 10px;
+            border-radius: 3px;
             margin-bottom: 15px;
         }
         .testitem__top {
@@ -576,12 +576,11 @@
                         <div class='input-group-prepend' style='position:absolute;z-index:1;border:none;left:20px'>
                             <span class='hover-search input-group-text' id='basic-addon1' style='height:54px;background:#F6FAFF;border:none'>
                                 <i class='fa-solid fa-magnifying-glass' style='color:#474646;font-size:30px'></i>
-                                <span style='padding-left:15px;color:#474646;font-size:15px;font-weight:500;'>Search</span>
                             </span>
                         </div>
                         <input
                             type='text'
-                            style='height:54px;background:#F6FAFF;border:1px solid #474646;font-weight:600;font-size:15px;'
+                            style='border:none;height:54px;background:#F6FAFF;font-weight:600;font-size:15px;'
                             class='form-control inputSearch'
                             aria-label='Search'
                             aria-describedby='basic-addon1'
@@ -603,7 +602,7 @@
                             checked
                         />
 
-                        <label class='btn btn-all' for='allTest' style='margin-right:8px;background:#A0CAFF;color:#fff;border:none;text-align:center;border-radius:3px;font-weight:600;font-size:12px;width:83px;height:37px'>All
+                        <label class='btn btn-all' for='allTest' style='padding:9px;margin-right:8px;background:#A0CAFF;color:#fff;border:none;text-align:center;border-radius:3px;font-weight:600;font-size:12px;width:83px;height:37px'>All
                             <span style='color:#fff;font-weight:600;font-size:12px;' class='numTest numAll' name='numTest' lcategory='all'>0</span>
                         </label>
 
@@ -616,7 +615,7 @@
                             category='passed'
                         />
 
-                        <label class='btn btn-passed' for='passedTest' style='background:#75B583;color:#fff;border:none;text-align:center;border-radius:3px;font-weight:600;font-size:12px;width:83px;height:37px'>Passed
+                        <label class='btn btn-passed' for='passedTest' style='padding:9px;background:#75B583;color:#fff;border:none;text-align:center;border-radius:3px;font-weight:600;font-size:12px;width:83px;height:37px'>Passed
                             <span style='color:#fff;font-weight:600;font-size:12px;' class='numTest numPassed' name='numTest' lcategory='passed'>0</span>
                         </label>
 
@@ -642,7 +641,7 @@
                             category='skipped'
                         />
                         
-                        <label class='btn btn-skipped' for='skippedTest' style='margin-left:9px;background:#FFC350;color:#fff;border:none;text-align:center;border-radius:3px;font-weight:600;font-size:12px;width:83px;height:37px'>Skipped
+                        <label class='btn btn-skipped' for='skippedTest' style='padding:9px;margin-left:9px;background:#FFC350;color:#fff;border:none;text-align:center;border-radius:3px;font-weight:600;font-size:12px;width:83px;height:37px'>Skipped
                             <span style='color:#fff;font-weight:600;font-size:12px;' class='numTest numSkipped' name='numTest' lcategory='skipped'>0</span>
                         </label>
                     </div>
