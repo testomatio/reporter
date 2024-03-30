@@ -189,7 +189,7 @@ export interface WebdriverIOScenario {
   file: string;
   title: string;
   fullTitle: string;
-  tags: { name: string, astNodeId: string }[];
+  tags: { name: string; astNodeId: string }[];
   tests: WebdriverIOBDDTest[];
   hooks: WebdriverIOHook[];
   suites: any[];
