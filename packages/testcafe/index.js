@@ -1,5 +1,7 @@
 const TestomatClient = require('@testomatio/reporter/lib/client');
 const TRConstants = require('@testomatio/reporter/lib/constants');
+
+// TODO: no such file, path have to be updated
 const util = require('@testomatio/reporter/lib/util');
 
 module.exports = () => {
