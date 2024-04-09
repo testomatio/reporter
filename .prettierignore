@@ -1,1 +1,3 @@
-lib/template/template-draft.hbs
+lib/template/testomatio.hbs
+# fails on CI
+lib/pipe/testomatio.js
