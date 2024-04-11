@@ -34,7 +34,8 @@ module.exports = () => {
         failed = true;
       }
       console.log(` - ${name} : ${status}`);
-      client.addTestRun(util.parseTest(name), status, {
+      const getTestomatIdFromTestTitle = util.getTestomatIdFromTestTitle || util.parseTest;
+      client.addTestRun(getTestomatIdFromTestTitle(name), status, {
         error: testRunInfo.errs.length ? testRunInfo.errs[0] : null,
         message,
         title: name,
