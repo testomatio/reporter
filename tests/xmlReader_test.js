@@ -339,9 +339,6 @@ describe('XML Reader', () => {
       const expectedResult = { api_key: TESTOMATIO };
       assert.isObject(req.body);
       expect(req.body).to.include(expectedResult);
-
-      // post-condition
-      await reader._finishRun();
     });
 
     it('should publish updates', async () => {
@@ -355,9 +352,6 @@ describe('XML Reader', () => {
       await reader.createRun();
       const [req] = server.requests({ method: 'PUT', path: '/api/reporter/' + RUN_ID });
       assert.isObject(req.body);
-
-      // post-condition
-      await reader._finishRun();
     });
 
     afterEach(() => {
