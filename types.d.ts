@@ -47,6 +47,8 @@ export interface TestData {
   /** The stack taken or logs printed during the execution of the test case. */
   stack?: string;
 
+  tags?: string[];
+
   /** The current source code of a test. Used only for JUnit or Newman reports, when we create tests from a run */
   code?: string;
 
@@ -140,4 +142,58 @@ declare global {
       testomatioTestTitle?: string;
     }
   }
+}
+
+interface WebdriverIOError {
+  name: string;
+  message: string;
+  stack: string;
+}
+
+interface WebdriverIOBDDTest {
+  type: string;
+  start: string;
+  end: string;
+  _duration: number;
+  uid: string;
+  cid: string;
+  title: string;
+  fullTitle: string;
+  output: string[];
+  retries: number;
+  parent: string;
+  state: string;
+  errors: WebdriverIOError[];
+  error: WebdriverIOError;
+}
+
+interface WebdriverIOHook {
+  type: string;
+  start: string;
+  end: string;
+  _duration: number;
+  uid: string;
+  cid: string;
+  title: string;
+  parent: string;
+  errors: string[];
+}
+
+export interface WebdriverIOScenario {
+  type: string;
+  start: string;
+  end: string;
+  _duration: number;
+  uid: string;
+  cid: string;
+  file: string;
+  title: string;
+  fullTitle: string;
+  tags: { name: string; astNodeId: string }[];
+  tests: WebdriverIOBDDTest[];
+  hooks: WebdriverIOHook[];
+  suites: any[];
+  parent: string;
+  hooksAndTests: (WebdriverIOHook | WebdriverIOBDDTest)[];
+  description: string;
 }
