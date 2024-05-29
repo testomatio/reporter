@@ -1,10 +1,10 @@
-const { artifactStorage } = require('../lib/services/artifacts');
-const { expect } = require('chai');
-const { fileSystem } = require('../lib/utils/utils');
-const path = require('path');
-const testomat = require('../lib/reporter');
-const { TESTOMAT_TMP_STORAGE_DIR } = require('../lib/constants');
-const { dataStorage } = require('../lib/data-storage');
+import { artifactStorage } from '../lib/services/artifacts.js';
+import { expect } from 'chai';
+import { fileSystem } from '../lib/utils/utils.js';
+import path from 'path';
+import testomat from '../lib/reporter.js';
+import { TESTOMAT_TMP_STORAGE_DIR } from '../lib/constants.js';
+import { dataStorage } from '../lib/data-storage.js';
 
 describe('Artifact storage', () => {
   before(() => {
