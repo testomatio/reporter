@@ -215,6 +215,14 @@ describe('XML Reader', () => {
     expect(jsonData.tests[0].example.param).to.eql('Master');
   });
 
+  it('should parse JUnit params as suiteId', () => {
+    const reader = new XmlReader({ lang: 'java' });
+    reader.parse(path.join(__dirname, 'data/junit3.xml'));
+    reader.formatTests();
+
+    expect(reader.tests[0].title).to.include(' @St1234567');
+  });  
+
   it('should parse JUnit C#', () => {
     const reader = new XmlReader({ lang: 'c#' });
     reader.connectAdapter();
@@ -316,6 +324,26 @@ describe('XML Reader', () => {
     expect(tests[0].title).to.include('Test');
     expect(tests[0].suite_title).to.include('Class1');
     expect(tests[0].file).to.eql('ConsoleApp2');
+  });
+
+  it('should parse XUnit with SpecFlow', () => {
+    const reader = new XmlReader();
+    const jsonData = reader.parse(path.join(__dirname, 'data/specflow.xml'));
+
+    console.log(jsonData);
+    expect(jsonData.status).to.eql('passed');
+    expect(jsonData.tests_count).to.eql(7);
+    expect(jsonData.tests.length).to.eql(7);
+
+    reader.formatTests();
+
+    jsonData.tests.forEach(t => {
+      expect(t).to.contain.keys(['stack', 'create', 'status', 'title', 'run_time', 'suite_title']);
+    });
+
+    const tests = jsonData.tests;
+    expect(tests[0].title).to.include('Allow Mobile Print Behavior');
+    expect(tests[0].suite_title).to.include('ApiFeature');
   });
 
   describe('#request', () => {
