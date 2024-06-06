@@ -215,6 +215,14 @@ describe('XML Reader', () => {
     expect(jsonData.tests[0].example.param).to.eql('Master');
   });
 
+  it('should parse JUnit params as suiteId', () => {
+    const reader = new XmlReader({ lang: 'java' });
+    reader.parse(path.join(__dirname, 'data/junit3.xml'));
+    reader.formatTests();
+
+    expect(reader.tests[0].title).to.include(' @St1234567');
+  });  
+
   it('should parse JUnit C#', () => {
     const reader = new XmlReader({ lang: 'c#' });
     reader.connectAdapter();
