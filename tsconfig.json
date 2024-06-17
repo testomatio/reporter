@@ -1,15 +1,15 @@
 {
   "compilerOptions": {
-    "resolveJsonModule": true,
     "allowJs": true,
     "checkJs": true,
-    "module": "commonjs",
+    "module": "ESNext",
     "esModuleInterop": true,
+    "moduleResolution": "node",
     "noImplicitAny": false,
     "noImplicitThis": false,
     "noEmit": true,
     "types": ["node"],
-    "target": "es2022"
+    "target": "es2022",
   },
   "compileOnSave": true,
   "include": ["lib", "types.d.ts"],
