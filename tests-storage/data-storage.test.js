@@ -1,9 +1,10 @@
-const { expect } = require('chai');
-const fs = require('fs');
-const path = require('path');
-const { TESTOMAT_TMP_STORAGE_DIR } = require('../lib/constants');
-const { fileSystem, removeColorCodes } = require('../lib/utils/utils');
-const { dataStorage, stringToMD5Hash } = require('../lib/data-storage');
+import { expect } from 'chai';
+import fs from 'fs';
+import path from 'path';
+import { TESTOMAT_TMP_STORAGE_DIR } from '../lib/constants';
+import { fileSystem, removeColorCodes } from '../lib/utils/utils';
+import { dataStorage, stringToMD5Hash } from '../lib/data-storage';
+
 
 describe('Storage', () => {
   before(() => {
