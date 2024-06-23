@@ -5,7 +5,6 @@ import { TESTOMAT_TMP_STORAGE_DIR } from '../lib/constants';
 import { fileSystem, removeColorCodes } from '../lib/utils/utils';
 import { dataStorage, stringToMD5Hash } from '../lib/data-storage';
 
-
 describe('Storage', () => {
   before(() => {
     fileSystem.clearDir(TESTOMAT_TMP_STORAGE_DIR);
