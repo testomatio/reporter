@@ -24,16 +24,17 @@ export type TestFile = CommonProps & {
   projectName: string | undefined,
   result: FileResult,
   setupDuration: number
-  tasks: Task[], // or (Task | Suite)[]
+  tasks: (Task | Suite)[]
   type: 'suite',
 }
 
-type Suite = CommonProps & {
+export type Suite = CommonProps & {
   each: undefined,
   file: File,
   projectName: string | undefined,
+  result: FileResult,
   shuffle: undefined,
-  tasks: Task[],
+  tasks: (Suite | Task)[],
   type: 'suite',
 }
 
@@ -50,7 +51,7 @@ type TestError = {
   stackStr: string,
 }
 
-type Task = CommonProps & {
+export type Task = CommonProps & {
   each: undefined,
   fails: undefined,
   file: File,

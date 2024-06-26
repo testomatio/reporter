@@ -198,19 +198,4 @@ export interface WebdriverIOScenario {
   description: string;
 }
 
-
-type State = 'pass' | 'fail';
-
-type TestResult = {
-  duration: number,
-  hooks: {
-    beforeEach: State,
-    afterEach: State
-  },
-  repeatCount: number,
-  retryCount: number,
-  startTime: number,
-  state: State,
-}
-
-export type { TestFile } from './vitest.types';
+export type { Suite as VitestSuite, Task as VitestTask, TestFile as VitestTestFile } from './vitest.types';
