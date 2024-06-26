@@ -11,6 +11,8 @@ export interface FileType {
  * Object representing a unit test result that can be sent to a reporting service.
  */
 export interface TestData {
+  /** Unique ID of test report data to send to multiple times. */
+  rid?: string;
   /** The title of the test case being reported. */
   title: string;
 
