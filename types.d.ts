@@ -197,3 +197,20 @@ export interface WebdriverIOScenario {
   hooksAndTests: (WebdriverIOHook | WebdriverIOBDDTest)[];
   description: string;
 }
+
+
+type State = 'pass' | 'fail';
+
+type TestResult = {
+  duration: number,
+  hooks: {
+    beforeEach: State,
+    afterEach: State
+  },
+  repeatCount: number,
+  retryCount: number,
+  startTime: number,
+  state: State,
+}
+
+export type { TestFile } from './vitest.types';
