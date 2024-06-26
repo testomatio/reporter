@@ -1,17 +1,14 @@
 type State = 'pass' | 'fail';
 
-type TestResult = {
+type FileResult = {
   duration: number,
   hooks: {
     beforeEach: State,
     afterEach: State
   },
-  repeatCount: number,
-  retryCount: number,
   startTime: number,
   state: State,
 }
-
 
 type CommonProps = {
   id: string,
@@ -25,15 +22,7 @@ export type TestFile = CommonProps & {
   // absolute file path
   filepath: string;
   projectName: string | undefined,
-  result:
-  {
-    duration: number
-    hooks: {
-      afterAll: State, beforeAll: State
-    },
-    startTime: number,
-    state: State,
-  }
+  result: FileResult,
   setupDuration: number
   tasks: Task[], // or (Task | Suite)[]
   type: 'suite',
@@ -48,6 +37,19 @@ type Suite = CommonProps & {
   type: 'suite',
 }
 
+type TestError = {
+  actual: string, // actual value
+  diff: string, // diff between actual and expected values
+  expected: string, // expected value
+  message: string, // error message
+  name: string, // error category name (e.g. AssertionError)
+  nameStr: string, // error category name (e.g. AssertionError)
+  operator: string, // e.g. strictEqual
+  showDiff: boolean,
+  stack: string,
+  stackStr: string,
+}
+
 type Task = CommonProps & {
   each: undefined,
   fails: undefined,
@@ -60,7 +62,11 @@ type Task = CommonProps & {
     type: 'stdout' | 'stderr'
   }[],
   repeats: undefined,
-  result: TestResult,
+  result: FileResult & {
+    errors?: TestError[],
+    repeatCount: number,
+    retryCount: number,
+  },
   retry: undefined,
   suite: Suite,
   type: 'test',
