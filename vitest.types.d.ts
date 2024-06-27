@@ -13,14 +13,13 @@ type FileResult = {
 type CommonProps = {
   id: string,
   meta: { [key: string]: any },
-  mode: 'run',
+  mode: 'run' | 'skip',
   // for file its filename including relative path
   name: string,
 }
 
 export type TestFile = CommonProps & {
-  // absolute file path
-  filepath: string;
+  filepath: string; // absolute file path
   projectName: string | undefined,
   result: FileResult,
   setupDuration: number
@@ -30,7 +29,7 @@ export type TestFile = CommonProps & {
 
 export type Suite = CommonProps & {
   each: undefined,
-  file: File,
+  file: TestFile,
   projectName: string | undefined,
   result: FileResult,
   shuffle: undefined,
@@ -54,7 +53,7 @@ type TestError = {
 export type Task = CommonProps & {
   each: undefined,
   fails: undefined,
-  file: File,
+  file: TestFile,
   logs?: {
     content: string,
     size: number,
@@ -63,7 +62,7 @@ export type Task = CommonProps & {
     type: 'stdout' | 'stderr'
   }[],
   repeats: undefined,
-  result: FileResult & {
+  result?: FileResult & {
     errors?: TestError[],
     repeatCount: number,
     retryCount: number,
