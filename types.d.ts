@@ -201,4 +201,4 @@ export interface WebdriverIOScenario {
   description: string;
 }
 
-export type { Suite as VitestSuite, Task as VitestTask, TestFile as VitestTestFile, TestLogs as VitestTestLogs } from './vitest.types';
+export type { Suite as VitestSuite, Test as VitestTest, File as VitestTestFile, TestLogs as VitestTestLogs } from './vitest.types';
