@@ -1,5 +1,13 @@
 type State = 'pass' | 'fail';
 
+export type TestLogs = {
+  content: string,
+  size: number,
+  taskId: string,
+  time: number,
+  type: 'stdout' | 'stderr'
+}
+
 type FileResult = {
   duration: number,
   hooks: {
@@ -54,13 +62,7 @@ export type Task = CommonProps & {
   each: undefined,
   fails: undefined,
   file: TestFile,
-  logs?: {
-    content: string,
-    size: number,
-    taskId: string,
-    time: number,
-    type: 'stdout' | 'stderr'
-  }[],
+  logs?: TestLogs[],
   repeats: undefined,
   result?: FileResult & {
     errors?: TestError[],
