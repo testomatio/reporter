@@ -17,6 +17,7 @@ interface Suite extends TaskBase {
 
 type ErrorWithDiff = {
   cause: string;
+  message: string;
   name: string;
   nameStr?: string;
   stack?: string;
