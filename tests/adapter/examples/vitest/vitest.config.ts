@@ -6,4 +6,4 @@ export default defineConfig({
     reporters: ['verbose', new TestomatioReporter()],
     watch: false,
   },
-})
+});

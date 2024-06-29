@@ -104,7 +104,7 @@ export enum TestStatus {
 
 // TODO: there is a RunStatus object in constants.js; no need to use enum here;
 // because it becomes complicated to infer the type
-// also RunStatus enum type and RunStatus object has the same name which is confusing 
+// also RunStatus enum type and RunStatus object has the same name which is confusing
 export enum RunStatus {
   Passed = 'passed',
   Failed = 'failed',
@@ -201,4 +201,9 @@ export interface WebdriverIOScenario {
   description: string;
 }
 
-export type { Suite as VitestSuite, Test as VitestTest, File as VitestTestFile, TestLogs as VitestTestLogs } from './vitest.types';
+export type {
+  Suite as VitestSuite,
+  Test as VitestTest,
+  File as VitestTestFile,
+  TestLogs as VitestTestLogs,
+} from './vitest.types';

@@ -208,6 +208,7 @@ TESTOMATIO={API_KEY} npx vitest
 > 📑 [Example Project](https://github.com/testomatio/examples/tree/master/vitest)
 
 Vitest reporter has some limitations:
+
 - it does not support [testomatio functions](./functions.md) (but supports adding console.logs and [vitest metadata](https://vitest.dev/advanced/metadata) to report)
 - tests can't be uploaded "on the fly", they sent to Testomat.io only after the run is finished (but vitest is supposed to be used as unit test framework, so your run should not take much time)
 

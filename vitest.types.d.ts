@@ -27,7 +27,7 @@ type ErrorWithDiff = {
     file: string;
     line: number;
     column: number;
-  },
+  };
   showDiff?: boolean;
   actual?: any;
   expected?: any;
@@ -36,7 +36,7 @@ type ErrorWithDiff = {
   frame?: string;
   diff?: string;
   codeFrame?: string;
-}
+};
 
 interface TaskResult {
   state: TaskState;
@@ -70,24 +70,24 @@ interface TaskBase {
 }
 
 export type TestLogs = {
-  content: string,
-  size: number,
-  taskId: string,
-  time: number,
-  type: 'stdout' | 'stderr'
-}
+  content: string;
+  size: number;
+  taskId: string;
+  time: number;
+  type: 'stdout' | 'stderr';
+};
 
 type FileResult = {
-  duration: number,
+  duration: number;
   hooks: {
-    beforeEach: TaskState,
-    afterEach: TaskState
-  },
-  startTime: number,
-  state: TaskState,
-}
+    beforeEach: TaskState;
+    afterEach: TaskState;
+  };
+  startTime: number;
+  state: TaskState;
+};
 
 export type Test = TaskBase & {
-  logs: TestLogs[],
-  type: 'test',
-}
+  logs: TestLogs[];
+  type: 'test';
+};
