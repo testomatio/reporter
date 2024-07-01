@@ -12,6 +12,6 @@
     "target": "es2022"
   },
   "compileOnSave": true,
-  "include": ["lib", "types.d.ts"],
+  "include": ["lib", "types.d.ts", "vitest-types.d.ts"],
   "exclude": ["typings/tests"]
 }

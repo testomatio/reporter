@@ -221,7 +221,7 @@ describe('XML Reader', () => {
     reader.formatTests();
 
     expect(reader.tests[0].title).to.include(' @St1234567');
-  });  
+  });
 
   it('should parse JUnit C#', () => {
     const reader = new XmlReader({ lang: 'c#' });
