@@ -138,6 +138,43 @@ export interface PipeResult {
   result?: any;
 }
 
+/**
+ * Represents the options for a step.
+ */
+type StepOptions = {
+  box?: boolean;
+}
+
+/**
+ * Represents a step function that returns a promise.
+ */
+type StepFunction = () => Promise<any>;
+
+/**
+ * Represents a step in a process.
+ */
+export interface Step {
+  /**
+   * The title of the step.
+   */
+  title: string;
+  
+  /**
+   * The function that defines the behavior of the step.
+   */
+  body: StepFunction;
+  
+  /**
+   * Additional options for the step.
+   */
+  options?: StepOptions;
+}
+
+/**
+ * Represents an array of steps.
+ */
+type Steps = Step[];
+
 declare global {
   namespace NodeJS {
     interface Global {
