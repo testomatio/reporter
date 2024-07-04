@@ -6,6 +6,7 @@ const MochaReporter = require('../../lib/adapter/mocha');
 const JasmineReporter = require('../../lib/adapter/jasmine');
 const CodeceptReporter = require('../../lib/adapter/codecept');
 const CucumberReporter = require('../../lib/adapter/cucumber/current');
+// const VitestReporter = require('../../lib/adapter/vitest');
 const { registerHandlers } = require('./utils');
 const { host, port, TESTOMATIO_URL, TESTOMATIO, RUN_ID } = require('./config');
 
@@ -35,6 +36,11 @@ const params = [
     positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:cucumber:example`,
     negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:cucumber:example`,
   },
+  // {
+  //   adapterName: VitestReporter.name,
+  //   positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:vitest:example`,
+  //   negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:vitest:example`,
+  // }
 ];
 
 describe('Adapters', () => {

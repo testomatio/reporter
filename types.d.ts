@@ -11,6 +11,8 @@ export interface FileType {
  * Object representing a unit test result that can be sent to a reporting service.
  */
 export interface TestData {
+  /** Unique ID of test report data to send to multiple times. */
+  rid?: string;
   /** The title of the test case being reported. */
   title: string;
 
@@ -62,7 +64,7 @@ export interface TestData {
   manuallyAttachedArtifacts?: (string | { path: string; type: string })[];
 
   /** Meta information (key: value) */
-  meta?: { [key: string]: string } | {};
+  meta?: { [key: string]: any } | {};
 }
 
 /**
@@ -102,6 +104,9 @@ export enum TestStatus {
   Skipped = 'skipped',
 }
 
+// TODO: there is a RunStatus object in constants.js; no need to use enum here;
+// because it becomes complicated to infer the type
+// also RunStatus enum type and RunStatus object has the same name which is confusing
 export enum RunStatus {
   Passed = 'passed',
   Failed = 'failed',
@@ -197,3 +202,10 @@ export interface WebdriverIOScenario {
   hooksAndTests: (WebdriverIOHook | WebdriverIOBDDTest)[];
   description: string;
 }
+
+export type {
+  Suite as VitestSuite,
+  Test as VitestTest,
+  File as VitestTestFile,
+  TestLogs as VitestTestLogs,
+} from './vitest.types';
