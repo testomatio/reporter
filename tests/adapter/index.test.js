@@ -8,6 +8,7 @@ import { CodeceptReporter } from '../../lib/adapter/codecept.js';
 import { CucumberReporter } from '../../lib/adapter/cucumber/current.js';
 import { registerHandlers } from './utils/index.js';
 import { config } from './config/index.js';
+// const VitestReporter = require('../../lib/adapter/vitest');
 
 const { host, port, TESTOMATIO_URL, TESTOMATIO, RUN_ID } = config;
 
@@ -37,6 +38,11 @@ const params = [
   //   positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:cucumber:example`,
   //   negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:cucumber:example`,
   // },
+  // {
+  //   adapterName: VitestReporter.name,
+  //   positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:vitest:example`,
+  //   negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:vitest:example`,
+  // }
 ];
 
 describe('Adapters', () => {

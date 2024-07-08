@@ -1,5 +1,22 @@
 ## JavaScript Frameworks
 
+- [CodeceptJS](#codeceptjs)
+- [Cucumber](#cucumber)
+- [Cucumber Java](#cucumber-java)
+- [Cypress](#cypress)
+- [Detox](#detox)
+- [Java Frameworks](#java-frameworks)
+- [Jest](#jest)
+- [JUnit](#junit)
+- [Mocha](#mocha)
+- [Newman/Postman](#newman)
+- [Playwright](#playwright)
+- [Protractor](#protractor)
+- [Selenide](#selenide)
+- [TestCafe](#testcafe)
+- [Vitest](#vitest)
+- [WebdriverIO](#webdriverio)
+
 Testomat.io reporter is NodeJS package that can be applied to all popular JavaScript test runners.
 
 ### CodeceptJS
@@ -149,6 +166,51 @@ TESTOMATIO={API_KEY} npx jest
 > 📑 [Example Project](https://github.com/testomatio/examples/tree/master/jest)
 
 > 📺 [Video](https://www.youtube.com/watch?v=RKfIfnEuGys)
+
+### Vitest
+
+When used with [Testomat.io](https://app.testomat.io) it is recommended to import automated tests first via [check-tests](https://github.com/testomatio/check-tests#cli). To create items on the fly set `TESTOMATIO_CREATE=1` env variable.
+
+1. Install Testomatio reporter:
+
+```bash
+npm install @testomatio/reporter --save-dev
+```
+
+2. Add Testomatio reporter to [vitest.config.ts](https://vitest.dev/config/)
+
+```typescript
+// import reporter
+import TestomatioReporter from '@testomatio/reporter/lib/adapter/vitest';
+
+export default defineConfig({
+  test: {
+    // add Testomatio reporter to reporters list
+    reporters: ['verbose', new TestomatioReporter()],
+  },
+});
+```
+
+> You may also pass your API key
+
+```typescript
+new TestomatioReporter({ apiKey: process.env.TESTOMATIO });
+```
+
+or pass it later via environment variable when running tests.
+
+3. Run tests:
+
+```bash
+TESTOMATIO={API_KEY} npx vitest
+```
+
+> 📑 [Example Project](https://github.com/testomatio/examples/tree/master/vitest)
+
+Vitest reporter has some limitations:
+
+- it does not support [testomatio functions](./functions.md) (but supports adding console.logs and [vitest metadata](https://vitest.dev/advanced/metadata) to report)
+- tests can't be uploaded "on the fly", they sent to Testomat.io only after the run is finished (but vitest is supposed to be used as unit test framework, so your run should not take much time)
 
 ### WebdriverIO
 
