@@ -1,4 +1,4 @@
-const registerHandlers = (server, RUN_ID) => {
+export const registerHandlers = (server, RUN_ID) => {
   // client.createRun()
   server.on({
     method: 'POST',
@@ -35,6 +35,6 @@ const registerHandlers = (server, RUN_ID) => {
   });
 };
 
-module.exports = {
-  registerHandlers,
-};
+// module.exports = {
+//   registerHandlers,
+// };
