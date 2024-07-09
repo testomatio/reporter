@@ -113,3 +113,4 @@ dist
 #Export files folder
 export/
 
+tests/adapter/examples/codecept/output/
