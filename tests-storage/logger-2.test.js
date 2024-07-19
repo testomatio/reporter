@@ -1,8 +1,8 @@
-const { expect } = require('chai');
-const fs = require('fs');
-const path = require('path');
-const { TESTOMAT_TMP_STORAGE_DIR } = require('../lib/constants');
-const { dataStorage } = require('../lib/data-storage');
+import { expect } from 'chai';
+import fs from 'fs';
+import path from 'path';
+import { TESTOMAT_TMP_STORAGE_DIR } from '../lib/constants';
+import { dataStorage } from '../lib/data-storage';
 
 describe('Logger 2', () => {
   // test is moved to separate file because TESTOMATIO_INTERCEPT_CONSOLE_LOGS is passed when run "logger.test.js"

@@ -1,4 +1,4 @@
-const registerHandlers = (server, RUN_ID) => {
+export const registerHandlers = (server, RUN_ID) => {
   // client.createRun()
   server.on({
     method: 'POST',
@@ -33,8 +33,4 @@ const registerHandlers = (server, RUN_ID) => {
       body: JSON.stringify({ message: 'Test could not be matched' }),
     },
   });
-};
-
-module.exports = {
-  registerHandlers,
 };

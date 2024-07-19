@@ -1,12 +1,12 @@
-const { expect } = require('chai');
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
-const { TESTOMAT_TMP_STORAGE_DIR } = require('../lib/constants');
-const { fileSystem, removeColorCodes } = require('../lib/utils/utils');
-const testomat = require('../lib/reporter');
-const { keyValueStorage } = require('../lib/services/key-values');
-const { dataStorage, stringToMD5Hash } = require('../lib/data-storage');
+import { expect } from 'chai';
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
+import { TESTOMAT_TMP_STORAGE_DIR } from '../lib/constants';
+import { fileSystem, removeColorCodes } from '../lib/utils/utils';
+import testomat from '../lib/reporter';
+import { keyValueStorage } from '../lib/services/key-values';
+import { dataStorage, stringToMD5Hash } from '../lib/data-storage';
 
 describe('Testomat reporter functions', () => {
   before(() => {

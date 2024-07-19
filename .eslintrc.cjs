@@ -1,6 +1,5 @@
-export default {
+module.exports = {
   env: {
-    commonjs: true,
     es6: true,
     node: true,
     mocha: true,
@@ -21,6 +20,8 @@ export default {
     'no-restricted-syntax': 0,
     quotes: 0,
     'import/order': 0,
+    'import/extensions': 0,
+    'import/prefer-default-export': 0,
     'no-console': 0,
     'no-continue': 0,
     'no-use-before-define': 0,

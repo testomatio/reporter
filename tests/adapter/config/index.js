@@ -1,7 +1,7 @@
 const host = 'localhost';
 const port = 19000;
 
-module.exports = {
+export const config =  {
   host,
   port,
   TESTOMATIO_URL: `http://${host}:${port}`,
