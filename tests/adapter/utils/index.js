@@ -34,7 +34,3 @@ export const registerHandlers = (server, RUN_ID) => {
     },
   });
 };
-
-// module.exports = {
-//   registerHandlers,
-// };
