@@ -44,7 +44,7 @@ export interface TestData {
   filesBuffers?: Buffer[];
 
   /** The steps taken or logs printed during the execution of the test case. */
-  steps?: string;
+  steps?: Step[];
 
   /** The stack taken or logs printed during the execution of the test case. */
   stack?: string;
@@ -136,6 +136,17 @@ export interface PipeResult {
 
   /** the result that pipe returned */
   result?: any;
+}
+
+/**
+ * Represents a step in a test.
+ */
+interface Step {
+  category: string;
+  title: string;
+  duration: number;
+  steps?: Step[];
+  error?: any;
 }
 
 declare global {
