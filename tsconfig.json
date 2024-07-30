@@ -9,10 +9,11 @@
     "noImplicitThis": false,
     "noEmit": true,
     "resolveJsonModule": true,
+    "skipLibCheck": true,
     "types": ["node"],
     "target": "es2022",
   },
   "compileOnSave": true,
   "include": ["lib", "types.d.ts", "vitest-types.d.ts"],
-  "exclude": ["typings/tests"]
+  "exclude": ["typings/tests", "node_modules"]
 }
