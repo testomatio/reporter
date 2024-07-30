@@ -1,3 +1,4 @@
+// @ts-ignore
 import debug from 'debug';
 import TestomatioReporter from '@testomatio/reporter';
 import chalk from 'chalk';
@@ -7,9 +8,11 @@ import {
   NewmanRunExecutionAssertion,
   NewmanRunOptions,
   NewmanRunSummary,
+  // @ts-ignore
 } from 'newman';
 import { getGroupPath, getPrettyTimeFromTimestamp } from './helpers';
 import { AnyObject } from './types';
+// @ts-ignore
 import { filesize } from 'filesize';
 
 const log = debug('newman-reporter-testomatio');
@@ -182,6 +185,7 @@ function TestomatioNewmanReporter(
     const events = result.item.events;
 
     let code = '';
+    // @ts-ignore
     events.map(event => {
       const eventName = event.listen;
       const eventScripts = event.script.exec;
