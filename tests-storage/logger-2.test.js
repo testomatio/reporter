@@ -10,7 +10,7 @@ describe('Logger 2', () => {
   it('logs are not intercepted by mocha if TESTOMATIO_INTERCEPT_CONSOLE_LOGS is not set @T00000018', () => {
     dataStorage.setContext('@T00000018');
     const message = 'test log message';
-    process.env.TESTOMATIO_INTERCEPT_CONSOLE_LOGS = false;
+    process.env.TESTOMATIO_INTERCEPT_CONSOLE_LOGS = 'false';
     console.log(message);
     const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', 'log_T00000018');
     expect(fs.existsSync(logFilePath)).to.equal(false);
