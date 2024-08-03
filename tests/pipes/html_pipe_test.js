@@ -1,9 +1,8 @@
-const { expect } = require('chai');
-const fs = require('fs');
-const path = require('path');
-const { JSDOM } = require('jsdom');
-
-const HtmlPipe = require('../../lib/pipe/html');
+import { expect } from 'chai';
+import fs from 'fs';
+import path from 'path';
+import { JSDOM } from 'jsdom';
+import HtmlPipe from '../../lib/pipe/html';
 
 // test data
 const DATA = {
@@ -68,14 +67,14 @@ describe('HTML report tests', () => {
     try {
       await fs.promises.rm(testOutputDir, { recursive: true });
     } catch (err) {
-      console.error(`Unknown error while deleting ${dir}.`);
+      console.error(`Unknown error while deleting ${testOutputDir}.`);
     }
   });
   it(
     'buildReport function should save HTML report based on the testomatio.hbs template' +
       'and custom name = testomatio-report.html',
     async () => {
-      process.env.TESTOMATIO_HTML_REPORT_SAVE = 1;
+      process.env.TESTOMATIO_HTML_REPORT_SAVE = '1';
 
       const name = 'testomatio-report.html';
       const template = path.resolve(__dirname, '../..', 'lib', 'template', 'testomatio.hbs');
