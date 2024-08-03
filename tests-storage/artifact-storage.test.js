@@ -54,6 +54,7 @@ describe('Artifact storage', () => {
     testomat.artifact(artifact);
     const artifacts = artifactStorage.get('@TA0000005');
     expect(artifacts).to.exist;
+    if (typeof artifacts[0] === 'string') throw new Error('Artifact should be an object');
     expect(artifacts[0].name).to.equal(artifact.name);
     expect(artifacts[0].type).to.equal(artifact.type);
     expect(artifacts[0].path).to.equal(artifact.path);

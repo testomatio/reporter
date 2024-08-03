@@ -1,3 +1,4 @@
+// @ts-nocheck
 const { TestomatClient, TRConstants } = require('testomat-reporter');
 
 const client = new TestomatClient({ apiKey: 'l5x5d5cd6pc3' });

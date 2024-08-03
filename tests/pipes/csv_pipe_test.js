@@ -1,7 +1,7 @@
-const { expect } = require('chai');
-const fs = require('fs');
-const path = require('path');
-const CsvPipe = require('../../lib/pipe/csv');
+import { expect } from 'chai';
+import fs from 'fs';
+import path from 'path';
+import CsvPipe from '../../lib/pipe/csv';
 
 // test data
 const DATA = [

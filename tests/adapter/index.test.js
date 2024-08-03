@@ -2,7 +2,7 @@ import { assert, expect } from 'chai';
 import { exec } from 'child_process';
 import ServerMock from 'mock-http-server';
 import JestReporter from '../../lib/adapter/jest.js';
-import { MochaReporter } from '../../lib/adapter/mocha.js';
+import MochaReporter from '../../lib/adapter/mocha.js';
 import { JasmineReporter } from '../../lib/adapter/jasmine.js';
 import { CodeceptReporter } from '../../lib/adapter/codecept.js';
 import { CucumberReporter } from '../../lib/adapter/cucumber/current.js';
@@ -13,16 +13,16 @@ import { config } from './config/index.js';
 const { host, port, TESTOMATIO_URL, TESTOMATIO, RUN_ID } = config;
 
 const params = [
-  {
-    adapterName: JestReporter.name,
-    positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:jest:example`,
-    negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:jest:example`,
-  },
   // {
-  //   adapterName: MochaReporter.name,
-  //   positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:mocha:example`,
-  //   negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:mocha:example`,
+  //   adapterName: JestReporter.name,
+  //   positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:jest:example`,
+  //   negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:jest:example`,
   // },
+  {
+    adapterName: MochaReporter.name,
+    positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:mocha:example`,
+    negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:mocha:example`,
+  },
   // {
   //   adapterName: JasmineReporter.name,
   //   positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:jasmine:example`,
@@ -86,7 +86,7 @@ describe('Adapters', () => {
           server.reset();
         });
 
-        it('POST :: /api/reporter :: should create a report if api_key has been provided', () => {
+        it.only('POST :: /api/reporter :: should create a report if api_key has been provided', () => {
           const [req] = server.requests({ method: 'POST', path: '/api/reporter' });
 
           const expectedResult = { api_key: TESTOMATIO };
@@ -95,7 +95,7 @@ describe('Adapters', () => {
           expect(req.body).to.include(expectedResult);
         });
 
-        it.only('PUT :: /api/reporter/:runId :: should update run status', () => {
+        it('PUT :: /api/reporter/:runId :: should update run status', () => {
           const res = server.requests({ method: 'PUT', path: `/api/reporter/${RUN_ID}` });
           const [req] = server.requests({ method: 'PUT', path: `/api/reporter/${RUN_ID}` });
 

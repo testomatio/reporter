@@ -1,4 +1,4 @@
-const { Given, When, Then } = require('@cucumber/cucumber');
+import { Given, When, Then } from '@cucumber/cucumber';
 
 Given('I do something', function () {
   // actually nothing

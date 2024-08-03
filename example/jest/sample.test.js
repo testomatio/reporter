@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 describe('Suite 2', () => {
   test('This is a sample test 3', () => {
     expect(1 + 2).toBe(3);

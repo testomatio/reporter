@@ -44,7 +44,7 @@ export interface TestData {
   filesBuffers?: Buffer[];
 
   /** The steps taken or logs printed during the execution of the test case. */
-  steps?: Step[];
+  steps?: Step[] | string;
 
   /** The stack taken or logs printed during the execution of the test case. */
   stack?: string;

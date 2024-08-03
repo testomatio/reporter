@@ -1,11 +1,12 @@
-const { expect } = require('chai');
-const {
+import { expect } from 'chai';
+
+import {
   fetchFilesFromStackTrace,
   fetchSourceCodeFromStackTrace,
   fetchIdFromCode,
   fetchIdFromOutput,
   fetchSourceCode,
-} = require('../lib/utils/utils');
+} from '../lib/utils/utils';
 
 describe('Utils', () => {
   it('#fetchFilesFromStackTrace | should match images from stack trace', () => {

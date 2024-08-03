@@ -1,6 +1,6 @@
-const { expect } = require('chai');
-const TestomatioClient = require('../lib/client');
-const errorFn = require('./data/src/error');
+import { expect } from 'chai';
+import TestomatioClient from '../lib/client';
+import errorFn from './data/src/error';
 const ANSI_REGEX = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g;
 
 describe('Client', () => {

@@ -1,9 +1,11 @@
-const path = require('path');
-const { expect, assert } = require('chai');
-const ServerMock = require('mock-http-server');
-const { host, port, TESTOMATIO_URL, TESTOMATIO, RUN_ID } = require('./adapter/config');
-const { registerHandlers } = require('./adapter/utils');
-const XmlReader = require('../lib/xmlReader');
+import path from 'path';
+import { expect, assert } from 'chai';
+import ServerMock from 'mock-http-server';
+import { config } from './adapter/config';
+import { registerHandlers } from './adapter/utils';
+import XmlReader from '../lib/xmlReader';
+
+const {host, port, TESTOMATIO_URL, TESTOMATIO, RUN_ID} = config;
 
 describe('XML Reader', () => {
   const server = new ServerMock({ host, port });

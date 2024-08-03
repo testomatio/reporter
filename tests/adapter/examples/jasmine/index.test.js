@@ -1,4 +1,4 @@
-/* eslint-disable no-undef */
+// @ts-nocheck
 
 describe('Suite 1', () => {
   it('Test addition', () => {

@@ -1,5 +1,5 @@
-const { expect } = require('chai');
-const { parseFilterParams, updateFilterType, generateFilterRequestParams } = require('../../lib/utils/pipe_utils');
+import { expect } from 'chai';
+import { parseFilterParams, updateFilterType, generateFilterRequestParams } from '../../lib/utils/pipe_utils';
 
 describe('testing ipe/misc.js functions', () => {
   describe('updateFilterType function', () => {

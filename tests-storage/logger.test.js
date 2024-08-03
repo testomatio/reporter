@@ -1,4 +1,4 @@
-import {step, log} from '../lib/reporter';
+import reporter from '../lib/reporter';
 import { expect } from 'chai';
 import fs from 'fs';
 import path from 'path';
@@ -9,6 +9,7 @@ import { logger } from '../lib/services/logger';
 import testomat from '../lib/reporter';
 import pino from 'pino';
 
+const { log, step } = reporter;
 const pinoLogger = pino();
 
 describe('Logger', () => {
@@ -202,7 +203,7 @@ describe('Logger', () => {
   it.skip('get logs from global var @T00000014', () => {
     const message = 'test log message';
     console.log(message);
-    const logs = removeColorCodes(logger.getLogs().join('\n'));
+    const logs = removeColorCodes(logger.getLogs(null).join('\n'));
     expect(logs).to.equal(`${message}`);
   });
 
@@ -243,6 +244,6 @@ describe('Logger', () => {
   });
 });
 
-module.exports.removeColorCodes = removeColorCodes;
+export { removeColorCodes };
 
 // TODO: test for reinterception (intercept console, then intercept pino, then intercept console again)
