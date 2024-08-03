@@ -13,6 +13,7 @@ describe('Storage', () => {
   it('PUT data to FILE storage @TB0000002', () => {
     const dataType = 'test2';
     const data = 'test data';
+    // @ts-ignore passing unexisting data type intentionally
     dataStorage.putData(dataType, data, 'PUT data to FILE storage @TB0000002');
     const contextHash = stringToMD5Hash('PUT data to FILE storage @TB0000002');
     const dataFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, dataType, `${dataType}_${contextHash}`);
@@ -25,8 +26,10 @@ describe('Storage', () => {
     const dataType = 'test3';
     const data = 'test data';
     const contextHash = stringToMD5Hash('GET data from FILE storage @TB0000003');
+    // @ts-ignore passing unexisting data type intentionally
     dataStorage.putData(dataType, data, contextHash);
 
+    // @ts-ignore passing unexisting data type intentionally
     const retrievedData = dataStorage.getData(dataType, contextHash);
     expect(retrievedData).to.deep.equal([data]);
   });
@@ -35,8 +38,10 @@ describe('Storage', () => {
     const dataType = 'test5';
     dataStorage.isFileStorage = false;
     const data = 'test data';
+    // @ts-ignore passing unexisting data type intentionally
     dataStorage.putData(dataType, data, '@TB0000005');
 
+    // @ts-ignore passing unexisting data type intentionally
     const retrievedData = dataStorage.getData(dataType, '@TB0000005');
     expect(dataStorage.isFileStorage).to.equal(false);
     expect(retrievedData).to.deep.equal([data]);
@@ -46,12 +51,14 @@ describe('Storage', () => {
     const dataType = 'test6';
     dataStorage.isFileStorage = false;
     const data = 'test data';
+    // @ts-ignore passing unexisting data type intentionally
     dataStorage.putData(dataType, data, '@TB0000006');
 
+    // @ts-ignore passing unexisting data type intentionally
     const retrievedData = dataStorage.getData(dataType, '@TB0000006');
     expect(dataStorage.isFileStorage).to.equal(false);
     expect(retrievedData).to.deep.equal([data]);
   });
 });
 
-module.exports.removeColorCodes = removeColorCodes;
+export { removeColorCodes };
