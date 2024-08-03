@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 Feature('Suite 1 @S25e19ba9');
 
 Scenario('Test issue for suite 1 @Tca70c8c4', I => {
