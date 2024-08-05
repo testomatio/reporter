@@ -1,4 +1,4 @@
-const assert = require('assert');
+import assert from 'assert';
 
 describe('Sample mocha suite', () => {
   it('Sample mocha test', () => {

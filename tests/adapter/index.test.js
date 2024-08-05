@@ -2,7 +2,7 @@ import { assert, expect } from 'chai';
 import { exec } from 'child_process';
 import ServerMock from 'mock-http-server';
 import JestReporter from '../../lib/adapter/jest.js';
-import MochaReporter from '../../lib/adapter/mocha.js';
+import * as MochaReporter from '../../lib-cjs/lib/adapter/mocha.js';
 import { JasmineReporter } from '../../lib/adapter/jasmine.js';
 import { CodeceptReporter } from '../../lib/adapter/codecept.js';
 import { CucumberReporter } from '../../lib/adapter/cucumber/current.js';
@@ -18,8 +18,9 @@ const params = [
   //   positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:jest:example`,
   //   negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:jest:example`,
   // },
+  
   {
-    adapterName: MochaReporter.name,
+    adapterName: 'MochaReporter',
     positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:mocha:example`,
     negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:mocha:example`,
   },
