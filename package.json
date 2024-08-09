@@ -1,6 +1,6 @@
 {
   "name": "@testomatio/reporter",
-  "version": "1.4.6",
+  "version": "1.4.10",
   "description": "Testomatio Reporter Client",
   "main": "./lib/reporter.js",
   "typings": "typings/index.d.ts",
@@ -20,7 +20,7 @@
     "csv-writer": "^1.6.0",
     "debug": "^4.3.4",
     "dotenv": "^16.0.1",
-    "fast-xml-parser": "^4.0.8",
+    "fast-xml-parser": "^4.4.1",
     "file-url": "3.0.0",
     "glob": "^10.3",
     "handlebars": "^4.7.8",
@@ -63,7 +63,7 @@
     "@redocly/cli": "^1.0.0-beta.125",
     "@wdio/reporter": "^7.16.13",
     "chai": "^4.3.6",
-    "codeceptjs": "latest",
+    "codeceptjs": "^3.5.11",
     "cucumber": "^6.0.7",
     "eslint": "^8.7.0",
     "eslint-config-airbnb-base": "^15.0.0",
@@ -76,7 +76,7 @@
     "mock-http-server": "^1.4.5",
     "pino": "^8.15.0",
     "prettier": "^3.2.5",
-    "puppeteer": "^13.1.2"
+    "puppeteer": "^22.15.0"
   },
   "bin": {
     "report-xml": "./lib/bin/reportXml.js",
