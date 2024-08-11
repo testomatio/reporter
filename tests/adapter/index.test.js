@@ -2,28 +2,29 @@ import { assert, expect } from 'chai';
 import { exec } from 'child_process';
 import ServerMock from 'mock-http-server';
 import JestReporter from '../../lib/adapter/jest.js';
-import * as MochaReporter from '../../lib-cjs/lib/adapter/mocha.js';
+import * as MochaReporter from '../../lib-cjs/lib/adapter/mocha/mocha.js';
 import { JasmineReporter } from '../../lib/adapter/jasmine.js';
 import { CodeceptReporter } from '../../lib/adapter/codecept.js';
 import { CucumberReporter } from '../../lib/adapter/cucumber/current.js';
 import { registerHandlers } from './utils/index.js';
 import { config } from './config/index.js';
+import chalkUsed from '../../lib/utils/chalk.js';
 // const VitestReporter = require('../../lib/adapter/vitest');
 
 const { host, port, TESTOMATIO_URL, TESTOMATIO, RUN_ID } = config;
 
 const params = [
-  // {
-  //   adapterName: JestReporter.name,
-  //   positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:jest:example`,
-  //   negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:jest:example`,
-  // },
-  
   {
-    adapterName: 'MochaReporter',
-    positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:mocha:example`,
-    negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:mocha:example`,
+    adapterName: JestReporter.name,
+    positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:jest:example`,
+    negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:jest:example`,
   },
+  
+  // {
+  //   adapterName: 'MochaReporter',
+  //   positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:mocha:example`,
+  //   negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:mocha:example`,
+  // },
   // {
   //   adapterName: JasmineReporter.name,
   //   positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:jasmine:example`,
@@ -88,6 +89,7 @@ describe('Adapters', () => {
         });
 
         it.only('POST :: /api/reporter :: should create a report if api_key has been provided', () => {
+          console.log(chalkUsed.red(' >>>>> >>>>> >>>>> >>>> >>>>> >>>> >>>>> >> > test'));
           const [req] = server.requests({ method: 'POST', path: '/api/reporter' });
 
           const expectedResult = { api_key: TESTOMATIO };

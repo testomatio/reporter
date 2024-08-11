@@ -1,19 +1,21 @@
 {
   "compilerOptions": {
     "allowJs": true,
+    "allowSyntheticDefaultImports": true,
     "checkJs": true,
     "module": "ESNext",
     "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node",
     "noImplicitAny": false,
     "noImplicitThis": false,
-    "noEmit": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "types": ["node"],
-    "target": "es2022",
+    "target": "ESNext",
+    "outDir": "./lib-cjs",
   },
   "compileOnSave": true,
   "include": ["lib", "types.d.ts", "vitest-types.d.ts"],
-  "exclude": ["typings/tests", "node_modules"]
+  "exclude": ["node_modules", "packages", "lib-cjs", "lib/adapter/mocha/mocha.cjs"],
 }
