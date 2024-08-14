@@ -14,37 +14,171 @@ require('dotenv').config({ path: '.env' }); // or any other path
 
 > ℹ️ Specifying **any value** for truthy variables activates the setting, e.g. `TESTOMAT_ENABLE_SMTH=true`, `TESTOMAT_ENABLE_SMTH=1`, and even `TESTOMAT_ENABLE_SMTH=false`, `TESTOMAT_ENABLE_SMTH=0` etc do the same - **enable** the setting.
 
-## Variables list
+## Variables List
 
-| Name                                                       | Description                                                                                                                                                                                                                                   | Example                                                                                                                                                                                                                                                               |
-| ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `TESTOMATIO` or `TESTOMATIO_TOKEN` or `TESTOMATIO_API_KEY` | Your api key.                                                                                                                                                                                                                                 |
-| `TESTOMATIO_CSV_FILENAME`                                  |                                                                                                                                                                                                                                               |
-| `TESTOMATIO_CREATE`                                        | Create test ids.                                                                                                                                                                                                                              |
-| `TESTOMATIO_DISABLE_BATCH_UPLOAD`                          | Disables batch uploading (multiple test results in one request) and uploads each test result one by one. Please set this variable only for debug and make sure you understand what it does. We do not recommend to use it on a regular basis. | `TESTOMATIO_DISABLE_BATCH_UPLOAD=true <actual run command>`                                                                                                                                                                                                           |
-| `TESTOMATIO_ENV`                                           | Adding Environments to Run                                                                                                                                                                                                                    | `TESTOMATIO={API_KEY} TESTOMATIO_ENV="Windows, Chrome" <actual run command>`                                                                                                                                                                                          |
-| `TESTOMATIO_EXCLUDE_FILES_FROM_REPORT_GLOB_PATTERN`        | Exclude tests from report by [glob pattern](https://www.npmjs.com/package/glob)                                                                                                                                                               | `TESTOMATIO_EXCLUDE_FILES_FROM_REPORT_GLOB_PATTERN="**/*.setup.ts" <actual run command>`. You may use multiple patterns, separate them with semicolon (`;`): `TESTOMATIO_EXCLUDE_FILES_FROM_REPORT_GLOB_PATTERN="**/*.setup.ts;tests/*.auth.js" <actual run command>` |
-| `TESTOMATIO_EXCLUDE_SKIPPED`                               | Exclude skipped tests from report                                                                                                                                                                                                             | `TESTOMATIO_EXCLUDE_SKIPPED=1 <actual-run-command>`                                                                                                                                                                                                                   |
-| `TESTOMATIO_INTERCEPT_CONSOLE_LOGS`                        | Intercept console logs and add them to your report.                                                                                                                                                                                           | `TESTOMATIO_INTERCEPT_CONSOLE_LOGS=true <actual run command>`                                                                                                                                                                                                         |
-| `TESTOMATIO_MAX_REQUEST_FAILURES_COUNT`                    | Maximum number of failed requests within 60s. Default is 10.                                                                                                                                                                                  | `TESTOMATIO_MAX_REQUEST_FAILURES_COUNT=5 <actual run command>`                                                                                                                                                                                                         |
-| `TESTOMATIO_PROCEED`                                       | Do Not Finalize Run                                                                                                                                                                                                                           | `TESTOMATIO_PREPEND_DIR="MyTESTS" TESTOMATIO=1111111 npx check-tests CodeceptJS "**/*{.,_}{test,spec}.js"`                                                                                                                                                            |
-| `TESTOMATIO_PREPEND_DIR`                                   | Put all imported tests into a specific suite (folder)                                                                                                                                                                                         |
-| `TESTOMATIO_RUN`                                           | Add Report to Run by ID                                                                                                                                                                                                                       |
-| `TESTOMATIO_RUNGROUP_TITLE`                                | Adding Report to RunGroup                                                                                                                                                                                                                     | `TESTOMATIO={API_KEY} TESTOMATIO_RUNGROUP_TITLE="Build ${BUILD_ID}" <actual run command>`                                                                                                                                                                             |
-| `TESTOMATIO_SHARED_RUN`                                    | Reporting Parallel Execution to To Same Run                                                                                                                                                                                                   | `TESTOMATIO={API_KEY} TESTOMATIO_TITLE="report for commit ${GIT_COMMIT}" TESTOMATIO_SHARED_RUN=1 <actual run command>`                                                                                                                                                |
-| `TESTOMATIO_STACK_FILTER`                                  |                                                                                                                                                                                                                                               |
-| `TESTOMATIO_STACK_PASSED`                                  | Enable stack traces and logs for passed tests (disabled by default to optimize storage)                                                                                                                                                       | `TESTOMATIO={API_KEY} TESTOMATIO_STACK_PASSED=1 <actual run command>`                                                                                                                                                                                                 |
-| `TESTOMATIO_TITLE`                                         | Setting Report Title                                                                                                                                                                                                                          | `TESTOMATIO={API_KEY} TESTOMATIO_TITLE="title for the report" <actual run command>`                                                                                                                                                                                   |
-| `TESTOMATIO_TITLE_IDS`                                     |                                                                                                                                                                                                                                               |
-| Artifacts                                                  |                                                                                                                                                                                                                                               |
-| `S3_ACCESS_KEY_ID`                                         |                                                                                                                                                                                                                                               |
-| `S3_BUCKET`                                                |                                                                                                                                                                                                                                               |
-| `S3_ENDPOINT`                                              |                                                                                                                                                                                                                                               |
-| `S3_REGION`                                                |                                                                                                                                                                                                                                               |
-| `S3_SECRET_ACCESS_KEY`                                     |                                                                                                                                                                                                                                               |
-| Pipes                                                      |                                                                                                                                                                                                                                               |
-| `GH_PAT`                                                   |                                                                                                                                                                                                                                               |
-| `GITLAB_PAT`                                               |                                                                                                                                                                                                                                               |
+Here's the list in the new format:
+
+#### `TESTOMATIO` 
+
+Alternatively, `TESTOMATIO_TOKEN` or `TESTOMATIO_API_KEY`
+
+Your Project API key for reporting to Testomat.io.
+
+#### `TESTOMATIO_CREATE`
+
+Create test IDs.
+
+#### `TESTOMATIO_DISABLE_BATCH_UPLOAD`
+
+Disables batch uploading (multiple test results in one request) and uploads each test result one by one.
+
+Example:
+
+```
+TESTOMATIO_DISABLE_BATCH_UPLOAD=true <actual run command>
+```
+
+#### `TESTOMATIO_ENV`
+
+Specify environments to run the tests.
+
+Example:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_ENV="Windows, Chrome" <actual run command>
+```
+
+#### `TESTOMATIO_EXCLUDE_FILES_FROM_REPORT_GLOB_PATTERN`
+
+Exclude tests from the report using [glob patterns](https://www.npmjs.com/package/glob).
+
+Example:
+
+```
+TESTOMATIO_EXCLUDE_FILES_FROM_REPORT_GLOB_PATTERN="**/*.setup.ts" <actual run command>
+```
+
+For multiple patterns:
+
+```
+TESTOMATIO_EXCLUDE_FILES_FROM_REPORT_GLOB_PATTERN="**/*.setup.ts;tests/*.auth.js" <actual run command>
+```
+
+#### `TESTOMATIO_EXCLUDE_SKIPPED`
+
+Exclude skipped tests from the report.
+
+Example:
+
+```
+TESTOMATIO_EXCLUDE_SKIPPED=1 <actual run command>
+```
+
+#### `TESTOMATIO_INTERCEPT_CONSOLE_LOGS`
+
+Intercept console logs and add them to your report.
+
+Example:
+
+```
+TESTOMATIO_INTERCEPT_CONSOLE_LOGS=true <actual run command>
+```
+
+#### `TESTOMATIO_MAX_REQUEST_FAILURES_COUNT`
+
+Maximum number of failed requests within 60 seconds. Default is 10.
+
+Example:
+
+```
+TESTOMATIO_MAX_REQUEST_FAILURES_COUNT=5 <actual run command>
+```
+
+#### `TESTOMATIO_PROCEED`
+
+Do not finalize the run.
+
+Example:
+
+```
+TESTOMATIO_PREPEND_DIR="MyTESTS" TESTOMATIO=1111111 npx check-tests CodeceptJS "**/*{.,_}{test,spec}.js"
+```
+
+#### `TESTOMATIO_PREPEND_DIR`
+
+Place all imported tests into a specific suite (folder).
+
+#### `TESTOMATIO_RUN`
+
+Add a report to the run by ID.
+
+#### `TESTOMATIO_RUNGROUP_TITLE`
+
+Add a report to a RunGroup.
+
+Example:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_RUNGROUP_TITLE="Build ${BUILD_ID}" <actual run command>
+```
+
+#### `TESTOMATIO_SHARED_RUN`
+
+Report parallel execution to the same run.
+
+Example:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_TITLE="report for commit ${GIT_COMMIT}" TESTOMATIO_SHARED_RUN=1 <actual run command>
+```
+
+#### `TESTOMATIO_STACK_FILTER`
+
+Stack trace filter configuration.
+
+#### `TESTOMATIO_STACK_PASSED`
+
+Enable stack traces and logs for passed tests (disabled by default).
+
+Example:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_STACK_PASSED=1 <actual run command>
+```
+
+#### `TESTOMATIO_TITLE`
+
+Set the report title.
+
+Example:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_TITLE="title for the report" <actual run command>
+```
+
+#### `TESTOMATIO_TITLE_IDS`
+
+Configure title IDs.
+
+
+
+### Artifacts
+
+Configuration for artifacts storage.
+
+* `S3_ACCESS_KEY_ID`: Your S3 access key ID.
+* `S3_BUCKET`: Your S3 bucket name.
+* `S3_ENDPOINT`: Your S3 endpoint URL.
+* `S3_REGION`: Your S3 region.
+* `S3_SECRET_ACCESS_KEY`: Your S3 secret access key.
+
+### Pipes
+
+Configuration for CI/CD pipelines.
+
+* `GH_PAT`: Your GitHub personal access token (to enable GitHub Pipe)
+* `GITLAB_PAT`: Your GitLab personal access token (to enable Gitlab Pipe).
+
 
 # .env file usage
 
