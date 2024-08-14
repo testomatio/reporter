@@ -1,22 +1,13 @@
 # Environment variables
 
-You can pass environment variables to the testomat.io reporter using the following syntax:
+You can configure Testomat.io reporter as environment variables.
 
-`bash TESTOMATIO={API_KEY} <actual run command>`
-
-When running on CI, use secrets.
-
-To read environment variables from `.env` file, use [dotenv](https://www.npmjs.com/package/dotenv) package. And read the env file via:
-
-```javascript
-require('dotenv').config({ path: '.env' }); // or any other path
-```
+Environment variables can be either passed inline, or from `.env` file or from secrets, when running on CI.
 
 > ℹ️ Specifying **any value** for truthy variables activates the setting, e.g. `TESTOMAT_ENABLE_SMTH=true`, `TESTOMAT_ENABLE_SMTH=1`, and even `TESTOMAT_ENABLE_SMTH=false`, `TESTOMAT_ENABLE_SMTH=0` etc do the same - **enable** the setting.
 
 ## Variables List
 
-Here's the list in the new format:
 
 #### `TESTOMATIO` 
 
