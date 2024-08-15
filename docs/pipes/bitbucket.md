@@ -1,7 +1,3 @@
----
-title: Bitbucket
----
-
 ## Bitbucket Pipe
 
 Bitbucket Pipe adds a comment with a summary of a run to a Pull Request:
