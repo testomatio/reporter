@@ -123,7 +123,7 @@ If S3 credentials are not set, artfact file will be ignored.
 
 ### Other Frameworks
 
-For tests in **Java**, **Python**, **C#** and other languages, which are not (yet) integrated into Testomat.io Reporter, **use [JUnit format](./junit) for reporting**.
+For tests in **Java**, **Python**, **C#** and other languages, which are not (yet) integrated into Testomat.io Reporter, **use [JUnit format](./junit.md) for reporting**.
 
 To attach a file to a test as an artifact print the file name into console with `file://` prefix and upload XML report with Testomat.io.
 
@@ -144,7 +144,7 @@ System.out.println("file://" + pathToScreenshot);
 
 Attaching a screenshot to the C# test
 
-```C#
+```c#
 // assume you created a screenshot
 // which is located at `pathToScreenshot`
 Console.WriteLine("file://" + pathToScreenshot);

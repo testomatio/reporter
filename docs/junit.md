@@ -44,7 +44,7 @@ npx report-xml "{pattern}" --lang={lang}
   - `python`
   - `php`
 - `--java-tests` option is avaiable for Java projects, and can be set if path to tests is different then `src/test/java`. When this option is enable, `lang` option is automatically set to `java`
-- `--env-file <envfile>` option to load environment variables from .env file. Inside env file TESTOMATIO credentials like `TESTOMATIO` api key or [bucket config for artifats](./artifacts).
+- `--env-file <envfile>` option to load environment variables from .env file. Inside env file TESTOMATIO credentials like `TESTOMATIO` api key or [bucket config for artifats](./artifacts.md).
 - `--timelimit <time>` set a timer to silently kill a long-running reporter process due to network or other issues. For instance, use `--set-timeout=3` to stop process after 3 secs.
 
 ## Pytest
