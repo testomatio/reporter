@@ -4,12 +4,17 @@ import ServerMock from 'mock-http-server';
 import JestReporter from '../../lib/adapter/jest.js';
 import * as MochaReporter from '../../lib-cjs/lib/adapter/mocha/mocha.js';
 import { JasmineReporter } from '../../lib/adapter/jasmine.js';
+import JasmineReporter from '../../lib-cjs/lib/adapter/jasmine.js';
 import { CodeceptReporter } from '../../lib/adapter/codecept.js';
 import { CucumberReporter } from '../../lib/adapter/cucumber/current.js';
 import { registerHandlers } from './utils/index.js';
 import { config } from './config/index.js';
-import chalkUsed from '../../lib/utils/chalk.js';
-// const VitestReporter = require('../../lib/adapter/vitest');
+import pc from 'picocolors';
+// import { VitestReporter } from '../../lib/adapter/vitest.js';
+
+/* ! note for developers: if you face with error when response from moch server is not received:
+probably, the reporter for current adapter is not loaded, run the tests for the specific adapter separately
+and check if it works at all; because running tests with this file may hide some logs*/
 
 const { host, port, TESTOMATIO_URL, TESTOMATIO, RUN_ID } = config;
 
@@ -20,31 +25,31 @@ const params = [
     negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:jest:example`,
   },
   
-  // {
-  //   adapterName: 'MochaReporter',
-  //   positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:mocha:example`,
-  //   negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:mocha:example`,
-  // },
-  // {
-  //   adapterName: JasmineReporter.name,
-  //   positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:jasmine:example`,
-  //   negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:jasmine:example`,
-  // },
-  // {
-  //   adapterName: CodeceptReporter.name,
-  //   positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:codecept:example`,
-  //   negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:codecept:example`,
-  // },
-  // {
-  //   adapterName: CucumberReporter.name,
-  //   positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:cucumber:example`,
-  //   negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:cucumber:example`,
-  // },
-  // {
-  //   adapterName: VitestReporter.name,
-  //   positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:vitest:example`,
-  //   negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:vitest:example`,
-  // }
+  {
+    adapterName: 'MochaReporter',
+    positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:mocha:example`,
+    negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:mocha:example`,
+  },
+  {
+    adapterName: JasmineReporter.name,
+    positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:jasmine:example`,
+    negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:jasmine:example`,
+  },
+  {
+    adapterName: CodeceptReporter.name,
+    positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:codecept:example`,
+    negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:codecept:example`,
+  },
+  {
+    adapterName: CucumberReporter.name,
+    positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:cucumber:example`,
+    negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:cucumber:example`,
+  },
+  {
+    adapterName: 'Vitest',
+    positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:vitest:example`,
+    negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:vitest:example`,
+  }
 ];
 
 describe('Adapters', () => {
@@ -88,8 +93,7 @@ describe('Adapters', () => {
           server.reset();
         });
 
-        it.only('POST :: /api/reporter :: should create a report if api_key has been provided', () => {
-          console.log(chalkUsed.red(' >>>>> >>>>> >>>>> >>>> >>>>> >>>> >>>>> >> > test'));
+        it('POST :: /api/reporter :: should create a report if api_key has been provided', () => {
           const [req] = server.requests({ method: 'POST', path: '/api/reporter' });
 
           const expectedResult = { api_key: TESTOMATIO };
@@ -99,7 +103,6 @@ describe('Adapters', () => {
         });
 
         it('PUT :: /api/reporter/:runId :: should update run status', () => {
-          const res = server.requests({ method: 'PUT', path: `/api/reporter/${RUN_ID}` });
           const [req] = server.requests({ method: 'PUT', path: `/api/reporter/${RUN_ID}` });
 
           const expectedResult = { api_key: TESTOMATIO, status_event: 'fail' };

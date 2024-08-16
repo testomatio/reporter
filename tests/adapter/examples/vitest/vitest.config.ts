@@ -5,8 +5,10 @@ import TestomatioReporter from '../../../../lib/adapter/vitest.js';
 
 export default defineConfig({
   test: {
-    // @ts-ignore - TODO: fix type
-    reporters: ['verbose', new TestomatioReporter()],
+    // @ts-ignore
+    reporters: ['basic', new TestomatioReporter()],
     watch: false,
+    include: ['**/vitest/*.test.ts', '*.test.ts'],
+    // include: ['./**/*.test.ts'],
   },
 });
