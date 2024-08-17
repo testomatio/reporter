@@ -6,9 +6,7 @@ import { registerHandlers } from './adapter/utils/index.js';
 import XmlReader from '../lib/xmlReader.js';
 import { fileURLToPath } from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
+const dirname = path.dirname(fileURLToPath(import.meta.url));
 const {host, port, TESTOMATIO_URL, TESTOMATIO, RUN_ID} = config;
 
 describe('XML Reader', () => {
@@ -32,7 +30,7 @@ describe('XML Reader', () => {
 
   it('should parse Jest XML', () => {
     const reader = new XmlReader();
-    const jsonData = reader.parse(path.join(__dirname, 'data/junit1.xml'));
+    const jsonData = reader.parse(path.join(dirname, 'data/junit1.xml'));
     expect(jsonData.status).to.eql('failed');
     expect(jsonData.tests_count).to.eql(13);
     expect(jsonData.tests.length).to.eql(jsonData.tests_count);
@@ -44,7 +42,7 @@ describe('XML Reader', () => {
 
   it('should parse minitest XML', () => {
     const reader = new XmlReader();
-    const jsonData = reader.parse(path.join(__dirname, 'data/minitest.xml'));
+    const jsonData = reader.parse(path.join(dirname, 'data/minitest.xml'));
     expect(jsonData.status).to.eql('passed');
 
     const stats = reader.calculateStats();
@@ -64,7 +62,7 @@ describe('XML Reader', () => {
 
   it('should parse Pytest XML', () => {
     const reader = new XmlReader();
-    const jsonData = reader.parse(path.join(__dirname, 'data/pytest.xml'));
+    const jsonData = reader.parse(path.join(dirname, 'data/pytest.xml'));
 
     expect(jsonData.status).to.eql('failed');
     const stats = reader.calculateStats();
@@ -87,7 +85,7 @@ describe('XML Reader', () => {
 
   it('should parse Codeception XML', () => {
     const reader = new XmlReader();
-    const jsonData = reader.parse(path.join(__dirname, 'data/codecept.xml'));
+    const jsonData = reader.parse(path.join(dirname, 'data/codecept.xml'));
 
     expect(jsonData.status).to.eql('failed');
     const stats = reader.calculateStats();
@@ -114,7 +112,7 @@ describe('XML Reader', () => {
 
   it('should parse simple JUnit XML', () => {
     const reader = new XmlReader({ lang: 'java' });
-    const jsonData = reader.parse(path.join(__dirname, 'data/junit_simple.xml'));
+    const jsonData = reader.parse(path.join(dirname, 'data/junit_simple.xml'));
 
     expect(jsonData.status).to.eql('failed');
     const stats = reader.calculateStats();
@@ -132,7 +130,7 @@ describe('XML Reader', () => {
 
   it('should parse JUnit XML', () => {
     const reader = new XmlReader({ lang: 'java' });
-    const jsonData = reader.parse(path.join(__dirname, 'data/java.xml'));
+    const jsonData = reader.parse(path.join(dirname, 'data/java.xml'));
 
     expect(jsonData.status).to.eql('failed');
     const stats = reader.calculateStats();
@@ -160,7 +158,7 @@ describe('XML Reader', () => {
 
   it('should parse Selenide JUnit XML', () => {
     const reader = new XmlReader({ lang: 'java' });
-    const jsonData = reader.parse(path.join(__dirname, 'data/selenide.xml'));
+    const jsonData = reader.parse(path.join(dirname, 'data/selenide.xml'));
 
     reader.formatErrors();
     reader.formatTests();
@@ -178,7 +176,7 @@ describe('XML Reader', () => {
 
   it('should parse JUnit XML and skipped tests', () => {
     const reader = new XmlReader();
-    const jsonData = reader.parse(path.join(__dirname, 'data/junit_skipped.xml'));
+    const jsonData = reader.parse(path.join(dirname, 'data/junit_skipped.xml'));
 
     expect(jsonData.status).to.eql('failed');
     const stats = reader.calculateStats();
@@ -201,7 +199,7 @@ describe('XML Reader', () => {
 
   it('should parse JUnit params', () => {
     const reader = new XmlReader({ lang: 'java' });
-    const jsonData = reader.parse(path.join(__dirname, 'data/junit2.xml'));
+    const jsonData = reader.parse(path.join(dirname, 'data/junit2.xml'));
 
     expect(jsonData.status).to.eql('passed');
     const stats = reader.calculateStats();
@@ -223,7 +221,7 @@ describe('XML Reader', () => {
 
   it('should parse JUnit params as suiteId', () => {
     const reader = new XmlReader({ lang: 'java' });
-    reader.parse(path.join(__dirname, 'data/junit3.xml'));
+    reader.parse(path.join(dirname, 'data/junit3.xml'));
     reader.formatTests();
 
     expect(reader.tests[0].title).to.include(' @St1234567');
@@ -232,7 +230,7 @@ describe('XML Reader', () => {
   it('should parse JUnit C#', () => {
     const reader = new XmlReader({ lang: 'c#' });
     reader.connectAdapter();
-    const jsonData = reader.parse(path.join(__dirname, 'data/csharp.xml'));
+    const jsonData = reader.parse(path.join(dirname, 'data/csharp.xml'));
 
     expect(jsonData.status).to.eql('failed');
     const stats = reader.calculateStats();
@@ -255,7 +253,7 @@ describe('XML Reader', () => {
 
   it('should parse NUnit TRX XML', () => {
     const reader = new XmlReader();
-    const jsonData = reader.parse(path.join(__dirname, 'data/nunit.xml'));
+    const jsonData = reader.parse(path.join(dirname, 'data/nunit.xml'));
 
     expect(jsonData.status).to.eql('passed');
     expect(jsonData.tests_count).to.eql(2);
@@ -274,7 +272,7 @@ describe('XML Reader', () => {
 
   it('should parse NUnit3 XML', () => {
     const reader = new XmlReader();
-    const jsonData = reader.parse(path.join(__dirname, 'data/nunit3.xml'));
+    const jsonData = reader.parse(path.join(dirname, 'data/nunit3.xml'));
 
     expect(jsonData.status).to.eql('failed');
     expect(jsonData.tests_count).to.eql(3);
@@ -293,7 +291,7 @@ describe('XML Reader', () => {
 
   it('should parse XUnit XML', () => {
     const reader = new XmlReader();
-    const jsonData = reader.parse(path.join(__dirname, 'data/xunit.xml'));
+    const jsonData = reader.parse(path.join(dirname, 'data/xunit.xml'));
 
     expect(jsonData.status).to.eql('failed');
     expect(jsonData.tests_count).to.eql(6);
@@ -314,7 +312,7 @@ describe('XML Reader', () => {
 
   it('should parse XUnit2 client XML', () => {
     const reader = new XmlReader();
-    const jsonData = reader.parse(path.join(__dirname, 'data/xunit2.xml'));
+    const jsonData = reader.parse(path.join(dirname, 'data/xunit2.xml'));
 
     expect(jsonData.status).to.eql('passed');
     expect(jsonData.tests_count).to.eql(1);
@@ -334,7 +332,7 @@ describe('XML Reader', () => {
 
   it('should parse XUnit with SpecFlow', () => {
     const reader = new XmlReader();
-    const jsonData = reader.parse(path.join(__dirname, 'data/specflow.xml'));
+    const jsonData = reader.parse(path.join(dirname, 'data/specflow.xml'));
 
     expect(jsonData.status).to.eql('passed');
     expect(jsonData.tests_count).to.eql(7);
@@ -365,7 +363,7 @@ describe('XML Reader', () => {
         testomatioUrl: TESTOMATIO_URL,
         apiKey: TESTOMATIO,
       });
-      reader.parse(path.join(__dirname, 'data/junit1.xml'));
+      reader.parse(path.join(dirname, 'data/junit1.xml'));
       await reader.createRun();
 
       const [req] = server.requests({ method: 'POST', path: '/api/reporter' });
@@ -380,7 +378,7 @@ describe('XML Reader', () => {
         apiKey: TESTOMATIO,
         runId: RUN_ID,
       });
-      reader.parse(path.join(__dirname, 'data/junit1.xml'));
+      reader.parse(path.join(dirname, 'data/junit1.xml'));
 
       await reader.createRun();
       const [req] = server.requests({ method: 'PUT', path: '/api/reporter/' + RUN_ID });

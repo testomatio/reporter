@@ -5,8 +5,7 @@ import { JSDOM } from 'jsdom';
 import HtmlPipe from '../../lib/pipe/html.js';
 import { fileURLToPath } from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // test data
 const DATA = {
@@ -59,7 +58,7 @@ const DATA = {
 };
 
 describe('HTML report tests', () => {
-  // const testOutputDir = path.resolve(__dirname, 'htmlOutput');
+  // const testOutputDir = path.resolve(dirname, 'htmlOutput');
   const testOutputDir = path.resolve(process.cwd(), 'htmlOutput');
   let filepath = '';
 
@@ -82,7 +81,7 @@ describe('HTML report tests', () => {
       process.env.TESTOMATIO_HTML_REPORT_SAVE = '1';
 
       const name = 'testomatio-report.html';
-      const template = path.resolve(__dirname, '../..', 'lib', 'template', 'testomatio.hbs');
+      const template = path.resolve(dirname, '../..', 'lib', 'template', 'testomatio.hbs');
       filepath = path.resolve(testOutputDir, name);
 
       const htmlPipe = new HtmlPipe({}, {});
