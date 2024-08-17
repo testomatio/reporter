@@ -332,7 +332,6 @@ describe('XML Reader', () => {
     const reader = new XmlReader();
     const jsonData = reader.parse(path.join(__dirname, 'data/specflow.xml'));
 
-    console.log(jsonData);
     expect(jsonData.status).to.eql('passed');
     expect(jsonData.tests_count).to.eql(7);
     expect(jsonData.tests.length).to.eql(7);

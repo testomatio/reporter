@@ -11,7 +11,7 @@ Testomat.io Reporter (this npm package) supports:
 - 🏄 Integarion with all popular [JavaScript/TypeScript frameworks](./docs/frameworks.md)
 - 🗄️ Screenshots, videos, traces [uploaded into S3 bucket](./docs/artifacts.md)
 - 🔎 [Stack traces](./docs/stacktrace.md) and error messages
-- 🐙 [GitHub](./docs/pipes/github.md) & [GitLab](./docs/pipes/gitlab.md) integration
+- 🐙 [GitHub](./docs/pipes/github.md), [GitLab](./docs/pipes/gitlab.md) & [Bitbucket](./docs/pipes/bitbucket.md) integration
 - 🚅 Realtime reports
 - 🗃️ Other test frameworks supported via [JUNit XML](./docs/junit.md)
 - 🚶‍♀️ Steps _(work in progress)_
@@ -128,6 +128,7 @@ Bring this reporter on CI and never lose test results again!
   - [Gitlab](./docs/pipes/gitlab.md)
   - [CSV](./docs/pipes/csv.md)
   - [HTML report](./docs/pipes/html.md)
+  - [Bitbucket](./docs/pipes/bitbucket.md)
 - 📓 [JUnit](./docs/junit.md)
 - 🗄️ [Artifacts](./docs/artifacts.md)
 - 🔂 [Workflows](./docs/workflows.md)
