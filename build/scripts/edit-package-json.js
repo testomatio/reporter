@@ -1,5 +1,5 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 // This script updates "type" to "commonjs" and "chalk" version to "^4.1.2" in package.json file.
 // Because chalk 5+ works only with ESM.

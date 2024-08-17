@@ -1,5 +1,5 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 // This script changes the export statement in lib/adapter/jasmine.js file after it was transpiled to CommonJS.
 
