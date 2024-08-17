@@ -4,6 +4,10 @@ import ServerMock from 'mock-http-server';
 import { config } from './adapter/config/index.js';
 import { registerHandlers } from './adapter/utils/index.js';
 import XmlReader from '../lib/xmlReader.js';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const {host, port, TESTOMATIO_URL, TESTOMATIO, RUN_ID} = config;
 

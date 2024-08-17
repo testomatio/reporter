@@ -8,8 +8,7 @@ import { CodeceptReporter } from '../../lib/adapter/codecept.js';
 import CucumberReporter from '../../lib/adapter/cucumber/current.js';
 import { registerHandlers } from './utils/index.js';
 import { config } from './config/index.js';
-import pc from 'picocolors';
-// import { VitestReporter } from '../../lib/adapter/vitest.js';
+import { VitestReporter } from '../../lib/adapter/vitest.js';
 
 /* ! note for developers: if you face with error when response from moch server is not received:
 probably, the reporter for current adapter is not loaded, run the tests for the specific adapter separately
@@ -34,18 +33,19 @@ const params = [
     positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:jasmine:example`,
     negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:jasmine:example`,
   },
-  {
-    adapterName: CodeceptReporter.name,
-    positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:codecept:example`,
-    negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:codecept:example`,
-  },
+  // !TODO: this should be uncommentd when codecept adapter will be rewritten to use ESM
+  // {
+  //   adapterName: CodeceptReporter.name,
+  //   positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:codecept:example`,
+  //   negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:codecept:example`,
+  // },
   {
     adapterName: CucumberReporter.name,
     positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:cucumber:example`,
     negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:cucumber:example`,
   },
   {
-    adapterName: 'Vitest',
+    adapterName: VitestReporter.name,
     positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:vitest:example`,
     negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:vitest:example`,
   },

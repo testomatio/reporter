@@ -2,7 +2,7 @@ import { PlaywrightTestConfig } from '@playwright/test';
 
 // Reference: https://playwright.dev/docs/test-configuration
 const config: PlaywrightTestConfig = {
-  testMatch: '/tests/*.spec.ts',
+  testMatch: '/tests/*.spec.js',
   reporter: [
     ['list'],
     // ['@testomatio/reporter/lib/adapter/playwright.js', {
