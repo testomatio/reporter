@@ -1,5 +1,13 @@
 <!-- pending release updates -->
 
+# next
+- move the reporter to ESM (except separate libs from `./packages`)
+- added unit tests for Vitest and Playwright
+- drop support for Cucumber versions < 7
+- add typings
+
+
+
 # 1.1.0
 
 - Rewritten logger and artifacts storage. Test reports contain logs, steps, stack traces.

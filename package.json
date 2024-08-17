@@ -46,7 +46,6 @@
   "scripts": {
     "@cucumber/cucumber": "^10.9.0",
     "clear-exportdir": "rm -rf export/",
-    "cucumber": "^6.0.7",
     "pretty": "npx prettier --check .",
     "pretty:fix": "prettier --write .",
     "lint": "eslint lib",
