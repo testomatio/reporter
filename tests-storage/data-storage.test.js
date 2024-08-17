@@ -1,9 +1,9 @@
 import { expect } from 'chai';
 import fs from 'fs';
 import path from 'path';
-import { TESTOMAT_TMP_STORAGE_DIR } from '../lib/constants';
-import { fileSystem, removeColorCodes } from '../lib/utils/utils';
-import { dataStorage, stringToMD5Hash } from '../lib/data-storage';
+import { TESTOMAT_TMP_STORAGE_DIR } from '../lib/constants.js';
+import { fileSystem, removeColorCodes } from '../lib/utils/utils.js';
+import { dataStorage, stringToMD5Hash } from '../lib/data-storage.js';
 
 describe('Storage', () => {
   before(() => {

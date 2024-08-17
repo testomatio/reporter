@@ -1,12 +1,12 @@
-import reporter from '../lib/reporter';
+import reporter from '../lib/reporter.js';
 import { expect } from 'chai';
 import fs from 'fs';
 import path from 'path';
-import { TESTOMAT_TMP_STORAGE_DIR } from '../lib/constants';
-import { fileSystem, removeColorCodes } from '../lib/utils/utils';
-import { dataStorage, stringToMD5Hash } from '../lib/data-storage';
-import { logger } from '../lib/services/logger';
-import testomat from '../lib/reporter';
+import { TESTOMAT_TMP_STORAGE_DIR } from '../lib/constants.js';
+import { fileSystem, removeColorCodes } from '../lib/utils/utils.js';
+import { dataStorage, stringToMD5Hash } from '../lib/data-storage.js';
+import { logger } from '../lib/services/logger.js';
+import testomat from '../lib/reporter.js';
 import pino from 'pino';
 
 const { log, step } = reporter;

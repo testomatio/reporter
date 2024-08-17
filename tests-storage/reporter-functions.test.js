@@ -2,11 +2,11 @@ import { expect } from 'chai';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import { TESTOMAT_TMP_STORAGE_DIR } from '../lib/constants';
-import { fileSystem, removeColorCodes } from '../lib/utils/utils';
-import testomat from '../lib/reporter';
-import { keyValueStorage } from '../lib/services/key-values';
-import { dataStorage, stringToMD5Hash } from '../lib/data-storage';
+import { TESTOMAT_TMP_STORAGE_DIR } from '../lib/constants.js';
+import { fileSystem, removeColorCodes } from '../lib/utils/utils.js';
+import testomat from '../lib/reporter.js';
+import { keyValueStorage } from '../lib/services/key-values.js';
+import { dataStorage, stringToMD5Hash } from '../lib/data-storage.js';
 
 describe('Testomat reporter functions', () => {
   before(() => {
