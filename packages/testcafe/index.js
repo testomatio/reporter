@@ -1,5 +1,5 @@
-const TestomatClient = require('@testomatio/reporter/lib/client');
-const TRConstants = require('@testomatio/reporter/lib/constants');
+const TestomatClient = require('@testomatio/reporter/lib/client.js');
+const TRConstants = require('@testomatio/reporter/lib/constants.js');
 
 // TODO: no such file, path have to be updated
 const util = require('@testomatio/reporter/lib/util');

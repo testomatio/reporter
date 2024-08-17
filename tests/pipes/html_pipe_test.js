@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import fs from 'fs';
 import path from 'path';
 import { JSDOM } from 'jsdom';
-import HtmlPipe from '../../lib/pipe/html';
+import HtmlPipe from '../../lib/pipe/html.js';
 
 // test data
 const DATA = {
@@ -55,7 +55,8 @@ const DATA = {
 };
 
 describe('HTML report tests', () => {
-  const testOutputDir = path.resolve(__dirname, 'htmlOutput');
+  // const testOutputDir = path.resolve(__dirname, 'htmlOutput');
+  const testOutputDir = path.resolve(process.cwd(), 'htmlOutput');
   let filepath = '';
 
   before(() => {

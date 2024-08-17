@@ -1,6 +1,6 @@
 import { expect } from 'chai';
-import TestomatioClient from '../lib/client';
-import errorFn from './data/src/error';
+import TestomatioClient from '../lib/client.js';
+import errorFn from './data/src/error.js';
 const ANSI_REGEX = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g;
 
 describe('Client', () => {

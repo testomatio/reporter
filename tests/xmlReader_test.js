@@ -1,9 +1,9 @@
 import path from 'path';
 import { expect, assert } from 'chai';
 import ServerMock from 'mock-http-server';
-import { config } from './adapter/config';
-import { registerHandlers } from './adapter/utils';
-import XmlReader from '../lib/xmlReader';
+import { config } from './adapter/config/index.js';
+import { registerHandlers } from './adapter/utils/index.js';
+import XmlReader from '../lib/xmlReader.js';
 
 const {host, port, TESTOMATIO_URL, TESTOMATIO, RUN_ID} = config;
 

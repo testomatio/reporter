@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import fs from 'fs';
 import path from 'path';
-import CsvPipe from '../../lib/pipe/csv';
+import CsvPipe from '../../lib/pipe/csv.js';
 
 // test data
 const DATA = [
