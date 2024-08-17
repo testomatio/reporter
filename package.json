@@ -32,8 +32,8 @@
     "lodash.memoize": "^4.1.2",
     "lodash.merge": "^4.6.2",
     "minimatch": "^9.0.3",
-    "promise-retry": "^2.0.1",
-    "uuid": "^9.0.0"
+    "picocolors": "^1.0.1",
+    "promise-retry": "^2.0.1"
   },
   "files": [
     "bin",
@@ -49,19 +49,22 @@
     "format": "npm run lint:fix && npm run pretty:fix",
     "test": "mocha tests/**",
     "init": "cd ./tests/adapter/examples/cucumber && npm i",
-    "test:adapter": "mocha './tests/adapter/index.test.js'",
+    "test:adapter": "node node_modules/mocha/bin/mocha './tests/adapter/index.test.js'",
     "test:pipes": "mocha './tests/pipes/*_test.js'",
     "test:adapter:jest:example": "jest './tests/adapter/examples/jest/index.test.js' --config='./tests/adapter/examples/jest/jest.config.js'",
-    "test:adapter:mocha:example": "mocha './tests/adapter/examples/mocha/index.test.js' --config='./tests/adapter/examples/mocha/mocha.config.js'",
-    "test:adapter:jasmine:example": "./tests/adapter/examples/jasmine/passReporterOpts.sh && jasmine './tests/adapter/examples/jasmine/index.test.js' --reporter=./../../../lib/adapter/jasmine.js",
+    "test:adapter:mocha:example": "mocha './tests/adapter/examples/mocha/index.test.js' --config='./tests/adapter/examples/mocha/mocha.config.cjs'",
+    "test:adapter:jasmine:example": "jasmine './tests/adapter/examples/jasmine/index.test.js' --reporter=./lib-cjs/lib/adapter/jasmine.js",
     "test:adapter:codecept:example": "codeceptjs run --config='./tests/adapter/examples/codecept/codecept.conf.js'",
     "test:adapter:cucumber:example": "cd ./tests/adapter/examples/cucumber && npx cucumber-js",
-    "test:adapter:vitest:example": "vitest --config='./tests/adapter/examples/vitest/vitest.config.js'",
-    "test:storage": "npx mocha tests-storage/artifact-storage.test.js && npx mocha tests-storage/data-storage.test.js && TESTOMATIO_INTERCEPT_CONSOLE_LOGS=true npx mocha tests-storage/logger.test.js && npx mocha tests-storage/logger-2.test.js && npx mocha tests-storage/reporter-functions.test.js"
+    "test:adapter:vitest:example": "npx vitest --config='./tests/adapter/examples/vitest/vitest.config.ts'",
+    "test:storage": "npx mocha tests-storage/artifact-storage.test.js && npx mocha tests-storage/data-storage.test.js && TESTOMATIO_INTERCEPT_CONSOLE_LOGS=true npx mocha tests-storage/logger.test.js && npx mocha tests-storage/logger-2.test.js && npx mocha tests-storage/reporter-functions.test.js",
+    "build:cjs": "rm -rf ./lib-cjs && npx tsc --module commonjs && chmod +x lib/adapter/mocha/edit-mocha-adapter.sh lib/adapter/mocha/edit-package-json.sh && ./lib/adapter/mocha/edit-mocha-adapter.sh && ./lib/adapter/mocha/edit-package-json.sh"
   },
   "devDependencies": {
-    "@cucumber/cucumber": "^9.3.0",
+    "@cucumber/cucumber": "^10.9.0",
     "@redocly/cli": "^1.0.0-beta.125",
+    "@types/cucumber": "^7.0.0",
+    "@types/mocha": "^10.0.7",
     "@wdio/reporter": "^7.16.13",
     "chai": "^4.3.6",
     "codeceptjs": "latest",
@@ -70,14 +73,16 @@
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-import": "^2.25.4",
-    "jasmine": "^3.10.0",
+    "jasmine": "^5.2.0",
     "jest": "^27.4.7",
     "jsdom": "^22.1.0",
     "mocha": "^9.2.0",
     "mock-http-server": "^1.4.5",
     "pino": "^8.15.0",
     "prettier": "^3.2.5",
-    "puppeteer": "^13.1.2"
+    "puppeteer": "^13.1.2",
+    "typescript": "^5.5.4",
+    "vitest": "^1.6.0"
   },
   "bin": {
     "report-xml": "./lib/bin/reportXml.js",
