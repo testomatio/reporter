@@ -64,7 +64,7 @@
     "test:adapter:playwright:example": "npx playwright test --config='./tests/adapter/examples/playwright/playwright.config.ts'",
     "test:adapter:vitest:example": "npx vitest --config='./tests/adapter/examples/vitest/vitest.config.ts'",
     "test:storage": "npx mocha tests-storage/artifact-storage.test.js && npx mocha tests-storage/data-storage.test.js && TESTOMATIO_INTERCEPT_CONSOLE_LOGS=true npx mocha tests-storage/logger.test.js && npx mocha tests-storage/logger-2.test.js && npx mocha tests-storage/reporter-functions.test.js",
-    "build:cjs": "rm -rf ./lib-cjs && npx tsc --module commonjs && chmod +x lib/adapter/mocha/edit-mocha-adapter.sh lib/adapter/mocha/edit-package-json.sh lib/adapter/edit-jasmine-adapter-cjs.sh && ./lib/adapter/mocha/edit-mocha-adapter.sh && ./lib/adapter/mocha/edit-package-json.sh && ./lib/adapter/edit-jasmine-adapter-cjs.sh"
+    "build:cjs": "rm -rf ./lib-cjs && npx tsc --module commonjs && chmod +x build/main-script.sh && ./build/main-script.sh"
   },
   "devDependencies": {
     "@playwright/test": "^1.46.1",

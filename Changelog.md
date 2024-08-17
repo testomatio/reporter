@@ -5,6 +5,7 @@
 - added unit tests for Vitest and Playwright
 - drop support for Cucumber versions < 7
 - add typings
+- fix all linter issues and enable linter on CI
 
 
 
