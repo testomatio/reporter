@@ -4,7 +4,7 @@ import path from 'path';
 // This script changes the export statement in lib/adapter/mocha.js file after it was transpiled to CommonJS.
 
 // Define the file path
-const filePath = path.join(__dirname, 'lib-cjs/lib/adapter/mocha/mocha.js');
+const filePath = path.join(process.cwd(), 'lib-cjs/lib/adapter/mocha/mocha.js');
 
 // Read the file content
 fs.readFile(filePath, 'utf8', (err, data) => {

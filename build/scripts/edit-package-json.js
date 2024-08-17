@@ -5,7 +5,7 @@ import path from 'path';
 // Because chalk 5+ works only with ESM.
 
 // Define the file path
-const filePath = path.join(__dirname, 'lib-cjs/package.json');
+const filePath = path.join(process.cwd(), 'lib-cjs/package.json');
 
 // Read the file content
 fs.readFile(filePath, 'utf8', (err, data) => {
