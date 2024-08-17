@@ -32,9 +32,9 @@ for script in "$SCRIPT_DIR"/*.js;
 do
   # Check if the file is a regular file
   if [ -f "$script" ]; then
-    echo "\n>>>>>Executing $script with Node.js"
+    echo "Executing $script"
     node "$script"
-    echo "Executed $script with Node.js<<<<<\n"
+    echo ""
 
   fi
 done
