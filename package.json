@@ -11,7 +11,9 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.279.0",
     "@aws-sdk/lib-storage": "^3.279.0",
+    "@cucumber/cucumber": "^10.9.0",
     "@octokit/rest": "^19.0.5",
+    "@playwright/test": "^1.46.1",
     "aws-sdk": "^2.1072.0",
     "axios": "^1.6.2",
     "axios-retry": "^3.9.1",
@@ -33,7 +35,8 @@
     "lodash.merge": "^4.6.2",
     "minimatch": "^9.0.3",
     "picocolors": "^1.0.1",
-    "promise-retry": "^2.0.1"
+    "promise-retry": "^2.0.1",
+    "uuid": "^10.0.0"
   },
   "files": [
     "bin",
@@ -41,7 +44,9 @@
     "testcafe"
   ],
   "scripts": {
+    "@cucumber/cucumber": "^10.9.0",
     "clear-exportdir": "rm -rf export/",
+    "cucumber": "^6.0.7",
     "pretty": "npx prettier --check .",
     "pretty:fix": "prettier --write .",
     "lint": "eslint lib",
@@ -61,14 +66,12 @@
     "build:cjs": "rm -rf ./lib-cjs && npx tsc --module commonjs && chmod +x lib/adapter/mocha/edit-mocha-adapter.sh lib/adapter/mocha/edit-package-json.sh && ./lib/adapter/mocha/edit-mocha-adapter.sh && ./lib/adapter/mocha/edit-package-json.sh"
   },
   "devDependencies": {
-    "@cucumber/cucumber": "^10.9.0",
     "@redocly/cli": "^1.0.0-beta.125",
     "@types/cucumber": "^7.0.0",
     "@types/mocha": "^10.0.7",
     "@wdio/reporter": "^7.16.13",
     "chai": "^4.3.6",
-    "codeceptjs": "latest",
-    "cucumber": "^6.0.7",
+    "codeceptjs": "^3.6.5",
     "eslint": "^8.57.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-prettier": "^8.3.0",

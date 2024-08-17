@@ -4,7 +4,6 @@ import ServerMock from 'mock-http-server';
 import JestReporter from '../../lib/adapter/jest.js';
 import * as MochaReporter from '../../lib-cjs/lib/adapter/mocha/mocha.js';
 import { JasmineReporter } from '../../lib/adapter/jasmine.js';
-import JasmineReporter from '../../lib-cjs/lib/adapter/jasmine.js';
 import { CodeceptReporter } from '../../lib/adapter/codecept.js';
 import { CucumberReporter } from '../../lib/adapter/cucumber/current.js';
 import { registerHandlers } from './utils/index.js';
@@ -49,7 +48,8 @@ const params = [
     adapterName: 'Vitest',
     positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:vitest:example`,
     negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:vitest:example`,
-  }
+  },
+  // TODO: add Playwright tests
 ];
 
 describe('Adapters', () => {
