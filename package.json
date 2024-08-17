@@ -13,7 +13,6 @@
     "@aws-sdk/lib-storage": "^3.279.0",
     "@cucumber/cucumber": "^10.9.0",
     "@octokit/rest": "^19.0.5",
-    "@playwright/test": "^1.46.1",
     "aws-sdk": "^2.1072.0",
     "axios": "^1.6.2",
     "axios-retry": "^3.9.1",
@@ -60,11 +59,13 @@
     "test:adapter:jasmine:example": "jasmine './tests/adapter/examples/jasmine/index.test.js' --reporter=./lib-cjs/lib/adapter/jasmine.js",
     "test:adapter:codecept:example": "codeceptjs run --config='./tests/adapter/examples/codecept/codecept.conf.js'",
     "test:adapter:cucumber:example": "cd ./tests/adapter/examples/cucumber && npx cucumber-js",
+    "test:adapter:playwright:example": "npx playwright test --config='./tests/adapter/examples/playwright/playwright.config.ts'",
     "test:adapter:vitest:example": "npx vitest --config='./tests/adapter/examples/vitest/vitest.config.ts'",
     "test:storage": "npx mocha tests-storage/artifact-storage.test.js && npx mocha tests-storage/data-storage.test.js && TESTOMATIO_INTERCEPT_CONSOLE_LOGS=true npx mocha tests-storage/logger.test.js && npx mocha tests-storage/logger-2.test.js && npx mocha tests-storage/reporter-functions.test.js",
     "build:cjs": "rm -rf ./lib-cjs && npx tsc --module commonjs && chmod +x lib/adapter/mocha/edit-mocha-adapter.sh lib/adapter/mocha/edit-package-json.sh && ./lib/adapter/mocha/edit-mocha-adapter.sh && ./lib/adapter/mocha/edit-package-json.sh"
   },
   "devDependencies": {
+    "@playwright/test": "^1.46.1",
     "@redocly/cli": "^1.0.0-beta.125",
     "@types/cucumber": "^7.0.0",
     "@types/mocha": "^10.0.7",

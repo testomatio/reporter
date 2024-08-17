@@ -49,7 +49,11 @@ const params = [
     positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:vitest:example`,
     negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:vitest:example`,
   },
-  // TODO: add Playwright tests
+  {
+    adapterName: 'Playwright',
+    positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:playwright:example`,
+    negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:playwright:example`,
+  }
 ];
 
 describe('Adapters', () => {
