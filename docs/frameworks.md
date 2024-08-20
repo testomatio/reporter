@@ -52,7 +52,7 @@ TESTOMATIO={API_KEY} npx start-test-run -c 'npx codeceptjs run-workers 2'
 
 > Specify a command to run with `-c` option in `start-test-run`
 
-Use `--env-file <envfile>` option to load environment variables from .env file. Inside env file TESTOMATIO credentials like `TESTOMATIO` api key or [S3 config for artifacts](./artifacts).
+Use `--env-file <envfile>` option to load environment variables from .env file. Inside env file TESTOMATIO credentials like `TESTOMATIO` api key or [S3 config for artifacts](./artifacts.md).
 
 Command `start-test-run` is used to initiate a single run report before all workers are started. Each worker will report to the same Run, and after all workers and codeceptjs finishes, this will finish the run report.
 
@@ -447,7 +447,7 @@ However, it is important to note, that Selenide automatically adds artifacts int
 
 ### Cucumber Java
 
-If you use Java version of Cucumber Java you should import your feature files first using [check-cucumber](npmjs.com/package/check-cucumber).
+If you use Java version of Cucumber Java you should import your feature files first using [check-cucumber](https://www.npmjs.com/package/check-cucumber).
 Provide a path to directory containing feature files by using `-d` option:
 
 ```
