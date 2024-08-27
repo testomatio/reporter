@@ -6,7 +6,7 @@
 - drop support for Cucumber versions < 7
 - add typings
 - fix all linter issues and enable linter on CI
-
+- changed path for Mocha and Jamine import, now its `./lib/adapter/mocha/mocha.cjs` and `./lib/adapter/jasmine/jasmine.cjs`
 
 
 # 1.1.0

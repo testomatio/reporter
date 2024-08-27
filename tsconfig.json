@@ -17,5 +17,5 @@
   },
   "compileOnSave": true,
   "include": ["lib", "types.d.ts", "vitest-types.d.ts"],
-  "exclude": ["node_modules", "packages", "lib-cjs", "lib/adapter/mocha/mocha.cjs"],
+  "exclude": ["node_modules", "packages", "lib-cjs", "lib/adapter/mocha/mocha.cjs", "lib/adapter/jasmine/jasmine.cjs"],
 }
