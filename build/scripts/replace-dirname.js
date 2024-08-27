@@ -23,11 +23,11 @@ function replaceDirname(filePath) {
   });
 }
 
-// Define the file paths
 const filePaths = [
   path.join(process.cwd(), 'lib-cjs/lib/adapter/jasmine.js'),
   path.join(process.cwd(), 'lib-cjs/lib/adapter/mocha/mocha.js'),
-  path.join(process.cwd(), 'lib-cjs/lib/pipe/html.js')
+  path.join(process.cwd(), 'lib-cjs/lib/pipe/html.js'),
+  path.join(process.cwd(), 'lib-cjs/lib/xmlReader.js'),
 ];
 
 // Perform the replacement for each file

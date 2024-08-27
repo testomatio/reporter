@@ -22,7 +22,6 @@
 #   fi
 # done
 
-
 node build/scripts/edit-package-json.js
 node build/scripts/edit-jasmine-adapter-cjs.js
 node build/scripts/edit-mocha-adapter-cjs.js

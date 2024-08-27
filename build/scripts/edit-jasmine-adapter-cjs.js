@@ -4,12 +4,12 @@ import path from 'path';
 // This script changes the export statement in lib/adapter/jasmine.js file after it was transpiled to CommonJS.
 
 // Define the file path
-const filePath = path.join(process.cwd(), 'lib-cjs/lib/adapter/jasmine.js');
+const filePath = path.join(process.cwd(), 'lib-cjs/lib/adapter/jasmine/jasmine.js');
 
 // Read the file content
 fs.readFile(filePath, 'utf8', (err, data) => {
   if (err) {
-    console.error('Error reading the file:', err);
+    console.error('>>> Error reading the file:', err);
     return;
   }
 
