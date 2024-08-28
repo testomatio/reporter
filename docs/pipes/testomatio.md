@@ -78,6 +78,14 @@ TESTOMATIO={API_KEY} TESTOMATIO_TITLE="report for commit ${GIT_COMMIT}" TESTOMAT
 
 We recommend using a commit hash as a title to create a new Run. In this case we ensure that run title is unique and will be the same for all parallel jobs running exactly for this commit.
 
+By default you can report to the same run if a run was created no more than 20 minutes ago. If you want to increase this time you can use `TESTOMATIO_SHARED_RUN_TIMEOUT` environment variable. `TESTOMATIO_SHARED_RUN_TIMEOUT`accepts value in minutes, so to increase timeout to 2 hours (120 minutes) use the following command:
+
+```bash
+TESTOMATIO={API_KEY} TESTOMATIO_TITLE="report for commit ${GIT_COMMIT}" TESTOMATIO_SHARED_RUN=1 TESTOMATIO_SHARED_RUN_TIMEOUT=120 <actual run command>
+```
+
+
+
 ### Adding Report to RunGroup
 
 Create/Add run to group by providing `TESTOMATIO_RUNGROUP_TITLE`:
