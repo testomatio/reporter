@@ -31,8 +31,6 @@ jobs:
       - run: npm i
       - run: npm run lint
       - run: npm run build:cjs
-      - run: ls -la ./lib-cjs
-      - run: cat lib-cjs/package.json
       # - run: npm run pretty:fix
       - run: npm run test
       - run: npm run test:storage
