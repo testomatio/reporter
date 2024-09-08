@@ -2,12 +2,11 @@
   "name": "@testomatio/reporter",
   "version": "1.4.10",
   "description": "Testomatio Reporter Client",
-  "main": "./lib/reporter.js",
+  "engines": { "node": ">=18" },
   "typings": "typings/index.d.ts",
   "repository": "git@github.com:testomatio/reporter.git",
   "author": "Michael Bodnarchuk <davert@testomat.io>,Koushik Mohan <koushikmohan1996@gmail.com>",
   "license": "MIT",
-  "type": "module",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.279.0",
     "@aws-sdk/lib-storage": "^3.279.0",
@@ -20,6 +19,7 @@
     "chalk": "^5.3.0",
     "commander": "^4.1.1",
     "cross-spawn": "^7.0.3",
+    "crypto": "^1.0.1",
     "csv-writer": "^1.6.0",
     "debug": "^4.3.4",
     "dotenv": "^16.0.1",
@@ -42,6 +42,7 @@
   "files": [
     "bin",
     "lib",
+    "cjs",
     "testcafe"
   ],
   "scripts": {
@@ -58,13 +59,13 @@
     "test:pipes": "mocha './tests/pipes/*_test.js'",
     "test:adapter:jest:example": "jest './tests/adapter/examples/jest/index.test.js' --config='./tests/adapter/examples/jest/jest.config.js'",
     "test:adapter:mocha:example": "mocha './tests/adapter/examples/mocha/index.test.js' --config='./tests/adapter/examples/mocha/mocha.config.cjs'",
-    "test:adapter:jasmine:example": "jasmine './tests/adapter/examples/jasmine/index.test.js' --reporter=./lib-cjs/lib/adapter/jasmine.js",
+    "test:adapter:jasmine:example": "jasmine './tests/adapter/examples/jasmine/index.test.js' --reporter=./cjs/lib/adapter/jasmine.js",
     "test:adapter:codecept:example": "codeceptjs run --config='./tests/adapter/examples/codecept/codecept.conf.js'",
     "test:adapter:cucumber:example": "cd ./tests/adapter/examples/cucumber && npx cucumber-js",
     "test:adapter:playwright:example": "npx playwright test --config='./tests/adapter/examples/playwright/playwright.config.ts'",
     "test:adapter:vitest:example": "npx vitest --config='./tests/adapter/examples/vitest/vitest.config.ts'",
-    "test:storage": "npx mocha tests-storage/artifact-storage.test.js && npx mocha tests-storage/data-storage.test.js && TESTOMATIO_INTERCEPT_CONSOLE_LOGS=true npx mocha tests-storage/logger.test.js && npx mocha tests-storage/logger-2.test.js && npx mocha tests-storage/reporter-functions.test.js",
-    "build:cjs": "rm -rf ./lib-cjs && npx tsc --module commonjs && chmod +x build/main-script.sh && ./build/main-script.sh"
+    "test:storage": "npx mocha tests-storage/artifact-storage.test.js && npx mocha tests-storage/data-storage.test.js && TESTOMATIO_INTERCEPT_CONSOLE_LOGS=true npx mocha tests-storage/logger.test.js && npx mocha tests-storage/logger-2.test.js && npx mocha tests-storage/reporter-functions.test.js --require esm",
+    "build:cjs": "rm -rf ./cjs && npx tsc --module commonjs && npx tsx build/scripts/edit-all-js-files.js && npx tsx build/scripts/edit-package-json.js"
   },
   "devDependencies": {
     "@playwright/test": "^1.46.1",
@@ -94,5 +95,12 @@
   "bin": {
     "report-xml": "./lib/bin/reportXml.js",
     "start-test-run": "./lib/bin/startTest.js"
+  },
+  "exports": {
+    ".": {
+      "import": "./lib/reporter.js",
+      "require": "./lib/reporter.cjs"
+    },
+    "./package.json": "./package.json"
   }
 }
