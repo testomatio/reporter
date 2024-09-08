@@ -5,7 +5,7 @@ import path from 'path';
 // Because chalk 5+ works only with ESM.
 
 // Define the file path
-const filePath = path.join(process.cwd(), 'lib-cjs/package.json');
+const filePath = path.join(process.cwd(), 'cjs/package.json');
 
 // Read the file content
 fs.readFile(filePath, 'utf8', (err, data) => {
@@ -23,11 +23,8 @@ fs.readFile(filePath, 'utf8', (err, data) => {
     return;
   }
 
-  // Update the "type" and "chalk" version
+  // Update the "type"
   packageJson.type = 'commonjs';
-  if (packageJson.dependencies && packageJson.dependencies.chalk) {
-    packageJson.dependencies.chalk = '^4.1.2';
-  }
 
   // Convert the JSON object back to a string
   const updatedData = JSON.stringify(packageJson, null, 2);
@@ -38,6 +35,6 @@ fs.readFile(filePath, 'utf8', (err, data) => {
       console.error('Error writing the file:', err);
       return;
     }
-    console.log(`Updated 'type' to 'commonjs' and 'chalk' version to '^4.1.2' in ${filePath}`);
+    console.log(`Updated 'type' to 'commonjs' in ${filePath}`);
   });
 });
