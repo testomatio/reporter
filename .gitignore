@@ -114,5 +114,3 @@ dist
 export/
 
 tests/adapter/examples/codecept/output/
-
-lib-cjs/

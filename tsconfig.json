@@ -11,11 +11,24 @@
     "noImplicitThis": false,
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "target": "ESNext",
-    "outDir": "./lib-cjs",
+    "outDir": "./cjs",
   },
   "compileOnSave": true,
-  "include": ["lib", "types.d.ts", "vitest-types.d.ts"],
-  "exclude": ["node_modules", "packages", "lib-cjs", "lib/adapter/mocha/mocha.cjs", "lib/adapter/jasmine/jasmine.cjs"],
+  "include": [
+    "lib",
+    "types.d.ts",
+    "vitest-types.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "packages",
+    "cjs/",
+    "lib/adapter/mocha/mocha.cjs",
+    "lib/adapter/jasmine/jasmine.cjs",
+    "lib/reporter.cjs",
+  ],
 }
