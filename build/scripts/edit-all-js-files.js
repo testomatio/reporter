@@ -25,12 +25,14 @@ async function removeStringWithDirnameDeclaration(filePath) {
     const data = await fs.readFile(filePath, 'utf8');
 
     // remove lines containing "const __dirname ="
-    const result = data.split('\n').filter(line => !line.includes('const __dirname =')).join('\n');
+    const result = data
+      .split('\n')
+      .filter(line => !line.includes('const __dirname ='))
+      .join('\n');
 
     // Write the modified content back to the file
     await fs.writeFile(filePath, result, 'utf8');
     console.log(`Removed __dirname declaration in ${filePath}`);
-
   } catch (err) {
     console.error(`Error processing file ${filePath}:`, err);
   }
@@ -51,10 +53,36 @@ async function processDirectory(directoryPath) {
         // Process only .js or .cjs files
         await replaceTextInFile(fullPath);
         await removeStringWithDirnameDeclaration(fullPath);
+        await addNonDefaultExportxToTheEndOfFile(fullPath);
       }
     }
   } catch (err) {
     console.error(`Error reading directory ${directoryPath}:`, err);
+  }
+}
+
+// I need to modify all exports like "exports.initPlaywrightForStorage = initPlaywrightForStorage"
+// to "module.exports.initPlaywrightForStorage = initPlaywrightForStorage" and add to the end of the file
+async function addNonDefaultExportxToTheEndOfFile(filePath) {
+  try {
+    const data = await fs.readFile(filePath, 'utf8');
+    // process lines
+    const lines = data.split('\n');
+    // pattern: exports.<module_name> = <module_name>;
+    const linesWithExports = lines.filter(line => line.match(/exports\.[a-zA-Z0-9_]+ = [a-zA-Z0-9_]+;/));
+    const moduleNamesToExport = linesWithExports.map(line => line.split('=')[0].split('.')[1].trim());
+
+    // add module.exports to the end of the file
+    const newLines = lines.concat(
+      moduleNamesToExport.map(moduleName => `module.exports.${moduleName} = ${moduleName};\n`),
+    );
+    const result = newLines.join('\n');
+
+    // Write the modified content back to the file
+    await fs.writeFile(filePath, result, 'utf8');
+    console.log(`Added module.exports to the end of ${filePath}`);
+  } catch (err) {
+    console.error(`Error processing file ${filePath}:`, err);
   }
 }
 
