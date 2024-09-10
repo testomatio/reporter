@@ -60,7 +60,7 @@
     "test:pipes": "mocha './tests/pipes/*_test.js'",
     "test:adapter:jest:example": "jest './tests/adapter/examples/jest/index.test.js' --config='./tests/adapter/examples/jest/jest.config.js'",
     "test:adapter:mocha:example": "mocha './tests/adapter/examples/mocha/index.test.js' --config='./tests/adapter/examples/mocha/mocha.config.cjs'",
-    "test:adapter:jasmine:example": "jasmine './tests/adapter/examples/jasmine/index.test.js' --reporter=./cjs/lib/adapter/jasmine.js",
+    "test:adapter:jasmine:example": "jasmine './tests/adapter/examples/jasmine/index.test.js' --reporter=./lib/adapter/jasmine.js",
     "test:adapter:codecept:example": "codeceptjs run --config='./tests/adapter/examples/codecept/codecept.conf.js'",
     "test:adapter:cucumber:example": "cd ./tests/adapter/examples/cucumber && npx cucumber-js",
     "test:adapter:playwright:example": "npx playwright test --config='./tests/adapter/examples/playwright/playwright.config.ts'",
@@ -99,9 +99,22 @@
   },
   "exports": {
     ".": {
-      "import": "./lib/reporter.js",
-      "require": "./lib/reporter.cjs"
+      "import": "./src/reporter.js",
+      "require": "./lib/reporter.js"
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./playwright": "./lib/adapter/playwright.js",
+    "./lib/adapter/mocha/mocha.js": {
+      "import": "./lib/adapter/mocha/mocha.js",
+      "require": "./lib/adapter/mocha.cjs"
+    },
+    "./mocha": {
+      "import": "./lib/adapter/mocha/mocha.js",
+      "require": "./lib/adapter/mocha.cjs"
+    },
+    "./jest": {
+      "import": "./lib/adapter/jest.js",
+      "require": "./lib/adapter/jest.cjs"
+    }
   }
 }
