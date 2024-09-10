@@ -3,7 +3,7 @@
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "checkJs": true,
-    "module": "ESNext",
+    "module": "CommonJS",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node",
@@ -14,21 +14,20 @@
     "types": [
       "node"
     ],
-    "target": "ESNext",
-    "outDir": "./cjs",
+    "target": "ES2022",
+    "rootDir": "./src",
+    "outDir": "./lib",
   },
   "compileOnSave": true,
   "include": [
-    "lib",
-    "types.d.ts",
-    "vitest-types.d.ts"
+    "src/**/*.js",
   ],
   "exclude": [
     "node_modules",
     "packages",
-    "cjs/",
-    "lib/adapter/mocha/mocha.cjs",
-    "lib/adapter/jasmine/jasmine.cjs",
-    "lib/reporter.cjs",
+    "src/adapter/mocha.cjs",
+    "src/adapter/mocha.cjs",
+    "src/adapter/jasmine/jasmine.cjs",
+    "src/reporter.cjs",
   ],
 }
