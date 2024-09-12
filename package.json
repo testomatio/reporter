@@ -82,6 +82,7 @@
   },
   "bin": {
     "report-xml": "./lib/bin/reportXml.js",
-    "start-test-run": "./lib/bin/startTest.js"
+    "start-test-run": "./lib/bin/startTest.js",
+    "upload-artifacts": "./lib/bin/uploadArtifacts.js"
   }
 }
