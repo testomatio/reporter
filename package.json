@@ -22,7 +22,6 @@
     "chalk": "^5.3.0",
     "commander": "^4.1.1",
     "cross-spawn": "^7.0.3",
-    "crypto": "^1.0.1",
     "csv-writer": "^1.6.0",
     "debug": "^4.3.4",
     "dotenv": "^16.0.1",
@@ -68,7 +67,7 @@
     "test:adapter:playwright:example": "npx playwright test --config='./tests/adapter/examples/playwright/playwright.config.ts'",
     "test:adapter:vitest:example": "npx vitest --config='./tests/adapter/examples/vitest/vitest.config.ts'",
     "test:storage": "npx mocha tests-storage/artifact-storage.test.js && npx mocha tests-storage/data-storage.test.js && TESTOMATIO_INTERCEPT_CONSOLE_LOGS=true npx mocha tests-storage/logger.test.js && npx mocha tests-storage/logger-2.test.js && npx mocha tests-storage/reporter-functions.test.js",
-    "build:cjs": "rm -rf ./cjs && npx tsc --module commonjs && npx tsx build/scripts/edit-js-files.js && npx tsx build/scripts/edit-package-json.js"
+    "build:cjs": "rm -rf ./cjs && tsc --module commonjs && npx tsx build/scripts/edit-js-files.js && npx tsx build/scripts/edit-package-json.js"
   },
   "devDependencies": {
     "@playwright/test": "^1.46.1",
@@ -102,20 +101,25 @@
   "exports": {
     ".": {
       "import": "./src/reporter.js",
-      "require": "./lib/reporter.js"
+      "require": "./lib/reporter.js",
+      "types": "./index.d.ts"
     },
+    "./lib/adapter/codecept/codecept.js": "./lib/adapter/codecept.js",
+    "./codecept": "./lib/adapter/codecept.js",
+    "./lib/adapter/cucumber/cucumber.js": "./lib/adapter/cucumber/current.js",
+    "./cucumber": "./lib/adapter/cucumber/current.js",
+    "./lib/adapter/cypress-plugin": "./lib/adapter/cypress-plugin/index.js",
+    "./cypress-plugin": "./lib/adapter/cypress-plugin/index.js",
+    "./lib/adapter/jasmine.js": "./lib/adapter/jasmine.js",
+    "./jasmine": "./lib/adapter/jasmine.js",
+    "./lib/adapter/jest.js": "./lib/adapter/jest.js",
+    "./jest": "./lib/adapter/jest.js",
+    "./lib/adapter/mocha/mocha.js": "./lib/adapter/mocha.js",
+    "./mocha": "./lib/adapter/mocha.js",
     "./playwright": "./lib/adapter/playwright.js",
-    "./lib/adapter/mocha/mocha.js": {
-      "import": "./lib/adapter/mocha/mocha.js",
-      "require": "./lib/adapter/mocha.cjs"
-    },
-    "./mocha": {
-      "import": "./src/adapter/mocha.js",
-      "require": "./lib/adapter/mocha.js"
-    },
-    "./jest": {
-      "import": "./lib/adapter/jest.js",
-      "require": "./lib/adapter/jest.js"
-    }
+    "./vitest": "./src/adapter/vitest.js",
+    "./lib/adapter/webdriver.js": "./lib/adapter/webdriver.js",
+    "./lib/adapter/webdriver": "./lib/adapter/webdriver.js",
+    "./webdriver": "./lib/adapter/webdriver.js"
   }
 }
