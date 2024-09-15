@@ -16,3 +16,9 @@ export default {
   TestomatClient,
   TRConstants,
 };
+
+export const artifact = reporterFunctions.artifact;
+export const log = reporterFunctions.log;
+export const logger = services.logger;
+export const meta = reporterFunctions.keyValue;
+export const step = reporterFunctions.step;
