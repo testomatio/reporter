@@ -38,7 +38,7 @@ class Client {
 
     // @ts-ignore this line will be removed in compiled code, because __dirname is defined in commonjs
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
-    const pathToPackageJSON = path.join(__dirname, 'package.json');
+    const pathToPackageJSON = path.join(__dirname, '../package.json');
     try {
       this.version = JSON.parse(fs.readFileSync(pathToPackageJSON).toString()).version;
       console.log(APP_PREFIX, `Testomatio Reporter v${this.version}`);
