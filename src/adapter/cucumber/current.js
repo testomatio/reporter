@@ -31,6 +31,7 @@ class CucumberReporter extends Formatter {
     this.cases = [];
 
     this.client = new TestomatClient({ apiKey: options.apiKey || config.TESTOMATIO });
+    this.client.createRun();
     this.status = STATUS.PASSED;
   }
 
@@ -39,7 +40,6 @@ class CucumberReporter extends Formatter {
       fileSystem.clearDir(TESTOMAT_TMP_STORAGE_DIR);
     }
     if (envelope.testCaseStarted && this.client) {
-      this.client.createRun();
       this.onTestCaseStarted(envelope.testCaseStarted);
     }
     if (envelope.testCaseFinished) this.onTestCaseFinished(envelope.testCaseFinished);
