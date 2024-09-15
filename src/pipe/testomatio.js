@@ -34,6 +34,7 @@ class TestomatioPipe {
       intervalTime: 5000, // how often tests are sent
       tests: [], // array of tests in batch
       batchIndex: 0, // represents the current batch index (starts from 1 and increments by 1 for each batch)
+      numberOfTimesCalledWithoutTests: 0, // how many times batch was called without tests
     };
     this.retriesTimestamps = [];
     this.reportingCanceledDueToReqFailures = false;
@@ -307,10 +308,20 @@ class TestomatioPipe {
    * Uploads tests as a batch (multiple tests at once). Intended to be used with a setInterval
    */
   #batchUpload = async () => {
-    this.batch.batchIndex++;
     if (!this.batch.isEnabled) return;
-    if (!this.batch.tests.length) return;
-
+    // prevent infinite loop
+    if (this.batch.numberOfTimesCalledWithoutTests > 10) {
+      debug('📨 Batch upload: no tests to send for 10 times, stopping batch');
+      clearInterval(this.batch.intervalFunction);
+      this.batch.isEnabled = false;
+    }
+    if (!this.batch.tests.length) {
+      debug('📨 Batch upload: no tests to send');
+      this.batch.numberOfTimesCalledWithoutTests++;
+      return;
+    }
+    
+    this.batch.batchIndex++;
     // get tests from batch and clear batch
     const testsToSend = this.batch.tests.splice(0);
     debug('📨 Batch upload', testsToSend.length, 'tests');
@@ -362,7 +373,7 @@ class TestomatioPipe {
     if (!this.batch.isEnabled) this.#uploadSingleTest(data);
     else this.batch.tests.push(data);
 
-    // if test is added after run already finished
+    // if test is added after run which is already finished
     if (!this.batch.intervalFunction) this.#batchUpload();
   }
 
@@ -373,8 +384,8 @@ class TestomatioPipe {
   async finishRun(params) {
     if (!this.isEnabled) return;
     
-    await this.#batchUpload();
     if (this.batch.intervalFunction) clearInterval(this.batch.intervalFunction);
+    await this.#batchUpload();
 
     debug('Finishing run...');
 
