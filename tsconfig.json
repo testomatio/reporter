@@ -20,7 +20,7 @@
   },
   "compileOnSave": true,
   "include": [
-    "src/**/*.js",
+    "src/",
   ],
   "exclude": [
     "node_modules",
