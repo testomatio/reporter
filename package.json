@@ -105,6 +105,7 @@
       "types": "./index.d.ts"
     },
     "./lib/adapter/codecept/codecept.js": "./lib/adapter/codecept.js",
+    "./lib/adapter/codecept": "./lib/adapter/codecept.js",
     "./codecept": "./lib/adapter/codecept.js",
     "./lib/adapter/cucumber/cucumber.js": "./lib/adapter/cucumber/current.js",
     "./cucumber": "./lib/adapter/cucumber/current.js",
@@ -116,6 +117,7 @@
     "./jest": "./lib/adapter/jest.js",
     "./lib/adapter/mocha/mocha.js": "./lib/adapter/mocha.js",
     "./mocha": "./lib/adapter/mocha.js",
+    "./lib/adapter/playwright.js": "./lib/adapter/playwright.js",
     "./playwright": "./lib/adapter/playwright.js",
     "./vitest": "./src/adapter/vitest.js",
     "./lib/adapter/webdriver.js": "./lib/adapter/webdriver.js",
