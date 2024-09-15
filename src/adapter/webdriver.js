@@ -1,5 +1,5 @@
 // eslint-disable-next-line global-require, import/no-extraneous-dependencies
-import WDIOReporter from '@wdio/reporter';
+import WDIOReporter, { RunnerStats } from '@wdio/reporter';
 
 import TestomatClient from '../client.js';
 import { getTestomatIdFromTestTitle } from '../utils/utils.js';
@@ -14,18 +14,28 @@ class WebdriverReporter extends WDIOReporter {
     this._addTestPromises = [];
 
     this._isSynchronising = false;
+    // NOTE: new functionality; may break everything
+    this.client.createRun();
   }
 
   get isSynchronised() {
     return this._isSynchronising === false;
   }
 
-  async onRunnerEnd() {
+  /**
+   * 
+   * @param {RunnerStats} runData 
+   */
+  async onRunnerEnd(runData) {
     this._isSynchronising = true;
 
     await Promise.all(this._addTestPromises);
 
     this._isSynchronising = false;
+
+    // NOTE: new functionality; may break everything 
+    // also this may require additional status mapping
+    await this.client.updateRunStatus(runData.failures ? 'failed' : 'passed');
   }
 
   onTestEnd(test) {
