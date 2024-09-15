@@ -19,6 +19,8 @@ Logger has ability to intercept other loggers. [usage](#usage)
 
 ## Usage
 
+> When you import logger, it automatically intercepts `console` logs inside the test file.
+
 Log messages with different levels:
 
 ```javascript
