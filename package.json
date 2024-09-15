@@ -1,6 +1,6 @@
 {
   "name": "@testomatio/reporter",
-  "version": "1.5.0",
+  "version": "1.6.0-beta.1-artifacts",
   "description": "Testomatio Reporter Client",
   "main": "./lib/reporter.js",
   "typings": "typings/index.d.ts",
@@ -16,7 +16,7 @@
     "axios-retry": "^3.9.1",
     "callsite-record": "^4.1.4",
     "chalk": "^4.1.0",
-    "commander": "^4.1.1",
+    "commander": "^12",
     "cross-spawn": "^7.0.3",
     "csv-writer": "^1.6.0",
     "debug": "^4.3.4",
@@ -81,6 +81,7 @@
     "puppeteer": "^22.15.0"
   },
   "bin": {
+    "@testomatio/reporter": "./lib/bin/cli.js",
     "report-xml": "./lib/bin/reportXml.js",
     "start-test-run": "./lib/bin/startTest.js",
     "upload-artifacts": "./lib/bin/uploadArtifacts.js"

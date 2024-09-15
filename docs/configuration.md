@@ -166,13 +166,19 @@ Configure title IDs.
 
 ### Artifacts
 
-Configuration for artifacts storage.
+Configuration for artifacts storage. Those variables can be obtained from Testomat.io if "Share credentials" in Project Settings > Artifacts is enabled.
 
 * `S3_ACCESS_KEY_ID`: Your S3 access key ID.
 * `S3_BUCKET`: Your S3 bucket name.
 * `S3_ENDPOINT`: Your S3 endpoint URL.
 * `S3_REGION`: Your S3 region.
 * `S3_SECRET_ACCESS_KEY`: Your S3 secret access key.
+* `TESTOMATIO_PRIVATE_ARTIFACTS`: Store artifacts in a bucket privately.
+
+These variables are used to define how artifacts are uploaded:
+
+* `TESTOMATIO_DISABLE_ARTIFACTS`: disable all artifacts uploading. All artifacts can be uploaded later with `npx @testomatio/reporter upload-artifacts` command.
+* `TESTOMATIO_ARTIFACTS_SIZE`: disable uploading artifacts larger than X size in Mb. Other artifacts can be uploaded later with `npx @testomatio/reporter upload-artifacts` command.
 
 ### Pipes
 
