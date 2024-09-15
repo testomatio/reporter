@@ -1,10 +1,10 @@
 // eslint-disable-next-line global-require, import/no-extraneous-dependencies
 import Mocha from 'mocha';
-import TestomatClient from '../../client.js';
-import { STATUS, TESTOMAT_TMP_STORAGE_DIR } from '../../constants.js';
-import { getTestomatIdFromTestTitle, fileSystem } from '../../utils/utils.js';
-import { config } from '../../config.js';
-import { services } from '../../services/index.js';
+import TestomatClient from '../client.js';
+import { STATUS, TESTOMAT_TMP_STORAGE_DIR } from '../constants.js';
+import { getTestomatIdFromTestTitle, fileSystem } from '../utils/utils.js';
+import { config } from '../config.js';
+import { services } from '../services/index.js';
 import pc from 'picocolors';
 
 const {
