@@ -50,16 +50,24 @@ export async function pipesFactory(params, opts) {
     ...extraPipes,
   ];
 
+  const pipesEnabled = pipes.filter(p => p.isEnabled);
+
   console.log(
     APP_PREFIX,
     pc.cyan('Pipes:'),
     pc.cyan(
-      pipes
-        .filter(p => p.isEnabled)
+      pipesEnabled
         .map(p => p.toString())
         .join(', ') || 'No pipes enabled',
     ),
   );
+  
+  if (!pipesEnabled.length) {
+    console.log(
+      APP_PREFIX,
+      pc.dim('If you want to use Testomatio reporter, pass your token as TESTOMATIO env variable'),
+    );
+  }
 
   return pipes;
 }
