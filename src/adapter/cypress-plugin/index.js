@@ -44,8 +44,8 @@ const testomatioReporter = on => {
 
       if (!error && test.displayError) {
         error = { message: test.displayError };
+        // eslint-disable-next-line
         error.inspect = function () {
-          // eslint-disable-line func-names
           return this.message;
         };
       }
@@ -55,6 +55,7 @@ const testomatioReporter = on => {
             name: error.name,
             inspect:
               error.inspect ||
+              // eslint-disable-next-line
               function () {
                 return this.message;
               },

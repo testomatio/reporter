@@ -1,4 +1,4 @@
-// eslint-disable-next-line global-require, import/no-extraneous-dependencies
+// eslint-disable-next-line
 import WDIOReporter, { RunnerStats } from '@wdio/reporter';
 
 import TestomatClient from '../client.js';

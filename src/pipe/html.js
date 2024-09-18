@@ -11,7 +11,7 @@ import { fileURLToPath } from "node:url";
 
 const debug = createDebugMessages('@testomatio/reporter:pipe:html');
 
-// @ts-ignore – this line will be removed in compiled code (__dirname is already defined in the global scope of commonjs)
+// @ts-ignore – this line will be removed in compiled code (already defined in the global scope of commonjs)
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 class HtmlPipe {
