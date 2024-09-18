@@ -148,6 +148,9 @@ function checkStatus(status) {
 }
 
 function appendStep(step, shift = 0) {
+  // nesting too deep, ignore those steps
+  if (shift >= 10) return;
+
   let newCategory = step.category;
   switch (newCategory) {
     case 'test.step':
@@ -177,7 +180,7 @@ function appendStep(step, shift = 0) {
   };
 
   if (formattedSteps.length) {
-    resultStep.steps = formattedSteps;
+    resultStep.steps = formattedSteps.filter(s => !!s);
   }
 
   if (step.error !== undefined) {

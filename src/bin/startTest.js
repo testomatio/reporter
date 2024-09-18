@@ -46,7 +46,7 @@ program
       const client = new TestomatClient({ apiKey });
 
       // @ts-ignore
-      client.updateRunStatus(STATUS.FINISHED, true).then(() => {
+      client.updateRunStatus(STATUS.FINISHED).then(() => {
         console.log(pc.yellow(`Run ${process.env.TESTOMATIO_RUN} was finished`));
         process.exit(0);
       });
