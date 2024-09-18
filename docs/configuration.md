@@ -8,7 +8,7 @@ Environment variables can be either passed inline, or from `.env` file or from s
 
 ## Variables List
 
-#### `TESTOMATIO` 
+#### `TESTOMATIO`
 
 Alternatively, `TESTOMATIO_TOKEN` or `TESTOMATIO_API_KEY`
 
@@ -114,13 +114,25 @@ TESTOMATIO={API_KEY} TESTOMATIO_RUNGROUP_TITLE="Build ${BUILD_ID}" <actual run c
 
 #### `TESTOMATIO_SHARED_RUN`
 
-Report parallel execution to the same run.
+Report parallel execution to the same run matching it by title. **If the run was created more than 20 minutes ago, a new run will be created instead.** To change the timeout use `TESTOMATIO_SHARED_RUN_TIMEOUT` variable.
 
 Example:
 
 ```
 TESTOMATIO={API_KEY} TESTOMATIO_TITLE="report for commit ${GIT_COMMIT}" TESTOMATIO_SHARED_RUN=1 <actual run command>
 ```
+
+#### `TESTOMATIO_SHARED_RUN_TIMEOUT`
+
+Changes timeout of a shared run. After timeout, shared run won't accept other runs with same name, and new runs will be created instead. Timeout is set in minutes, default is 20 minutes.
+
+Example:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_TITLE="Today's Build"  TESTOMATIO_SHARED_RUN=1 TESTOMATIO_SHARED_RUN_TIMEOUT=120 <actual run command>
+```
+
+In this case all tests will be added to the same run if it was created less than 120 minutes ago.
 
 #### `TESTOMATIO_STACK_FILTER`
 

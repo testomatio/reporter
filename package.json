@@ -1,6 +1,6 @@
 {
   "name": "@testomatio/reporter",
-  "version": "1.4.10",
+  "version": "1.5.1",
   "description": "Testomatio Reporter Client",
   "engines": {
     "node": ">=18"

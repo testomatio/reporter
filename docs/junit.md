@@ -104,7 +104,19 @@ When XML report is uploaded, all files from `file://` will be uploaded to corres
 
 ### Assign Test ID
 
-To link test in source code with test in Testomat.io add Test ID as a comment:
+Test IDs can be taken applied to a test name. So to assign a test in a result to to test in Testomat.io with ID `@T8acca9eb` add this ID to a test name if your test framework allows setting test names as a string.
+ 
+```xml
+<testcase name="test name @T8acca9eb"> ....
+```
+
+To place a test inside a specific sute you can set a suite ID similarly to a test ID:
+
+```xml
+<testcase name="test name @S1428a8fa"> ....
+```
+
+If a file with a source code is available to a reporter, you can link test in the test body and specify Test ID as a comment:
 
 ```java
   @Test
@@ -191,9 +203,25 @@ TESTOMATIO={API_KEY} npx report-xml "test/reports/*.xml" --lang ruby
 
 ### Assign Test ID
 
+Add test ID to a test name prefixed with `@T`. For instance, to link test from source code to test with id `@T8acca9eb` add TID to a test title:
+
+```ruby
+  test 'export test as yaml @T8acca9eb' do
+    # ....
+  end
+```
+
+To place a test inside a specific sute you can set a suite ID similarly to a test ID:
+
+```ruby
+  test 'export test as yaml @S1428a8fa' do
+    # ....
+  end
+```
+
 To link test in source code with test in Testomat.io print a Test ID inside a test:
 
-```java
+```ruby
 puts "tid://@T8acca9eb" // here we print test ID
 ```
 
