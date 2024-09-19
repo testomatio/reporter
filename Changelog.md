@@ -48,7 +48,7 @@ TESTOMATIO={API_KEY} TESTOMATIO_LABEL="release,module:checkout" <actual run comm
 
 Documentation updates:
 
-- [List of enviroment variables](https://github.com/testomatio/reporter/blob/master/docs/env-variables.md)
+- [List of enviroment variables](https://github.com/testomatio/reporter/blob/master/docs/configuration.md)
 - [List of user API functions](https://github.com/testomatio/reporter/blob/master/docs/functions.md)
 
 # 1.0.18
