@@ -165,6 +165,8 @@ TESTOMATIO={API_KEY} npx jest
 
 > 📑 [Example Project](https://github.com/testomatio/examples/tree/master/jest)
 
+> 📑 [Example Project with ESM syntax](https://github.com/testomatio/examples/tree/master/jest-esm)
+
 > 📺 [Video](https://www.youtube.com/watch?v=RKfIfnEuGys)
 
 ### Vitest
