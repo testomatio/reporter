@@ -36,6 +36,8 @@ program
     }
 
     if (finish) {
+      // TODO: add error in case of TESTOMATIO environment variable is not set
+      // because command is fine in console, but actually (on testomat.io) run is not finished
       if (!process.env.TESTOMATIO_RUN) {
         console.log('TESTOMATIO_RUN environment variable must be set.');
         return process.exit(1);
