@@ -1,17 +1,14 @@
 name: Publish NEWMAN reporter
 on:
-  # push:
-  #   branches:
-  #     - master
   workflow_dispatch:
     inputs:
       version:
         description: 'NPM version to publish'
         required: true
+        default: 'patch'
 jobs:
   publish:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
     steps:
       - uses: actions/checkout@v4
       # Setup .npmrc file to publish to npm
@@ -21,7 +18,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - run: npm ci
         working-directory: ./packages/newman-reporter-testomatio
-      - run: npm version ${{ github.event.inputs.version }}
+      - run: npm version ${{ github.event.inputs.version }} --no-git-tag-version
         working-directory: ./packages/newman-reporter-testomatio
       - run: npm publish
         working-directory: ./packages/newman-reporter-testomatio
