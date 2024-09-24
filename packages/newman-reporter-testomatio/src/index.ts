@@ -1,3 +1,4 @@
+// @ts-ignore
 import debug from 'debug';
 import TestomatioReporter from '@testomatio/reporter';
 import chalk from 'chalk';
@@ -7,9 +8,11 @@ import {
   NewmanRunExecutionAssertion,
   NewmanRunOptions,
   NewmanRunSummary,
+  // @ts-ignore
 } from 'newman';
-import { getGroupPath, getPrettyTimeFromTimestamp } from './helpers';
+import { cutLongText, getGroupPath, getPrettyTimeFromTimestamp } from './helpers';
 import { AnyObject } from './types';
+// @ts-ignore
 import { filesize } from 'filesize';
 
 const log = debug('newman-reporter-testomatio');
@@ -121,16 +124,20 @@ function TestomatioNewmanReporter(
       newmanItemStore.testStatus = 'failed';
     }
 
+    const requestBodyCut = cutLongText(result.request.body?.toString() || '', { maxSizeInKb: 10 });
+    const requestHeadersCut = cutLongText(result.request.headers.toString(), { maxSizeInKb: 10 });
+    const responseBodyCut = cutLongText(result.response.stream?.toString() || '', { maxSizeInKb: 50 });
+
     newmanItemStore.authType = result.request.auth?.toJSON().type || '';
     newmanItemStore.cookies = result.response.cookies.toString();
     newmanItemStore.responseCodeAndStatusColorized =
       result.response.code < 300
         ? chalk.green(result.response.code, result.response.status)
         : chalk.red(result.response.code, result.response.status);
-    newmanItemStore.requestBody = result.request.body?.toString() || '';
+    newmanItemStore.requestBody = requestBodyCut;
     newmanItemStore.requestURL = result.request.url.toString();
-    newmanItemStore.requestHeaders = result.request.headers.toString();
-    newmanItemStore.responseBody = result.response.stream?.toString() || '';
+    newmanItemStore.requestHeaders = requestHeadersCut;
+    newmanItemStore.responseBody = responseBodyCut;
     newmanItemStore.responseSize = (result.response.size() as unknown as ResponseSize).total;
     newmanItemStore.responseTime = result.response.responseTime;
   });
@@ -182,6 +189,7 @@ function TestomatioNewmanReporter(
     const events = result.item.events;
 
     let code = '';
+    // @ts-ignore
     events.map(event => {
       const eventName = event.listen;
       const eventScripts = event.script.exec;
