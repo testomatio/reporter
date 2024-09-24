@@ -23,31 +23,40 @@ npx @testomatio/reporter <command> [options]
 Starts a new test run and returns its ID. This requires an API key to be set in the `TESTOMATIO` environment variable.
 
 **Usage:**
+
 ```bash
 npx @testomatio/reporter start [options]
 ```
 
 **Environment Variables:**
+
 - `TESTOMATIO`: Your Testomat.io API project key in format: `tstmt_*` (required).
 
 **Options:**
+
 - `--env-file <envfile>`: Load environment variables from a specific env file. If none specified, it will look for `.env` file.
+
+> Previously known as: `npx start-test-run --launch` _(before 1.6.0)_
 
 ### 2. finish
 
 Finishes a run by its ID.
 
 **Usage:**
+
 ```bash
 npx @testomatio/reporter finish [options]
 ```
 
 **Environment Variables:**
+
 - `TESTOMATIO`: Your Testomat.io API key in format: `tstmt_*` (required).
 
 **Options:**
+
 - `--env-file <envfile>`: Load environment variables from a specific env file. If none specified, it will look for `.env` file.
 
+> Previously known as: `npx start-test-run --finish` _(before 1.6.0)_
 
 ### 3. run
 
@@ -56,19 +65,23 @@ Creates a run, and runs tests with the specified command, then finishes the run.
 > Use `npx @testomatio/reporter run` if multiple run reports are created on the same launch
 
 **Usage:**
+
 ```bash
 npx @testomatio/reporter run [options]
 ```
 
 **Environment Variables:**
+
 - `TESTOMATIO`: Your Testomat.io API key in format: `tstmt_*` (required).
 
 **Options:**
+
 - `-c, --command <cmd>`: Test runner command (required).
 - `--filter <filter>`: [Filter executed tests](./pipes/testomatio.md#filter-tests) by tag, label, jira, plan.
 - `--env-file <envfile>`: Load environment variables from a specific env file.
 
 **Examples:**
+
 ```bash
 npx @testomatio/reporter run "npm test"
 npx @testomatio/reporter run "npx jest" --filter "testomatio:tag=frontend"
@@ -78,22 +91,28 @@ npx @testomatio/reporter run "npx jest" --filter "testomatio:plan=a123fb12"
 npx @testomatio/reporter run "mocha tests/" --env-file .env.test
 ```
 
+> Previously known as: `npx start-test-run -c "command"` _(before 1.6.0)_
+
 ### 4. xml
 
 Parses XML reports in JUnit (NUnit, xUnit, TRX) XML format and uploads them to Testomat.io or uses GitHub / GitLab / ButBucket pipe to create a mini-report
 
 **Usage:**
+
 ```bash
 npx @testomatio/reporter xml <pattern> [options]
 ```
 
 **Environment Variables:**
+
 - `TESTOMATIO`: Your Testomat.io API key in format: `tstmt_*` if you want to upload reports to Testomat.io (optional).
 
 **Arguments:**
+
 - `<pattern>`: XML file pattern (required).
 
 **Options:**
+
 - `-d, --dir <dir>`: Project directory.
 - `--java-tests [java-path]`: Load Java tests from path (default: src/test/java).
 - `--lang <lang>`: Language used (python, ruby, java).
@@ -101,11 +120,14 @@ npx @testomatio/reporter xml <pattern> [options]
 - `--env-file <envfile>`: Load environment variables from a specific env file.
 
 **Examples:**
+
 ```bash
 npx @testomatio/reporter xml "test-results/**.xml" --lang python
 npx @testomatio/reporter xml "junit-reports/**.xml" -d ./project --lang java
 npx @testomatio/reporter xml "pytest-results.xml" --timelimit 300 --env-file .env.test
 ```
+
+> Previously known as: `npx report-xml` _(before 1.6.0)_
 
 ### 5. upload-artifacts
 
@@ -114,21 +136,25 @@ Testomat.io reporter automatically uploads artifacts during run. However, either
 It is important to have the `TESTOMATIO_RUN` environment variable set to the run ID.
 
 **Usage:**
+
 ```bash
 npx @testomatio/reporter upload-artifacts [options]
 ```
 
 **Environment Variables:**
+
 - `TESTOMATIO`: Your Testomat.io API key (required).
 - `TESTOMATIO_RUN`: The previous run ID you want to upload artifacts (optional). If none set, latest run will be used.
 
 **Options:**
+
 - `--force`: Re-upload artifacts even if they were uploaded before.
 - `--env-file <envfile>`: Load environment variables from a specific env file.
 
 You still need [S3 artifacts configuration](./artifacts.md) to be set to upload artifacts to storage. In order to disable artifacts upload during tests you can use `TESTOMATIO_DISABLE_ARTIFACTS=1` while running tests.
 
 **Examples:**
+
 ```bash
 npx @testomatio/reporter upload-artifacts
 npx @testomatio/reporter upload-artifacts --force
@@ -152,9 +178,10 @@ TESTOMATIO=tstmt_* npx @testomatio/reporter upload-artifacts
 You can also upload small artifacts during the run, while large files can be uploaded after. For instance, all files larger than 10MB will be skipped to upload during the run.
 
 ```bash
-TESTOMATIO=tstmt_* TESTOMATIO_ARTIFACTS_SIZE=10 npx playwright test
+TESTOMATIO=tstmt_* TESTOMATIO_ARTIFACT_MAX_SIZE_MB=10 npx playwright test
 TESTOMATIO=tstmt_* npx @testomatio/reporter upload-artifacts
 ```
+
 However, `upload-artifacts` command will upload all files after the run, without blocking the final result.
 
 ## Environment Variables
