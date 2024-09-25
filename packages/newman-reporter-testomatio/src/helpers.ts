@@ -1,6 +1,6 @@
-import chalk from 'chalk';
 import { AnyObject, KeyValueObject } from './types';
 import _ from 'lodash';
+import pc from 'picocolors';
 
 export function beatifyVariablesList(varsList: KeyValueObject[]) {
   const beatifiedVarsList: AnyObject = {};
@@ -57,7 +57,7 @@ export function cutLongText(text: string, options: { maxLength?: number, maxSize
   if (!options.maxLength && !options.maxSizeInKb) throw new Error('You should provide either maxLength or maxWeightInKb');
   const { maxLength, maxSizeInKb } = options;
   const warnIfCut = options.warnIfCut ?? true;
-  const cutWarning = chalk.redBright('  ... ✂️ log is cut here (in the middle) due to large size ✂️ ...');
+  const cutWarning = pc.redBright('  ... ✂️ log is cut here (in the middle) due to large size ✂️ ...');
   const maxLengthInSymbols = maxLength || maxSizeInKb! * 1024;
   if (text.length <= maxLengthInSymbols) return text;
 
