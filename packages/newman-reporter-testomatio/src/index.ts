@@ -1,23 +1,26 @@
+// @ts-ignore
 import debug from 'debug';
 import TestomatioReporter from '@testomatio/reporter';
-import chalk from 'chalk';
 import {
   ConsoleEvent,
   NewmanRunExecution,
   NewmanRunExecutionAssertion,
   NewmanRunOptions,
   NewmanRunSummary,
+  // @ts-ignore
 } from 'newman';
-import { getGroupPath, getPrettyTimeFromTimestamp } from './helpers';
+import { cutLongText, getGroupPath, getPrettyTimeFromTimestamp } from './helpers';
 import { AnyObject } from './types';
+// @ts-ignore
 import { filesize } from 'filesize';
+import pc from 'picocolors';
 
 const log = debug('newman-reporter-testomatio');
 type TestStatus = 'passed' | 'failed' | 'skipped' | 'finished';
 type ResponseSize = { body: number; header: number; total: number };
 // FIXME: when add chulk to package.json, this reporter does not work. have to investigate and try to fix
 
-const APP_PREFIX = chalk.gray('[TESTOMATIO-NEWMAN-REPORTER]');
+const APP_PREFIX = pc.gray('[TESTOMATIO-NEWMAN-REPORTER]');
 
 /**
  *
@@ -121,16 +124,20 @@ function TestomatioNewmanReporter(
       newmanItemStore.testStatus = 'failed';
     }
 
+    const requestBodyCut = cutLongText(result.request.body?.toString() || '', { maxSizeInKb: 10 });
+    const requestHeadersCut = cutLongText(result.request.headers.toString(), { maxSizeInKb: 10 });
+    const responseBodyCut = cutLongText(result.response.stream?.toString() || '', { maxSizeInKb: 50 });
+
     newmanItemStore.authType = result.request.auth?.toJSON().type || '';
     newmanItemStore.cookies = result.response.cookies.toString();
     newmanItemStore.responseCodeAndStatusColorized =
       result.response.code < 300
-        ? chalk.green(result.response.code, result.response.status)
-        : chalk.red(result.response.code, result.response.status);
-    newmanItemStore.requestBody = result.request.body?.toString() || '';
+        ? pc.green(`${result.response.code} ${result.response.status}`)
+        : pc.red(`${result.response.code} ${result.response.status}`);
+    newmanItemStore.requestBody = requestBodyCut;
     newmanItemStore.requestURL = result.request.url.toString();
-    newmanItemStore.requestHeaders = result.request.headers.toString();
-    newmanItemStore.responseBody = result.response.stream?.toString() || '';
+    newmanItemStore.requestHeaders = requestHeadersCut;
+    newmanItemStore.responseBody = responseBodyCut;
     newmanItemStore.responseSize = (result.response.size() as unknown as ResponseSize).total;
     newmanItemStore.responseTime = result.response.responseTime;
   });
@@ -151,20 +158,20 @@ function TestomatioNewmanReporter(
 
     // add request method and url
     // steps += `Request\n${request.method} ${stringifyURL(requestURL, allVars)}`;
-    steps += `${chalk.bold('Request')}\n${chalk.blue(request.method)} ${newmanItemStore.requestURL}`;
+    steps += `${pc.bold('Request')}\n${pc.blue(request.method)} ${newmanItemStore.requestURL}`;
 
     // auth type
-    steps += newmanItemStore.authType ? `\n\n${chalk.bold('auth: ')}${newmanItemStore.authType}` : '';
+    steps += newmanItemStore.authType ? `\n\n${pc.bold('auth: ')}${newmanItemStore.authType}` : '';
 
     // add request headers
-    steps += `\n\n${chalk.bold('headers:')}\n${newmanItemStore.requestHeaders}`;
+    steps += `\n\n${pc.bold('headers:')}\n${newmanItemStore.requestHeaders}`;
 
     // request body
-    steps += newmanItemStore.requestBody ? `\n${chalk.bold('request body:')}\n${newmanItemStore.requestBody}` : '';
+    steps += newmanItemStore.requestBody ? `\n${pc.bold('request body:')}\n${newmanItemStore.requestBody}` : '';
 
     // add response status name and code
     steps += newmanItemStore.responseCodeAndStatusColorized
-      ? `\n\n\n${chalk.bold('Response')}\n${newmanItemStore.responseCodeAndStatusColorized}`
+      ? `\n\n\n${pc.bold('Response')}\n${newmanItemStore.responseCodeAndStatusColorized}`
       : '';
 
     // response time
@@ -173,29 +180,30 @@ function TestomatioNewmanReporter(
     steps += newmanItemStore.responseSize ? `\tSize: ${filesize(newmanItemStore.responseSize)}` : '';
 
     // add response body
-    steps += newmanItemStore.responseBody ? `\n\n${chalk.bold('response body')}:\n${newmanItemStore.responseBody}` : '';
+    steps += newmanItemStore.responseBody ? `\n\n${pc.bold('response body')}:\n${newmanItemStore.responseBody}` : '';
 
     // add response cookies
-    steps += newmanItemStore.cookies ? `\n\n${chalk.bold('cookies')}:\n${newmanItemStore.cookies}` : '';
+    steps += newmanItemStore.cookies ? `\n\n${pc.bold('cookies')}:\n${newmanItemStore.cookies}` : '';
 
     // events includes: prerequest, tests etc
     const events = result.item.events;
 
     let code = '';
+    // @ts-ignore
     events.map(event => {
       const eventName = event.listen;
       const eventScripts = event.script.exec;
 
       // sometimes first script element is empty string
       if (eventScripts?.length && eventScripts[0].length)
-        code += `\n\n\n${chalk.blue.bold(eventName)}\n${eventScripts?.join('\n')}`;
+        code += `\n\n\n${pc.blue(pc.bold(eventName))}\n${eventScripts?.join('\n')}`;
     });
     steps += code;
 
     // add execution time
     const executionTime = new Date().getTime() - newmanItemStore.startTime;
     steps += newmanItemStore.startTime
-      ? `\n\n\n${chalk.bold('Execution time: ')}${getPrettyTimeFromTimestamp(executionTime)}s`
+      ? `\n\n\n${pc.bold('Execution time: ')}${getPrettyTimeFromTimestamp(executionTime)}s`
       : '';
 
     // set the closest folder name as suite title
@@ -227,7 +235,7 @@ function TestomatioNewmanReporter(
   emitter.on('assertion', function (err: any, assertion: NewmanRunExecutionAssertion) {
     if (err) console.error(err);
     if (assertion.error) {
-      newmanItemStore.assertionErrorTextColorized = chalk.red(`${assertion.error.name}: ${assertion.error.message}`);
+      newmanItemStore.assertionErrorTextColorized = pc.red(`${assertion.error.name}: ${assertion.error.message}`);
       newmanItemStore.testStatus = 'failed';
     }
   });
@@ -235,7 +243,7 @@ function TestomatioNewmanReporter(
   // every time a console function is called from within any script, this event is propagated
   emitter.on('console', function (err: AnyObject, event: ConsoleEvent) {
     if (err) console.error(err);
-    console.log(APP_PREFIX, chalk.grey('CONSOLE:', event.messages.join(' ')));
+    console.log(APP_PREFIX, pc.gray(`CONSOLE: ${event.messages.join(' ')}`));
   });
 
   // collection run finished
@@ -243,11 +251,11 @@ function TestomatioNewmanReporter(
     if (err) console.error(err);
 
     const status = summary.run.failures.length ? 'failed' : 'passed';
-    console.log(APP_PREFIX, chalk.blue('Run result:', status));
+    console.log(APP_PREFIX, pc.blue(`Run result: ${status}`));
     testomatioReporter
       .updateRunStatus(status)
       .then(() => {
-        debug(chalk.blue('Run status updated:', status));
+        debug(pc.blue(`Run status updated: ${status}`));
       })
       .catch((err: any) => {
         debug('Run status update failed');
