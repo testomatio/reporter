@@ -411,6 +411,7 @@ class TestomatioPipe {
       if (this.runId && !this.proceed) {
         await this.axios.put(`/api/reporter/${this.runId}`, {
           api_key: this.apiKey,
+          duration: params.duration,
           status_event,
           tests: params.tests,
         });

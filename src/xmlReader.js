@@ -114,7 +114,7 @@ class XmlReader {
   }
 
   processJUnit(jsonSuite) {
-    const { testsuite, name, tests, failures, errors } = jsonSuite;
+    const { testsuite, name, tests, failures, errors, time } = jsonSuite;
 
     reduceOptions.preferClassname = this.stats.language === 'python';
     const resultTests = processTestSuite(testsuite);
@@ -122,17 +122,23 @@ class XmlReader {
     const hasFailures = resultTests.filter(t => t.status === 'failed').length > 0;
     const status = failures > 0 || errors > 0 || hasFailures ? 'failed' : 'passed';
 
+    if (time) {
+      if (!this.stats.duration) this.stats.duration = 0;
+      this.stats.duration += parseFloat(time);
+    }
+
     this.tests = this.tests.concat(resultTests);
 
     return {
-      status,
       create_tests: true,
-      name,
-      tests_count: parseInt(tests, 10),
-      passed_count: parseInt(tests, 10) - parseInt(failures, 10),
+      duration: parseFloat(time),
       failed_count: parseInt(failures, 10),
+      name,
+      passed_count: parseInt(tests, 10) - parseInt(failures, 10),
       skipped_count: 0,
+      status,
       tests: resultTests,
+      tests_count: parseInt(tests, 10),
     };
   }
 
