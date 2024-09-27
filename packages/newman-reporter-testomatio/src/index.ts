@@ -69,6 +69,10 @@ function TestomatioNewmanReporter(
     testStatus: '',
   };
 
+  let requestsCount = 0;
+  let failedRequestsCount = 0;
+  let testsCount = 0;
+
   // listen to the Newman events
 
   // collection start
@@ -124,29 +128,32 @@ function TestomatioNewmanReporter(
       newmanItemStore.testStatus = 'failed';
     }
 
-    const requestBodyCut = cutLongText(result.request.body?.toString() || '', { maxSizeInKb: 10 });
-    const requestHeadersCut = cutLongText(result.request.headers.toString(), { maxSizeInKb: 10 });
-    const responseBodyCut = cutLongText(result.response.stream?.toString() || '', { maxSizeInKb: 50 });
+    const requestBodyCut = cutLongText(result.request?.body?.toString() || '', { maxSizeInKb: 10 });
+    const requestHeadersCut = cutLongText(result.request?.headers.toString(), { maxSizeInKb: 10 });
+    const responseBodyCut = cutLongText(result.response?.stream?.toString() || '', { maxSizeInKb: 50 });
 
-    newmanItemStore.authType = result.request.auth?.toJSON().type || '';
-    newmanItemStore.cookies = result.response.cookies.toString();
-    newmanItemStore.responseCodeAndStatusColorized =
-      result.response.code < 300
-        ? pc.green(`${result.response.code} ${result.response.status}`)
-        : pc.red(`${result.response.code} ${result.response.status}`);
+    newmanItemStore.authType = result.request?.auth?.toJSON().type || '';
     newmanItemStore.requestBody = requestBodyCut;
     newmanItemStore.requestURL = result.request.url.toString();
     newmanItemStore.requestHeaders = requestHeadersCut;
+    newmanItemStore.cookies = result.response?.cookies?.toString();
     newmanItemStore.responseBody = responseBodyCut;
-    newmanItemStore.responseSize = (result.response.size() as unknown as ResponseSize).total;
-    newmanItemStore.responseTime = result.response.responseTime;
+    newmanItemStore.responseCodeAndStatusColorized =
+      result.response?.code < 300
+        ? pc.green(`${result.response?.code} ${result.response?.status}`)
+        : pc.red(`${result.response?.code} ${result.response?.status}`);
+    newmanItemStore.responseSize = (result.response?.size() as unknown as ResponseSize)?.total;
+    newmanItemStore.responseTime = result.response?.responseTime;
   });
 
   // when an item (the whole set of prerequest->request->test) completes
   emitter.on('item', function (err: AnyObject | null, result: NewmanRunExecution) {
+    requestsCount++;
+
     if (err) {
       console.error(err);
       newmanItemStore.testStatus = 'failed';
+      failedRequestsCount++;
     }
 
     const request = result.item.request;
@@ -194,6 +201,8 @@ function TestomatioNewmanReporter(
       const eventName = event.listen;
       const eventScripts = event.script.exec;
 
+      if (eventName === 'test') testsCount++;
+
       // sometimes first script element is empty string
       if (eventScripts?.length && eventScripts[0].length)
         code += `\n\n\n${pc.blue(pc.bold(eventName))}\n${eventScripts?.join('\n')}`;
@@ -233,7 +242,11 @@ function TestomatioNewmanReporter(
 
   // test assertion
   emitter.on('assertion', function (err: any, assertion: NewmanRunExecutionAssertion) {
-    if (err) console.error(err);
+    if (err) {
+      const userFriendlyErrorMessage = `Test ${pc.gray(err.test)} failed with ${err.name} ${pc.red(err.message)}`;
+      console.warn(userFriendlyErrorMessage);
+      console.error(err);
+    }
     if (assertion.error) {
       newmanItemStore.assertionErrorTextColorized = pc.red(`${assertion.error.name}: ${assertion.error.message}`);
       newmanItemStore.testStatus = 'failed';
@@ -261,10 +274,12 @@ function TestomatioNewmanReporter(
         debug('Run status update failed');
         debug(err);
       });
-    log(
+    console.log(APP_PREFIX,
       'Collection run completed',
       status === 'passed' ? 'without failures' : `with ${summary.run.failures.length} failures`,
     );
+    console.log(`${APP_PREFIX} Total requests sent: ${requestsCount}, failed requests: ${
+      failedRequestsCount}, total tests: ${testsCount}`);
   });
 }
 
