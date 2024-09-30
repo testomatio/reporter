@@ -218,3 +218,20 @@ describe('upload file by path', () => {
     expect(files[0].uploaded).to.be.false;
   });
 });
+
+describe('checkArtifactExistsInFileSystem', () => {
+  it('should return true if file exists', async () => {
+    // create file
+    const filePath = path.resolve('test-file.txt');
+    fs.writeFileSync(filePath, 'test content');
+    const uploader = new S3Uploader();
+    const exists = await uploader.checkArtifactExistsInFileSystem(filePath, 1, 1);
+    expect(exists).to.be.true;
+  });
+
+  it('should return false if file does not exist', async () => {
+    const uploader = new S3Uploader();
+    const exists = await uploader.checkArtifactExistsInFileSystem('non-existing-file.txt', 1, 1);
+    expect(exists).to.be.false;
+  });
+});
