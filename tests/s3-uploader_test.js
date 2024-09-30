@@ -1,5 +1,5 @@
 const { clear } = require('console');
-const S3Uploader = require('../../lib/uploader');
+const S3Uploader = require('../lib/uploader');
 const { expect } = require('chai');
 const fs = require('fs');
 const os = require('os');
