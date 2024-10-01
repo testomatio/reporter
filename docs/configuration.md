@@ -91,12 +91,8 @@ Do not finalize the run.
 Example:
 
 ```
-TESTOMATIO_PREPEND_DIR="MyTESTS" TESTOMATIO=1111111 npx check-tests CodeceptJS "**/*{.,_}{test,spec}.js"
+TESTOMATIO={API_KEY} _TESTOMATIO_PROCEED=1 <actual run command>
 ```
-
-#### `TESTOMATIO_PREPEND_DIR`
-
-Place all imported tests into a specific suite (folder).
 
 #### `TESTOMATIO_RUN`
 
