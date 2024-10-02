@@ -104,6 +104,7 @@ class TestomatioPipe {
     this.runId = params.runId || process.env.runId;
     this.createNewTests = params.createNewTests ?? !!process.env.TESTOMATIO_CREATE;
     this.hasUnmatchedTests = false;
+    this.requestFailures = 0;
 
     if (!isValidUrl(this.url.trim())) {
       this.isEnabled = false;
@@ -234,37 +235,25 @@ class TestomatioPipe {
 
   /**
    * Decides whether to skip test reporting in case of too many request failures
-   * @param {TestData} testData
    * @returns {boolean}
    */
-  #cancelTestReportingInCaseOfTooManyReqFailures(testData) {
-    if (this.reportingCanceledDueToReqFailures) return true;
+  #cancelTestReportingInCaseOfTooManyReqFailures() {
+    if (!process.env.TESTOMATIO_MAX_REQUEST_FAILURES) return;
 
-    const retriesCountWithinTime = this.retriesTimestamps.filter(
-      timestamp => Date.now() - timestamp < REPORTER_REQUEST_RETRIES.withinTimeSeconds * 1000,
-    ).length;
-    debug(`${retriesCountWithinTime} failed requests within ${REPORTER_REQUEST_RETRIES.withinTimeSeconds}s`);
-
-    if (retriesCountWithinTime > REPORTER_REQUEST_RETRIES.maxTotalRetries) {
-      const errorMessage = pc.yellow(
-        `${retriesCountWithinTime} requests were failed within ${REPORTER_REQUEST_RETRIES.withinTimeSeconds}s,\
- reporting for test "${testData.title}" to Testomat is skipped`,
-      );
-      console.warn(`${APP_PREFIX} ${errorMessage}`);
-
+    const cancelReporting = this.requestFailures >= parseInt(process.env.TESTOMATIO_MAX_REQUEST_FAILURES, 10);
+    if (cancelReporting) {
       this.reportingCanceledDueToReqFailures = true;
-      this.notReportedTestsCount++;
-
-      return true;
+      const errorMessage = 
+        `⚠️ ${process.env.TESTOMATIO_MAX_REQUEST_FAILURES} requests were failed, reporting to Testomat aborted.`;
+      console.warn(`${APP_PREFIX} ${pc.yellow(errorMessage)}`);
     }
-
-    return false;
+    return cancelReporting;
   }
 
   #uploadSingleTest = async data => {
     if (!this.isEnabled) return;
     if (!this.runId) return;
-    if (this.#cancelTestReportingInCaseOfTooManyReqFailures(data)) return;
+    if (this.#cancelTestReportingInCaseOfTooManyReqFailures()) return;
 
     data.api_key = this.apiKey;
     data.create = this.createNewTests;
@@ -280,6 +269,8 @@ class TestomatioPipe {
     return this.axios
       .post(`/api/reporter/${this.runId}/testrun`, json, axiosAddTestrunRequestConfig)
       .catch(err => {
+        this.requestFailures++;
+        this.notReportedTestsCount++;
         if (err.response) {
           if (err.response.status >= 400) {
             const responseData = err.response.data || { message: '' };
@@ -311,6 +302,8 @@ class TestomatioPipe {
    */
   #batchUpload = async () => {
     if (!this.batch.isEnabled) return;
+    if (!this.batch.tests.length) return;
+    if (this.#cancelTestReportingInCaseOfTooManyReqFailures()) return;
     // prevent infinite loop
     if (this.batch.numberOfTimesCalledWithoutTests > 10) {
       debug('📨 Batch upload: no tests to send for 10 times, stopping batch');
@@ -335,6 +328,8 @@ class TestomatioPipe {
         axiosAddTestrunRequestConfig,
       )
       .catch(err => {
+        this.requestFailures++;
+        this.notReportedTestsCount += testsToSend.length;
         if (err.response) {
           if (err.response.status >= 400) {
             const responseData = err.response.data || { message: '' };
