@@ -74,14 +74,14 @@ Example:
 TESTOMATIO_INTERCEPT_CONSOLE_LOGS=true <actual run command>
 ```
 
-#### `TESTOMATIO_MAX_REQUEST_FAILURES_COUNT`
+#### `TESTOMATIO_MAX_REQUEST_FAILURES`
 
-Maximum number of failed requests within 60 seconds. Default is 10.
+Maximum number of failed requests. If more requests fail, reporting will stop.
 
 Example:
 
 ```
-TESTOMATIO_MAX_REQUEST_FAILURES_COUNT=5 <actual run command>
+TESTOMATIO_MAX_REQUEST_FAILURES=5 <actual run command>
 ```
 
 #### `TESTOMATIO_PROCEED`
