@@ -125,4 +125,4 @@ This feature is under development right now. List of supported frameworks:
 - 🟢 Newman (Postman) (console logs are added by testomatio reporter by default, no need to use logger)
 - 🟢 Playwright
 - 🟢 Puppeteer (using Jest)
-- 🔴 WebdriverIO
+- 🟢 WebdriverIO

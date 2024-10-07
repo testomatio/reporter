@@ -33,6 +33,7 @@ function MochaReporter(runner, opts) {
   runner.on(EVENT_RUN_BEGIN, () => {
     client.createRun();
 
+    // clear dir with artifacts/logs
     fileSystem.clearDir(TESTOMAT_TMP_STORAGE_DIR);
   });
 

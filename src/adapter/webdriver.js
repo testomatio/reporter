@@ -1,8 +1,9 @@
 // eslint-disable-next-line
 import WDIOReporter, { RunnerStats } from '@wdio/reporter';
-
 import TestomatClient from '../client.js';
-import { getTestomatIdFromTestTitle } from '../utils/utils.js';
+import { getTestomatIdFromTestTitle, fileSystem } from '../utils/utils.js';
+import { services } from '../services/index.js';
+import { TESTOMAT_TMP_STORAGE_DIR } from '../constants.js';
 
 class WebdriverReporter extends WDIOReporter {
   constructor(options) {
@@ -23,8 +24,8 @@ class WebdriverReporter extends WDIOReporter {
   }
 
   /**
-   * 
-   * @param {RunnerStats} runData 
+   *
+   * @param {RunnerStats} runData
    */
   async onRunnerEnd(runData) {
     this._isSynchronising = true;
@@ -33,20 +34,34 @@ class WebdriverReporter extends WDIOReporter {
 
     this._isSynchronising = false;
 
-    // NOTE: new functionality; may break everything 
+    // NOTE: new functionality; may break everything
     // also this may require additional status mapping
     await this.client.updateRunStatus(runData.failures ? 'failed' : 'passed');
   }
 
+  onRunnerStart() {
+    // clear dir with artifacts/logs
+    fileSystem.clearDir(TESTOMAT_TMP_STORAGE_DIR);
+  }
+
+  onTestStart(test) {
+    services.setContext(test.fullTitle);
+  }
+
   onTestEnd(test) {
+    test.suite = test.parent;
+    const logs = getTestLogs(test.fullTitle);
+    // TODO: FIX: artifacts for some reason leads to empty report on Testomat.io
+    // const artifacts = services.artifacts.get(test.fullTitle);
+    // const keyValues = services.keyValues.get(test.fullTitle);
+    test.logs = logs;
+    // test.artifacts = artifacts;
+    // test.meta = keyValues;
+
     this._addTestPromises.push(this.addTest(test));
   }
 
   // wdio-cucumber does not trigger onTestEnd hook, thus, using this one
-  /**
-   *
-   * @returns
-   */
   onSuiteEnd(scerario) {
     if (scerario.type === 'scenario') {
       this._addTestPromises.push(this.addBddScenario(scerario));
@@ -66,7 +81,10 @@ class WebdriverReporter extends WDIOReporter {
       .map(el => Buffer.from(el.result.value, 'base64'));
 
     await this.client.addTestRun(state, {
+      // manuallyAttachedArtifacts: test.artifacts,
       error,
+      logs: test.logs,
+      // meta: test.meta,
       title,
       test_id: testId,
       time: duration,
@@ -106,6 +124,18 @@ class WebdriverReporter extends WDIOReporter {
       // filesBuffers: screenshotsBuffers,
     });
   }
+}
+
+/**
+ *
+ * @param {*} fullTestTitle
+ * @returns string
+ */
+function getTestLogs(fullTestTitle) {
+  const logsArr = services.logger.getLogs(fullTestTitle);
+  // remove duplicates (for some reason, logs are duplicated several times)
+  const logs = logsArr ? Array.from(new Set(logsArr)).join('\n').trim() : '';
+  return logs;
 }
 
 export default WebdriverReporter;
