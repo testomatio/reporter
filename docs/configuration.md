@@ -158,25 +158,28 @@ TESTOMATIO={API_KEY} TESTOMATIO_TITLE="title for the report" <actual run command
 
 Configure title IDs.
 
-
-
 ### Artifacts
 
-Configuration for artifacts storage.
+Configuration for artifacts storage. Those variables can be obtained from Testomat.io if "Share credentials" in Project Settings > Artifacts is enabled.
 
-* `S3_ACCESS_KEY_ID`: Your S3 access key ID.
-* `S3_BUCKET`: Your S3 bucket name.
-* `S3_ENDPOINT`: Your S3 endpoint URL.
-* `S3_REGION`: Your S3 region.
-* `S3_SECRET_ACCESS_KEY`: Your S3 secret access key.
+- `S3_ACCESS_KEY_ID`: Your S3 access key ID.
+- `S3_BUCKET`: Your S3 bucket name.
+- `S3_ENDPOINT`: Your S3 endpoint URL.
+- `S3_REGION`: Your S3 region.
+- `S3_SECRET_ACCESS_KEY`: Your S3 secret access key.
+- `TESTOMATIO_PRIVATE_ARTIFACTS`: Store artifacts in a bucket privately.
+
+These variables are used to define how artifacts are uploaded:
+
+- `TESTOMATIO_DISABLE_ARTIFACTS`: disable all artifacts uploading. All artifacts can be uploaded later with `npx @testomatio/reporter upload-artifacts` command.
+- `TESTOMATIO_ARTIFACT_MAX_SIZE_MB`: disable uploading artifacts larger than X size in Mb. Other artifacts can be uploaded later with `npx @testomatio/reporter upload-artifacts` command.
 
 ### Pipes
 
 Configuration for CI/CD pipelines.
 
-* `GH_PAT`: Your GitHub personal access token (to enable GitHub Pipe)
-* `GITLAB_PAT`: Your GitLab personal access token (to enable Gitlab Pipe).
-
+- `GH_PAT`: Your GitHub personal access token (to enable GitHub Pipe)
+- `GITLAB_PAT`: Your GitLab personal access token (to enable Gitlab Pipe).
 
 ## Loading configuration from `.env` file
 
