@@ -74,14 +74,14 @@ Example:
 TESTOMATIO_INTERCEPT_CONSOLE_LOGS=true <actual run command>
 ```
 
-#### `TESTOMATIO_MAX_REQUEST_FAILURES_COUNT`
+#### `TESTOMATIO_MAX_REQUEST_FAILURES`
 
-Maximum number of failed requests within 60 seconds. Default is 10.
+Maximum number of failed requests. If more requests fail, reporting will stop.
 
 Example:
 
 ```
-TESTOMATIO_MAX_REQUEST_FAILURES_COUNT=5 <actual run command>
+TESTOMATIO_MAX_REQUEST_FAILURES=5 <actual run command>
 ```
 
 #### `TESTOMATIO_PROCEED`
@@ -91,12 +91,8 @@ Do not finalize the run.
 Example:
 
 ```
-TESTOMATIO_PREPEND_DIR="MyTESTS" TESTOMATIO=1111111 npx check-tests CodeceptJS "**/*{.,_}{test,spec}.js"
+TESTOMATIO={API_KEY} _TESTOMATIO_PROCEED=1 <actual run command>
 ```
-
-#### `TESTOMATIO_PREPEND_DIR`
-
-Place all imported tests into a specific suite (folder).
 
 #### `TESTOMATIO_RUN`
 

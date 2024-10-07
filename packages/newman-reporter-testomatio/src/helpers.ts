@@ -1,5 +1,6 @@
 import { AnyObject, KeyValueObject } from './types';
 import _ from 'lodash';
+import pc from 'picocolors';
 
 export function beatifyVariablesList(varsList: KeyValueObject[]) {
   const beatifiedVarsList: AnyObject = {};
@@ -47,4 +48,21 @@ export function getTestIdFromTestName(testName: string): string {
   const regexMatches = testName.match(TEST_ID_REGEX);
   if (!regexMatches) return '';
   return regexMatches[1];
+}
+
+/**
+ * Cut the long text to make it shorter (cuts the middle of the string to make start and end visible)
+ */
+export function cutLongText(text: string, options: { maxLength?: number, maxSizeInKb?: number, warnIfCut?: boolean }): string {
+  if (!options.maxLength && !options.maxSizeInKb) throw new Error('You should provide either maxLength or maxWeightInKb');
+  const { maxLength, maxSizeInKb } = options;
+  const warnIfCut = options.warnIfCut ?? true;
+  const cutWarning = pc.redBright('  ... ✂️ log is cut here (in the middle) due to large size ✂️ ...');
+  const maxLengthInSymbols = maxLength || maxSizeInKb! * 1024;
+  if (text.length <= maxLengthInSymbols) return text;
+
+  // cutting the middle of the string
+  const start = text.slice(0, maxLengthInSymbols / 2);
+  const end = text.slice(-maxLengthInSymbols / 2);
+  return warnIfCut ? `${start}\n${cutWarning}\n${end}` : `${start}\n...\n${end}`;
 }

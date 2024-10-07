@@ -92,6 +92,9 @@ export interface RunData {
   /** The number of test cases that were skipped in the test run. */
   skipped_count?: number;
 
+  /** If duration is pre-set value as in XML tests set it */
+  duration?: number;
+
   /**
    * An array of `TestData` objects representing the individual test cases in the test run.
    * Used for JUNit report when we don't send the tests in realtime but in a batch as a part of final result */

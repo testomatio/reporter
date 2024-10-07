@@ -1,6 +1,6 @@
 {
   "name": "@testomatio/reporter",
-  "version": "1.6.0-beta-6-artifacts",
+  "version": "1.6.0-beta",
   "description": "Testomatio Reporter Client",
   "main": "./lib/reporter.js",
   "typings": "typings/index.d.ts",

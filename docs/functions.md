@@ -108,3 +108,4 @@ Supported frameworks:
 - 🟢 Jest
 - 🟢 Mocha
 - 🟢 Playwright
+- 🟢 WDIO (all except artifacts)

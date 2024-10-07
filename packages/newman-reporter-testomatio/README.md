@@ -39,3 +39,7 @@ Build local package:
 Install:
 
 `npm i <path to generated .tgz file>`
+
+### Development
+
+! This package does not work if `chalk` is used.

@@ -11,7 +11,7 @@ jobs:
     steps:
       # first checkout your code
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       # then use redoc-cli-github-action to generate your HTML bundle
       - name: Generate and rename Redoc documentation
@@ -19,7 +19,7 @@ jobs:
           npx redoc-cli bundle testomat-api-definition.yml
           mv redoc-static.html index.html
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3 # https://github.com/peaceiris/actions-gh-pages
+        uses: peaceiris/actions-gh-pages@v4 # https://github.com/peaceiris/actions-gh-pages
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: .
