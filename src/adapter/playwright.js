@@ -106,34 +106,33 @@ class PlaywrightReporter {
     if (!this.client) return;
 
     await Promise.all(reportTestPromises);
+    await this.client.updateRunStatus(checkStatus(result.status));
 
-    if (this.uploads.length && upload.isArtifactsEnabled()) {
-      console.log(APP_PREFIX, `🎞️  Uploading ${this.uploads.length} files...`);
+    if (!this.uploads.length) return;
+    console.log(APP_PREFIX, `🎞️  Uploading ${this.uploads.length} files...`);
 
-      const promises = [];
+    if (this.client.uploader.isEnabled) console.log(APP_PREFIX, `🎞️  Uploading ${this.uploads.length} files...`);
+    const promises = [];
 
-      for (const anUpload of this.uploads) {
-        const { rid, file, title } = anUpload;
+    for (const upload of this.uploads) {
+      const { rid, file, title } = upload;
 
-        const files = anUpload.files.map(attachment => ({
-          path: this.#getArtifactPath(attachment),
+      const files = upload.files.map(attachment => ({
+        path: this.#getArtifactPath(attachment),
+        title,
+        type: attachment.contentType,
+      }));
+
+      promises.push(
+        this.client.addTestRun(undefined, {
+          rid,
           title,
-          type: attachment.contentType,
-        }));
-
-        promises.push(
-          this.client.addTestRun(undefined, {
-            rid,
-            title,
-            files,
-            file,
-          }),
-        );
-      }
+          files,
+          file,
+        }),
+      );
       await Promise.all(promises);
     }
-
-    await this.client.updateRunStatus(checkStatus(result.status));
   }
 }
 
