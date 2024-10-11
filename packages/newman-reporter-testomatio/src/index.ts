@@ -149,6 +149,8 @@ function TestomatioNewmanReporter(
       newmanItemStore.testStatus = 'failed';
     }
 
+    const status = newmanItemStore.testStatus || ('passed' as TestStatus);
+
     const request = result.item.request;
     // const requestURL = request.url as unknown as URL;
 
@@ -164,10 +166,14 @@ function TestomatioNewmanReporter(
     steps += newmanItemStore.authType ? `\n\n${pc.bold('auth: ')}${newmanItemStore.authType}` : '';
 
     // add request headers
-    steps += `\n\n${pc.bold('headers:')}\n${newmanItemStore.requestHeaders}`;
+    if (process.env.TESTOMATIO_STACK_PASSED || status !== 'passed') {
+      steps += `\n\n${pc.bold('headers:')}\n${newmanItemStore.requestHeaders}`;
+    }
 
     // request body
-    steps += newmanItemStore.requestBody ? `\n${pc.bold('request body:')}\n${newmanItemStore.requestBody}` : '';
+    if (process.env.TESTOMATIO_STACK_PASSED || status !== 'passed') {
+      steps += newmanItemStore.requestBody ? `\n${pc.bold('request body:')}\n${newmanItemStore.requestBody}` : '';
+    }
 
     // add response status name and code
     steps += newmanItemStore.responseCodeAndStatusColorized
@@ -180,7 +186,9 @@ function TestomatioNewmanReporter(
     steps += newmanItemStore.responseSize ? `\tSize: ${filesize(newmanItemStore.responseSize)}` : '';
 
     // add response body
-    steps += newmanItemStore.responseBody ? `\n\n${pc.bold('response body')}:\n${newmanItemStore.responseBody}` : '';
+    if (process.env.TESTOMATIO_STACK_PASSED || status !== 'passed') {
+      steps += newmanItemStore.responseBody ? `\n\n${pc.bold('response body')}:\n${newmanItemStore.responseBody}` : '';
+    }
 
     // add response cookies
     steps += newmanItemStore.cookies ? `\n\n${pc.bold('cookies')}:\n${newmanItemStore.cookies}` : '';
@@ -228,7 +236,7 @@ function TestomatioNewmanReporter(
     log('Test data sent:', testData);
 
     // notify Testomatio about the item result
-    testomatioReporter.addTestRun(newmanItemStore.testStatus || ('passed' as TestStatus), testData);
+    testomatioReporter.addTestRun(status, testData);
   });
 
   // test assertion
