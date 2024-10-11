@@ -4,7 +4,6 @@ import TestomatClient from '../client.js';
 import { STATUS, APP_PREFIX, TESTOMAT_TMP_STORAGE_DIR } from '../constants.js';
 import { getTestomatIdFromTestTitle, fileSystem } from '../utils/utils.js';
 import { services } from '../services/index.js';
-import { upload } from '../fileUploader.js';
 // eslint-disable-next-line
 import codeceptjs from 'codeceptjs';
 
@@ -133,10 +132,8 @@ function CodeceptReporter(config) {
     // all tests were reported and we can upload videos
     await Promise.all(reportTestPromises);
 
-    if (upload.isArtifactsEnabled()) {
-      await uploadAttachments(client, videos, '🎞️ Uploading', 'video');
-      await uploadAttachments(client, traces, '📁 Uploading', 'trace');
-    }
+    await uploadAttachments(client, videos, '🎞️ Uploading', 'video');
+    await uploadAttachments(client, traces, '📁 Uploading', 'trace');
 
     const status = failedTests.length === 0 ? STATUS.PASSED : STATUS.FAILED;
     // @ts-ignore
@@ -312,11 +309,17 @@ function CodeceptReporter(config) {
 async function uploadAttachments(client, attachments, messagePrefix, attachmentType) {
   if (!attachments?.length) return;
 
-  console.log(APP_PREFIX, `Attachments: ${messagePrefix} ${attachments.length} ${attachmentType} ...`);
+  if (client.uploader.isEnabled) {
+    console.log(APP_PREFIX, `Attachments: ${messagePrefix} ${attachments.length} ${attachmentType} ...`);
+  }
 
   const promises = attachments.map(async attachment => {
     const { rid, title, path, type } = attachment;
     const file = { path, type, title };
+
+    // we are storing file if upload is disabled
+    if (!client.uploader.isEnabled) return client.uploader.storeUploadedFile(path, client.runId, rid, false);
+    
     return client.addTestRun(undefined, {
       ...stripExampleFromTitle(title),
       rid,

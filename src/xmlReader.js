@@ -17,7 +17,7 @@ import {
 import {pipesFactory} from './pipe/index.js';
 import adapterFactory from './junit-adapter/index.js';
 import {config} from './config.js';
-import { upload } from './fileUploader.js';
+import { S3Uploader } from './uploader.js';
 
 // @ts-ignore this line will be removed in compiled code, because __dirname is defined in commonjs
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -61,7 +61,7 @@ class XmlReader {
     this.tests = [];
     this.stats = {};
     this.stats.language = opts.lang?.toLowerCase();
-    this.filesToUpload = {};
+    this.uploader = new S3Uploader();
 
     // @ts-ignore
     const packageJsonPath = path.resolve(__dirname, '..', 'package.json');
@@ -395,7 +395,7 @@ class XmlReader {
       if (!files.length) continue;
 
       const runId = this.runId || this.store.runId || Date.now().toString();
-      test.artifacts = await Promise.all(files.map(f => upload.uploadFileByPath(f, runId)));
+      test.artifacts = await Promise.all(files.map(f => this.uploader.uploadFileByPath(f, [runId])));
       console.log(APP_PREFIX, `🗄️ Uploaded ${pc.bold(`${files.length} artifacts`)} for test ${test.title}`);
     }
   }
@@ -412,7 +412,9 @@ class XmlReader {
     debug('Run', runParams);
     this.pipes = this.pipes || (await this.pipesPromise);
 
-    return Promise.all(this.pipes.map(p => p.createRun(runParams)));
+    const run = await Promise.all(this.pipes.map(p => p.createRun(runParams)));
+    this.uploader.checkEnabled();
+    return run;
   }
 
   async uploadData() {

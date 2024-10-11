@@ -4,12 +4,13 @@ import { minimatch } from 'minimatch';
 import fs from 'fs';
 import pc from 'picocolors';
 import { randomUUID } from 'crypto';
-import {upload} from './fileUploader.js';
 import { APP_PREFIX, STATUS } from './constants.js';
 import { pipesFactory } from './pipe/index.js';
 import { glob } from 'glob';
 import path, { sep} from 'path';
 import { fileURLToPath } from 'node:url';
+import { S3Uploader } from './uploader.js';
+import { storeRunId } from './utils/utils.js';
 
 const debug = createDebugMessages('@testomatio/reporter:client');
 
@@ -31,10 +32,9 @@ class Client {
    */
   // eslint-disable-next-line 
   constructor(params = {}) {
-    this.uuid = randomUUID();
+    this.pipeStore = {};
+    this.runId = randomUUID(); // will be replaced by real run id
     this.queue = Promise.resolve();
-    this.totalUploaded = 0;
-    this.failedToUpload = 0;
 
     // @ts-ignore this line will be removed in compiled code, because __dirname is defined in commonjs
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -46,6 +46,9 @@ class Client {
       // do nothing
     }
     this.executionList = Promise.resolve();
+
+    this.uploader = new S3Uploader();
+    this.uploader.checkEnabled();
 
   }
 
@@ -66,8 +69,7 @@ class Client {
    * or resolves to undefined if no valid results are found or if all pipes are disabled.
    */
   async prepareRun(params) {
-    const store = {};
-    this.pipes = await pipesFactory(params, store);
+    this.pipes = await pipesFactory(params, this.pipeStore);
     const { pipe, pipeOptions } = params;
     // all pipes disabled, skipping
     if (!this.pipes.some(p => p.isEnabled)) {
@@ -110,7 +112,7 @@ class Client {
    * @returns {Promise<any>} - resolves to Run id which should be used to update / add test
    */
   async createRun(params) {
-    if (!this.pipes || !this.pipes.length) this.pipes = await pipesFactory(params || {}, {});
+    if (!this.pipes || !this.pipes.length) this.pipes = await pipesFactory(params || {}, this.pipeStore);
     debug('Creating run...');
     // all pipes disabled, skipping
     if (!this.pipes?.filter(p => p.isEnabled).length) return Promise.resolve();
@@ -118,7 +120,13 @@ class Client {
     this.queue = this.queue
       .then(() => Promise.all(this.pipes.map(p => p.createRun())))
       .catch(err => console.log(APP_PREFIX, err))
-      .then(() => undefined); // fixes return type
+      .then(() => {
+        const runId = this.pipeStore?.runId;
+        if (runId) this.runId = runId;
+        storeRunId(this.runId);
+
+        this.uploader.checkEnabled();
+      })
     // debug('Run', this.queue);
     return this.queue;
   }
@@ -183,23 +191,22 @@ class Client {
 
     const uploadedFiles = [];
 
-    for (const f of files) {
-      uploadedFiles.push(upload.uploadFileByPath(f, this.uuid));
+    for (let f of files) {
+      if (typeof f === 'object') {
+        if (!f.path) continue;
+
+        f = f.path;
+      }
+
+      uploadedFiles.push(this.uploader.uploadFileByPath(f, [this.runId, rid, path.basename(f)]));
     }
 
     for (const [idx, buffer] of filesBuffers.entries()) {
       const fileName = `${idx + 1}-${title.replace(/\s+/g, '-')}`;
-      uploadedFiles.push(upload.uploadFileAsBuffer(buffer, fileName, this.uuid));
+      uploadedFiles.push(this.uploader.uploadFileAsBuffer(buffer, [this.runId, rid, fileName]));
     }
 
     const artifacts = (await Promise.all(uploadedFiles)).filter(n => !!n);
-
-    if (artifacts.length < uploadedFiles.length) {
-      const failedUploading = uploadedFiles.length - artifacts.length;
-      this.failedToUpload += failedUploading;
-    }
-
-    this.totalUploaded += artifacts.length;
 
     const data = {
       rid,
@@ -258,25 +265,34 @@ class Client {
     this.queue = this.queue
       .then(() => Promise.all(this.pipes.map(p => p.finishRun(runParams))))
       .then(() => {
-        debug('TOTAL artifacts', this.totalUploaded);
-        if (this.totalUploaded && !upload.isArtifactsEnabled())
-          debug(`${this.totalUploaded} artifacts are not uploaded, because artifacts uploading is not enabled`);
+        debug('TOTAL artifacts', this.uploader.totalUploadsCount);
+        debug(`${this.uploader.skippedUploadsCount} artifacts skipped`);
 
-        if (this.totalUploaded && upload.isArtifactsEnabled()) {
+        if (this.uploader.totalUploadsCount && this.uploader.isEnabled) {
           console.log(
             APP_PREFIX,
-            `🗄️ ${this.totalUploaded} artifacts ${
+            `🗄️ ${this.uploader.totalUploadsCount} artifacts ${
               process.env.TESTOMATIO_PRIVATE_ARTIFACTS ? 'privately' : pc.bold('publicly')
             } uploaded to S3 bucket`,
           );
 
-          if (this.failedToUpload > 0) {
+          if (this.uploader.failedUploadsCount) {
             console.log(
               APP_PREFIX,
-              pc.yellow(
-                `Some artifacts were not uploaded. ${this.failedToUpload} artifacts could not be uploaded.
-                Run tests with DEBUG="@testomatio/reporter:file-uploader" to see details"`,
-              ),
+              pc.gray('[CLIENT]'),
+              `${this.uploader.failedUploadsCount} artifacts failed to upload`,
+            );
+          }
+
+          if (this.uploader.isEnabled && this.uploader.skippedUploadsCount) {
+            console.log(APP_PREFIX, `${pc.bold(this.uploader.skippedUploadsCount)} artifacts skipped to upload`);
+          }
+  
+          if (this.uploader.skippedUploadsCount || this.uploader.failedUploadsCount) {
+            const command = `TESTOMATIO_RUN=${this.runId} npx @testomatio/reporter upload-artifacts`;
+            console.log(
+              APP_PREFIX,
+              `Run "${pc.magenta(command)}" with valid S3 credentials to upload skipped & failed artifacts`,
             );
           }
         }

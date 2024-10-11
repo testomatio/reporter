@@ -123,6 +123,11 @@ class PlaywrightReporter {
         type: attachment.contentType,
       }));
 
+      if (!this.client.uploader.isEnabled) {
+        files.forEach(file => this.client.uploader.storeUploadedFile(file, this.client.runId, rid, false));
+        continue;
+      }
+
       promises.push(
         this.client.addTestRun(undefined, {
           rid,

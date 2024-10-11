@@ -41,6 +41,7 @@ class WebdriverReporter extends WDIOReporter {
 
   onRunnerStart() {
     // clear dir with artifacts/logs
+    // 
     fileSystem.clearDir(TESTOMAT_TMP_STORAGE_DIR);
   }
 

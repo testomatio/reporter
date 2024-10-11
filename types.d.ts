@@ -12,9 +12,9 @@ export interface FileType {
  */
 export interface TestData {
   /** Unique ID of test report data to send to multiple times. */
-  rid?: string;
+  rid: string;
   /** The title of the test case being reported. */
-  title: string;
+  title?: string;
 
   /** The title of the test suite to which the test case belongs. Required when creating a new test suite inside Testomat.io. */
   suite_title?: string;

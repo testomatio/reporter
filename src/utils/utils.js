@@ -4,6 +4,8 @@ import pc from 'picocolors';
 import fs from 'fs';
 import isValid from 'is-valid-path';
 import createDebugMessages from 'debug';
+import path from 'path';
+import os from 'os';
 
 const debug = createDebugMessages('@testomatio/reporter:util');
 
@@ -320,7 +322,28 @@ const testRunnerHelper = {
   },
 };
 
+function storeRunId(runId) {
+  if (!runId || runId === 'undefined') return;
+  const filePath = path.join(os.tmpdir(), `testomatio.latest.run`);
+  fs.writeFileSync(filePath, runId);
+}
+
+function readLatestRunId() {
+  try {
+    const filePath = path.join(os.tmpdir(), `testomatio.latest.run`);
+    const stats = fs.statSync(filePath);
+    const diff = +new Date() - +stats.mtime;
+    const diffHours = diff / 1000 / 60 / 60;
+    if (diffHours > 1) return;
+
+    return fs.readFileSync(filePath)?.toString()?.trim();
+  } catch (e) {
+    return null;
+  }
+}
+
 export {
+  ansiRegExp,
   isSameTest,
   fetchSourceCode,
   fetchSourceCodeFromStackTrace,
@@ -328,14 +351,15 @@ export {
   fetchIdFromOutput,
   fetchFilesFromStackTrace,
   fileSystem,
-  getCurrentDateTime,
-  specificTestInfo,
-  isValidUrl,
-  ansiRegExp,
-  getTestomatIdFromTestTitle,
-  parseSuite,
-  humanize,
-  removeColorCodes,
   foundedTestLog,
+  getCurrentDateTime,
+  getTestomatIdFromTestTitle,
+  humanize,
+  isValidUrl,
+  parseSuite,
+  readLatestRunId,
+  removeColorCodes,
+  specificTestInfo,
+  storeRunId,
   testRunnerHelper,
 };

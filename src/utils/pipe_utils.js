@@ -1,4 +1,3 @@
-import { upload } from '../fileUploader.js';
 import { APP_PREFIX } from '../constants.js';
 
 /**
@@ -17,7 +16,6 @@ function setS3Credentials(artifacts) {
   if (artifacts.ENDPOINT) process.env.S3_ENDPOINT = artifacts.ENDPOINT;
   if (artifacts.SESSION_TOKEN) process.env.S3_SESSION_TOKEN = artifacts.SESSION_TOKEN;
   if (artifacts.presign) process.env.TESTOMATIO_PRIVATE_ARTIFACTS = '1';
-  upload.resetConfig();
 }
 
 /**

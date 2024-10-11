@@ -45,9 +45,13 @@ program
     let timeoutTimer;
     if (opts.timelimit) {
       timeoutTimer = setTimeout(() => {
-        console.log(`⚠️  Reached timeout of ${opts.timelimit}s. Exiting... (Exit code is 0 to not fail the pipeline)`);
-        process.exit(0);
-      }, parseInt(opts.timelimit, 10) * 1000);
+          console.log(
+            `⚠️  Reached timeout of ${opts.timelimit}s. Exiting... (Exit code is 0 to not fail the pipeline)`,
+          );
+          process.exit(0);
+        },
+        parseInt(opts.timelimit, 10) * 1000,
+      );
     }
 
     try {

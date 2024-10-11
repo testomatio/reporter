@@ -156,7 +156,6 @@ class TestomatioPipe {
    */
   async createRun(params = {}) {
     this.batch.isEnabled = params.isBatchEnabled ?? this.batch.isEnabled;
-    debug('Creating run...');
     if (!this.isEnabled) return;
     if (this.batch.isEnabled) this.batch.intervalFunction = setInterval(this.#batchUpload, this.batch.intervalTime);
 
@@ -198,12 +197,14 @@ class TestomatioPipe {
     debug(' >>>>>> Run params', JSON.stringify(runParams, null, 2));
 
     if (this.runId) {
+      this.store.runId = this.runId;
       debug(`Run with id ${this.runId} already created, updating...`);
       const resp = await this.axios.put(`/api/reporter/${this.runId}`, runParams);
       if (resp.data.artifacts) setS3Credentials(resp.data.artifacts);
       return;
     }
 
+    debug('Creating run...');
     try {
       const resp = await this.axios.post(`/api/reporter`, runParams, {
         maxContentLength: Infinity,
@@ -422,6 +423,7 @@ class TestomatioPipe {
         console.log(APP_PREFIX, `📊 ${notFinishedMessage}. Report URL: ${pc.magenta(this.runUrl)}`);
         console.log(APP_PREFIX, `🛬 Run to finish it: TESTOMATIO_RUN=${this.runId} npx start-test-run --finish`);
       }
+      
       if (this.hasUnmatchedTests) {
         console.log('');
         // eslint-disable-next-line max-len
