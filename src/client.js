@@ -32,6 +32,7 @@ class Client {
    */
   // eslint-disable-next-line 
   constructor(params = {}) {
+    this.paramsForPipesFactory = params;
     this.pipeStore = {};
     this.runId = randomUUID(); // will be replaced by real run id
     this.queue = Promise.resolve();
@@ -69,7 +70,7 @@ class Client {
    * or resolves to undefined if no valid results are found or if all pipes are disabled.
    */
   async prepareRun(params) {
-    this.pipes = await pipesFactory(params, this.pipeStore);
+    this.pipes = await pipesFactory(params || this.paramsForPipesFactory || {}, this.pipeStore);
     const { pipe, pipeOptions } = params;
     // all pipes disabled, skipping
     if (!this.pipes.some(p => p.isEnabled)) {
@@ -112,7 +113,8 @@ class Client {
    * @returns {Promise<any>} - resolves to Run id which should be used to update / add test
    */
   async createRun(params) {
-    if (!this.pipes || !this.pipes.length) this.pipes = await pipesFactory(params || {}, this.pipeStore);
+    if (!this.pipes || !this.pipes.length)
+      this.pipes = await pipesFactory(params || this.paramsForPipesFactory || {}, this.pipeStore);
     debug('Creating run...');
     // all pipes disabled, skipping
     if (!this.pipes?.filter(p => p.isEnabled).length) return Promise.resolve();
@@ -381,7 +383,7 @@ function isNotInternalFrame(frame) {
   );
 }
 
-function formatStep(step, shift = 0) {
+export function formatStep(step, shift = 0) {
   const prefix = ' '.repeat(shift);
 
   const lines = [];

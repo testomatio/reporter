@@ -8,6 +8,7 @@ import fileUrl from 'file-url';
 import { fileSystem, isSameTest, ansiRegExp } from '../utils/utils.js';
 import { HTML_REPORT } from '../constants.js';
 import { fileURLToPath } from "node:url";
+import { formatStep } from '../client.js';
 
 const debug = createDebugMessages('@testomatio/reporter:pipe:html');
 
@@ -128,6 +129,10 @@ class HtmlPipe {
     }
 
     tests.forEach(test => {
+      // steps could be an array or a string
+      test.steps = Array.isArray(test.steps) ? test.steps = test.steps.map(step => formatStep(step))
+        .flat().join('\n') : test.steps;
+
       if (!test.message?.trim()) {
         test.message = "This test has no 'message' code";
       }
