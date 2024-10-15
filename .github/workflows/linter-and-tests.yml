@@ -33,7 +33,7 @@ jobs:
     needs: linter-and-tests-on-latest-node
     strategy:
       matrix:
-        node-version: [18.x, 20.x, 22.x]
+        node-version: [18.x, 20.x]
     steps:
       - uses: actions/checkout@v4
       - name: Tests (node ${{ matrix.node-version }})
