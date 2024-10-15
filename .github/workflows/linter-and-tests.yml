@@ -15,7 +15,7 @@ on:
 jobs:
   linter-and-tests-on-latest-node:
     runs-on: ubuntu-latest
-    name: Linter&Tests (latest node)
+    name: Linter&tests (latest node)
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -30,14 +30,13 @@ jobs:
 
   tests-on-previous-node-versions:
     runs-on: ubuntu-latest
-    name: Tests on previous node versions
     needs: linter-and-tests-on-latest-node
     strategy:
       matrix:
         node-version: [18.x, 20.x, 22.x]
     steps:
       - uses: actions/checkout@v4
-      - name: Tests on node ${{ matrix.node-version }}
+      - name: Tests (node ${{ matrix.node-version }})
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
