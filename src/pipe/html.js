@@ -5,10 +5,9 @@ import path from 'path';
 import pc from 'picocolors';
 import handlebars from 'handlebars';
 import fileUrl from 'file-url';
-import { fileSystem, isSameTest, ansiRegExp } from '../utils/utils.js';
+import { fileSystem, isSameTest, ansiRegExp, formatStep } from '../utils/utils.js';
 import { HTML_REPORT } from '../constants.js';
 import { fileURLToPath } from "node:url";
-import { formatStep } from '../client.js';
 
 const debug = createDebugMessages('@testomatio/reporter:pipe:html');
 

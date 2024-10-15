@@ -10,7 +10,7 @@ import { glob } from 'glob';
 import path, { sep} from 'path';
 import { fileURLToPath } from 'node:url';
 import { S3Uploader } from './uploader.js';
-import { storeRunId } from './utils/utils.js';
+import { formatStep, storeRunId } from './utils/utils.js';
 
 const debug = createDebugMessages('@testomatio/reporter:client');
 
@@ -381,24 +381,6 @@ function isNotInternalFrame(frame) {
     !frame.getFileName().includes('node_modules') &&
     !frame.getFileName().includes('internal')
   );
-}
-
-export function formatStep(step, shift = 0) {
-  const prefix = ' '.repeat(shift);
-
-  const lines = [];
-
-  if (step.error) {
-    lines.push(`${prefix}${pc.red(step.title)} ${pc.gray(`${step.duration}ms`)}`);
-  } else {
-    lines.push(`${prefix}${step.title} ${pc.gray(`${step.duration}ms`)}`);
-  }
-
-  for (const child of step.steps || []) {
-    lines.push(...formatStep(child, shift + 2));
-  }
-
-  return lines;
 }
 
 /**

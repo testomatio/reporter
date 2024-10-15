@@ -342,6 +342,24 @@ function readLatestRunId() {
   }
 }
 
+function formatStep(step, shift = 0) {
+  const prefix = ' '.repeat(shift);
+
+  const lines = [];
+
+  if (step.error) {
+    lines.push(`${prefix}${pc.red(step.title)} ${pc.gray(`${step.duration}ms`)}`);
+  } else {
+    lines.push(`${prefix}${step.title} ${pc.gray(`${step.duration}ms`)}`);
+  }
+
+  for (const child of step.steps || []) {
+    lines.push(...formatStep(child, shift + 2));
+  }
+
+  return lines;
+}
+
 export {
   ansiRegExp,
   isSameTest,
@@ -352,6 +370,7 @@ export {
   fetchFilesFromStackTrace,
   fileSystem,
   foundedTestLog,
+  formatStep,
   getCurrentDateTime,
   getTestomatIdFromTestTitle,
   humanize,
