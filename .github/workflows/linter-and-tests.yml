@@ -25,6 +25,7 @@ jobs:
 
   tests:
     runs-on: ubuntu-latest
+    needs: linter
     strategy:
       matrix:
         node-version: [18.x, 20.x, 22.x]
