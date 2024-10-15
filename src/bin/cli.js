@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { program } from 'commander';
+import program from 'commander';
 import { spawn } from 'cross-spawn';
 import glob from 'glob';
 import createDebugMessages from 'debug';
@@ -8,7 +8,7 @@ import TestomatClient from '../client.js';
 import XmlReader from '../xmlReader.js';
 import { APP_PREFIX, STATUS } from '../constants.js';
 import { version } from '../../package.json';
-import config from '../config.js';
+import {config} from '../config.js';
 import { readLatestRunId } from '../utils/utils.js';
 import pc from 'picocolors';
 
@@ -58,6 +58,7 @@ program
     const apiKey = process.env['INPUT_TESTOMATIO-KEY'] || config.TESTOMATIO;
     const client = new TestomatClient({ apiKey });
 
+    // @ts-ignore
     client.updateRunStatus(STATUS.FINISHED).then(() => {
       console.log(pc.yellow(`Run ${process.env.TESTOMATIO_RUN} was finished`));
       process.exit(0);

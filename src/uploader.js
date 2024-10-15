@@ -42,6 +42,10 @@ export class S3Uploader {
     this.isEnabled = undefined;
   }
 
+  /**
+   * 
+   * @returns {Record<string, string>}
+   */
   getConfig() {
     if (this.config) return this.config;
     this.config = this.configKeys.reduce((acc, key) => {

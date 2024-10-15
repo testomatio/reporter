@@ -6,7 +6,7 @@ import createDebugMessages from 'debug';
 import TestomatClient from '../client.js';
 import { APP_PREFIX } from '../constants.js';
 import { version } from '../../package.json';
-import config from '../config.js';
+import {config} from '../config.js';
 import { readLatestRunId } from '../utils/utils.js';
 
 const debug = createDebugMessages('@testomatio/reporter:upload-cli');

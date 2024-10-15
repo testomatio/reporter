@@ -6,7 +6,6 @@ import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import { APP_PREFIX, STATUS as Status, TESTOMAT_TMP_STORAGE_DIR } from '../constants.js';
 import TestomatioClient from '../client.js';
-import { upload } from '../fileUploader.js';
 import { getTestomatIdFromTestTitle, fileSystem } from '../utils/utils.js';
 import { services } from '../services/index.js';
 import { dataStorage } from '../data-storage.js';
