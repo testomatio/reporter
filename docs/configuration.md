@@ -84,6 +84,10 @@ Example:
 TESTOMATIO_MAX_REQUEST_FAILURES=5 <actual run command>
 ```
 
+#### `TESTOMATIO_REQUEST_TIMEOUT`
+
+Max request timeout in **milli**seconds. Default is 20 sec.
+
 #### `TESTOMATIO_PROCEED`
 
 Do not finalize the run.
