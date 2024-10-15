@@ -28,7 +28,7 @@ jobs:
       - run: npm run test
       - run: npm run test:storage
 
-  tests-on-previous-node-versions:
+  tests:
     runs-on: ubuntu-latest
     needs: linter-and-tests-on-latest-node
     strategy:
