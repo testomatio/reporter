@@ -3,7 +3,11 @@ import os from 'os';
 import path from 'path';
 
 const APP_PREFIX = pc.gray('[TESTOMATIO]');
-const AXIOS_TIMEOUT = 20 * 1000; // sum = 20sec
+const TESTOMATIO_REQUEST_TIMEOUT = parseInt(process.env.TESTOMATIO_REQUEST_TIMEOUT, 10);
+if (TESTOMATIO_REQUEST_TIMEOUT) {
+  console.log(`${APP_PREFIX} Request timeout is set to ${TESTOMATIO_REQUEST_TIMEOUT/1000}s`);
+}
+const AXIOS_TIMEOUT = TESTOMATIO_REQUEST_TIMEOUT || 20 * 1000;
 
 const TESTOMAT_TMP_STORAGE_DIR = path.join(os.tmpdir(), 'testomatio_tmp');
 

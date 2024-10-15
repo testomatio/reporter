@@ -224,10 +224,14 @@ class TestomatioPipe {
       process.env.runId = this.runId;
       debug('Run created', this.runId);
     } catch (err) {
+      const errorText = err.response?.data?.message || err.message;
+      console.log(errorText || err);
+      if (!this.apiKey) console.error('Testomat.io API key is not set');
+      if (!this.apiKey?.startsWith('tstmt')) console.error('Testomat.io API key is invalid');
+
       console.error(
         APP_PREFIX,
-        'Error creating Testomat.io report, please check if your API key is valid. Skipping report | ',
-        err?.response?.statusText || err?.status || err.message,
+        'Error creating Testomat.io report (see details above), please check if your API key is valid. Skipping report'
       );
       printCreateIssue(err);
     }
@@ -423,7 +427,7 @@ class TestomatioPipe {
         console.log(APP_PREFIX, `📊 ${notFinishedMessage}. Report URL: ${pc.magenta(this.runUrl)}`);
         console.log(APP_PREFIX, `🛬 Run to finish it: TESTOMATIO_RUN=${this.runId} npx start-test-run --finish`);
       }
-      
+
       if (this.hasUnmatchedTests) {
         console.log('');
         // eslint-disable-next-line max-len
