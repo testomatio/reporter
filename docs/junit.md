@@ -105,7 +105,7 @@ When XML report is uploaded, all files from `file://` will be uploaded to corres
 ### Assign Test ID
 
 Test IDs can be taken applied to a test name. So to assign a test in a result to to test in Testomat.io with ID `@T8acca9eb` add this ID to a test name if your test framework allows setting test names as a string.
- 
+
 ```xml
 <testcase name="test name @T8acca9eb"> ....
 ```

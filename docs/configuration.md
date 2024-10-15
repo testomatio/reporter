@@ -74,14 +74,14 @@ Example:
 TESTOMATIO_INTERCEPT_CONSOLE_LOGS=true <actual run command>
 ```
 
-#### `TESTOMATIO_MAX_REQUEST_FAILURES_COUNT`
+#### `TESTOMATIO_MAX_REQUEST_FAILURES`
 
-Maximum number of failed requests within 60 seconds. Default is 10.
+Maximum number of failed requests. If more requests fail, reporting will stop.
 
 Example:
 
 ```
-TESTOMATIO_MAX_REQUEST_FAILURES_COUNT=5 <actual run command>
+TESTOMATIO_MAX_REQUEST_FAILURES=5 <actual run command>
 ```
 
 #### `TESTOMATIO_REQUEST_TIMEOUT`
@@ -95,12 +95,8 @@ Do not finalize the run.
 Example:
 
 ```
-TESTOMATIO_PREPEND_DIR="MyTESTS" TESTOMATIO=1111111 npx check-tests CodeceptJS "**/*{.,_}{test,spec}.js"
+TESTOMATIO={API_KEY} _TESTOMATIO_PROCEED=1 <actual run command>
 ```
-
-#### `TESTOMATIO_PREPEND_DIR`
-
-Place all imported tests into a specific suite (folder).
 
 #### `TESTOMATIO_RUN`
 
@@ -166,25 +162,28 @@ TESTOMATIO={API_KEY} TESTOMATIO_TITLE="title for the report" <actual run command
 
 Configure title IDs.
 
-
-
 ### Artifacts
 
-Configuration for artifacts storage.
+Configuration for artifacts storage. Those variables can be obtained from Testomat.io if "Share credentials" in Project Settings > Artifacts is enabled.
 
-* `S3_ACCESS_KEY_ID`: Your S3 access key ID.
-* `S3_BUCKET`: Your S3 bucket name.
-* `S3_ENDPOINT`: Your S3 endpoint URL.
-* `S3_REGION`: Your S3 region.
-* `S3_SECRET_ACCESS_KEY`: Your S3 secret access key.
+- `S3_ACCESS_KEY_ID`: Your S3 access key ID.
+- `S3_BUCKET`: Your S3 bucket name.
+- `S3_ENDPOINT`: Your S3 endpoint URL.
+- `S3_REGION`: Your S3 region.
+- `S3_SECRET_ACCESS_KEY`: Your S3 secret access key.
+- `TESTOMATIO_PRIVATE_ARTIFACTS`: Store artifacts in a bucket privately.
+
+These variables are used to define how artifacts are uploaded:
+
+- `TESTOMATIO_DISABLE_ARTIFACTS`: disable all artifacts uploading. All artifacts can be uploaded later with `npx @testomatio/reporter upload-artifacts` command.
+- `TESTOMATIO_ARTIFACT_MAX_SIZE_MB`: disable uploading artifacts larger than X size in Mb. Other artifacts can be uploaded later with `npx @testomatio/reporter upload-artifacts` command.
 
 ### Pipes
 
 Configuration for CI/CD pipelines.
 
-* `GH_PAT`: Your GitHub personal access token (to enable GitHub Pipe)
-* `GITLAB_PAT`: Your GitLab personal access token (to enable Gitlab Pipe).
-
+- `GH_PAT`: Your GitHub personal access token (to enable GitHub Pipe)
+- `GITLAB_PAT`: Your GitLab personal access token (to enable Gitlab Pipe).
 
 ## Loading configuration from `.env` file
 
