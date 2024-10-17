@@ -170,6 +170,8 @@ Attaching a screenshot to the Ruby test
 puts "file://" + path_to_screenshot
 ```
 
+<!-- post-uploading-artifacts -->
+
 ## Troubleshooting
 
 #### I don't have a S3 Bucket
@@ -197,3 +199,7 @@ This can be caused by various reasons. As an alternative approach, you can try t
 
 At this moment we don't provide any tools for the cleanup of files.
 It is recommended to write a custom cleanup tool on a S3 bucket.
+
+<!-- retry upload artifacts -->
+
+<!-- upload big artifacts slows down -->
