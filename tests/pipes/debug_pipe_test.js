@@ -14,7 +14,7 @@ describe('DebugPipe logging tests', () => {
   beforeEach(() => {
     process.env.TESTOMATIO_DEBUG = 1;
     debugPipe = new DebugPipe({});
-    logFilePath = debugPipe.logFileName;
+    logFilePath = debugPipe.logFilePath;
     expect(fs.existsSync(logFilePath)).to.be.true;
   });
 
@@ -42,7 +42,7 @@ describe('DebugPipe logging tests', () => {
     delete process.env.TESTOMATIO_DEBUG;
     const debugPipeWithoutLogging = new DebugPipe({});
     await debugPipeWithoutLogging.logToFile(LOG_DATA);
-    expect(fs.existsSync(debugPipeWithoutLogging.logFileName)).to.be.false;
+    expect(fs.existsSync(debugPipeWithoutLogging.logFilePath)).to.be.false;
   });
 
   it('should handle batch upload and log multiple tests in a batch', async () => {
