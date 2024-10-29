@@ -249,9 +249,3 @@ components:
         box:
           type: boolean
           description: Indicates if the step should be boxed
-
-    Steps:
-      type: array
-      items:
-        $ref: '#/components/schemas/Step'
-      description: An array of steps
