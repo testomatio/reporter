@@ -32,6 +32,7 @@ Pipes Concepts:
 - [Gitlab](./pipes/gitlab.md)
 - [CSV](./pipes/csv.md)
 - [Bitbucket](./pipes/bitbucket.md)
+- [Debug](./pipes/debug.md)
 
 ## Custom Pipe
 
