@@ -92,7 +92,7 @@ describe('log storage', () => {
 
   it('should disable log storage', () => {
     const uploader = new S3Uploader();
-    uploader.disbleLogStorage();
+    uploader.disableLogStorage();
     expect(uploader.storeEnabled).to.be.false;
   });
 });
