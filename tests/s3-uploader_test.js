@@ -217,6 +217,15 @@ describe('upload file by path', () => {
     expect(files[0].file).to.equal(filePath);
     expect(files[0].uploaded).to.be.false;
   });
+
+  it('should skip large files uploading', async () => {
+    process.env.TESTOMATIO_ARTIFACT_MAX_SIZE_MB = 0;
+    const uploader = new S3Uploader();
+    const filePath = path.resolve('tests/uploader/test-file.txt');
+    await uploader.uploadFileByPath(filePath, [runId, 'testRid1', 'test-file.txt']);
+
+    expect(uploader.skippedUploads).to.have.lengthOf(1);
+  });
 });
 
 describe('checkArtifactExistsInFileSystem', () => {
