@@ -175,7 +175,7 @@ TESTOMATIO=tstmt_* TESTOMATIO_DISABLE_ARTIFACTS=1 npx @testomatio/reporter run "
 TESTOMATIO=tstmt_* npx @testomatio/reporter upload-artifacts
 ```
 
-You can also upload small artifacts during the run, while large files can be uploaded after. For instance, all files larger than 10MB will be skipped to upload during the run.
+You can also upload small artifacts during the run, while large files can be uploaded after. For instance, all files uploading larger than 10MB will be skipped during the run.
 
 ```bash
 TESTOMATIO=tstmt_* TESTOMATIO_ARTIFACT_MAX_SIZE_MB=10 npx playwright test

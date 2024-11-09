@@ -53,8 +53,12 @@ export function getTestIdFromTestName(testName: string): string {
 /**
  * Cut the long text to make it shorter (cuts the middle of the string to make start and end visible)
  */
-export function cutLongText(text: string, options: { maxLength?: number, maxSizeInKb?: number, warnIfCut?: boolean }): string {
-  if (!options.maxLength && !options.maxSizeInKb) throw new Error('You should provide either maxLength or maxWeightInKb');
+export function cutLongText(
+  text: string,
+  options: { maxLength?: number; maxSizeInKb?: number; warnIfCut?: boolean },
+): string {
+  if (!options.maxLength && !options.maxSizeInKb)
+    throw new Error('You should provide either maxLength or maxWeightInKb');
   const { maxLength, maxSizeInKb } = options;
   const warnIfCut = options.warnIfCut ?? true;
   const cutWarning = pc.red('  ... ✂️ log is cut here (in the middle) due to large size ✂️ ...');
