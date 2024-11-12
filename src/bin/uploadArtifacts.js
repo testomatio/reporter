@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import program from 'commander';
+import { Command } from 'commander';
 import pc from 'picocolors';
 import createDebugMessages from 'debug';
 import TestomatClient from '../client.js';
@@ -10,8 +10,8 @@ import {config} from '../config.js';
 import { readLatestRunId } from '../utils/utils.js';
 
 const debug = createDebugMessages('@testomatio/reporter:upload-cli');
-
 console.log(pc.cyan(pc.bold(` 🤩 Testomat.io Reporter v${version}`)));
+const program = new Command();
 
 program
   .option('--env-file <envfile>', 'Load environment variables from env file')
