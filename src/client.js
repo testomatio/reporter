@@ -11,6 +11,7 @@ import path, { sep} from 'path';
 import { fileURLToPath } from 'node:url';
 import { S3Uploader } from './uploader.js';
 import { formatStep, storeRunId } from './utils/utils.js';
+import { filesize as prettyBytes } from 'filesize';
 
 const debug = createDebugMessages('@testomatio/reporter:client');
 
@@ -267,31 +268,63 @@ class Client {
     this.queue = this.queue
       .then(() => Promise.all(this.pipes.map(p => p.finishRun(runParams))))
       .then(() => {
-        debug('TOTAL artifacts', this.uploader.totalUploadsCount);
-        debug(`${this.uploader.skippedUploadsCount} artifacts skipped`);
-
-        if (this.uploader.totalUploadsCount && this.uploader.isEnabled) {
+        if (this.uploader.totalSuccessfulUploadsCount && this.uploader.isEnabled) {
           console.log(
             APP_PREFIX,
-            `🗄️ ${this.uploader.totalUploadsCount} artifacts ${
+            `🗄️ ${this.uploader.totalSuccessfulUploadsCount} artifacts ${
               process.env.TESTOMATIO_PRIVATE_ARTIFACTS ? 'privately' : pc.bold('publicly')
-            } uploaded to S3 bucket`,
+            } 🟢 uploaded to S3 bucket`,
           );
 
-          if (this.uploader.failedUploadsCount) {
+          const filesizeStrMaxLength = 7;
+
+          if (this.uploader.failedUploads.length) {
             console.log(
               APP_PREFIX,
-              pc.gray('[CLIENT]'),
-              `${this.uploader.failedUploadsCount} artifacts failed to upload`,
+              `🗄️ ${this.uploader.failedUploads.length} artifacts 🔴${pc.bold('failed')} to upload`,
             );
+            const failedUploads = this.uploader.failedUploads.map(file => ({
+              relativePath: file.path.replace(process.cwd(), ''),
+              sizePretty: prettyBytes(file.size, { round: 0 }).toString(),
+            }));
+  
+            const pathPadding = Math.max(...failedUploads.map(upload => upload.relativePath.length)) + 1;
+  
+            failedUploads.forEach(upload => {
+              console.log(
+                `  ${pc.gray('|')} 🔴 ${upload.relativePath.padEnd(pathPadding)} ${pc.gray(
+                  `| ${upload.sizePretty.padStart(filesizeStrMaxLength)} |`,
+                )}`,
+              );
+            });
           }
 
-          if (this.uploader.isEnabled && this.uploader.skippedUploadsCount) {
-            console.log(APP_PREFIX, `${pc.bold(this.uploader.skippedUploadsCount)} artifacts skipped to upload`);
+          if (this.uploader.isEnabled && this.uploader.skippedUploads.length) {
+            console.log(
+              '\n',
+              APP_PREFIX,
+              `🗄️ ${pc.bold(this.uploader.skippedUploads.length)} artifacts uploading 🟡${pc.bold(
+                'skipped',
+              )} (due to large size)`,
+            );
+            const skippedUploads = this.uploader.skippedUploads.map(file => ({
+              relativePath: file.path.replace(process.cwd(), ''),
+              sizePretty: file.size === null ? 'unknown' : prettyBytes(file.size, { round: 0 }).toString(),
+            }));
+            const pathPadding = Math.max(...skippedUploads.map(upload => upload.relativePath.length)) + 1;
+            skippedUploads.forEach(upload => {
+              console.log(
+                `  ${pc.gray('|')} 🟡 ${upload.relativePath.padEnd(pathPadding)} ${pc.gray(
+                  `| ${upload.sizePretty.padStart(filesizeStrMaxLength)} |`,
+                )}`,
+              );
+            });
           }
   
-          if (this.uploader.skippedUploadsCount || this.uploader.failedUploadsCount) {
-            const command = `TESTOMATIO_RUN=${this.runId} npx @testomatio/reporter upload-artifacts`;
+          if (this.uploader.skippedUploads.length || this.uploader.failedUploads.length) {
+            const command = `TESTOMATIO=<your_api_key> TESTOMATIO_RUN=${
+              this.runId
+            } npx @testomatio/reporter upload-artifacts`;
             console.log(
               APP_PREFIX,
               `Run "${pc.magenta(command)}" with valid S3 credentials to upload skipped & failed artifacts`,

@@ -105,14 +105,14 @@ class PlaywrightReporter {
     if (!this.client) return;
 
     await Promise.all(reportTestPromises);
-    await this.client.updateRunStatus(checkStatus(result.status));
 
     if (!this.uploads.length) return;
-    console.log(APP_PREFIX, `🎞️  Uploading ${this.uploads.length} files...`);
 
     if (this.client.uploader.isEnabled) console.log(APP_PREFIX, `🎞️  Uploading ${this.uploads.length} files...`);
+
     const promises = [];
 
+    // ? possible move to addTestRun (needs investigation if files are ready)
     for (const upload of this.uploads) {
       const { rid, file, title } = upload;
 
@@ -123,7 +123,7 @@ class PlaywrightReporter {
       }));
 
       if (!this.client.uploader.isEnabled) {
-        files.forEach(file => this.client.uploader.storeUploadedFile(file, this.client.runId, rid, false));
+        files.forEach(f => this.client.uploader.storeUploadedFile(f, this.client.runId, rid, false));
         continue;
       }
 
@@ -135,8 +135,10 @@ class PlaywrightReporter {
           file,
         }),
       );
-      await Promise.all(promises);
     }
+    await Promise.all(promises);
+
+    await this.client.updateRunStatus(checkStatus(result.status));
   }
 }
 

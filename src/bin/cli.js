@@ -11,6 +11,7 @@ import { version } from '../../package.json';
 import {config} from '../config.js';
 import { readLatestRunId } from '../utils/utils.js';
 import pc from 'picocolors';
+import { filesize as prettyBytes } from 'filesize';
 
 const debug = createDebugMessages('@testomatio/reporter:xml-cli');
 console.log(pc.cyan(pc.bold(` 🤩 Testomat.io Reporter v${version}`)));
@@ -197,7 +198,7 @@ program
     if (!opts.force) testruns = testruns.filter(tr => !tr.uploaded);
 
     if (!testruns.length) {
-      console.log(APP_PREFIX, 'Total artifacts:', numTotalArtifacts);
+      console.log(APP_PREFIX, '🗄️ Total artifacts:', numTotalArtifacts);
       if (numTotalArtifacts) {
         console.log(APP_PREFIX, 'No new artifacts to upload');
         console.log(APP_PREFIX, 'To re-upload artifacts run this command with --force flag');
@@ -215,16 +216,38 @@ program
 
     await client.createRun();
     client.uploader.checkEnabled();
-    client.uploader.disbleLogStorage();
+    client.uploader.disableLogStorage();
 
     for (const rid in testrunsByRid) {
       const files = testrunsByRid[rid];
       await client.addTestRun(undefined, { rid, files });
     }
 
-    console.log(APP_PREFIX, client.uploader.totalUploadsCount, 'artifacts uploaded');
-    if (client.uploader.failedUploadsCount) {
-      console.log(APP_PREFIX, client.uploader.failedUploadsCount, 'artifacts failed to upload');
+    console.log(APP_PREFIX, '🗄️', client.uploader.totalSuccessfulUploadsCount, 'artifacts 🟢uploaded');
+    const filesizeStrMaxLength = 7;
+
+    if (client.uploader.failedUploads.length) {
+      console.log(
+        '\n',
+        APP_PREFIX,
+        '🗄️',
+        client.uploader.failedUploads.length,
+        `artifacts 🔴${pc.bold('failed')} to upload`,
+      );
+
+      const failedUploads = client.uploader.failedUploads.map(({ path, size }) => ({
+        relativePath: path.replace(process.cwd(), ''),
+        sizePretty: prettyBytes(size, { round: 0 }).toString(),
+      }));
+
+      const pathPadding = Math.max(...failedUploads.map(upload => upload.relativePath.length)) + 1;
+      failedUploads.forEach(upload => {
+        console.log(
+          `  ${pc.gray('|')} 🔴 ${upload.relativePath.padEnd(pathPadding)} ${pc.gray(
+            `| ${upload.sizePretty.padStart(filesizeStrMaxLength)} |`,
+          )}`,
+        );
+      });
     }
   });
 
