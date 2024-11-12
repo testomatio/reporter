@@ -33,7 +33,7 @@ describe('DebugPipe logging tests', () => {
         data: 'variables',
         testomatioEnvVars: debugPipe.testomatioEnvVars,
       })
-        // cut curly braces from the beginning and the end
+        // cut curly braces at start and end
         .slice(1, -1),
     );
     expect(savedData[2]).to.contain(JSON.stringify({ data: 'store', store: {} }).slice(1, -1));

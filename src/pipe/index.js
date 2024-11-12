@@ -7,7 +7,8 @@ import GitHubPipe from './github.js';
 import GitLabPipe from './gitlab.js';
 import CsvPipe from './csv.js';
 import HtmlPipe from './html.js';
-import {BitbucketPipe} from './bitbucket.js';
+import { BitbucketPipe } from './bitbucket.js';
+import { DebugPipe } from './debug.js';
 
 export async function pipesFactory(params, opts) {
   const extraPipes = [];
@@ -47,6 +48,7 @@ export async function pipesFactory(params, opts) {
     new CsvPipe(params, opts),
     new HtmlPipe(params, opts),
     new BitbucketPipe(params, opts),
+    new DebugPipe(params, opts),
     ...extraPipes,
   ];
 
