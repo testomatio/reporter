@@ -251,13 +251,25 @@ function TestomatioNewmanReporter(
   // test assertion
   emitter.on('assertion', function (err: any, assertion: NewmanRunExecutionAssertion) {
     if (err) {
-      const userFriendlyErrorMessage = `Test ${pc.gray(err.test)} failed with ${err.name} ${pc.red(err.message)}`;
-      console.warn(userFriendlyErrorMessage);
-      console.error(err);
+      const userFriendlyErrorMessage = `❌ Test '${pc.gray(err.test)}' failed with ${err.name}: ${pc.red(err.message)}`;
+      console.log(userFriendlyErrorMessage);
+      // console.error(err);
+      newmanItemStore.assertionErrorTextColorized += `${userFriendlyErrorMessage}\n`;
+      newmanItemStore.assertionErrorTextColorized += JSON.stringify(err, null, 2);
     }
+
     if (assertion.error) {
-      newmanItemStore.assertionErrorTextColorized = pc.red(`${assertion.error.name}: ${assertion.error.message}`);
+      // newmanItemStore.assertionErrorTextColorized = pc.red(`${assertion.error.name}: ${assertion.error.message}`);
       newmanItemStore.testStatus = 'failed';
+      const assertionError = assertion.error as unknown as { expected: string; actual: string };
+
+      if (assertionError.expected && assertionError.actual) {
+        let colorizedAsserionMessage = `${pc.bold(assertion.error.name)}: `;
+        colorizedAsserionMessage += `expected ${pc.green(assertionError.expected)}`;
+        colorizedAsserionMessage += ` but got ${pc.red(assertionError.actual)}`;
+        newmanItemStore.assertionErrorTextColorized += `\n${colorizedAsserionMessage}`;
+        console.log(colorizedAsserionMessage);
+      }
     }
   });
 
@@ -286,8 +298,7 @@ function TestomatioNewmanReporter(
       'Collection run completed',
       status === 'passed' ? 'without failures' : `with ${summary.run.failures.length} failures`,
     );
-    console.log(`${APP_PREFIX} Total requests sent: ${requestsCount}, failed requests: ${
-      failedRequestsCount}, total tests: ${testsCount}`);
+    console.log(`${APP_PREFIX} Total requests sent: ${requestsCount}, failed requests: ${failedRequestsCount}, total tests: ${testsCount}`);
   });
 }
 
