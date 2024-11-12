@@ -67,7 +67,7 @@ function MochaReporter(runner, opts) {
       test_id: testId,
       suite_title: getSuiteTitle(test),
       title: getTestName(test),
-      code: test.body.toString(),
+      code: process.env.TESTOMATIO_UPDATE_CODE ? test.body.toString() : '',
       file: getFile(test),
       time: test.duration,
       logs,
@@ -83,7 +83,7 @@ function MochaReporter(runner, opts) {
     client.addTestRun(STATUS.SKIPPED, {
       title: getTestName(test),
       suite_title: getSuiteTitle(test),
-      code: test.body.toString(),
+      code: process.env.TESTOMATIO_UPDATE_CODE ? test.body.toString() : '',
       file: getFile(test),
       test_id: testId,
       time: test.duration,
@@ -103,7 +103,7 @@ function MochaReporter(runner, opts) {
       file: getFile(test),
       test_id: testId,
       title: getTestName(test),
-      code: test.body.toString(),
+      code: process.env.TESTOMATIO_UPDATE_CODE ? test.body.toString() : '',
       time: test.duration,
       logs,
     });
