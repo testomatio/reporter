@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { spawn } from 'cross-spawn';
-import program from 'commander';
+import { Command } from 'commander';
 import pc from 'picocolors';
 import TestomatClient from '../client.js';
 import { APP_PREFIX, STATUS } from '../constants.js';
@@ -8,6 +8,7 @@ import { version } from '../../package.json';
 import {config} from '../config.js';
 
 console.log(pc.cyan(pc.bold(` 🤩 Testomat.io Reporter v${version}`)));
+const program = new Command();
 
 program
   .option('-c, --command <cmd>', 'Test runner command')

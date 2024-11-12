@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import program from 'commander';
+import { Command } from 'commander';
 import pc from 'picocolors';
 import glob from 'glob';
 import createDebugMessages from 'debug';
@@ -9,6 +9,7 @@ import { version } from '../../package.json';
 
 const debug = createDebugMessages('@testomatio/reporter:xml-cli');
 console.log(pc.cyan(pc.bold(` 🤩 Testomat.io XML Reporter v${version}`)));
+const program = new Command();
 
 program
   .arguments('<pattern>')

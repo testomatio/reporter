@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import program from 'commander';
+import { Command } from 'commander';
 import { spawn } from 'cross-spawn';
 import glob from 'glob';
 import createDebugMessages from 'debug';
@@ -13,9 +13,8 @@ import { readLatestRunId } from '../utils/utils.js';
 import pc from 'picocolors';
 
 const debug = createDebugMessages('@testomatio/reporter:xml-cli');
-
-
 console.log(pc.cyan(pc.bold(` 🤩 Testomat.io Reporter v${version}`)));
+const program = new Command();
 
 program
   .version(version)

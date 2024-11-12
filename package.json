@@ -37,6 +37,7 @@
     "lodash.merge": "^4.6.2",
     "minimatch": "^9.0.3",
     "picocolors": "^1.0.1",
+    "pretty-ms": "^7.0.1",
     "promise-retry": "^2.0.1",
     "strip-ansi": "^7.1.0",
     "uuid": "^9.0.0"

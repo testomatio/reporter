@@ -10,7 +10,6 @@ import { statusEmoji, fullName } from '../utils/pipe_utils.js';
 
 const debug = createDebugMessages('@testomatio/reporter:pipe:github');
 
-
 /**
  * @typedef {import('../../types').Pipe} Pipe
  * @typedef {import('../../types').TestData} TestData

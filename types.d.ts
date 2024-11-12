@@ -12,7 +12,8 @@ export interface FileType {
  */
 export interface TestData {
   /** Unique ID of test report data to send to multiple times. */
-  rid: string;
+  rid?: string;
+
   /** The title of the test case being reported. */
   title?: string;
 
