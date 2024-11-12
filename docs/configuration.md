@@ -162,6 +162,10 @@ TESTOMATIO={API_KEY} TESTOMATIO_TITLE="title for the report" <actual run command
 
 Configure title IDs.
 
+#### `TESTOMATIO_UPDATE_CODE`
+
+Sends the `code` of your tests to Testomat.io on each run. (If not enabled (default) assumes the code is pushed using [check-tests](https://github.com/testomatio/check-tests#cli)).
+
 ### Artifacts
 
 Configuration for artifacts storage. Those variables can be obtained from Testomat.io if "Share credentials" in Project Settings > Artifacts is enabled.
