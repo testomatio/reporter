@@ -38,3 +38,10 @@ Reporter consists of many modules, so you can enable debug logs for any of them.
 | Artifacts        | `@testomatio/reporter:services-artifacts` |
 | Meta (key-value) | `@testomatio/reporter:services-key-value` |
 | Logger           | `@testomatio/reporter:services-logger`    |
+
+
+## Debugging artifacts
+
+The crutial errors should be displayed in the console by default.
+If you need detailed logs, pass `DEBUG=@testomatio/reporter:client,@testomatio/reporter:uploader` if you uploading artifacts during testrun
+or `DEBUG=@testomatio/reporter:cli` if you are using [CLI](./cli.md) to upload artifacts.

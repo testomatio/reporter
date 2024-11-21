@@ -178,6 +178,10 @@ puts "file://" + path_to_screenshot
 
 Well then, just get it. Even if your company doesn't provide one, you can purchase a S3 storage by yourself.
 
+### Artifacts are not uploaded
+
+Refer to [Debug](./debugging.md#debugging-artifacts) section.
+
 #### Publishing Artifacts from Docker Container
 
 If your tests are running within Docker container pass all environment variables explicitly
