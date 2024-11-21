@@ -22,9 +22,10 @@ export class S3Uploader {
      */
     this.skippedUploads = [];
     this.failedUploads = [];
-    this.totalSuccessfulUploadsCount = 0;
-
-    this.succesfulUploads = {};
+    /**
+     * @type {{path: string, size: number, link: string}[]}
+     */
+    this.successfulUploads = [];
 
     this.configKeys = [
       'S3_ENDPOINT',
@@ -124,8 +125,8 @@ export class S3Uploader {
       });
 
       const link = await this.getS3LocationLink(upload);
-      this.totalSuccessfulUploadsCount++;
-      this.succesfulUploads[Key] = link;
+      this.successfulUploads.push({ path: file.path, size: file.size, link });
+      debug(`📤 Uploaded artifact. File: ${file.path}, size: ${prettyBytes(file.size)}, link: ${link}`);
       return link;
     } catch (e) {
       this.failedUploads.push({ path: file.path, size: file.size });

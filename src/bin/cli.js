@@ -223,7 +223,7 @@ program
       await client.addTestRun(undefined, { rid, files });
     }
 
-    console.log(APP_PREFIX, '🗄️', client.uploader.totalSuccessfulUploadsCount, 'artifacts 🟢uploaded');
+    console.log(APP_PREFIX, '🗄️', client.uploader.successfulUploads.length, 'artifacts 🟢uploaded');
     const filesizeStrMaxLength = 7;
 
     if (client.uploader.failedUploads.length) {

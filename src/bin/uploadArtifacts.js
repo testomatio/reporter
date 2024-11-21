@@ -77,7 +77,7 @@ program
       });
     }
 
-    console.log(APP_PREFIX, client.uploader.totalSuccessfulUploadsCount, 'artifacts uploaded');
+    console.log(APP_PREFIX, client.uploader.successfulUploads.length, 'artifacts uploaded');
     if (client.uploader.failedUploads.length) {
       console.log(APP_PREFIX, client.uploader.failedUploads.length, 'artifacts failed to upload');
     }
