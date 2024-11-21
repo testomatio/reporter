@@ -50,8 +50,6 @@ class Client {
     this.executionList = Promise.resolve();
 
     this.uploader = new S3Uploader();
-    this.uploader.checkEnabled();
-
   }
 
   /**
@@ -127,9 +125,8 @@ class Client {
         const runId = this.pipeStore?.runId;
         if (runId) this.runId = runId;
         storeRunId(this.runId);
-
-        this.uploader.checkEnabled();
       })
+      .then(() => this.uploader.checkEnabled());
     // debug('Run', this.queue);
     return this.queue;
   }
@@ -268,7 +265,9 @@ class Client {
     this.queue = this.queue
       .then(() => Promise.all(this.pipes.map(p => p.finishRun(runParams))))
       .then(() => {
-        if (this.uploader.successfulUploads.length && this.uploader.isEnabled) {
+        if (!this.uploader.isEnabled) return;
+
+        if (this.uploader.successfulUploads.length) {
           console.log(
             APP_PREFIX,
             `🗄️ ${this.uploader.successfulUploads.length} artifacts ${
@@ -319,7 +318,7 @@ class Client {
             });
           }
 
-          if (this.uploader.isEnabled && this.uploader.skippedUploads.length) {
+          if (this.uploader.skippedUploads.length) {
             console.log(
               '\n',
               APP_PREFIX,

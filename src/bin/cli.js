@@ -224,6 +224,27 @@ program
     }
 
     console.log(APP_PREFIX, '🗄️', client.uploader.successfulUploads.length, 'artifacts 🟢uploaded');
+
+    if (client.uploader.successfulUploads.length) {
+      debug('\n', APP_PREFIX, `🗄️ ${client.uploader.successfulUploads.length} artifacts uploaded to S3 bucket`);
+      const uploadedArtifacts = client.uploader.successfulUploads.map(file => ({
+        relativePath: file.path.replace(process.cwd(), ''),
+        link: file.link,
+        sizePretty: prettyBytes(file.size, { round: 0 }).toString(),
+      }));
+
+      uploadedArtifacts.forEach(upload => {
+        debug(
+          `🟢 Uploaded artifact`,
+          `${upload.relativePath},`,
+          'size:',
+          `${upload.sizePretty},`,
+          'link:',
+          `${upload.link}`,
+        );
+      });
+    }
+    
     const filesizeStrMaxLength = 7;
 
     if (client.uploader.failedUploads.length) {
