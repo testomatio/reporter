@@ -60,6 +60,7 @@ export class DebugPipe {
   }
 
   async createRun(params = {}) {
+    if (!this.isEnabled) return;
     if (params.isBatchEnabled === true || params.isBatchEnabled === false) this.batch.isEnabled = params.isBatchEnabled;
 
     if (!this.isEnabled) return {};
