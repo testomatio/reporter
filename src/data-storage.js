@@ -52,7 +52,7 @@ class DataStorage {
 
     context = context || this.context || testRunnerHelper.getNameOfCurrentlyRunningTest();
     if (!context) {
-      debug(`No context provided for "${dataType}" data:`, data);
+      // debug(`No context provided for "${dataType}" data:`, data);
       return;
     }
     const contextHash = stringToMD5Hash(context);
@@ -101,7 +101,7 @@ class DataStorage {
     if (testDataFromFile.length) {
       return testDataFromFile;
     }
-    debug(`No "${dataType}" data for context "${contextHash}" in both file and global variable`);
+    // debug(`No "${dataType}" data for context "${contextHash}" in both file and global variable`);
 
     // in case no data found for context
     return null;
