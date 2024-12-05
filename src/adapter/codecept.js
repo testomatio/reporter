@@ -45,8 +45,9 @@ function CodeceptReporter(config) {
   const { apiKey } = config;
 
   const getDuration = test => {
-    if (testTimeMap[test.id]) {
-      return Date.now() - testTimeMap[test.id];
+    if (!test.uid) return 0;
+    if (testTimeMap[test.uid]) {
+      return Date.now() - testTimeMap[test.uid];
     }
 
     return 0;
@@ -124,7 +125,8 @@ function CodeceptReporter(config) {
     services.setContext(test.fullTitle());
 
     testTimeMap[test.id] = Date.now();
-    // start logging
+    if (!test.uid) return;
+    testTimeMap[test.uid] = Date.now();
   });
 
   event.dispatcher.on(event.all.result, async () => {
@@ -141,9 +143,9 @@ function CodeceptReporter(config) {
   });
 
   event.dispatcher.on(event.test.passed, test => {
-    const { id, tags, title } = test;
-    if (id && failedTests.includes(id)) {
-      failedTests = failedTests.filter(failed => id !== failed);
+    const { uid, tags, title } = test;
+    if (uid && failedTests.includes(uid)) {
+      failedTests = failedTests.filter(failed => uid !== failed);
     }
     const testObj = getTestAndMessage(title);
 
@@ -154,7 +156,7 @@ function CodeceptReporter(config) {
 
     client.addTestRun(STATUS.PASSED, {
       ...stripExampleFromTitle(title),
-      rid: id,
+      rid: uid,
       suite_title: test.parent && test.parent.title,
       message: testObj.message,
       time: getDuration(test),
@@ -177,12 +179,12 @@ function CodeceptReporter(config) {
     if (!suite) return;
     if (!suite.tests) return;
     for (const test of suite.tests) {
-      const { id, tags, title } = test;
-      failedTests.push(id || title);
+      const { uid, tags, title } = test;
+      failedTests.push(uid || title);
       const testId = getTestomatIdFromTestTitle(`${title} ${tags?.join(' ')}`);
 
       client.addTestRun(STATUS.FAILED, {
-        rid: id,
+        rid: uid,
         ...stripExampleFromTitle(title),
         suite_title: suite.title,
         test_id: testId,
@@ -196,8 +198,8 @@ function CodeceptReporter(config) {
   event.dispatcher.on(event.test.after, test => {
     if (test.state && test.state !== STATUS.FAILED) return;
     if (test.err) error = test.err;
-    const { id, tags, title, artifacts } = test;
-    failedTests.push(id || title);
+    const { uid, tags, title, artifacts } = test;
+    failedTests.push(uid || title);
     const testObj = getTestAndMessage(title);
 
     const files = [];
@@ -211,7 +213,7 @@ function CodeceptReporter(config) {
 
     client.addTestRun(STATUS.FAILED, {
       ...stripExampleFromTitle(title),
-      rid: id,
+      rid: uid,
       test_id: getTestomatIdFromTestTitle(`${title} ${tags?.join(' ')}`),
       suite_title: test.parent && test.parent.title,
       error,
@@ -227,20 +229,20 @@ function CodeceptReporter(config) {
     debug('artifacts', artifacts);
 
     for (const aid in artifacts) {
-      if (aid.startsWith('video')) videos.push({ rid: id, title, path: artifacts[aid], type: 'video/webm' });
-      if (aid.startsWith('trace')) traces.push({ rid: id, title, path: artifacts[aid], type: 'application/zip' });
+      if (aid.startsWith('video')) videos.push({ rid: uid, title, path: artifacts[aid], type: 'video/webm' });
+      if (aid.startsWith('trace')) traces.push({ rid: uid, title, path: artifacts[aid], type: 'application/zip' });
     }
 
     // output.stop();
   });
 
   event.dispatcher.on(event.test.skipped, test => {
-    const { id, tags, title } = test;
-    if (failedTests.includes(id || title)) return;
+    const { uid, tags, title } = test;
+    if (failedTests.includes(uid || title)) return;
 
     const testObj = getTestAndMessage(title);
     client.addTestRun(STATUS.SKIPPED, {
-      rid: id,
+      rid: uid,
       ...stripExampleFromTitle(title),
       test_id: getTestomatIdFromTestTitle(`${title} ${tags?.join(' ')}`),
       suite_title: test.parent && test.parent.title,
