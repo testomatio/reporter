@@ -126,7 +126,8 @@ class Client {
         if (runId) this.runId = runId;
         storeRunId(this.runId);
       })
-      .then(() => this.uploader.checkEnabled());
+      .then(() => this.uploader.checkEnabled())
+      .then(() => undefined); // fixes return type
     // debug('Run', this.queue);
     return this.queue;
   }
