@@ -1,6 +1,6 @@
 # Logger
 
-- intercepts `console` logs by default
+- intercepts `console` logs by default (requires `TESTOMATIO_INTERCEPT_CONSOLE_LOGS` to be set for some frameworks)
 - intercepts any logger messages (winston, pino, etc., specified by user))
 - attaches intercepted log messages to your report
 - provides own methods to add any info to your report (like `logger.info()`, `logger.debug()`, etc.)
