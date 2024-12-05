@@ -9,7 +9,7 @@ const debug = createDebugMessages('@testomatio/reporter:pipe:debug');
 
 export class DebugPipe {
   constructor(params, store) {
-    this.isEnabled = !!process.env.TESTOMATIO_DEBUG;
+    this.isEnabled = !!process.env.TESTOMATIO_DEBUG || !!process.env.DEBUG;
     if (this.isEnabled) {
       this.batch = {
         isEnabled: params.isBatchEnabled ?? !process.env.TESTOMATIO_DISABLE_BATCH_UPLOAD ?? true,
