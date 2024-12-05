@@ -111,18 +111,20 @@ export class S3Uploader {
 
     debug('Uploading to S3:', Key);
 
-    const s3 = new S3(this.#getS3Config());
+    const s3Config = this.#getS3Config()
+    const s3 = new S3(s3Config);
+    const params = {
+      Bucket: S3_BUCKET,
+      Key,
+      Body,
+    }
+    // disable ACL for I AM roles
+    if (!s3Config.credentials.sessionToken) {
+      params.ACL = ACL;
+    }
 
     try {
-      const upload = new Upload({
-        client: s3,
-        params: {
-          Bucket: S3_BUCKET,
-          Key,
-          Body,
-          ACL,
-        },
-      });
+      const upload = new Upload({client: s3,params});
 
       const link = await this.getS3LocationLink(upload);
       this.successfulUploads.push({ path: file.path, size: file.size, link });
