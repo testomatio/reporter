@@ -16,7 +16,11 @@ Your Project API key for reporting to Testomat.io.
 
 #### `TESTOMATIO_CREATE`
 
-Create test IDs.
+Create test IDs
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_CREATE=1 <actual run command>
+```
 
 #### `TESTOMATIO_DISABLE_BATCH_UPLOAD`
 
@@ -161,10 +165,6 @@ Example:
 ```
 TESTOMATIO={API_KEY} TESTOMATIO_TITLE="title for the report" <actual run command>
 ```
-
-#### `TESTOMATIO_TITLE_IDS`
-
-Configure title IDs.
 
 #### `TESTOMATIO_UPDATE_CODE`
 

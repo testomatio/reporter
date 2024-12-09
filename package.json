@@ -1,6 +1,6 @@
 {
   "name": "@testomatio/reporter",
-  "version": "1.6.0-beta",
+  "version": "2.0.0",
   "description": "Testomatio Reporter Client",
   "engines": {
     "node": ">=18"
@@ -68,7 +68,8 @@
     "test:adapter:playwright:example": "npx playwright test --config='./tests/adapter/examples/playwright/playwright.config.ts'",
     "test:adapter:vitest:example": "npx vitest --config='./tests/adapter/examples/vitest/vitest.config.ts'",
     "test:storage": "npx mocha tests-storage/artifact-storage.test.js && npx mocha tests-storage/data-storage.test.js && TESTOMATIO_INTERCEPT_CONSOLE_LOGS=true npx mocha tests-storage/logger.test.js && npx mocha tests-storage/logger-2.test.js && npx mocha tests-storage/reporter-functions.test.js",
-    "build:cjs": "rm -rf ./cjs && tsc --module commonjs && npx tsx build/scripts/edit-js-files.js && npx tsx build/scripts/edit-package-json.js && chmod +x ./build/scripts/copy-tesmplate.sh && ./build/scripts/copy-tesmplate.sh"
+    "//": "builds code from /src (esm) into /lib (commonjs)",
+    "build": "rm -rf ./cjs && tsc --module commonjs && npx tsx build/scripts/edit-js-files.js && npx tsx build/scripts/edit-package-json.js && chmod +x ./build/scripts/copy-tesmplate.sh && ./build/scripts/copy-tesmplate.sh"
   },
   "devDependencies": {
     "@playwright/test": "^1.46.1",

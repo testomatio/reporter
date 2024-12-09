@@ -3,7 +3,7 @@
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "checkJs": true,
-    "module": "CommonJS",
+    "module": "CommonJS", // esnext for esm
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node",
@@ -16,7 +16,7 @@
     ],
     "target": "ES2022",
     "rootDir": "./src",
-    "outDir": "./lib",
+    "outDir": "./lib", // change for esm
   },
   "compileOnSave": true,
   "include": [
