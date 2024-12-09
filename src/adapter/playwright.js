@@ -106,7 +106,7 @@ class PlaywrightReporter {
 
     await Promise.all(reportTestPromises);
 
-    if (!this.uploads.length) {
+    if (this.uploads.length) {
       if (this.client.uploader.isEnabled) console.log(APP_PREFIX, `🎞️  Uploading ${this.uploads.length} files...`);
 
       const promises = [];
