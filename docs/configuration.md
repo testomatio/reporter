@@ -78,6 +78,18 @@ Example:
 TESTOMATIO_INTERCEPT_CONSOLE_LOGS=true <actual run command>
 ```
 
+#### `TESTOMATIO_MARK_DETACHED`
+
+If some tests from a project were not reported in this run, you can mark them as detached.
+
+**This works only for XML reports**
+
+Example:
+
+```
+TESTOMATIO_MARK_DETACHED=true npx @testomatio/reporter xml "tests/**/*.xml"
+```
+
 #### `TESTOMATIO_MAX_REQUEST_FAILURES`
 
 Maximum number of failed requests. If more requests fail, reporting will stop.
