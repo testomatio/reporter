@@ -90,6 +90,12 @@ Example:
 TESTOMATIO_MARK_DETACHED=true npx @testomatio/reporter xml "tests/**/*.xml"
 ```
 
+If you pass a tag, only absent tests with this tag will be marked as detached:
+
+```
+TESTOMATIO_MARK_DETACHED=@core npx @testomatio/reporter xml "tests/**/*.xml"
+```
+
 #### `TESTOMATIO_MAX_REQUEST_FAILURES`
 
 Maximum number of failed requests. If more requests fail, reporting will stop.
