@@ -13,9 +13,10 @@ test('my test', async () => {
 Or import only required functions:
 
 ```javascript
-import { artifact, log } from '@testomatio/reporter'; // or const { artifact, log } = require('@testomatio/reporter');
+import { artifact, log, meta } from '@testomatio/reporter'; // or const { artifact, log } = require('@testomatio/reporter');
 
 test('my test', async () => {
+  meta('ISSUE', 'MY-123');
   await page.login();
   log`I was logged in with user ${user}`;
   artifact(await saveScreenshot());
@@ -30,7 +31,7 @@ After you import and invoke `testomat`, autocompletion will help you to find the
 - [artifact](#artifact)
 - [log](#log)
 - [step](#step)
-- [meta (key:value)](#meta) _(in progress)_
+- [meta (key:value)](#meta)
 
 ### Artifact
 
@@ -85,12 +86,30 @@ describe('Your suite @S12345678', () => {
 });
 ```
 
-<!-- ### Meta (key:value)
+### Meta (key:value)
 
 Meta information is a key:value pair(s), which is used to add additional information to the test report. E.g. browser, environment, etc.
 
+```js
+import { meta } from '@testomatio/reporter';
+
+test('my test', () => {
+  // use it inside tests as key, value
+  meta('browser', 'chrome');
+
+  // or use it as an object
+  meta({
+    browser: 'chrome',
+    server: 'staging',
+  });
+})
+```
+
+Or in CommonJS style:
+
 ```javascript
-const testomat = require('@testomatio/reporter');
+const { meta } = require('@testomatio/reporter');
+
 test('Your test @T12345678', async () => {
   await page.login();
   testomat.meta({
@@ -99,7 +118,9 @@ test('Your test @T12345678', async () => {
   });
   assert(something);
 });
-``` -->
+```
+
+---
 
 Supported frameworks:
 
@@ -108,4 +129,4 @@ Supported frameworks:
 - 🟢 Jest
 - 🟢 Mocha
 - 🟢 Playwright
-- 🟢 WDIO (all except artifacts)
+- 🟢 WDIO (everything, except artifacts)
