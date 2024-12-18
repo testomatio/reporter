@@ -86,7 +86,7 @@ describe('Your suite @S12345678', () => {
 });
 ```
 
-### Meta (key:value)
+### Meta
 
 Meta information is a key:value pair(s), which is used to add additional information to the test report. E.g. browser, environment, etc.
 
