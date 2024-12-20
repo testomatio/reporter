@@ -235,7 +235,7 @@ program
 
       uploadedArtifacts.forEach(upload => {
         debug(
-          `🟢 Uploaded artifact`,
+          `🟢Uploaded artifact`,
           `${upload.relativePath},`,
           'size:',
           `${upload.sizePretty},`,
