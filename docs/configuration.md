@@ -78,6 +78,24 @@ Example:
 TESTOMATIO_INTERCEPT_CONSOLE_LOGS=true <actual run command>
 ```
 
+#### `TESTOMATIO_MARK_DETACHED`
+
+If some tests from a project were not reported in this run, you can mark them as detached.
+
+**This works only for XML reports**
+
+Example:
+
+```
+TESTOMATIO_MARK_DETACHED=true npx @testomatio/reporter xml "tests/**/*.xml"
+```
+
+If you pass a tag, only absent tests with this tag will be marked as detached:
+
+```
+TESTOMATIO_MARK_DETACHED=@core npx @testomatio/reporter xml "tests/**/*.xml"
+```
+
 #### `TESTOMATIO_MAX_REQUEST_FAILURES`
 
 Maximum number of failed requests. If more requests fail, reporting will stop.
@@ -99,12 +117,8 @@ Do not finalize the run.
 Example:
 
 ```
-TESTOMATIO_PREPEND_DIR="MyTESTS" TESTOMATIO=1111111 npx check-tests CodeceptJS "**/*{.,_}{test,spec}.js"
+TESTOMATIO={API_KEY} TESTOMATIO_PROCEED=1 <actual run command>
 ```
-
-#### `TESTOMATIO_PREPEND_DIR`
-
-Place all imported tests into a specific suite (folder).
 
 #### `TESTOMATIO_RUN`
 
@@ -119,6 +133,13 @@ Example:
 ```
 TESTOMATIO={API_KEY} TESTOMATIO_RUNGROUP_TITLE="Build ${BUILD_ID}" <actual run command>
 ```
+
+Use `/` separator to create a nested rungroup:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_RUNGROUP_TITLE="Builds/${BUILD_ID}" <actual run command>
+```
+
 
 #### `TESTOMATIO_SHARED_RUN`
 
@@ -169,7 +190,6 @@ TESTOMATIO={API_KEY} TESTOMATIO_TITLE="title for the report" <actual run command
 #### `TESTOMATIO_UPDATE_CODE`
 
 Sends the `code` of your tests to Testomat.io on each run. (If not enabled (default) assumes the code is pushed using [check-tests](https://github.com/testomatio/check-tests#cli)).
-
 
 ### Artifacts
 
