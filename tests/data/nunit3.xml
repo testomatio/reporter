@@ -1,0 +1,112 @@
+<test-run id="2" duration="5.031224" testcasecount="3" total="3" passed="2" failed="1" inconclusive="0" skipped="0" result="Failed" start-time="2022-11-10T 18:30:08Z" end-time="2022-11-10T 18:30:12Z">
+  <test-suite type="Assembly" name="IntegrationTests.dll" fullname="/tests/IntegrationTests/bin/Debug/net6.0/IntegrationTests.dll" total="3" passed="2" failed="1" inconclusive="0" skipped="0" result="Failed" start-time="2022-11-10T 18:30:08Z" end-time="2022-11-10T 18:30:12Z" duration="5.031224">
+    <test-suite type="TestSuite" name="IntegrationTests" fullname="IntegrationTests" total="3" passed="2" failed="1" inconclusive="0" skipped="0" result="Failed" start-time="2022-11-10T 18:30:08Z" end-time="2022-11-10T 18:30:12Z" duration="5.031224">
+      <test-suite type="TestSuite" name="Features" fullname="IntegrationTests.Features" total="3" passed="2" failed="1" inconclusive="0" skipped="0" result="Failed" start-time="2022-11-10T 18:30:08Z" end-time="2022-11-10T 18:30:12Z" duration="5.031224">
+        <test-suite type="TestFixture" name="CreateUserCreateFeature" fullname="IntegrationTests.Features.CreateUserCreateFeature" classname="IntegrationTests.Features.CreateUserCreateFeature" total="1" passed="1" failed="0" inconclusive="0" skipped="0" result="Passed" start-time="2022-11-10T 18:30:08Z" end-time="2022-11-10T 18:30:10Z" duration="1.432391">
+          <test-case name="UpdateUser(&quot;1007&quot;,&quot;heights&quot;,null)" fullname="IntegrationTests.Features.CreateUserCreateFeature.UpdateUser(&quot;1007&quot;,&quot;heights&quot;,null)" methodname="UpdateUser(&quot;1007&quot;,&quot;heights&quot;,null)" classname="CreateUserCreateFeature" result="Passed" start-time="2022-11-10T 18:30:08Z" end-time="2022-11-10T 18:30:10Z" duration="1.432391" asserts="0" seed="1560538371">
+            <properties>
+              <property name="Category" value="api" />
+            </properties>
+            <output><![CDATA[Given I generate data 1007 , heights
+last name for the lead is:Daniel
+-> done: ApiSteps.GivenIGenerateData(1007, "heights") (0.0s)
+When we post the the lead data to create a web lead
+-> done: ApiSteps.WhenWePostTheTheLeadDataToUpdateUser() (0.4s)
+Then the api response should be ok
+-> done: ApiSteps.ThenTheApiReports() (0.0s)
+
+]]></output>
+          </test-case>
+        </test-suite>
+        <test-suite type="TestFixture" name="RequestNotifificationFeature" fullname="IntegrationTests.Features.RequestNotifificationFeature" classname="IntegrationTests.Features.RequestNotifificationFeature" total="2" passed="1" failed="1" inconclusive="0" skipped="0" result="Failed" start-time="2022-11-10T 18:30:08Z" end-time="2022-11-10T 18:30:12Z" duration="3.598833">
+          <test-case name="CreateANotifRequest(&quot;1005&quot;,&quot;heights&quot;,&quot;100&quot;,&quot;1000&quot;,&quot;10000&quot;,&quot;666004444&quot;,&quot;5000&quot;,&quot;0&quot;,[&quot;Notif&quot;])" fullname="IntegrationTests.Features.RequestNotifificationFeature.CreateANotifRequest(&quot;1005&quot;,&quot;heights&quot;,&quot;100&quot;,&quot;1000&quot;,&quot;10000&quot;,&quot;666004444&quot;,&quot;5000&quot;,&quot;0&quot;,[&quot;Notif&quot;])" methodname="CreateANotifRequest(&quot;1005&quot;,&quot;heights&quot;,&quot;100&quot;,&quot;1000&quot;,&quot;10000&quot;,&quot;666004444&quot;,&quot;5000&quot;,&quot;0&quot;,[&quot;Notif&quot;])" classname="RequestNotifificationFeature" result="Failed" start-time="2022-11-10T 18:30:08Z" end-time="2022-11-10T 18:30:10Z" duration="1.438688" asserts="0" seed="1629942581">
+            <properties>
+              <property name="Category" value="api" />
+              <property name="Category" value="Notif" />
+            </properties>
+            <output><![CDATA[Given I POST a lead with following values 1005 , heights
+last name for the lead is:Schimmel
+-> done: ApiSteps.GivenIHaveIt(1005, "heights") (0.5s)
+When I Submit a Notif request POST with following values 100 , 1000 , 10000 , 666004444
+-> error: One or more errors occurred. (Request context disposed.
+=========================== logs ===========================
+→ POST https://url.com/api/lead/Notif
+  user-agent: Playwright/1.27.1 (x64; macOS 12.2) csharp/6.0
+  accept: application/json
+  accept-encoding: gzip,deflate,br
+  content-type: application/json
+  authorization: Bearer 1111.2222.2222
+  content-length: 380
+  cookie: Inffinity=111; InffinitySameSite=111
+============================================================) (0.0s)
+Then returned status code will be "200"
+-> skipped because of previous errors
+And The response should have 5000 , 0
+-> skipped because of previous errors
+
+]]></output>
+            <failure>
+              <message>System.AggregateException : One or more errors occurred. (Request context disposed.
+=========================== logs ===========================
+→ POST https://url.com/api/lead/Notif
+  user-agent: Playwright/1.27.1 (x64; macOS 12.2) csharp/6.0
+  accept: application/json
+  accept-encoding: gzip,deflate,br
+  content-type: application/json
+  authorization: Bearer 1111.2222.2222
+  content-length: 380
+  cookie: Inffinity=111; InffinitySameSite=111
+============================================================)
+  ----&gt; Microsoft.Playwright.PlaywrightException : Request context disposed.
+=========================== logs ===========================
+→ POST https://url.com/api/lead/Notif
+  user-agent: Playwright/1.27.1 (x64; macOS 12.2) csharp/6.0
+  accept: application/json
+  accept-encoding: gzip,deflate,br
+  content-type: application/json
+  authorization: Bearer 1111.2222.fNs4vjJBGMGZNU5ZbhJqo-6qry3a-wCoNu0yLnX5LzXvFeZYk4M_id0xxdqmD5n58635jpcQyKo2tXRlSyPI9Gn5mfDmLZcVsirmGrjc6WEUc-HhGeaUwr-avtFtC1UM5m1En-RetcNEz3qNQU1CO_KYt-PP2lpWddKgfS3bHs1YODoOeDwOtPG4Q4i9PVnu42Cj2Iao6pS09bPl88HaFo1JPxKKr-Zh1upGH8dftHQQQhRTkBylnDG5auSc-CRh7HPAgQS-dIhuNqFB8Lp7de6i2msOghAC9Xrqk_EG-L1L5HoZNPVKoXBsElT1whX6ZUXFVI6Tp7fh1J8TRE6O5g
+  content-length: 380
+  cookie: Inffinity=111; InffinitySameSite=111
+============================================================</message>
+              <stack-trace>   at System.Threading.Tasks.Task.ThrowIfExceptional(Boolean includeTaskCanceledExceptions)
+   at System.Threading.Tasks.Task`1.GetResultCore(Boolean waitCompletionNotification)
+   at System.Threading.Tasks.Task`1.get_Result()
+   at IntegrationTests.Steps.ApiDriverContext.CreateNotifification(Dictionary`2 data) in /tests/IntegrationTests/Steps/APIDriverContext.cs:line 23
+   at IntegrationTests.Steps.ApiSteps.WhenISubmitRequest(Int32 estimatedExpenses, Int32 estimatedHousing, Int32 estimatedIncome, String ssn) in /tests/IntegrationTests/Steps/ApiSteps.cs:line 51
+   at TechTalk.SpecFlow.Bindings.BindingInvoker.InvokeBinding(IBinding binding, IContextManager contextManager, Object[] arguments, ITestTracer testTracer, TimeSpan&amp; duration)
+   at TechTalk.SpecFlow.Infrastructure.TestExecutionEngine.ExecuteStepMatch(BindingMatch match, Object[] arguments, TimeSpan&amp; duration)
+   at TechTalk.SpecFlow.Infrastructure.TestExecutionEngine.ExecuteStep(IContextManager contextManager, StepInstance stepInstance)
+   at TechTalk.SpecFlow.Infrastructure.TestExecutionEngine.OnAfterLastStep()
+   at TechTalk.SpecFlow.TestRunner.CollectScenarioErrors()
+   at IntegrationTests.Features.RequestNotifificationFeature.ScenarioCleanup()
+   at IntegrationTests.Features.RequestNotifificationFeature.CreateANotifRequest(String branchId, String branchslug, String estimatedExpenses, String estimatedHousing, String estimatedIncome, String ssn, String aLoanSecuredOffer, String aLoanUnSecuredOffer, String[] exampleTags) in /tests/IntegrationTests/Features/NotifificationAPI.feature:line 9
+--PlaywrightException
+   at Microsoft.Playwright.Transport.Connection.InnerSendMessageToServerAsync[T](String guid, String method, Object args) in /_/src/Playwright/Transport/Connection.cs:line 163
+   at Microsoft.Playwright.Transport.Connection.WrapApiCallAsync[T](Func`1 action, Boolean isInternal) in /_/src/Playwright/Transport/Connection.cs:line 482
+   at Microsoft.Playwright.Transport.Channels.APIRequestContextChannel.FetchAsync(String url, IEnumerable`1 parameters, String method, IEnumerable`1 headers, Object jsonData, Byte[] postData, FormData formData, FormData multipartData, Nullable`1 timeout, Nullable`1 failOnStatusCode, Nullable`1 ignoreHTTPSErrors, Nullable`1 maxRedirects) in /_/src/Playwright/Transport/Channels/APIRequestContextChannel.cs:line 71
+   at Microsoft.Playwright.Core.APIRequestContext.FetchAsync(String url, APIRequestContextOptions options) in /_/src/Playwright/Core/APIRequestContext.cs:line 115</stack-trace>
+            </failure>
+          </test-case>
+          <test-case name="CreateANotifRequest(&quot;1005&quot;,&quot;region&quot;,&quot;100&quot;,&quot;1000&quot;,&quot;10000&quot;,&quot;666004444&quot;,&quot;5000&quot;,&quot;0&quot;,[&quot;Notif&quot;])" fullname="IntegrationTests.Features.RequestNotifificationFeature.CreateANotifRequest(&quot;1005&quot;,&quot;region&quot;,&quot;100&quot;,&quot;1000&quot;,&quot;10000&quot;,&quot;666004444&quot;,&quot;5000&quot;,&quot;0&quot;,[&quot;Notif&quot;])" methodname="CreateANotifRequest(&quot;1005&quot;,&quot;region&quot;,&quot;100&quot;,&quot;1000&quot;,&quot;10000&quot;,&quot;666004444&quot;,&quot;5000&quot;,&quot;0&quot;,[&quot;Notif&quot;])" classname="RequestNotifificationFeature" result="Passed" start-time="2022-11-10T 18:30:10Z" end-time="2022-11-10T 18:30:12Z" duration="2.160145" asserts="0" seed="46913113">
+            <properties>
+              <property name="Category" value="api" />
+              <property name="Category" value="Notif" />
+            </properties>
+            <output><![CDATA[Given I POST a lead with following values 1005 , region
+last name for the lead is:Trantow
+-> done: ApiSteps.GivenIHaveIt(1005, "region") (0.3s)
+When I Submit a Notif request POST with following values 100 , 1000 , 10000 , 666004444
+-> done: ApiSteps.WhenISubmitRequest(100, 1000, 10000, "666004444") (1.2s)
+Then returned status code will be "200"
+-> done: ApiSteps.ThenReturnedStatusCodeWillBe("200") (0.0s)
+And The response should have 5000 , 0
+-> done: ApiSteps.ThenTheResponseShouldHave(5000, 0) (0.0s)
+
+]]></output>
+          </test-case>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+    <errors />
+  </test-suite>
+</test-run>
