@@ -372,3 +372,4 @@ function getTestLogs(test) {
 }
 
 export { CodeceptReporter };
+export default CodeceptReporter;

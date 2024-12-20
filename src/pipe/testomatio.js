@@ -248,7 +248,7 @@ class TestomatioPipe {
     const cancelReporting = this.requestFailures >= parseInt(process.env.TESTOMATIO_MAX_REQUEST_FAILURES, 10);
     if (cancelReporting) {
       this.reportingCanceledDueToReqFailures = true;
-      const errorMessage = 
+      const errorMessage =
         `⚠️ ${process.env.TESTOMATIO_MAX_REQUEST_FAILURES} requests were failed, reporting to Testomat aborted.`;
       console.warn(`${APP_PREFIX} ${pc.yellow(errorMessage)}`);
     }
@@ -421,6 +421,7 @@ class TestomatioPipe {
           api_key: this.apiKey,
           duration: params.duration,
           status_event,
+          detach: params.detach,
           tests: params.tests,
         });
         if (this.runUrl) {

@@ -26,7 +26,8 @@ const debug = createDebugMessages('@testomatio/reporter:xml');
 const ridRunId = randomUUID();
 
 const TESTOMATIO_URL = process.env.TESTOMATIO_URL || 'https://app.testomat.io';
-const { TESTOMATIO_RUNGROUP_TITLE, TESTOMATIO_TITLE, TESTOMATIO_ENV, TESTOMATIO_RUN } = process.env;
+const { TESTOMATIO_RUNGROUP_TITLE, TESTOMATIO_TITLE, TESTOMATIO_ENV, TESTOMATIO_RUN,
+  TESTOMATIO_MARK_DETACHED } = process.env;
 
 const options = {
   ignoreDeclaration: true,
@@ -46,6 +47,7 @@ class XmlReader {
       title: TESTOMATIO_TITLE,
       env: TESTOMATIO_ENV,
       group_title: TESTOMATIO_RUNGROUP_TITLE,
+      detach: !!TESTOMATIO_MARK_DETACHED,
       // batch uploading is implemented for xml already
       isBatchEnabled: false,
     };
@@ -306,6 +308,7 @@ class XmlReader {
   calculateStats() {
     this.stats = {
       ...this.stats,
+      detach: this.requestParams.detach,
       status: 'passed',
       create_tests: true,
       tests_count: 0,

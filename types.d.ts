@@ -78,6 +78,9 @@ export interface RunData {
   /** is this run a part of parallel run */
   parallel: boolean;
 
+  /** mark tests not included in report as detached */
+  detach: boolean;
+
   /** A boolean indicating whether new test cases should be created in Testomat.io when submitting the test run. */
   create_tests?: boolean;
 
