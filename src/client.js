@@ -193,6 +193,7 @@ class Client {
     const uploadedFiles = [];
 
     for (let f of files) {
+      if (!f) continue; // f === null
       if (typeof f === 'object') {
         if (!f.path) continue;
 
