@@ -3,8 +3,8 @@ import path from 'path';
 import os from 'os';
 import createDebugMessages from 'debug';
 import { APP_PREFIX } from '../constants.js';
+import prettyMs from 'pretty-ms';
 
-const prettyMs = require('pretty-ms');
 const debug = createDebugMessages('@testomatio/reporter:pipe:debug');
 
 export class DebugPipe {
