@@ -326,7 +326,7 @@ class Client {
               APP_PREFIX,
               `🗄️ ${pc.bold(this.uploader.skippedUploads.length)} artifacts uploading 🟡${pc.bold(
                 'skipped',
-              )} (due to large size)`,
+              )}`,
             );
             const skippedUploads = this.uploader.skippedUploads.map(file => ({
               relativePath: file.path.replace(process.cwd(), ''),
