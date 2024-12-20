@@ -386,7 +386,15 @@ class TestomatioPipe {
   async finishRun(params) {
     if (!this.isEnabled) return;
     
-    if (this.batch.intervalFunction) clearInterval(this.batch.intervalFunction);
+    if (this.batch.intervalFunction) {
+      clearInterval(this.batch.intervalFunction);
+      // this code is required in case test is added after run is finished
+      // (e.g. if test has artifacts, add test function will be invoked only after artifacts are uploaded)
+      // batch stops working after run is finished; thus, disable it to use single test uploading
+      this.batch.intervalFunction = null;
+      this.batch.isEnabled = false;
+    }
+
     await this.#batchUpload();
 
     debug('Finishing run...');
