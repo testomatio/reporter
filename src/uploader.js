@@ -206,7 +206,7 @@ export class S3Uploader {
    */
   async uploadFileByPath(filePath, pathInS3) {
     // sometimes artifacts uploading started before createRun function completion
-    this.isEnabled ?? this.checkEnabled();
+    this.isEnabled = this.isEnabled ?? this.checkEnabled();
 
     const [runId, rid] = pathInS3;
 
