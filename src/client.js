@@ -185,12 +185,12 @@ class Client {
           meta[key] = JSON.stringify(meta[key]);
         }
         // cut values
-        if (meta[key].length > 255) {
+        if (meta[key]?.length > 255) {
           meta[key] = meta[key].substring(0, 255);
           debug(APP_PREFIX, `Meta info value "${meta[key]}" is too long, trimmed to 255 characters`);
         }
         // cut keys
-        if (key.length > 255) {
+        if (key?.length > 255) {
           const newKey = key.substring(0, 255);
           meta[newKey] = meta[key];
           delete meta[key];
