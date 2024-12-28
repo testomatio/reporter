@@ -387,6 +387,8 @@ class TestomatioPipe {
     if (!this.isEnabled) return;
     
     if (this.batch.intervalFunction) {
+      await this.#batchUpload();
+
       clearInterval(this.batch.intervalFunction);
       // this code is required in case test is added after run is finished
       // (e.g. if test has artifacts, add test function will be invoked only after artifacts are uploaded)
@@ -394,8 +396,6 @@ class TestomatioPipe {
       this.batch.intervalFunction = null;
       this.batch.isEnabled = false;
     }
-
-    await this.#batchUpload();
 
     debug('Finishing run...');
 
