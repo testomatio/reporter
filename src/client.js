@@ -174,30 +174,45 @@ class Client {
       suite_id,
       test_id,
       manuallyAttachedArtifacts,
-      meta,
     } = testData;
-    let { message = '' } = testData;
+    let { message = '', meta = {} } = testData;
 
     // stringify meta values and limit keys and values length to 255
-    if (meta) {
-      for (const key in meta) {
-        if (typeof meta[key] === 'object') {
-          meta[key] = JSON.stringify(meta[key]);
+    meta = Object.entries(meta)
+      .filter(([, value]) => value !== null && value !== undefined)
+      .map(([key, value]) => {
+        try {
+          if (typeof value === 'object') {
+            value = JSON.stringify(value);
+          } else if (typeof value !== 'string') {
+            try {
+              value = value.toString();
+            } catch (err) {
+              console.warn(APP_PREFIX, `Can't convert meta value to string`, err);
+            }
+          }
+
+          if (value?.length > 255) {
+            value = value.substring(0, 255);
+            debug(APP_PREFIX, `Meta info value "${value}" is too long, trimmed to 255 characters`);
+          }
+
+          if (key?.length > 255) {
+            const newKey = key.substring(0, 255);
+            debug(APP_PREFIX, `Meta info key "${key}" is too long, trimmed to 255 characters`);
+            return [newKey, value];
+          }
+
+          return [key, value];
+        } catch (err) {
+          debug(APP_PREFIX, `Error while processing meta info key ${key}`, err);
+          return [null, null];
         }
-        // cut values
-        if (meta[key]?.length > 255) {
-          meta[key] = meta[key].substring(0, 255);
-          debug(APP_PREFIX, `Meta info value "${meta[key]}" is too long, trimmed to 255 characters`);
-        }
-        // cut keys
-        if (key?.length > 255) {
-          const newKey = key.substring(0, 255);
-          meta[newKey] = meta[key];
-          delete meta[key];
-          debug(APP_PREFIX, `Meta info key "${key}" is too long, trimmed to 255 characters`);
-        }
-      }
-    }
+      })
+      .reduce((acc, [key, value]) => {
+        if (key) acc[key] = value;
+        return acc;
+      }, {});
 
     let errorFormatted = '';
     if (error) {
