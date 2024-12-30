@@ -233,11 +233,11 @@ function getTestContextName(test) {
   return `${test._requireFile || ''}_${test.title}`;
 }
 
-function initPlaywrightForStorage() {
+async function initPlaywrightForStorage() {
   try {
     // @ts-ignore-next-line
     // eslint-disable-next-line import/no-extraneous-dependencies
-    const { test } = require('@playwright/test');
+    const { test } = await import('@playwright/test');
     // eslint-disable-next-line no-empty-pattern
     test.beforeEach(async ({}, testInfo) => {
       global.testomatioTestTitle = `${testInfo.file || ''}_${testInfo.title}`;

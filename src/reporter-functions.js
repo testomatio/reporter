@@ -1,7 +1,9 @@
 import { services } from './services/index.js';
 import { initPlaywrightForStorage } from './adapter/playwright.js';
 
-if (process.env.PLAYWRIGHT_TEST_BASE_URL) initPlaywrightForStorage();
+(async () => {
+  if (process.env.PLAYWRIGHT_TEST_BASE_URL) initPlaywrightForStorage();
+})();
 
 /**
  * Stores path to file as artifact and uploads it to the S3 storage

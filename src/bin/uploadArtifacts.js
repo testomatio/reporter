@@ -8,6 +8,7 @@ import { APP_PREFIX } from '../constants.js';
 import { version } from '../../package.json';
 import {config} from '../config.js';
 import { readLatestRunId } from '../utils/utils.js';
+import dotenv from 'dotenv';
 
 const debug = createDebugMessages('@testomatio/reporter:upload-cli');
 console.log(pc.cyan(pc.bold(` 🤩 Testomat.io Reporter v${version}`)));
@@ -18,10 +19,9 @@ program
   .option('--force', 'Re-upload artifacts even if they were uploaded before')
   .action(async opts => {
     if (opts.envFile) {
-      require('dotenv').config(opts.envFile); // eslint-disable-line
+      dotenv.config({ path: opts.envFile });
     } else {
-      // try to load from env file
-      require('dotenv').config(); // eslint-disable-line
+      dotenv.config();
     }
 
     const apiKey = config.TESTOMATIO;

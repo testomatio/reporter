@@ -6,6 +6,7 @@ import TestomatClient from '../client.js';
 import { APP_PREFIX, STATUS } from '../constants.js';
 import { version } from '../../package.json';
 import { config } from '../config.js';
+import dotenv from 'dotenv';
 
 console.log(pc.cyan(pc.bold(` 🤩 Testomat.io Reporter v${version}`)));
 const program = new Command();
@@ -20,7 +21,7 @@ program
     const { launch, finish, filter } = opts;
     let { command } = opts;
 
-    if (opts.envFile) require('dotenv').config(opts.envFile); // eslint-disable-line
+    if (opts.envFile) dotenv.config({ path: opts.envFile });
 
     const apiKey = process.env['INPUT_TESTOMATIO-KEY'] || config.TESTOMATIO;
     const title = process.env.TESTOMATIO_TITLE;
