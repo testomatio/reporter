@@ -27,9 +27,9 @@ program
       console.log(APP_PREFIX, 'Loading env file:', opts.envFile);
       debug('Loading env file: %s', opts.envFile);
       require('dotenv').config({ path: opts.envFile }); // eslint-disable-line
-    }
-    if (javaTests === true) javaTests = 'src/test/java';
+    }    
     lang = lang?.toLowerCase();
+    if (javaTests === true || (lang === 'java' && !javaTests)) javaTests = 'src/test/java';    
     const runReader = new XmlReader({ javaTests, lang });
     const files = glob.sync(pattern, { cwd: opts.dir || process.cwd() });
     if (!files.length) {
