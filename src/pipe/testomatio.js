@@ -157,7 +157,8 @@ class TestomatioPipe {
   async createRun(params = {}) {
     this.batch.isEnabled = params.isBatchEnabled ?? this.batch.isEnabled;
     if (!this.isEnabled) return;
-    if (this.batch.isEnabled && this.isEnabled) this.batch.intervalFunction = setInterval(this.#batchUpload, this.batch.intervalTime);
+    if (this.batch.isEnabled && this.isEnabled)
+      this.batch.intervalFunction = setInterval(this.#batchUpload, this.batch.intervalTime);
 
     let buildUrl = process.env.BUILD_URL || process.env.CI_JOB_URL || process.env.CIRCLE_BUILD_URL;
 
@@ -386,9 +387,8 @@ class TestomatioPipe {
   async finishRun(params) {
     if (!this.isEnabled) return;
     
+    await this.#batchUpload();
     if (this.batch.intervalFunction) {
-      await this.#batchUpload();
-
       clearInterval(this.batch.intervalFunction);
       // this code is required in case test is added after run is finished
       // (e.g. if test has artifacts, add test function will be invoked only after artifacts are uploaded)

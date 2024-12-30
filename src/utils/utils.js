@@ -1,10 +1,9 @@
 import { URL } from 'url';
-import { sep, basename } from 'path';
+import path, { sep, basename } from 'path';
 import pc from 'picocolors';
 import fs from 'fs';
 import isValid from 'is-valid-path';
 import createDebugMessages from 'debug';
-import path from 'path';
 import os from 'os';
 
 const debug = createDebugMessages('@testomatio/reporter:util');

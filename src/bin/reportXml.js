@@ -6,6 +6,7 @@ import createDebugMessages from 'debug';
 import { APP_PREFIX } from '../constants.js';
 import XmlReader from '../xmlReader.js';
 import { version } from '../../package.json';
+import dotenv from 'dotenv';
 
 const debug = createDebugMessages('@testomatio/reporter:xml-cli');
 console.log(pc.cyan(pc.bold(` 🤩 Testomat.io XML Reporter v${version}`)));
@@ -26,7 +27,7 @@ program
     if (opts.envFile) {
       console.log(APP_PREFIX, 'Loading env file:', opts.envFile);
       debug('Loading env file: %s', opts.envFile);
-      require('dotenv').config({ path: opts.envFile }); // eslint-disable-line
+      dotenv.config({ path: opts.envFile });
     }    
     lang = lang?.toLowerCase();
     if (javaTests === true || (lang === 'java' && !javaTests)) javaTests = 'src/test/java';    
