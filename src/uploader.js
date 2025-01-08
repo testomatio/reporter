@@ -312,7 +312,7 @@ export class S3Uploader {
   async getS3LocationLink(out) {
     const response = await out.done();
 
-    let s3Location = response?.Location;
+    let s3Location = response?.Location?.trim();
 
     if (!s3Location) {
       s3Location = out?.singleUploadResult?.Location;
@@ -321,6 +321,11 @@ export class S3Uploader {
       if (!s3Location) {
         throw new Error("Problems getting the S3 artifact's link. Please check S3 permissions!");
       }
+    }
+
+    // Normalize the URL
+    if (!s3Location.startsWith('http')) {
+      s3Location = `https://${s3Location}`;
     }
 
     return s3Location;
@@ -348,9 +353,12 @@ export class S3Uploader {
       credentials: {
         accessKeyId: S3_ACCESS_KEY_ID,
         secretAccessKey: S3_SECRET_ACCESS_KEY,
-        s3ForcePathStyle: S3_FORCE_PATH_STYLE,
       },
     };
+
+    if (S3_FORCE_PATH_STYLE) {
+      cfg.forcePathStyle = !['false', '0'].includes(String(S3_FORCE_PATH_STYLE || '').toLowerCase());
+    }
 
     if (S3_SESSION_TOKEN) {
       cfg.credentials.sessionToken = S3_SESSION_TOKEN;
