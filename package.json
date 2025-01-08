@@ -114,7 +114,7 @@
     "./lib/adapter/cucumber/cucumber.js": "./lib/adapter/cucumber/current.js",
     "./cucumber": "./lib/adapter/cucumber/current.js",
     "./lib/adapter/cypress-plugin": "./lib/adapter/cypress-plugin/index.js",
-    "./cypress-plugin": "./lib/adapter/cypress-plugin/index.js",
+    "./cypress": "./lib/adapter/cypress-plugin/index.js",
     "./lib/adapter/jasmine.js": "./lib/adapter/jasmine.js",
     "./jasmine": "./lib/adapter/jasmine.js",
     "./lib/adapter/jest.js": "./lib/adapter/jest.js",
@@ -123,9 +123,10 @@
     "./mocha": "./lib/adapter/mocha.js",
     "./lib/adapter/playwright.js": "./lib/adapter/playwright.js",
     "./playwright": "./lib/adapter/playwright.js",
-    "./vitest": "./src/adapter/vitest.js",
+    "./vitest": "./lib/adapter/vitest.js",
     "./lib/adapter/webdriver.js": "./lib/adapter/webdriver.js",
     "./lib/adapter/webdriver": "./lib/adapter/webdriver.js",
-    "./webdriver": "./lib/adapter/webdriver.js"
+    "./webdriver": "./lib/adapter/webdriver.js",
+    "./wdio": "./lib/adapter/webdriver.js"
   }
 }
