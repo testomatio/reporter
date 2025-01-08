@@ -114,6 +114,7 @@
     "./lib/adapter/cucumber/cucumber.js": "./lib/adapter/cucumber/current.js",
     "./cucumber": "./lib/adapter/cucumber/current.js",
     "./lib/adapter/cypress-plugin": "./lib/adapter/cypress-plugin/index.js",
+    "./cypress-plugin": "./lib/adapter/cypress-plugin/index.js",
     "./cypress": "./lib/adapter/cypress-plugin/index.js",
     "./lib/adapter/jasmine.js": "./lib/adapter/jasmine.js",
     "./jasmine": "./lib/adapter/jasmine.js",
