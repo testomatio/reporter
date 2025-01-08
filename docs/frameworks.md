@@ -29,7 +29,10 @@ Add plugin to [codecept conf](https://github.com/testomatio/reporter/blob/master
 plugins: {
   testomatio: {
     enabled: true,
+    // new way
     require: '@testomatio/reporter/lib/adapter/codecept',
+    // old way
+    require: '@testomatio/reporter/codecept',
   }
 }
 ```
@@ -70,6 +73,9 @@ Add a reporter to Playwright config:
 reporter: [
   ['list'],
   [
+    // new way
+    '@testomatio/reporter/playwright',
+    // old way
     '@testomatio/reporter/lib/adapter/playwright.js',
     {
       apiKey: process.env.TESTOMATIO,
@@ -97,6 +103,9 @@ TESTOMATIO={API_KEY} npx playwright test
   Register `cypress-plugin` in `cypress/plugins/index.js`:
 
 ```javascript
+// new way
+const testomatioReporter = require('@testomatio/reporter/cypress');
+// old way
 const testomatioReporter = require('@testomatio/reporter/lib/adapter/cypress-plugin');
 
 /**
@@ -118,6 +127,9 @@ For Cypress >= `10.0.0` use `setupNodeEvents` in `cypress.config.js(ts)`
 
 ```javascript
 setupNodeEvents(on, config) {
+  // new way
+  return require('@testomatio/reporter/cypress')(on, config)
+  // old way
   return require('@testomatio/reporter/lib/adapter/cypress-plugin')(on, config)
 }
 ```
@@ -139,6 +151,9 @@ TESTOMATIO={API_KEY} npx cypress run
 Run the following command from you project folder:
 
 ```bash
+# new way
+mocha --reporter @testomatio/reporter/mocha --reporter-options apiKey={API_KEY}
+# old way
 mocha --reporter ./node_modules/@testomatio/reporter/lib/adapter/mocha.js --reporter-options apiKey={API_KEY}
 ```
 
@@ -151,6 +166,9 @@ mocha --reporter ./node_modules/@testomatio/reporter/lib/adapter/mocha.js --repo
 Add the following line to [jest.config.js](https://github.com/testomatio/reporter/blob/master/example/jest/jest.config.js#L100):
 
 ```javascript
+// new way
+reporters: ['default', ['@testomatio/reporter/jest', { apiKey: process.env.TESTOMATIO }]],
+// old way
 reporters: ['default', ['@testomatio/reporter/lib/adapter/jest.js', { apiKey: process.env.TESTOMATIO }]],
 ```
 
@@ -183,6 +201,9 @@ npm install @testomatio/reporter --save-dev
 
 ```typescript
 // import reporter
+// new way
+import TestomatioReporter from '@testomatio/reporter/vitest';
+// old way
 import TestomatioReporter from '@testomatio/reporter/lib/adapter/vitest';
 
 export default defineConfig({
@@ -221,6 +242,11 @@ Vitest reporter has some limitations:
 Add the following lines to [wdio.conf.js](https://webdriver.io/docs/configurationfile/):
 
 ```javascript
+// new way
+const testomatio = require('@testomatio/reporter/webdriver');
+// or
+const testomatio = require('@testomatio/reporter/wdio');
+// old way
 const testomatio = require('@testomatio/reporter/lib/adapter/webdriver');
 
 exports.config = {
@@ -262,6 +288,9 @@ TESTOMATIO={API_KEY} npx start-test-run -c 'npx wdio wdio.conf.js'
 Run the following command from you project folder:
 
 ```bash
+# new way
+TESTOMATIO={API_KEY} npx cucumber-js --format @testomatio/reporter/cucumber
+# old way
 TESTOMATIO={API_KEY} npx cucumber-js --format ./node_modules/@testomatio/reporter/lib/adapter/cucumber.js
 ```
 
@@ -321,6 +350,9 @@ TESTOMATIO={API_KEY} npx detox test -c {configuration_name}
 Add the following lines to [conf.js](https://github.com/angular/protractor/blob/5.4.1/example/conf.js):
 
 ```javascript
+// new way
+const JasmineReporter = require('@testomatio/reporter/jasmine');
+// old way
 const JasmineReporter = require('@testomatio/reporter/lib/adapter/jasmine');
 
 exports.config = {
