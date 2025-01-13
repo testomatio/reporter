@@ -22,8 +22,8 @@ const debug = createDebugMessages('@testomatio/reporter:client');
 let listOfTestFilesToExcludeFromReport = null;
 
 /**
- * @typedef {import('../types').TestData} TestData
- * @typedef {import('../types').PipeResult} PipeResult
+ * @typedef {import('../types/types.js').TestData} TestData
+ * @typedef {import('../types/types.js').PipeResult} PipeResult
  */
 
 class Client {

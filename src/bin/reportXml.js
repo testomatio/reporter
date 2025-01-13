@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
 import pc from 'picocolors';
-import glob from 'glob';
+import { glob } from 'glob';
 import createDebugMessages from 'debug';
 import { APP_PREFIX } from '../constants.js';
 import XmlReader from '../xmlReader.js';

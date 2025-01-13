@@ -9,8 +9,8 @@ import { CSV_HEADERS } from '../constants.js';
 
 const debug = createDebugMessages('@testomatio/reporter:pipe:csv');
 /**
- * @typedef {import('../../types').Pipe} Pipe
- * @typedef {import('../../types').TestData} TestData
+ * @typedef {import('../../types/types.js').Pipe} Pipe
+ * @typedef {import('../../types/types.js').TestData} TestData
  * @class CsvPipe
  * @implements {Pipe}
  */

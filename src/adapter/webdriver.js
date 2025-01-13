@@ -94,7 +94,7 @@ class WebdriverReporter extends WDIOReporter {
   }
 
   /**
-   * @param {import('../../types').WebdriverIOScenario} scenario
+   * @param {import('../../types/types.js').WebdriverIOScenario} scenario
    */
   addBddScenario(scenario) {
     if (!this.client) return;

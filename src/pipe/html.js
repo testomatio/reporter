@@ -72,7 +72,7 @@ class HtmlPipe {
 
   /**
    * Add test data to the result array for saving. As a result of this function, we get a result object to save.
-   * @param {import('../../types').RunData} test - object which includes each test entry.
+   * @param {import('../../types/types.js').RunData} test - object which includes each test entry.
    */
   addTest(test) {
     if (!this.isEnabled) return;

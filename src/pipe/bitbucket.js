@@ -15,8 +15,8 @@ const debug = createDebugMessages('@testomatio/reporter:pipe:bitbucket');
 
 /**
  * @class BitbucketPipe
- * @typedef {import('../../types').Pipe} Pipe
- * @typedef {import('../../types').TestData} TestData
+ * @typedef {import('../../types/types.js').Pipe} Pipe
+ * @typedef {import('../../types/types.js').TestData} TestData
  */
 export class BitbucketPipe {
   constructor(params, store = {}) {

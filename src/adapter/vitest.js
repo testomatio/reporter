@@ -7,13 +7,13 @@ import createDebugMessages from 'debug';
 const debug = createDebugMessages('@testomatio/reporter:adapter-jest');
 
 /**
- * @typedef {import('../../types').VitestTest} VitestTest
- * @typedef {import('../../types').VitestTestFile} VitestTestFile
- * @typedef {import('../../types').VitestSuite} VitestSuite
- * @typedef {import('../../types').VitestTestLogs} VitestTestLogs
- * @typedef {import('../../vitest.types').ErrorWithDiff} ErrorWithDiff
+ * @typedef {import('../../types/types.js').VitestTest} VitestTest
+ * @typedef {import('../../types/types.js').VitestTestFile} VitestTestFile
+ * @typedef {import('../../types/types.js').VitestSuite} VitestSuite
+ * @typedef {import('../../types/types.js').VitestTestLogs} VitestTestLogs
+ * @typedef {import('../../types/vitest.types.js').ErrorWithDiff} ErrorWithDiff
  * @typedef {typeof import('../constants.js').STATUS} STATUS
- * @typedef {import('../../types').TestData} TestData
+ * @typedef {import('../../types/types.js').TestData} TestData
  */
 
 class VitestReporter {

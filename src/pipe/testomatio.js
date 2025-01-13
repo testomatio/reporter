@@ -21,8 +21,8 @@ if (process.env.TESTOMATIO_RUN) {
 }
 
 /**
- * @typedef {import('../../types').Pipe} Pipe
- * @typedef {import('../../types').TestData} TestData
+ * @typedef {import('../../types/types.js').Pipe} Pipe
+ * @typedef {import('../../types/types.js').TestData} TestData
  * @class TestomatioPipe
  * @implements {Pipe}
  */
@@ -381,7 +381,7 @@ class TestomatioPipe {
   }
 
   /**
-   * @param {import('../../types').RunData} params
+   * @param {import('../../types/types.js').RunData} params
    * @returns
    */
   async finishRun(params) {
