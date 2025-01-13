@@ -106,7 +106,7 @@
     ".": {
       "import": "./src/reporter.js",
       "require": "./lib/reporter.js",
-      "types": "./index.d.ts"
+      "types": "./types/types.d.ts"
     },
     "./lib/adapter/codecept/codecept.js": "./lib/adapter/codecept.js",
     "./lib/adapter/codecept": "./lib/adapter/codecept.js",

@@ -3,17 +3,17 @@
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "checkJs": true,
-    "module": "CommonJS", // esnext for esm
+    "declaration": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
+    "module": "CommonJS", // esnext for esm
     "moduleResolution": "node",
     "noImplicitAny": false,
     "noImplicitThis": false,
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "types": [
-      "node"
-    ],
+    "types": ["node"],
+    "typeRoots": ["./types", "./node_modules/@types"],
     "target": "ES2022",
     "rootDir": "./src",
     "outDir": "./lib", // change for esm
@@ -25,9 +25,10 @@
   "exclude": [
     "node_modules",
     "packages",
-    "src/adapter/mocha.cjs",
-    "src/adapter/mocha.cjs",
-    "src/adapter/jasmine/jasmine.cjs",
-    "src/reporter.cjs",
+    "lib",
+    "src/adapter/**/*.cjs",
+    // "src/adapter/mocha.cjs",
+    // "src/adapter/jasmine/jasmine.cjs",
+    "src/reporter.cjs_decprecated",
   ],
 }

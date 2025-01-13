@@ -1,4 +1,19 @@
-declare module '@testomatio/reporter';
+declare module '@testomatio/reporter' {
+  import { services } from '@testomatio/reporter/src/services/index.js';
+  import reporterFunctions from '@testomatio/reporter/src/reporter-functions.js';
+
+  export default {
+    artifact: typeof reporterFunctions.artifact,
+    log: typeof reporterFunctions.log,
+    logger: typeof services.logger,
+    meta: typeof reporterFunctions.keyValue,
+    step: typeof reporterFunctions.step,
+  };
+
+  export const artifact: typeof reporterFunctions.artifact;
+  export const log: typeof reporterFunctions.log;
+  export const meta: typeof reporterFunctions.keyValue;
+};
 
 export interface FileType {
   path: string;
