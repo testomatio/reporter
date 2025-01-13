@@ -1,4 +1,0 @@
-{
-  "//": "This is required to tream all files insile /lib as cjs",
-  "type": "commonjs"
-}
