@@ -4,7 +4,9 @@ import { services } from './services/index.js';
 import reporterFunctions from './reporter-functions.js';
 
 export default {
-  // TODO: deprecate in future; use log or testomat.log
+  /**
+   * @deprecated Use `log` or `testomat.log`
+   */
   testomatioLogger: services.logger,
 
   artifact: reporterFunctions.artifact,
@@ -13,8 +15,8 @@ export default {
   meta: reporterFunctions.keyValue,
   step: reporterFunctions.step,
 
-  TestomatClient,
-  TRConstants,
+  // TestomatClient,
+  // TRConstants,
 };
 
 export const artifact = reporterFunctions.artifact;
