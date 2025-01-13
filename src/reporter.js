@@ -1,5 +1,5 @@
-import TestomatClient from './client.js';
-import * as TRConstants from './constants.js';
+// import TestomatClient from './client.js';
+// import * as TRConstants from './constants.js';
 import { services } from './services/index.js';
 import reporterFunctions from './reporter-functions.js';
 
