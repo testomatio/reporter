@@ -47,7 +47,7 @@ class XmlReader {
       title: TESTOMATIO_TITLE,
       env: TESTOMATIO_ENV,
       group_title: TESTOMATIO_RUNGROUP_TITLE,
-      detach: !!TESTOMATIO_MARK_DETACHED,
+      detach: TESTOMATIO_MARK_DETACHED,
       // batch uploading is implemented for xml already
       isBatchEnabled: false,
     };
