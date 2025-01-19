@@ -8,9 +8,9 @@ concurrency:
 
 on:
   push:
-    branches: [master]
+    branches: [master, 2.x]
   pull_request:
-    branches: [master]
+    branches: [master, 2.x]
 
 jobs:
   linter-and-tests-on-latest-node:
