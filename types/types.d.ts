@@ -13,7 +13,7 @@ declare module '@testomatio/reporter' {
   export const artifact: typeof reporterFunctions.artifact;
   export const log: typeof reporterFunctions.log;
   export const meta: typeof reporterFunctions.keyValue;
-};
+}
 
 export interface FileType {
   path: string;

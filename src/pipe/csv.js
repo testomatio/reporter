@@ -1,7 +1,7 @@
 import createDebugMessages from 'debug';
 import path from 'path';
 import fs from 'fs';
-import {createObjectCsvWriter} from 'csv-writer';
+import { createObjectCsvWriter } from 'csv-writer';
 import pc from 'picocolors';
 import merge from 'lodash.merge';
 import { isSameTest, getCurrentDateTime, ansiRegExp } from '../utils/utils.js';

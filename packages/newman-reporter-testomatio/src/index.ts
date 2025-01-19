@@ -294,11 +294,14 @@ function TestomatioNewmanReporter(
         debug('Run status update failed');
         debug(err);
       });
-    console.log(APP_PREFIX,
+    console.log(
+      APP_PREFIX,
       'Collection run completed',
       status === 'passed' ? 'without failures' : `with ${summary.run.failures.length} failures`,
     );
-    console.log(`${APP_PREFIX} Total requests sent: ${requestsCount}, failed requests: ${failedRequestsCount}, total tests: ${testsCount}`);
+    console.log(
+      `${APP_PREFIX} Total requests sent: ${requestsCount}, failed requests: ${failedRequestsCount}, total tests: ${testsCount}`,
+    );
   });
 }
 

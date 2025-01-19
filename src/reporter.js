@@ -3,7 +3,6 @@
 import { services } from './services/index.js';
 import reporterFunctions from './reporter-functions.js';
 
-
 export const artifact = reporterFunctions.artifact;
 export const log = reporterFunctions.log;
 export const logger = services.logger;

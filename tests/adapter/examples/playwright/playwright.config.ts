@@ -6,9 +6,12 @@ const config: PlaywrightTestConfig = {
   reporter: [
     ['list'],
     // ['@testomatio/reporter/lib/adapter/playwright.js', {
-    ['../../../../lib/adapter/playwright.js', {
-      apiKey: process.env.TESTOMATIO,
-    }]
-  ]
+    [
+      '../../../../lib/adapter/playwright.js',
+      {
+        apiKey: process.env.TESTOMATIO,
+      },
+    ],
+  ],
 };
 export default config;

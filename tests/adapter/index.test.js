@@ -21,7 +21,7 @@ const params = [
     positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:jest:example`,
     negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:jest:example`,
   },
-  
+
   {
     adapterName: 'MochaReporter',
     positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:mocha:example`,
@@ -52,7 +52,7 @@ const params = [
     adapterName: 'Playwright',
     positiveCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} TESTOMATIO=${TESTOMATIO} npm run test:adapter:playwright:example`,
     negativeCmd: `TESTOMATIO_URL=${TESTOMATIO_URL} npm run test:adapter:playwright:example`,
-  }
+  },
 ];
 
 describe('Adapters', () => {

@@ -1,4 +1,3 @@
-
 // // file is updated (was: loadConfig.js)
 // const path = process.cwd() + '/node_modules/jasmine/lib/command.js';
 // const apiKey = process.env.TESTOMATIO;

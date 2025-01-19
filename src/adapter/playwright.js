@@ -61,13 +61,13 @@ class PlaywrightReporter {
 
     /**
      * @type {{
-    * browser?: string,
-    * dependencies: string[],
-    * isMobile?: boolean
-    * metadata: Record<string, any>,
-    * name: string,
-    * }}
-    */
+     * browser?: string,
+     * dependencies: string[],
+     * isMobile?: boolean
+     * metadata: Record<string, any>,
+     * name: string,
+     * }}
+     */
     const project = {
       browser: test.parent.project().use.defaultBrowserType,
       dependencies: test.parent.project().dependencies,

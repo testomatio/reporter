@@ -1,7 +1,7 @@
 import { STATUS } from '../../constants.js';
 import { getTestomatIdFromTestTitle, parseSuite } from '../../utils/utils.js';
 import TestomatClient from '../../client.js';
-import {config} from '../../config.js';
+import { config } from '../../config.js';
 
 const testomatioReporter = on => {
   if (!config.TESTOMATIO) {
@@ -50,7 +50,8 @@ const testomatioReporter = on => {
         };
       }
 
-      const formattedError = error ? {
+      const formattedError = error
+        ? {
             message: error.message,
             name: error.name,
             inspect:
@@ -59,7 +60,8 @@ const testomatioReporter = on => {
               function () {
                 return this.message;
               },
-          } : undefined;
+          }
+        : undefined;
 
       const screenshots = Array.isArray(results.screenshots)
         ? results.screenshots

@@ -102,7 +102,7 @@ test('my test', () => {
     browser: 'chrome',
     server: 'staging',
   });
-})
+});
 ```
 
 Or in CommonJS style:
