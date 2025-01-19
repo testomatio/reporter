@@ -8,11 +8,11 @@ declare class KeyValueStorage {
     static getInstance(): KeyValueStorage;
     /**
      * Stores key-value pair and passes it to reporter
-     * @param {{key: string}} keyValue - key-value pair(s) as object
+     * @param {{[key: string]: string}} keyValue - key-value pair(s) as object
      * @param {*} context - full test title
      */
     put(keyValue: {
-        key: string;
+        [key: string]: string;
     }, context?: any): void;
     /**
      * Returns key-values pairs for the test as object

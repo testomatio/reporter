@@ -11,5 +11,4 @@ declare class PlaywrightReporter {
     onEnd(result: any): Promise<void>;
     #private;
 }
-export function initPlaywrightForStorage(): Promise<void>;
 import TestomatioClient from '../client.js';

@@ -7,7 +7,7 @@ declare class XmlReader {
         title: string;
         env: string;
         group_title: string;
-        detach: boolean;
+        detach: string;
         isBatchEnabled: boolean;
     };
     runId: any;
