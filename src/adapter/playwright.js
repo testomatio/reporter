@@ -233,19 +233,4 @@ function getTestContextName(test) {
   return `${test._requireFile || ''}_${test.title}`;
 }
 
-async function initPlaywrightForStorage() {
-  try {
-    // @ts-ignore-next-line
-    // eslint-disable-next-line import/no-extraneous-dependencies
-    const { test } = await import('@playwright/test');
-    // eslint-disable-next-line no-empty-pattern
-    test.beforeEach(async ({}, testInfo) => {
-      global.testomatioTestTitle = `${testInfo.file || ''}_${testInfo.title}`;
-    });
-  } catch (e) {
-    // ignore
-  }
-}
-
 export default PlaywrightReporter;
-export { initPlaywrightForStorage };

@@ -128,5 +128,5 @@ Supported frameworks:
 - 🟢 Cucumber
 - 🟢 Jest
 - 🟢 Mocha
-- 🟢 Playwright
+- 🔴 Playwright (use native functionality instead)
 - 🟢 WDIO (everything, except artifacts)

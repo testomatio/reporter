@@ -10,7 +10,7 @@ on:
   push:
     branches: [master]
   pull_request:
-    branches: [master]
+    branches: [master, 2.x-pipes, 2.x]
 
 jobs:
   linter-and-tests-on-latest-node:

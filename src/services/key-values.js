@@ -18,7 +18,7 @@ class KeyValueStorage {
 
   /**
    * Stores key-value pair and passes it to reporter
-   * @param {{key: string}} keyValue - key-value pair(s) as object
+   * @param {{[key: string]: string}} keyValue - key-value pair(s) as object
    * @param {*} context - full test title
    */
   put(keyValue, context = null) {

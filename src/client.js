@@ -305,88 +305,81 @@ class Client {
       .then(() => {
         if (!this.uploader.isEnabled) return;
 
+        const filesizeStrMaxLength = 7;
+
         if (this.uploader.successfulUploads.length) {
+          debug('\n', APP_PREFIX, `🗄️ ${this.uploader.successfulUploads.length} artifacts uploaded to S3 bucket`);
+          const uploadedArtifacts = this.uploader.successfulUploads.map(file => ({
+            relativePath: file.path.replace(process.cwd(), ''),
+            link: file.link,
+            sizePretty: prettyBytes(file.size, { round: 0 }).toString(),
+          }));
+
+          uploadedArtifacts.forEach(upload => {
+            debug(
+              `🟢Uploaded artifact`,
+              `${upload.relativePath},`,
+              'size:',
+              `${upload.sizePretty},`,
+              'link:',
+              `${upload.link}`,
+            );
+          });
+        }
+
+        if (this.uploader.failedUploads.length) {
           console.log(
             APP_PREFIX,
-            `🗄️ ${this.uploader.successfulUploads.length} artifacts ${
-              process.env.TESTOMATIO_PRIVATE_ARTIFACTS ? 'privately' : pc.bold('publicly')
-            } 🟢uploaded to S3 bucket`,
+            `🗄️ ${this.uploader.failedUploads.length} artifacts 🔴${pc.bold('failed')} to upload`,
           );
+          const failedUploads = this.uploader.failedUploads.map(file => ({
+            relativePath: file.path.replace(process.cwd(), ''),
+            sizePretty: prettyBytes(file.size, { round: 0 }).toString(),
+          }));
 
-          const filesizeStrMaxLength = 7;
+          const pathPadding = Math.max(...failedUploads.map(upload => upload.relativePath.length)) + 1;
 
-          if (this.uploader.successfulUploads.length) {
-            debug('\n', APP_PREFIX, `🗄️ ${this.uploader.successfulUploads.length} artifacts uploaded to S3 bucket`);
-            const uploadedArtifacts = this.uploader.successfulUploads.map(file => ({
-              relativePath: file.path.replace(process.cwd(), ''),
-              link: file.link,
-              sizePretty: prettyBytes(file.size, { round: 0 }).toString(),
-            }));
-  
-            uploadedArtifacts.forEach(upload => {
-              debug(
-                `🟢Uploaded artifact`,
-                `${upload.relativePath},`,
-                'size:',
-                `${upload.sizePretty},`,
-                'link:',
-                `${upload.link}`,
-              );
-            });
-          }
-
-          if (this.uploader.failedUploads.length) {
+          failedUploads.forEach(upload => {
             console.log(
-              APP_PREFIX,
-              `🗄️ ${this.uploader.failedUploads.length} artifacts 🔴${pc.bold('failed')} to upload`,
-            );
-            const failedUploads = this.uploader.failedUploads.map(file => ({
-              relativePath: file.path.replace(process.cwd(), ''),
-              sizePretty: prettyBytes(file.size, { round: 0 }).toString(),
-            }));
-  
-            const pathPadding = Math.max(...failedUploads.map(upload => upload.relativePath.length)) + 1;
-  
-            failedUploads.forEach(upload => {
-              console.log(
-                `  ${pc.gray('|')} 🔴 ${upload.relativePath.padEnd(pathPadding)} ${pc.gray(
-                  `| ${upload.sizePretty.padStart(filesizeStrMaxLength)} |`,
-                )}`,
-              );
-            });
-          }
-
-          if (this.uploader.skippedUploads.length) {
-            console.log(
-              '\n',
-              APP_PREFIX,
-              `🗄️ ${pc.bold(this.uploader.skippedUploads.length)} artifacts uploading 🟡${pc.bold(
-                'skipped',
+              `  ${pc.gray('|')} 🔴 ${upload.relativePath.padEnd(pathPadding)} ${pc.gray(
+                `| ${upload.sizePretty.padStart(filesizeStrMaxLength)} |`,
               )}`,
             );
-            const skippedUploads = this.uploader.skippedUploads.map(file => ({
-              relativePath: file.path.replace(process.cwd(), ''),
-              sizePretty: file.size === null ? 'unknown' : prettyBytes(file.size, { round: 0 }).toString(),
-            }));
-            const pathPadding = Math.max(...skippedUploads.map(upload => upload.relativePath.length)) + 1;
-            skippedUploads.forEach(upload => {
-              console.log(
-                `  ${pc.gray('|')} 🟡 ${upload.relativePath.padEnd(pathPadding)} ${pc.gray(
-                  `| ${upload.sizePretty.padStart(filesizeStrMaxLength)} |`,
-                )}`,
-              );
-            });
-          }
-  
-          if (this.uploader.skippedUploads.length || this.uploader.failedUploads.length) {
-            const command = `TESTOMATIO=<your_api_key> TESTOMATIO_RUN=${
-              this.runId
-            } npx @testomatio/reporter upload-artifacts`;
+          });
+        }
+
+        if (this.uploader.skippedUploads.length) {
+          console.log(
+            '\n',
+            APP_PREFIX,
+            `🗄️ ${pc.bold(this.uploader.skippedUploads.length)} artifacts uploading 🟡${pc.bold(
+              'skipped',
+            )}`,
+          );
+          const skippedUploads = this.uploader.skippedUploads.map(file => ({
+            relativePath: file.path.replace(process.cwd(), ''),
+            sizePretty: file.size === null ? 'unknown' : prettyBytes(file.size, { round: 0 }).toString(),
+          }));
+          const pathPadding = Math.max(...skippedUploads.map(upload => upload.relativePath.length)) + 1;
+          skippedUploads.forEach(upload => {
             console.log(
-              APP_PREFIX,
-              `Run "${pc.magenta(command)}" with valid S3 credentials to upload skipped & failed artifacts`,
+              `  ${pc.gray('|')} 🟡 ${upload.relativePath.padEnd(pathPadding)} ${pc.gray(
+                `| ${upload.sizePretty.padStart(filesizeStrMaxLength)} |`,
+              )}`,
             );
-          }
+          });
+        }
+
+        if (this.uploader.skippedUploads.length || this.uploader.failedUploads.length) {
+          const command = `TESTOMATIO=<your_api_key> TESTOMATIO_RUN=${
+            this.runId
+          } npx @testomatio/reporter upload-artifacts`;
+          const numberOfNotUploadedArtifacts = this.uploader.skippedUploads.length + this.uploader.failedUploads.length;
+          console.log(
+            APP_PREFIX,
+            `${numberOfNotUploadedArtifacts} artifacts were not uploaded.
+            Run "${pc.magenta(command)}" with valid S3 credentials to upload skipped & failed artifacts`,
+          );
         }
       })
       .catch(err => console.log(APP_PREFIX, err));
