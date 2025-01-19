@@ -1,0 +1,14 @@
+{
+  "name": "testcafe-reporter-testomatio",
+  "version": "0.1.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "koushikmohan1996@gmail.com",
+  "license": "ISC",
+  "dependencies": {
+    "@testomatio/reporter": "^0.6.10"
+  }
+}
