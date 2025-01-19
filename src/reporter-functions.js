@@ -5,8 +5,8 @@ import { services } from './services/index.js';
  * @param {string | {path: string, type: string, name: string}} data - path to file or object with path, type and name
  */
 function saveArtifact(data, context = null) {
-  if (process.env.IS_PLAYWRIGHT)
-    throw new Error('This function is not available in Playwright framework. Playwright supports artifacts out of the box');
+  if (process.env.IS_PLAYWRIGHT) throw new Error(`This function is not available in Playwright framework.
+    /Playwright supports artifacts out of the box`);
   if (!data) return;
   services.artifacts.put(data, context);
 }
