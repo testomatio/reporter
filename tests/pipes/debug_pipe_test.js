@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import fs from 'fs';
-import DebugPipe from '../../lib/pipe/debug.js';
+import {DebugPipe} from '../../lib/pipe/debug.js';
 
 const LOG_DATA = {
   action: 'testAction',
