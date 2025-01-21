@@ -2,7 +2,7 @@ import { assert, expect } from 'chai';
 import { exec } from 'child_process';
 import ServerMock from 'mock-http-server';
 import JestReporter from '../../lib/adapter/jest.js';
-import { JasmineReporter } from '../../lib/adapter/jasmine/jasmine.js';
+import { JasmineReporter } from '../../lib/adapter/jasmine.js';
 // import { CodeceptReporter } from '../../lib/adapter/codecept.js';
 import CucumberReporter from '../../lib/adapter/cucumber/current.js';
 import { registerHandlers } from './utils/index.js';
