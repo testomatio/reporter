@@ -1,5 +1,7 @@
 export class DebugPipe {
     constructor(params: any, store: any);
+    params: any;
+    store: any;
     isEnabled: boolean;
     batch: {
         isEnabled: any;
@@ -9,7 +11,6 @@ export class DebugPipe {
         batchIndex: number;
     };
     logFilePath: string;
-    store: any;
     testomatioEnvVars: {};
     batchUpload(): Promise<void>;
     /**
