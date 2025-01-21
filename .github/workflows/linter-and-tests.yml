@@ -23,9 +23,9 @@ jobs:
           node-version: latest
       - run: node -v
       - run: npm ci
-      # - run: npm run lint
-      # - run: npm run pretty:fix
-      - run: npm run test:adapter:playwright:example
+      - run: npm run lint
+      - run: npm run pretty:fix
+      # - run: npm run test:adapter:playwright:example
       - run: npm run test
       - run: npm run test:storage
 
