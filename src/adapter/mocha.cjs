@@ -1,2 +1,2 @@
-const MochaReporter = require('../../../lib/adapter/mocha/mocha.js');
+const MochaReporter = require('../../../lib/adapter/mocha.js');
 module.exports = MochaReporter;
