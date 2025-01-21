@@ -32,7 +32,7 @@ fs.readFile(filePath, 'utf8', (err, data) => {
   const updatedData = JSON.stringify(packageJson, null, 2);
 
   // Write the updated content back to the file
-  fs.writeFile(filePath, updatedData, 'utf8', (err) => {
+  fs.writeFile(filePath, updatedData, 'utf8', err => {
     if (err) {
       console.error('Error writing the file:', err);
       return;

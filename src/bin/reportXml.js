@@ -28,9 +28,9 @@ program
       console.log(APP_PREFIX, 'Loading env file:', opts.envFile);
       debug('Loading env file: %s', opts.envFile);
       dotenv.config({ path: opts.envFile });
-    }    
+    }
     lang = lang?.toLowerCase();
-    if (javaTests === true || (lang === 'java' && !javaTests)) javaTests = 'src/test/java';    
+    if (javaTests === true || (lang === 'java' && !javaTests)) javaTests = 'src/test/java';
     const runReader = new XmlReader({ javaTests, lang });
     const files = glob.sync(pattern, { cwd: opts.dir || process.cwd() });
     if (!files.length) {
@@ -46,7 +46,8 @@ program
 
     let timeoutTimer;
     if (opts.timelimit) {
-      timeoutTimer = setTimeout(() => {
+      timeoutTimer = setTimeout(
+        () => {
           console.log(
             `⚠️  Reached timeout of ${opts.timelimit}s. Exiting... (Exit code is 0 to not fail the pipeline)`,
           );

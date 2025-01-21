@@ -321,7 +321,7 @@ async function uploadAttachments(client, attachments, messagePrefix, attachmentT
 
     // we are storing file if upload is disabled
     if (!client.uploader.isEnabled) return client.uploader.storeUploadedFile(path, client.runId, rid, false);
-    
+
     return client.addTestRun(undefined, {
       ...stripExampleFromTitle(title),
       rid,

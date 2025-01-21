@@ -72,7 +72,7 @@
     "build": "rm -rf ./cjs && tsc --module commonjs && npx tsx build/scripts/edit-js-files.js && npx tsx build/scripts/edit-package-json.js && chmod +x ./build/scripts/copy-tesmplate.sh && ./build/scripts/copy-tesmplate.sh"
   },
   "devDependencies": {
-    "@playwright/test": "^1.46.1",
+    "@playwright/test": "^1.49.1",
     "@redocly/cli": "^1.0.0-beta.125",
     "@types/cross-spawn": "^6.0.6",
     "@types/cucumber": "^7.0.0",

@@ -9,17 +9,19 @@ const debug = createDebugMessages('@testomatio/reporter:pipe:debug');
 
 export class DebugPipe {
   constructor(params, store) {
+    this.params = params || {};
+    this.store = store || {};
+
     this.isEnabled = !!process.env.TESTOMATIO_DEBUG || !!process.env.DEBUG;
     if (this.isEnabled) {
       this.batch = {
-        isEnabled: params.isBatchEnabled ?? !process.env.TESTOMATIO_DISABLE_BATCH_UPLOAD ?? true,
+        isEnabled: this.params.isBatchEnabled ?? !process.env.TESTOMATIO_DISABLE_BATCH_UPLOAD ?? true,
         intervalFunction: null,
         intervalTime: 5000,
         tests: [],
         batchIndex: 0,
       };
       this.logFilePath = path.join(os.tmpdir(), `testomatio.debug.${Date.now()}.json`);
-      this.store = store || {};
 
       debug('Creating debug file:', this.logFilePath);
       fs.writeFileSync(this.logFilePath, '');

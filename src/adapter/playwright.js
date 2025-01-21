@@ -61,22 +61,31 @@ class PlaywrightReporter {
 
     /**
      * @type {{
-    * browser?: string,
-    * dependencies: string[],
-    * isMobile?: boolean
-    * metadata: Record<string, any>,
-    * name: string,
-    * }}
-    */
-   const project = {
-     browser: test.parent.project().use.defaultBrowserType,
-     dependencies: test.parent.project().dependencies,
-     isMobile: test.parent.project().use.isMobile,
-     metadata: test.parent.project().metadata,
-     name: test.parent.project().name,
-   };
+     * browser?: string,
+     * dependencies: string[],
+     * isMobile?: boolean
+     * metadata: Record<string, any>,
+     * name: string,
+     * }}
+     */
+    const project = {
+      browser: test.parent.project().use.defaultBrowserType,
+      dependencies: test.parent.project().dependencies,
+      isMobile: test.parent.project().use.isMobile,
+      metadata: test.parent.project().metadata,
+      name: test.parent.project().name,
+    };
 
-    const reportTestPromise = this.client.addTestRun(checkStatus(result.status), {
+    let status = result.status;
+    // process test.fail() annotation
+    if (test.expectedStatus === 'failed') {
+      // actual status = expected
+      if (result.status === 'failed') status = 'passed';
+      // actual status != expected
+      if (result.status === 'passed') status = 'failed';
+    }
+
+    const reportTestPromise = this.client.addTestRun(checkStatus(status), {
       rid: `${rid}-${project.name}`,
       error,
       test_id: getTestomatIdFromTestTitle(`${title} ${test.tags?.join(' ')}`),

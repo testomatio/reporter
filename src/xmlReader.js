@@ -14,9 +14,9 @@ import {
   fetchIdFromCode,
   humanize,
 } from './utils/utils.js';
-import {pipesFactory} from './pipe/index.js';
+import { pipesFactory } from './pipe/index.js';
 import adapterFactory from './junit-adapter/index.js';
-import {config} from './config.js';
+import { config } from './config.js';
 import { S3Uploader } from './uploader.js';
 
 // @ts-ignore this line will be removed in compiled code, because __dirname is defined in commonjs
@@ -26,8 +26,8 @@ const debug = createDebugMessages('@testomatio/reporter:xml');
 const ridRunId = randomUUID();
 
 const TESTOMATIO_URL = process.env.TESTOMATIO_URL || 'https://app.testomat.io';
-const { TESTOMATIO_RUNGROUP_TITLE, TESTOMATIO_TITLE, TESTOMATIO_ENV, TESTOMATIO_RUN,
-  TESTOMATIO_MARK_DETACHED } = process.env;
+const { TESTOMATIO_RUNGROUP_TITLE, TESTOMATIO_TITLE, TESTOMATIO_ENV, TESTOMATIO_RUN, TESTOMATIO_MARK_DETACHED } =
+  process.env;
 
 const options = {
   ignoreDeclaration: true,

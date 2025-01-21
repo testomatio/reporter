@@ -8,7 +8,7 @@ import TestomatClient from '../client.js';
 import XmlReader from '../xmlReader.js';
 import { APP_PREFIX, STATUS } from '../constants.js';
 import { version } from '../../package.json';
-import {config} from '../config.js';
+import { config } from '../config.js';
 import { readLatestRunId } from '../utils/utils.js';
 import pc from 'picocolors';
 import { filesize as prettyBytes } from 'filesize';
@@ -245,7 +245,7 @@ program
         );
       });
     }
-    
+
     const filesizeStrMaxLength = 7;
 
     if (client.uploader.failedUploads.length) {

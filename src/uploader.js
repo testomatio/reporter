@@ -47,7 +47,7 @@ export class S3Uploader {
   }
 
   /**
-   * 
+   *
    * @returns {Record<string, string>}
    */
   getConfig() {
@@ -111,20 +111,20 @@ export class S3Uploader {
 
     debug('Uploading to S3:', Key);
 
-    const s3Config = this.#getS3Config()
+    const s3Config = this.#getS3Config();
     const s3 = new S3(s3Config);
     const params = {
       Bucket: S3_BUCKET,
       Key,
       Body,
-    }
+    };
     // disable ACL for I AM roles
     if (!s3Config.credentials.sessionToken) {
       params.ACL = ACL;
     }
 
     try {
-      const upload = new Upload({client: s3,params});
+      const upload = new Upload({ client: s3, params });
 
       const link = await this.getS3LocationLink(upload);
       this.successfulUploads.push({ path: file.path, size: file.size, link });
@@ -249,9 +249,7 @@ export class S3Uploader {
       const skippedArtifact = { path: filePath, size: fileSize };
       this.storeUploadedFile(filePath, runId, rid, false);
       this.skippedUploads.push(skippedArtifact);
-      debug(
-        pc.yellow(`Artifacts file ${JSON.stringify(skippedArtifact)} exceeds the maximum allowed size. Skipping.`),
-      );
+      debug(pc.yellow(`Artifacts file ${JSON.stringify(skippedArtifact)} exceeds the maximum allowed size. Skipping.`));
       return;
     }
     debug('File:', filePath, 'exists, size:', prettyBytes(fileSize));

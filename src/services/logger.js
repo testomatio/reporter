@@ -45,8 +45,10 @@ class Logger {
   logLevel = process?.env?.LOG_LEVEL?.toUpperCase() || 'ALL';
 
   constructor() {
-    if (!dataStorage.isFileStorage ||
-      (process.env.TESTOMATIO_INTERCEPT_CONSOLE_LOGS&& process.env.TESTOMATIO_INTERCEPT_CONSOLE_LOGS !== 'false'))
+    if (
+      !dataStorage.isFileStorage ||
+      (process.env.TESTOMATIO_INTERCEPT_CONSOLE_LOGS && process.env.TESTOMATIO_INTERCEPT_CONSOLE_LOGS !== 'false')
+    )
       this.intercept(console);
   }
 

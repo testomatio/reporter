@@ -11,10 +11,9 @@ import JsonCycle from 'json-cycle';
 import { APP_PREFIX, STATUS, AXIOS_TIMEOUT, REPORTER_REQUEST_RETRIES } from '../constants.js';
 import { isValidUrl, foundedTestLog } from '../utils/utils.js';
 import { parseFilterParams, generateFilterRequestParams, setS3Credentials } from '../utils/pipe_utils.js';
-import {config} from '../config.js';
+import { config } from '../config.js';
 
 const debug = createDebugMessages('@testomatio/reporter:pipe:testomatio');
-
 
 if (process.env.TESTOMATIO_RUN) {
   // process.env.runId = process.env.TESTOMATIO_RUN;
@@ -64,11 +63,13 @@ class TestomatioPipe {
     this.axios = axios.create({
       baseURL: `${this.url.trim()}`,
       timeout: AXIOS_TIMEOUT,
-      proxy: proxy ? {
-        host: proxy.hostname,
-        port: parseInt(proxy.port, 10),
-        protocol: proxy.protocol,
-      } : false,
+      proxy: proxy
+        ? {
+            host: proxy.hostname,
+            port: parseInt(proxy.port, 10),
+            protocol: proxy.protocol,
+          }
+        : false,
     });
 
     // Pass the axios instance to the retry function
@@ -232,7 +233,7 @@ class TestomatioPipe {
 
       console.error(
         APP_PREFIX,
-        'Error creating Testomat.io report (see details above), please check if your API key is valid. Skipping report'
+        'Error creating Testomat.io report (see details above), please check if your API key is valid. Skipping report',
       );
       printCreateIssue(err);
     }
@@ -249,8 +250,8 @@ class TestomatioPipe {
     const cancelReporting = this.requestFailures >= parseInt(process.env.TESTOMATIO_MAX_REQUEST_FAILURES, 10);
     if (cancelReporting) {
       this.reportingCanceledDueToReqFailures = true;
-      const errorMessage =
-        `⚠️ ${process.env.TESTOMATIO_MAX_REQUEST_FAILURES} requests were failed, reporting to Testomat aborted.`;
+      let errorMessage = `⚠️ ${process.env.TESTOMATIO_MAX_REQUEST_FAILURES}`;
+      errorMessage += ' requests were failed, reporting to Testomat aborted.';
       console.warn(`${APP_PREFIX} ${pc.yellow(errorMessage)}`);
     }
     return cancelReporting;
@@ -272,36 +273,33 @@ class TestomatioPipe {
 
     debug('Adding test', json);
 
-    return this.axios
-      .post(`/api/reporter/${this.runId}/testrun`, json, axiosAddTestrunRequestConfig)
-      .catch(err => {
-        this.requestFailures++;
-        this.notReportedTestsCount++;
-        if (err.response) {
-          if (err.response.status >= 400) {
-            const responseData = err.response.data || { message: '' };
-            console.log(
-              APP_PREFIX,
-              pc.yellow(`Warning: ${responseData.message} (${err.response.status})`),
-              pc.gray(data?.title || ''),
-            );
-            if (err.response?.data?.message?.includes('could not be matched')) {
-              this.hasUnmatchedTests = true;
-            }
-            return;
-          }
+    return this.axios.post(`/api/reporter/${this.runId}/testrun`, json, axiosAddTestrunRequestConfig).catch(err => {
+      this.requestFailures++;
+      this.notReportedTestsCount++;
+      if (err.response) {
+        if (err.response.status >= 400) {
+          const responseData = err.response.data || { message: '' };
           console.log(
             APP_PREFIX,
-            pc.yellow(`Warning: ${data?.title || ''} (${err.response?.status})`),
-            `Report couldn't be processed: ${err?.response?.data?.message}`,
+            pc.yellow(`Warning: ${responseData.message} (${err.response.status})`),
+            pc.gray(data?.title || ''),
           );
-          printCreateIssue(err);
-        } else {
-          console.log(APP_PREFIX, pc.blue(data?.title || ''), "Report couldn't be processed", err);
+          if (err.response?.data?.message?.includes('could not be matched')) {
+            this.hasUnmatchedTests = true;
+          }
+          return;
         }
-      });
-    };
-    
+        console.log(
+          APP_PREFIX,
+          pc.yellow(`Warning: ${data?.title || ''} (${err.response?.status})`),
+          `Report couldn't be processed: ${err?.response?.data?.message}`,
+        );
+        printCreateIssue(err);
+      } else {
+        console.log(APP_PREFIX, pc.blue(data?.title || ''), "Report couldn't be processed", err);
+      }
+    });
+  };
 
   /**
    * Uploads tests as a batch (multiple tests at once). Intended to be used with a setInterval
@@ -321,7 +319,7 @@ class TestomatioPipe {
       this.batch.numberOfTimesCalledWithoutTests++;
       return;
     }
-    
+
     this.batch.batchIndex++;
     // get tests from batch and clear batch
     const testsToSend = this.batch.tests.splice(0);
@@ -386,7 +384,7 @@ class TestomatioPipe {
    */
   async finishRun(params) {
     if (!this.isEnabled) return;
-    
+
     await this.#batchUpload();
     if (this.batch.intervalFunction) {
       clearInterval(this.batch.intervalFunction);
@@ -456,11 +454,7 @@ class TestomatioPipe {
         console.log(APP_PREFIX, pc.bold('npx check-tests ... --update-ids'), 'See: https://bit.ly/js-update-ids');
         console.log(APP_PREFIX, 'or for Cucumber:');
         // eslint-disable-next-line max-len
-        console.log(
-          APP_PREFIX,
-          pc.bold('npx check-cucumber ... --update-ids'),
-          'See: https://bit.ly/bdd-update-ids',
-        );
+        console.log(APP_PREFIX, pc.bold('npx check-cucumber ... --update-ids'), 'See: https://bit.ly/bdd-update-ids');
       }
     } catch (err) {
       console.log(APP_PREFIX, 'Error updating status, skipping...', err);

@@ -7,7 +7,7 @@ import XmlReader from '../lib/xmlReader.js';
 import { fileURLToPath } from 'url';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
-const {host, port, TESTOMATIO_URL, TESTOMATIO, RUN_ID} = config;
+const { host, port, TESTOMATIO_URL, TESTOMATIO, RUN_ID } = config;
 
 describe('XML Reader', () => {
   const server = new ServerMock({ host, port });

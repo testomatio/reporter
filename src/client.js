@@ -7,7 +7,7 @@ import { randomUUID } from 'crypto';
 import { APP_PREFIX, STATUS } from './constants.js';
 import { pipesFactory } from './pipe/index.js';
 import { glob } from 'glob';
-import path, { sep} from 'path';
+import path, { sep } from 'path';
 import { fileURLToPath } from 'node:url';
 import { S3Uploader } from './uploader.js';
 import { formatStep, storeRunId } from './utils/utils.js';
@@ -17,7 +17,7 @@ const debug = createDebugMessages('@testomatio/reporter:client');
 
 // removed __dirname usage, because:
 // 1. replaced with ESM syntax (import.meta.url), but it throws an error on tsc compilation;
-// 2. got error "__dirname already defined" in compiles js code (cjs dir) 
+// 2. got error "__dirname already defined" in compiles js code (cjs dir)
 
 let listOfTestFilesToExcludeFromReport = null;
 
@@ -31,7 +31,7 @@ class Client {
    * Create a Testomat client instance
    * @returns
    */
-  // eslint-disable-next-line 
+  // eslint-disable-next-line
   constructor(params = {}) {
     this.paramsForPipesFactory = params;
     this.pipeStore = {};
@@ -352,9 +352,7 @@ class Client {
           console.log(
             '\n',
             APP_PREFIX,
-            `🗄️ ${pc.bold(this.uploader.skippedUploads.length)} artifacts uploading 🟡${pc.bold(
-              'skipped',
-            )}`,
+            `🗄️ ${pc.bold(this.uploader.skippedUploads.length)} artifacts uploading 🟡${pc.bold('skipped')}`,
           );
           const skippedUploads = this.uploader.skippedUploads.map(file => ({
             relativePath: file.path.replace(process.cwd(), ''),

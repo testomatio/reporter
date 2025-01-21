@@ -57,13 +57,9 @@ export async function pipesFactory(params, opts) {
   console.log(
     APP_PREFIX,
     pc.cyan('Pipes:'),
-    pc.cyan(
-      pipesEnabled
-        .map(p => p.toString())
-        .join(', ') || 'No pipes enabled',
-    ),
+    pc.cyan(pipesEnabled.map(p => p.toString()).join(', ') || 'No pipes enabled'),
   );
-  
+
   if (!pipesEnabled.length) {
     console.log(
       APP_PREFIX,

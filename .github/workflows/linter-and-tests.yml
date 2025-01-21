@@ -8,9 +8,9 @@ concurrency:
 
 on:
   push:
-    branches: [master]
+    branches: [master, 2.x]
   pull_request:
-    branches: [master]
+    branches: [master, 2.x]
 
 jobs:
   linter-and-tests-on-latest-node:
@@ -20,11 +20,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: latest
+          node-version: 22.x
       - run: node -v
       - run: npm ci
       - run: npm run lint
       - run: npm run pretty:fix
+      # - run: npm run test:adapter:playwright:example
       - run: npm run test
       - run: npm run test:storage
 
