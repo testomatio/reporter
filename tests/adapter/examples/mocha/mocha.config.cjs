@@ -1,4 +1,4 @@
 module.exports = {
-  reporter: './lib/adapter/mocha/mocha.js',
+  reporter: './lib/adapter/mocha.js',
   reporterOptions: process.env.TESTOMATIO ? `apiKey=${process.env.TESTOMATIO}` : '',
 };
