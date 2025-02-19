@@ -59,6 +59,12 @@ paths:
           required: true
           schema:
             type: string
+        - name: shared_run
+          in: query
+          description: Should be 'true' if multiple test executions are running in parallel and need to be reported to the same run
+          required: true
+          schema:
+            type: boolean
       requestBody:
         required: true
         content:
@@ -220,6 +226,10 @@ components:
         code:
           type: string
           description: The code executed during the test
+        meta:
+          type: object
+          description: Additional metadata associated with the test
+          example: {"key": "value"}
 
     Step:
       type: object
