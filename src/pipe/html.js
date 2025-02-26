@@ -66,6 +66,8 @@ class HtmlPipe {
     // empty
   }
 
+  async prepareRun() {}
+
   updateRun() {
     // empty
   }

@@ -79,7 +79,7 @@ class Client {
     try {
       const filterPipe = this.pipes.find(p => p.constructor.name.toLowerCase() === `${pipe.toLowerCase()}pipe`);
 
-      if (!filterPipe.isEnabled) {
+      if (!filterPipe?.isEnabled) {
         // TODO:for the future for the another pipes
         console.warn(
           APP_PREFIX,
