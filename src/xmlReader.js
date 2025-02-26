@@ -226,7 +226,7 @@ class XmlReader {
 
     return {
       status,
-      create_tests: !process.env.IGNORE_NEW_TESTS,
+      create_tests: !process.env.TESTOMATIO_IGNORE_NEW_TESTS,
       tests_count: parseInt(counters.total, 10),
       passed_count: parseInt(counters.passed, 10),
       skipped_count: parseInt(counters.notExecuted, 10),
