@@ -18,21 +18,21 @@ if (!global.codeceptjs) {
 const { event, recorder, codecept } = global.codeceptjs;
 
 let currentMetaStep = [];
-let error;
 let stepShift = 0;
-
-// const output = new Output({
-//   filterFn: stack => !stack.includes('codeceptjs/lib/output'), // output from codeceptjs
-// });
+let isRunningHook = false;
 
 let stepStart = new Date();
 
-const MAJOR_VERSION = parseInt(codecept.version().match(/\d/)[0], 10);
+const [, MAJOR_VERSION, MINOR_VERSION] = codecept.version().match(/(\d+)\.(\d+)/).map(Number);
 
 const DATA_REGEXP = /[|\s]+?(\{".*\}|\[.*\])/;
 
 if (MAJOR_VERSION < 3) {
   console.log('🔴 This reporter works with CodeceptJS 3+, please update your tests');
+}
+
+if (MAJOR_VERSION === 3 && MINOR_VERSION < 7) {
+  console.log('🔴 CodeceptJS 3.7+ is supported, please upgrade CodeceptJS or use 1.6 version of `@testomatio/reporter`');
 }
 
 function CodeceptReporter(config) {
@@ -70,41 +70,25 @@ function CodeceptReporter(config) {
     if (!global.testomatioDataStore) global.testomatioDataStore = {};
   });
 
-  let hookSteps = [];
-  let suiteHookRunning = false;
-
   event.dispatcher.on(event.suite.before, suite => {
-    suiteHookRunning = true;
-    hookSteps = [];
     global.testomatioDataStore.steps = [];
 
     services.setContext(suite.fullTitle());
+  });
+
+  event.dispatcher.on(event.hook.before, () => {
+    isRunningHook = true;
+  });
+
+  event.dispatcher.on(event.hook.after, () => {
+    isRunningHook = false;
   });
 
   event.dispatcher.on(event.suite.after, () => {
     services.setContext(null);
   });
 
-  event.dispatcher.on(event.hook.started, () => {
-    // global.testomatioDataStore.steps = [];
-  });
-
-  event.dispatcher.on(event.hook.passed, () => {
-    if (suiteHookRunning) {
-      hookSteps.push(...global.testomatioDataStore.steps);
-      services.setContext(null);
-    }
-  });
-
-  event.dispatcher.on(event.hook.failed, () => {
-    if (suiteHookRunning) {
-      hookSteps.push(...global.testomatioDataStore.steps);
-      services.setContext(null);
-    }
-  });
-
   event.dispatcher.on(event.test.before, test => {
-    suiteHookRunning = false;
     global.testomatioDataStore.steps = [];
 
     recorder.add(() => {
@@ -123,13 +107,10 @@ function CodeceptReporter(config) {
 
   event.dispatcher.on(event.test.started, test => {
     services.setContext(test.fullTitle());
-
-    testTimeMap[test.id] = Date.now();
-    if (!test.uid) return;
     testTimeMap[test.uid] = Date.now();
   });
 
-  event.dispatcher.on(event.all.result, async () => {
+  event.dispatcher.on(event.all.result, async (result) => {
     debug('waiting for all tests to be reported');
     // all tests were reported and we can upload videos
     await Promise.all(reportTestPromises);
@@ -137,7 +118,7 @@ function CodeceptReporter(config) {
     await uploadAttachments(client, videos, '🎞️ Uploading', 'video');
     await uploadAttachments(client, traces, '📁 Uploading', 'trace');
 
-    const status = failedTests.length === 0 ? STATUS.PASSED : STATUS.FAILED;
+    const status = result.hasFailed ? STATUS.FAILED : STATUS.PASSED;
     // @ts-ignore
     client.updateRunStatus(status);
   });
@@ -159,43 +140,18 @@ function CodeceptReporter(config) {
       rid: uid,
       suite_title: test.parent && test.parent.title,
       message: testObj.message,
-      time: getDuration(test),
-      steps: global.testomatioDataStore.steps.join('\n') || null,
+      time: test.duration,
+      steps: test.steps,
       test_id: getTestomatIdFromTestTitle(`${title} ${tags?.join(' ')}`),
       logs,
       manuallyAttachedArtifacts,
-      meta: keyValues,
+      meta: { ...keyValues, ...test.meta },
     });
     // output.stop();
   });
 
-  event.dispatcher.on(event.test.failed, (test, err) => {
-    error = err;
-  });
-
-  event.dispatcher.on(event.hook.failed, (suite, err) => {
-    error = err;
-
-    if (!suite) return;
-    if (!suite.tests) return;
-    for (const test of suite.tests) {
-      const { uid, tags, title } = test;
-      failedTests.push(uid || title);
-      const testId = getTestomatIdFromTestTitle(`${title} ${tags?.join(' ')}`);
-
-      client.addTestRun(STATUS.FAILED, {
-        rid: uid,
-        ...stripExampleFromTitle(title),
-        suite_title: suite.title,
-        test_id: testId,
-        error,
-        time: 0,
-      });
-    }
-    // output.stop();
-  });
-
   event.dispatcher.on(event.test.after, test => {
+    let error = null;
     if (test.state && test.state !== STATUS.FAILED) return;
     if (test.err) error = test.err;
     const { uid, tags, title, artifacts } = test;
@@ -220,10 +176,10 @@ function CodeceptReporter(config) {
       message: testObj.message,
       time: getDuration(test),
       files,
-      steps: global.testomatioDataStore?.steps?.join('\n') || null,
+      steps: test.steps,
       logs,
       manuallyAttachedArtifacts,
-      meta: keyValues,
+      meta: { ...keyValues, ...test.meta },
     });
 
     debug('artifacts', artifacts);
@@ -247,7 +203,7 @@ function CodeceptReporter(config) {
       test_id: getTestomatIdFromTestTitle(`${title} ${tags?.join(' ')}`),
       suite_title: test.parent && test.parent.title,
       message: testObj.message,
-      time: getDuration(test),
+      time: test.duration,
     });
     // output.stop();
   });
@@ -274,12 +230,10 @@ function CodeceptReporter(config) {
         // eslint-disable-next-line no-continue
         if (!metaSteps[i]) continue;
         if (metaSteps[i].isBDD()) {
-          // output.push(repeat(stepShift) + pc.bold(metaSteps[i].toString()) + metaSteps[i].comment);
           global.testomatioDataStore?.steps?.push(
             repeat(stepShift) + pc.bold(metaSteps[i].toString()) + metaSteps[i].comment,
           );
         } else {
-          // output.push(repeat(stepShift) + pc.green.bold(metaSteps[i].toString()));
           global.testomatioDataStore?.steps?.push(repeat(stepShift) + pc.green(pc.bold(metaSteps[i].toString())));
         }
       }
@@ -369,6 +323,49 @@ function getTestLogs(test) {
     logs += `\n${pc.bold('\t--- Test ---')}\n${testLogs}`;
   }
   return logs;
+}
+
+function appendStep(step, shift = 0) {
+  // nesting too deep, ignore those steps
+  if (shift >= 10) return;
+
+  let newCategory = step.category;
+  switch (newCategory) {
+    case 'test.step':
+      newCategory = 'user';
+      break;
+    case 'hook':
+      newCategory = 'hook';
+      break;
+    case 'attach':
+      return null; // Skip steps with category 'attach'
+    default:
+      newCategory = 'framework';
+  }
+
+  const formattedSteps = [];
+  for (const child of step.steps || []) {
+    const appendedChild = appendStep(child, shift + 2);
+    if (appendedChild) {
+      formattedSteps.push(appendedChild);
+    }
+  }
+
+  const resultStep = {
+    category: newCategory,
+    title: step.title,
+    duration: step.duration,
+  };
+
+  if (formattedSteps.length) {
+    resultStep.steps = formattedSteps.filter(s => !!s);
+  }
+
+  if (step.error !== undefined) {
+    resultStep.error = step.error;
+  }
+
+  return resultStep;
 }
 
 export { CodeceptReporter };
