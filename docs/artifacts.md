@@ -1,19 +1,3 @@
----
-title: Test Artifacts
-description: Understand how to manage and upload test artifacts in Testomat.io using external S3-compatible storage. This guide covers configuring public and private access to test artifacts, setting up an S3 bucket, and automating the upload of screenshots, videos, and other test-related files. Learn how to securely store and manage artifacts to improve test analysis and reporting.
-type: article
-url: https://docs.testomat.io/project/runs/reporter/artifacts
-head:
-  - tag: meta
-    attrs:
-      name: og:image
-      content: https://docs.testomat.io/_astro/shared_artifacts.B-l29chE_ZH695H.webp
-      
-  - tag: meta
-    attrs:
-      name: keywords
-      content: Testomat.io, test artifacts, S3 storage, public access, private access, test management, test reports, automation, artifact upload, S3 configuration, QA tools
----
 # 🛡 Test Artifacts
 
 To inspect a failing test additional files (usually screenshots, videos or traces) can be attached to a test. These files are called test artifacts.
@@ -353,4 +337,3 @@ This can be caused by various reasons. As an alternative approach, you can try t
 
 At this moment we don't provide any tools for the cleanup of files.
 It is recommended to write a custom cleanup tool on a S3 bucket.
-
