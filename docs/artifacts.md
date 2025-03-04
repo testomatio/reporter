@@ -104,6 +104,49 @@ S3_BUCKET=testomatio
 S3_REGION=us-east1
 ```
 
+#### Cloudflare R2 and integration with Testomatio
+
+##### 1. Creating a Bucket in Cloudflare R2
+
+- **Cloudflare Dashboard:** [https://dash.cloudflare.com/](https://dash.cloudflare.com/)
+- **Steps:**
+
+  - Navigate to the **R2** section and select the option to create a new bucket.
+  - Choose a unique name and a region for the bucket.
+
+    ![Create a new bucket](./images/cloudr2-01.png)
+
+    ![Set bucket name](./images/cloudr2-02.png)
+
+## 2. Creating API Keys for the Bucket
+
+- **Purpose:** To ensure secure access to the bucket.
+- **Steps:**
+
+  - Go to the access management or API section.
+  - Generate a new API key with read/write permissions.
+  - Save and verify the generated key.
+
+    ![Generate API keys for bucket](./images/cloudr2-03.png)
+
+    ![Select Api variant](./images/cloudr2-04.png)
+
+    ![Create Api key](./images/cloudr2-05.png)
+
+    ![Set permissions for Api key](./images/cloudr2-06.png)
+
+    ![Copy Api key](./images/cloudr2-07.png)
+
+## 3. Connecting the Bucket to Testomatio
+
+- **Overview:** Integration with R2 streamlines testing and data management.
+- **Configuration:**
+
+  - In the Testomatio panel, enter the API keys and bucket address.
+  - Configure the paths and access parameters as required.
+
+    ![Set bucket credentials](./images/cloudr2-08.png)
+
 ### Adding Artifacts
 
 #### JavaScript Frameworks
