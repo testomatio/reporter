@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="tests.LoginTest" tests="1" skipped="0" failures="1" errors="0" timestamp="2023-09-05T12:34:10" time="39.722">
+  <properties/>
+  <testcase name="canLogin()" classname="tests.LoginTest" time="39.722">
+    <failure message="Element not found {[id=email]}&#10;Expected: editable&#10;Screenshot: file:/user/1693917289872.0.png&#10;Page source: file:/user/1693917289872.0.html&#10;Timeout: 30 s.&#10;Caused by: NoSuchElementException: no such element: Unable to locate element: {&quot;method&quot;:&quot;css selector&quot;,&quot;selector&quot;:&quot;[id=email]&quot;}" type="com.codeborne.selenide.ex.ElementNotFound">Element not found {[id=email]}
+Caused by: NoSuchElementException: no such element: Unable to locate element: {&quot;method&quot;:&quot;css selector&quot;,&quot;selector&quot;:&quot;[id=email]&quot;}
+</failure>
+  </testcase>
+  <system-out><![CDATA[2023-09-05 14:34:10,605 +0200 INFO  (tests.BaseTest setUpBase:26) - BeforeAll setUpBase
+SUITE-BEFORE
+SUITE-AFTER
+]]></system-out>
+  <system-err><![CDATA[сент. 05, 2023 2:34:19 PM org.openqa.selenium.devtools.CdpVersionFinder findNearestMatch
+SUITE ERR 
+]]></system-err>
+</testsuite>
