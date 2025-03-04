@@ -13,6 +13,7 @@ To have test artifacts uploaded you need to create S3 Object Storage bucket on A
 <Aside type="caution" title="Important">
 
 You need to obtain the following credentials: `ACCESS_KEY_ID`, `SECRET_ACCESS_KEY`, `BUCKET`, `REGION`, `ENDPOINT` (not required for AWS) to access S3 bucket. Then to to [Configuration](#configuration) section to enable S3 access.
+
 </Aside>
 
 ## Overview
@@ -62,11 +63,11 @@ There are two options for setting S3 bucket credentials:
 
 Recommended way is to set S3 bucket credentials as environment variables:
 
-* `S3_ACCESS_KEY_ID` - Access key.
-* `S3_SECRET_ACCESS_KEY` - Secret.
-* `S3_REGION` - Region your bucket lies.
-* `S3_BUCKET` - Bucket name.
-* `S3_ENDPOINT` - for providers other than AWS
+- `S3_ACCESS_KEY_ID` - Access key.
+- `S3_SECRET_ACCESS_KEY` - Secret.
+- `S3_REGION` - Region your bucket lies.
+- `S3_BUCKET` - Bucket name.
+- `S3_ENDPOINT` - for providers other than AWS
 
 If you use Testomat.io Application, you can set those variables inside **Settings > Artifacts** page: enable "Share credentials" toggle to pass credentials into reporter and fill in S3 credentials into the displayed form.
 
@@ -91,6 +92,7 @@ S3_BUCKET=
 S3_ENDPOINT=
 
 ```
+
 > `S3_ENDPOINT` is required only if you use S3 provider other than AWS
 
 To disable publishing of artifacts use `TESTOMATIO_DISABLE_ARTIFACTS=1` environment variable.
@@ -115,36 +117,27 @@ To allow Testomat.io access stored files it is recommended to apply this policy 
 
 ```json
 {
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Sid": "VisualEditor0",
-            "Effect": "Allow",
-            "Action": [
-                "s3:PutObject",
-                "s3:GetObjectAcl",
-                "s3:GetObject",
-                "s3:GetObjectVersionAcl"
-            ],
-            "Resource": "arn:aws:s3:::<bucket_name>/*"
-        },
-        {
-            "Sid": "VisualEditor1",
-            "Effect": "Allow",
-            "Action": [
-                "s3:ListBucket",
-                "s3:PutBucketCORS",
-                "s3:GetBucketAcl"
-            ],
-            "Resource": "arn:aws:s3:::<bucket_name>"
-        },
-        {
-            "Sid": "VisualEditor2",
-            "Effect": "Allow",
-            "Action": "s3:ListAllMyBuckets",
-            "Resource": "*"
-        }
-    ]
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "VisualEditor0",
+      "Effect": "Allow",
+      "Action": ["s3:PutObject", "s3:GetObjectAcl", "s3:GetObject", "s3:GetObjectVersionAcl"],
+      "Resource": "arn:aws:s3:::<bucket_name>/*"
+    },
+    {
+      "Sid": "VisualEditor1",
+      "Effect": "Allow",
+      "Action": ["s3:ListBucket", "s3:PutBucketCORS", "s3:GetBucketAcl"],
+      "Resource": "arn:aws:s3:::<bucket_name>"
+    },
+    {
+      "Sid": "VisualEditor2",
+      "Effect": "Allow",
+      "Action": "s3:ListAllMyBuckets",
+      "Resource": "*"
+    }
+  ]
 }
 ```
 
@@ -215,7 +208,51 @@ S3_SECRET_ACCESS_KEY=2222222
 S3_BUCKET=testomatio
 S3_REGION=us-east1
 ```
+
 Please note, that you need to enable [Use Private URLs for Test Artifacts](https://docs.testomat.io/project/runs/reporter/artifacts/#privacy) in Testomat.io Project Settings if you configure bucket credentials on Testomat.io side.
+
+#### Cloudflare R2 and integration with Testomatio
+
+##### 1. Creating a Bucket in Cloudflare R2
+
+- **Cloudflare Dashboard:** [https://dash.cloudflare.com/](https://dash.cloudflare.com/)
+- **Steps:**
+
+  - Navigate to the **R2** section and select the option to create a new bucket.
+  - Choose a unique name and a region for the bucket.
+
+    ![Create a new bucket](./images/cloudr2-01.png)
+
+    ![Set bucket name](./images/cloudr2-02.png)
+
+## 2. Creating API Keys for the Bucket
+
+- **Purpose:** To ensure secure access to the bucket.
+- **Steps:**
+
+  - Go to the access management or API section.
+  - Generate a new API key with read/write permissions.
+  - Save and verify the generated key.
+
+    ![Generate API keys for bucket](./images/cloudr2-03.png)
+
+    ![Select Api variant](./images/cloudr2-04.png)
+
+    ![Create Api key](./images/cloudr2-05.png)
+
+    ![Set permissions for Api key](./images/cloudr2-06.png)
+
+    ![Copy Api key](./images/cloudr2-07.png)
+
+## 3. Connecting the Bucket to Testomatio
+
+- **Overview:** Integration with R2 streamlines testing and data management.
+- **Configuration:**
+
+  - In the Testomatio panel, enter the API keys and bucket address.
+  - Configure the paths and access parameters as required.
+
+    ![Set bucket credentials](./images/cloudr2-08.png)
 
 ## Adding Artifacts
 
@@ -227,17 +264,17 @@ We recommend using [dotenv](https://www.npmjs.com/package/dotenv) library in dev
 
 ```js
 // config file
-require('dotenv').config()
+require('dotenv').config();
 
 // ...
 ```
 
 Testomat.io Reporter has built-in support and automatically uploads saved artifacts for the following test frameworks:
 
-* Playwright
-* CodeceptJS
-* Сypress
-* WebdriverIO
+- Playwright
+- CodeceptJS
+- Сypress
+- WebdriverIO
 
 If a screenshot, a video, or a trace was saved and attached to test, Testomat.io Reporter will automatically upload any of these as artifacts.
 
