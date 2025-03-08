@@ -221,7 +221,13 @@ class Client {
     }
 
     // Attach logs
-    const fullLogs = this.formatLogs({ error: errorFormatted, steps, logs: testData.logs });
+    let fullLogs = this.formatLogs({ error: errorFormatted, steps, logs: testData.logs });
+    
+    // Nightwatch
+    // add colored error message
+    // add stack because its not parsed by default formatLogs function
+    if (this.paramsForPipesFactory.testFramework === 'nightwatch' && testData.stack)
+      fullLogs = `\n${testData.error?.message}\n ${testData.stack}`;
 
     // add artifacts
     if (manuallyAttachedArtifacts?.length) files.push(...manuallyAttachedArtifacts);
