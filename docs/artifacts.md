@@ -242,6 +242,43 @@ Please note, that you need to enable [Use Private URLs for Test Artifacts](https
 
     ![Set permissions for Api key](./images/cloudr2-06.png)
 
+    > [!WARNING]  
+    > If you set permission for bucket "Object..." need setup CORS policy manually, for "Admins" it is not required
+
+    #### policy settings
+
+    ![policy_settings_1](./images/policy_settings_1.png)
+
+    ![policy_settings_2](./images/policy_settings_2.png)
+
+    Example for Playwright trace policy settings
+
+    ```json
+    [
+      {
+        "AllowedOrigins": ["https://app.testomat.io"],
+        "AllowedMethods": ["GET"],
+        "AllowedHeaders": ["*"],
+        "ExposeHeaders": ["Access-Control-Allow-Origin"],
+        "MaxAgeSeconds": 3000
+      },
+      {
+        "AllowedOrigins": ["https://beta.testomat.io"],
+        "AllowedMethods": ["GET"],
+        "AllowedHeaders": ["*"],
+        "ExposeHeaders": ["Access-Control-Allow-Origin"],
+        "MaxAgeSeconds": 3000
+      },
+      {
+        "AllowedOrigins": ["https://trace.playwright.dev"],
+        "AllowedMethods": ["GET"],
+        "AllowedHeaders": ["*"],
+        "ExposeHeaders": ["Access-Control-Allow-Origin"],
+        "MaxAgeSeconds": 3000
+      }
+    ]
+    ```
+
     ![Copy Api key](./images/cloudr2-07.png)
 
 ## 3. Connecting the Bucket to Testomatio
