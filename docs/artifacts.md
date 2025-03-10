@@ -211,6 +211,88 @@ S3_REGION=us-east1
 
 Please note, that you need to enable [Use Private URLs for Test Artifacts](https://docs.testomat.io/project/runs/reporter/artifacts/#privacy) in Testomat.io Project Settings if you configure bucket credentials on Testomat.io side.
 
+### Cloudflare R2
+
+#### Creating a Bucket in Cloudflare R2
+
+- **Cloudflare Dashboard:** [https://dash.cloudflare.com/](https://dash.cloudflare.com/)
+- **Steps:**
+  - Navigate to the **R2** section and select the option to create a new bucket.
+  - Choose a unique name and a region for the bucket.
+
+![Testomatio - Create a new bucket](./images/cloudr2-01.png)
+
+![Testomatio - Set bucket name](./images/cloudr2-02.png)
+
+#### Creating API Keys for the Bucket
+
+- **Purpose:** To ensure secure access to the bucket.
+- **Steps:**
+  - Go to the access management or API section.
+  - Generate a new API key with read/write permissions.
+  - Save and verify the generated key.
+
+![Testomatio - Generate API keys for bucket](./images/cloudr2-03.png)
+
+![Testomatio - Select Api variant](./images/cloudr2-04.png)
+
+![Testomatio - Create Api key](./images/cloudr2-05.png)
+
+![Testomatio - Set permissions for Api key](./images/cloudr2-06.png)
+
+![Testomatio - Copy Api key](./images/cloudr2-07.png)
+
+#### Connecting the Bucket to Testomat.io
+
+- **Overview:** Integration with R2 streamlines testing and data management.
+- **Configuration:**
+  - Go to **Settings->Artifacts** inside the project on Testomat.io.
+  - Enter the API keys and bucket address.
+  - Configure the paths and access parameters as required.
+
+![Testomatio - Set bucket credentials](./images/Set_bucket_credentials.png)
+
+### Cloudflare R2
+
+#### Creating a Bucket in Cloudflare R2
+
+- **Cloudflare Dashboard:** [https://dash.cloudflare.com/](https://dash.cloudflare.com/)
+- **Steps:**
+  - Navigate to the **R2** section and select the option to create a new bucket.
+  - Choose a unique name and a region for the bucket.
+
+![Testomatio - Create a new bucket](./images/cloudr2-01.png)
+
+![Testomatio - Set bucket name](./images/cloudr2-02.png)
+
+#### Creating API Keys for the Bucket
+
+- **Purpose:** To ensure secure access to the bucket.
+- **Steps:**
+  - Go to the access management or API section.
+  - Generate a new API key with read/write permissions.
+  - Save and verify the generated key.
+
+![Testomatio - Generate API keys for bucket](./images/cloudr2-03.png)
+
+![Testomatio - Select Api variant](./images/cloudr2-04.png)
+
+![Testomatio - Create Api key](./images/cloudr2-05.png)
+
+![Testomatio - Set permissions for Api key](./images/cloudr2-06.png)
+
+![Testomatio - Copy Api key](./images/cloudr2-07.png)
+
+#### Connecting the Bucket to Testomat.io
+
+- **Overview:** Integration with R2 streamlines testing and data management.
+- **Configuration:**
+  - Go to **Settings->Artifacts** inside the project on Testomat.io.
+  - Enter the API keys and bucket address.
+  - Configure the paths and access parameters as required.
+
+![Testomatio - Set bucket credentials](./images/Set_bucket_credentials.png)
+
 #### Cloudflare R2 and integration with Testomatio
 
 ##### 1. Creating a Bucket in Cloudflare R2
@@ -308,6 +390,10 @@ require('dotenv').config();
 
 Testomat.io Reporter has built-in support and automatically uploads saved artifacts for the following test frameworks:
 
+- Playwright
+- CodeceptJS
+- Сypress
+- WebdriverIO
 - Playwright
 - CodeceptJS
 - Сypress
