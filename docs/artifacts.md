@@ -303,9 +303,9 @@ Please note, that you need to enable [Use Private URLs for Test Artifacts](https
   - Navigate to the **R2** section and select the option to create a new bucket.
   - Choose a unique name and a region for the bucket.
 
-    ![Create a new bucket](./images/cloudr2-01.png)
+    ![Testomatio - Create a new bucket](./images/cloudr2-01.png)
 
-    ![Set bucket name](./images/cloudr2-02.png)
+    ![Testomatio - Set bucket name](./images/cloudr2-02.png)
 
 ## 2. Creating API Keys for the Bucket
 
@@ -316,22 +316,22 @@ Please note, that you need to enable [Use Private URLs for Test Artifacts](https
   - Generate a new API key with read/write permissions.
   - Save and verify the generated key.
 
-    ![Generate API keys for bucket](./images/cloudr2-03.png)
+    ![Testomatio - Generate API keys for bucket](./images/cloudr2-03.png)
 
-    ![Select Api variant](./images/cloudr2-04.png)
+    ![Testomatio - Select Api variant](./images/cloudr2-04.png)
 
-    ![Create Api key](./images/cloudr2-05.png)
+    ![Testomatio - Create Api key](./images/cloudr2-05.png)
 
-    ![Set permissions for Api key](./images/cloudr2-06.png)
+    ![Testomatio - Set permissions for Api key](./images/cloudr2-06.png)
 
     > [!WARNING]  
     > If you set permission for bucket "Object..." need setup CORS policy manually, for "Admins" it is not required
 
     #### policy settings
 
-    ![policy_settings_1](./images/policy_settings_1.png)
+    ![Testomatio - policy settings 1](./images/policy_settings_1.png)
 
-    ![policy_settings_2](./images/policy_settings_2.png)
+    ![Testomatio - policy settings 2](./images/policy_settings_2.png)
 
     Example for Playwright trace policy settings
 
@@ -361,7 +361,7 @@ Please note, that you need to enable [Use Private URLs for Test Artifacts](https
     ]
     ```
 
-    ![Copy Api key](./images/cloudr2-07.png)
+    ![Testomatio - Copy Api key](./images/cloudr2-07.png)
 
 ## 3. Connecting the Bucket to Testomatio
 
@@ -371,7 +371,7 @@ Please note, that you need to enable [Use Private URLs for Test Artifacts](https
   - In the Testomatio panel, enter the API keys and bucket address.
   - Configure the paths and access parameters as required.
 
-    ![Set bucket credentials](./images/cloudr2-08.png)
+    ![Testomatio - Set bucket credentials](./images/cloudr2-08.png)
 
 ## Adding Artifacts
 
