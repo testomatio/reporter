@@ -221,7 +221,7 @@ class Client {
     }
 
     // Attach logs
-    let fullLogs = this.formatLogs({ error: errorFormatted, steps, logs: testData.logs });
+    const fullLogs = this.formatLogs({ error: errorFormatted, steps, logs: testData.logs });
 
     // add artifacts
     if (manuallyAttachedArtifacts?.length) files.push(...manuallyAttachedArtifacts);
