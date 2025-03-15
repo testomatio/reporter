@@ -1,9 +1,10 @@
 import TestomatClient from '../client.js';
 import { config } from '../config.js';
 import { STATUS } from '../constants';
+import { getTestomatIdFromTestTitle } from '../utils/utils.js';
 
 const apiKey = config.TESTOMATIO;
-const client = new TestomatClient({ apiKey, testFramework: 'nightwatch' });
+const client = new TestomatClient({ apiKey });
 
 export default {
   write: async function (results, options, done) {
@@ -46,14 +47,17 @@ export default {
             console.error('Test status processing error:', test.status);
         }
 
+        const testId = getTestomatIdFromTestTitle(testTitle);
+
         client.addTestRun(status, {
-          error: { name: test.assertions?.[0]?.name, message: test.assertions?.[0]?.message },
+          error: { name: test.assertions?.[0]?.name, message: test.assertions?.[0]?.message, stack: test.stackTrace },
           file: testModule.modulePath?.replace(process.cwd(), ''),
           message: test.assertions?.[0]?.message,
+          rid: testModule.uuid + testTitle,
           stack: test.stackTrace,
           suite_title: suiteTitle,
           tags,
-          test_id: testModule.uuid + test.title,
+          test_id: testId,
           time: test.timeMs,
           title: testTitle,
         });
@@ -64,7 +68,7 @@ export default {
         client.addTestRun(STATUS.SKIPPED, {
           suite_title: suiteTitle,
           tags,
-          test_id: testModule.uuid + testTitle,
+          rid: testModule.uuid + testTitle,
           title: testTitle,
         });
       }
