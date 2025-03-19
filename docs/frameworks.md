@@ -10,6 +10,7 @@
 - [JUnit](#junit)
 - [Mocha](#mocha)
 - [Newman/Postman](#newman)
+- [Nightwatch](#nightwatch)
 - [Playwright](#playwright)
 - [Protractor](#protractor)
 - [Selenide](#selenide)
@@ -329,6 +330,19 @@ TESTOMATIO={API_KEY} npx newman run {collection_name.json} -r testomatio
 ```
 
 > 📑 [Example Project](https://github.com/testomatio/examples/tree/master/newman)
+
+### Nightwatch
+
+> 📐 When used with [Testomat.io Application](https://app.testomat.io) it is recommended to import automated tests first via [check-tests](https://github.com/testomatio/check-tests#cli). To create items on the fly set `TESTOMATIO_CREATE=1` env variable.
+
+1. Install Testomatio reporter:
+
+`npm install @testomatio/reporter --save-dev`
+
+2. Add testomatio reporter to your testrun command:
+
+`TESTOMATIO={API_KEY} npx nightwatch --reporter @testomatio/reporter/nightwatch`
+
 
 ### Detox
 
