@@ -114,3 +114,6 @@ dist
 export/
 
 tests/adapter/examples/codecept/output/
+
+# build dir
+lib/
