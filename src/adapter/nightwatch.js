@@ -7,7 +7,7 @@ const apiKey = config.TESTOMATIO;
 const client = new TestomatClient({ apiKey });
 
 export default {
-  write: async function (results, options, done) {
+  write: async (results, options, done) => {
     await client.createRun();
 
     const testFiles = results.modules;
@@ -74,7 +74,13 @@ export default {
       }
     }
 
-    const runStatus = results.failed ? 'failed' : results.passed ? 'passed' : 'finished';
+    /**
+     * @type {'passed' | 'failed' | 'finished'}
+     */
+    let runStatus = 'finished';
+    if (results.failed) runStatus = 'failed';
+    else if (results.passed) runStatus = 'passed';
+
     await client.updateRunStatus(runStatus);
 
     done();
