@@ -53,7 +53,7 @@ export default {
           error: { name: test.assertions?.[0]?.name, message: test.assertions?.[0]?.message, stack: test.stackTrace },
           file: testModule.modulePath?.replace(process.cwd(), ''),
           message: test.assertions?.[0]?.message,
-          rid: testModule.uuid + testTitle,
+          rid: `${testModule.uuid || ''}_${testTitle || ''}`,
           stack: test.stackTrace,
           suite_title: suiteTitle,
           tags,
@@ -68,7 +68,7 @@ export default {
         client.addTestRun(STATUS.SKIPPED, {
           suite_title: suiteTitle,
           tags,
-          rid: testModule.uuid + testTitle,
+          rid: `${testModule.uuid || ''}_${testTitle || ''}`,
           title: testTitle,
         });
       }
