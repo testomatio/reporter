@@ -6,10 +6,10 @@ const debug = createDebugMessages('@testomatio/reporter:config');
 /* for possibility to use multiple env files (reading different paths)
 const envFileVars = dotenv.config({ path: '.env' }).parsed; */
 
-if (process.env.TESTOMATIO_API_KEY) {
+if (process.env.TESTOMATIO_API_KEY && !process.env.TESTOMATIO) {
   process.env.TESTOMATIO = process.env.TESTOMATIO_API_KEY;
 }
-if (process.env.TESTOMATIO_TOKEN) {
+if (process.env.TESTOMATIO_TOKEN && !process.env.TESTOMATIO) {
   process.env.TESTOMATIO = process.env.TESTOMATIO_TOKEN;
 }
 

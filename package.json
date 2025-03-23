@@ -123,6 +123,7 @@
     "./lib/adapter/mocha/mocha.js": "./lib/adapter/mocha.js",
     "./mocha": "./lib/adapter/mocha.js",
     "./lib/adapter/playwright.js": "./lib/adapter/playwright.js",
+    "./nightwatch": "./lib/adapter/nightwatch.js",
     "./playwright": "./lib/adapter/playwright.js",
     "./vitest": "./lib/adapter/vitest.js",
     "./lib/adapter/webdriver.js": "./lib/adapter/webdriver.js",
