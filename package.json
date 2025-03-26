@@ -10,7 +10,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.279.0",
     "@aws-sdk/lib-storage": "^3.279.0",
-    "@octokit/rest": "^19.0.5",
+    "@octokit/rest": "^20.1.2",
     "aws-sdk": "^2.1072.0",
     "axios": "^1.6.2",
     "axios-retry": "^3.9.1",
