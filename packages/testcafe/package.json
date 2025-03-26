@@ -9,6 +9,7 @@
   "author": "koushikmohan1996@gmail.com",
   "license": "ISC",
   "dependencies": {
+    "@octokit/rest": "^20.1.2",
     "@testomatio/reporter": "^1.6.14"
   }
 }
