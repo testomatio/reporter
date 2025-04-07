@@ -7,9 +7,12 @@ import { APP_PREFIX, STATUS } from '../constants.js';
 import { version } from '../../package.json';
 import { config } from '../config.js';
 import dotenv from 'dotenv';
+import { checkForEnvPassedAsArguments } from '../utils/cli_utils.js';
 
 console.log(pc.cyan(pc.bold(` 🤩 Testomat.io Reporter v${version}`)));
 const program = new Command();
+
+checkForEnvPassedAsArguments();
 
 program
   .option('-c, --command <cmd>', 'Test runner command')

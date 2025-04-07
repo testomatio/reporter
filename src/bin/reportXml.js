@@ -6,11 +6,15 @@ import createDebugMessages from 'debug';
 import { APP_PREFIX } from '../constants.js';
 import XmlReader from '../xmlReader.js';
 import { version } from '../../package.json';
+import { checkForEnvPassedAsArguments } from '../utils/cli_utils.js';
 import dotenv from 'dotenv';
 
 const debug = createDebugMessages('@testomatio/reporter:xml-cli');
 console.log(pc.cyan(pc.bold(` 🤩 Testomat.io XML Reporter v${version}`)));
 const program = new Command();
+
+checkForEnvPassedAsArguments();
+
 
 program
   .arguments('<pattern>')
