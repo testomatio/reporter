@@ -2,7 +2,8 @@
 
 This guide explains how to report test results directly to Testomat.io using API.
 
-Also please refer to the [Reporting API reference](https://testomatio.github.io/reporter/)
+> [!NOTE]  
+> 🫱 Please refer to the [Reporting API reference](https://testomatio.github.io/reporter/) for more information on API
 
 ## Prerequisites
 
@@ -76,6 +77,13 @@ Save the `uid` value - you'll need it to report test results.
 
 > By default, Testomat.io won't create tests automatically. Include `"create": true` in your request to create tests automatically. See details in the next section.
 
+Tests can either be reported by their 
+
+* test ids: in case they are already created in Testomat.io)
+* `file` + `suite_title` + `title`: in order to create tests from the report
+
+If a test ID is missing, the `title`, `suite_title`, `file` will be used to create or match a test in Testomat.io. If a test is missing in a project you will see the `Unmatched` notification. In order to create test, include `create: true` param to request to automatically create tests. 
+
 You can report test results individually or in batches:
 
 ### Individual Test Reporting
@@ -88,6 +96,7 @@ curl -X POST "https://app.testomat.io/api/reporter/a0b1c2d3/testrun?api_key=tstm
     "title": "Should login successfully",
     "status": "passed",
     "suite_title": "Authentication Tests",
+    "file": "tests/one.java"
     "test_id": "d8b9c0e1",
     "run_time": 0.5,
     "stack": "Error: .... (complete exception trace)"
@@ -104,6 +113,7 @@ Content-Type: application/json
   "status": "passed",
   "suite_title": "Authentication Tests",
   "test_id": "@Ta0b0c0d0",
+  "file": "tests/one.java"
   "run_time": 0.5,
   "stack": "Error: .... (complete exception trace)"
 }
@@ -192,14 +202,14 @@ Content-Type: application/json
 - `status` (string): Must be "passed", "failed", or "skipped"
 - `test_id` (string): ID of the test in Testomat.io (optional)
 - `suite_title` (string): Test suite name (optional)
+- `file` (string): relative path to file with a test  (optional)
 - `run_time` (number): Test duration in seconds
-- `message` (string): Error message for failed tests
-- `stack` (string): Stack trace for failed tests
-- `steps` (array): Test steps (optional)
+- `code` (string): To send the code of a test  (optional)
+- `message` (string): Error message for failed tests  (optional)
+- `stack` (string): Stack trace for failed tests  (optional)
+- `steps` (array): Test steps (optional) 
 - `artifacts` (array): URLs to test artifacts like screenshots (optional)
 - `rid` (string): Report ID to uniquely identify test executions (optional)
-
-> `rid` parameter is used to identify the same test which are executed in multiple environments. So let's say we run one test on Windows and Linux, but we want to have it reported twice, so we can use different rids but same test_id for it
 
 ### Using Report ID (rid) for Cross-Platform Testing
 
