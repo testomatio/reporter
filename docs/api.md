@@ -2,6 +2,8 @@
 
 This guide explains how to report test results directly to Testomat.io using API.
 
+Also please refer to the [Reporting API reference](https://testomatio.github.io/reporter/)
+
 ## Prerequisites
 
 - A Testomat.io account
