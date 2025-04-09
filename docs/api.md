@@ -213,11 +213,8 @@ Content-Type: application/json
 
 ### Using Report ID (rid) for Cross-Platform Testing
 
-The `rid` parameter allows you to report the same test multiple times in a single run. This is especially useful for:
-
-1. **Cross-platform testing**: When you run the same test on different operating systems or browsers
-2. **Parameterized tests**: When you run the same test with different data sets
-3. **Retries**: When a test is retried multiple times
+The `rid` parameter allows you to report the same test multiple times in a single run. This is especially useful for **Cross-platform testing**.
+When you run the same test on different environments, like operating systems or browsers
 
 **Example Scenario:**
 
