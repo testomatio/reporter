@@ -111,6 +111,8 @@ S3_BUCKET=artifacts
 S3_REGION=us-west-1
 ```
 
+> Use `S3_FORCE_PATH_STYLE` option to enable or disable force path style. Testomat.io expects artifacts URL to be in format: `https://<bucketname>.s3.<region>.amazonzws.com`
+
 To allow Testomat.io access stored files it is recommended to apply this policy to the bucket:
 
 ```json
@@ -213,7 +215,7 @@ Please note, that you need to enable [Use Private URLs for Test Artifacts](https
 
 #### Cloudflare R2 and integration with Testomatio
 
-##### 1. Creating a Bucket in Cloudflare R2
+##### Creating a Bucket in Cloudflare R2
 
 - **Cloudflare Dashboard:** [https://dash.cloudflare.com/](https://dash.cloudflare.com/)
 - **Steps:**
@@ -225,7 +227,7 @@ Please note, that you need to enable [Use Private URLs for Test Artifacts](https
 
     ![Testomatio - Set bucket name](./images/cloudr2-02.png)
 
-## 2. Creating API Keys for the Bucket
+##### Creating API Keys for the Bucket
 
 - **Purpose:** To ensure secure access to the bucket.
 - **Steps:**
@@ -245,41 +247,41 @@ Please note, that you need to enable [Use Private URLs for Test Artifacts](https
     > [!WARNING]  
     > If you set permission for bucket "Object..." need setup CORS policy manually, for "Admins" it is not required
 
-    ### policy settings
+**Policy Settings**:
 
-    ![Testomatio - policy settings 1](./images/policy_settings_1.png)
+![Testomatio - policy settings 1](./images/policy_settings_1.png)
 
-    ![Testomatio - policy settings 2](./images/policy_settings_2.png)
+![Testomatio - policy settings 2](./images/policy_settings_2.png)
 
-    Example for Playwright trace policy settings
+Example for Playwright trace policy settings
 
-    ```json
-    [
-      {
-        "AllowedOrigins": ["https://app.testomat.io"],
-        "AllowedMethods": ["GET"],
-        "AllowedHeaders": ["*"],
-        "ExposeHeaders": ["Access-Control-Allow-Origin"],
-        "MaxAgeSeconds": 3000
-      },
-      {
-        "AllowedOrigins": ["https://beta.testomat.io"],
-        "AllowedMethods": ["GET"],
-        "AllowedHeaders": ["*"],
-        "ExposeHeaders": ["Access-Control-Allow-Origin"],
-        "MaxAgeSeconds": 3000
-      },
-      {
-        "AllowedOrigins": ["https://trace.playwright.dev"],
-        "AllowedMethods": ["GET"],
-        "AllowedHeaders": ["*"],
-        "ExposeHeaders": ["Access-Control-Allow-Origin"],
-        "MaxAgeSeconds": 3000
-      }
-    ]
-    ```
+```json
+[
+  {
+    "AllowedOrigins": ["https://app.testomat.io"],
+    "AllowedMethods": ["GET"],
+    "AllowedHeaders": ["*"],
+    "ExposeHeaders": ["Access-Control-Allow-Origin"],
+    "MaxAgeSeconds": 3000
+  },
+  {
+    "AllowedOrigins": ["https://beta.testomat.io"],
+    "AllowedMethods": ["GET"],
+    "AllowedHeaders": ["*"],
+    "ExposeHeaders": ["Access-Control-Allow-Origin"],
+    "MaxAgeSeconds": 3000
+  },
+  {
+    "AllowedOrigins": ["https://trace.playwright.dev"],
+    "AllowedMethods": ["GET"],
+    "AllowedHeaders": ["*"],
+    "ExposeHeaders": ["Access-Control-Allow-Origin"],
+    "MaxAgeSeconds": 3000
+  }
+]
+```
 
-    ![Testomatio - Copy Api key](./images/cloudr2-07.png)
+![Testomatio - Copy Api key](./images/cloudr2-07.png)
 
 ## 3. Connecting the Bucket to Testomatio
 
@@ -394,7 +396,7 @@ puts "file://" + path_to_screenshot
 
 Well then, just get it. Even if your company doesn't provide one, you can purchase a S3 storage by yourself.
 
-#### Publishing Artifacts from Docker Container
+### Publishing Artifacts from Docker Container
 
 If your tests are running within Docker container pass all environment variables explicitly
 
@@ -407,11 +409,25 @@ docker run -e TESTOMATIO_PRIVATE_ARTIFACTS=1 \
 run-tests
 ```
 
-#### Environment variables for S3 are not working
+### Environment variables for S3 are not working
 
 This can be caused by various reasons. As an alternative approach, you can try to set S3 credentials inside Testomat.io Application and enable shared credentials.
 
-#### How to cleanup old artifacts?
+### How to cleanup old artifacts?
 
 At this moment we don't provide any tools for the cleanup of files.
 It is recommended to write a custom cleanup tool on a S3 bucket.
+
+### Private artifacts uploaded to AWS S3 but not displayed
+
+If a artifact URL is formatted as `https://s3.<region>.amazonzws.com/<bucketname>` there might be issues displayed it.
+
+Please make sure that you don't use `S3_FORCE_PATH_STYLE=true` in `.env` file.
+It is also recommended to explicitly set this value to false:
+
+```
+S3_FORCE_PATH_STYLE=false
+```
+
+Please also make sure your bucket don't use dots in its name.
+The expected bucket format is `https://<bucketname>.s3.<region>.amazonzws.com`. If force path style is enabled, file might not be availble by a presgned link.
