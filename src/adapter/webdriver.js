@@ -1,4 +1,3 @@
-// eslint-disable-next-line
 import WDIOReporter, { RunnerStats } from '@wdio/reporter';
 import TestomatClient from '../client.js';
 import { getTestomatIdFromTestTitle, fileSystem } from '../utils/utils.js';

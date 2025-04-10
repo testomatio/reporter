@@ -237,7 +237,6 @@ class HtmlPipe {
         </select>`,
         ),
     );
-    /* eslint-disable */
     handlebars.registerHelper('emptyDataComponent', () => {
       const svgFilePath = path.join(__dirname, '..', 'template', 'emptyData.svg');
       const svgContent = fs.readFileSync(svgFilePath, 'utf8');
@@ -254,13 +253,12 @@ class HtmlPipe {
           <div>`,
       );
     });
-    /* eslint-enable */
     handlebars.registerHelper('pageDispleyElements', tests => {
       // We wrapp the lines to the HTML format we need
       const totalTests = JSON.parse(
         JSON.stringify(tests)
           .replace(/<script>/g, '&lt;script&gt;')
-          .replace(/<\/script>/g, '&lt;/script&gt;'), // eslint-disable-line
+          .replace(/<\/script>/g, '&lt;/script&gt;'),
       );
 
       const paginationOptions = {
@@ -287,7 +285,6 @@ class HtmlPipe {
 
       statuses.forEach(status => {
         for (const option in paginationOptions) {
-          // eslint-disable-next-line no-prototype-builtins
           if (paginationOptions.hasOwnProperty(option)) {
             const pageSize = paginationOptions[option];
             let filteredItems = totalTests;

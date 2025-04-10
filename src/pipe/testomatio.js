@@ -437,14 +437,11 @@ class TestomatioPipe {
 
       if (this.hasUnmatchedTests) {
         console.log('');
-        // eslint-disable-next-line max-len
         console.log(APP_PREFIX, pc.yellow(pc.bold('⚠️ Some reported tests were not found in Testomat.io project')));
-        // eslint-disable-next-line max-len
         console.log(
           APP_PREFIX,
           `If you use Testomat.io as a reporter only, please re-run tests using ${pc.bold('TESTOMATIO_CREATE=1')}`,
         );
-        // eslint-disable-next-line max-len
         console.log(
           APP_PREFIX,
           `But to keep your tests consistent it is recommended to ${pc.bold('import tests first')}`,
@@ -453,7 +450,6 @@ class TestomatioPipe {
         console.log(APP_PREFIX, 'You can do that automatically via command line tools:');
         console.log(APP_PREFIX, pc.bold('npx check-tests ... --update-ids'), 'See: https://bit.ly/js-update-ids');
         console.log(APP_PREFIX, 'or for Cucumber:');
-        // eslint-disable-next-line max-len
         console.log(APP_PREFIX, pc.bold('npx check-cucumber ... --update-ids'), 'See: https://bit.ly/bdd-update-ids');
       }
     } catch (err) {
@@ -478,7 +474,7 @@ function printCreateIssue(err) {
     console.log(
       APP_PREFIX,
       'If you think this is a bug please create an issue: https://github.com/testomatio/reporter/issues/new',
-    ); // eslint-disable-line max-len
+    );
     console.log(APP_PREFIX, 'Provide this information:');
     console.log('Error:', err.message || err.code);
     if (!err.config) return;

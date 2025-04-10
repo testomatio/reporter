@@ -149,7 +149,6 @@ class GitLabPipe {
     if (this.tests.length > 0) {
       body += '\n<details>\n<summary><h3>🐢 Slowest Tests</h3></summary>\n\n';
       body += this.tests
-        // eslint-disable-next-line no-unsafe-optional-chaining
         .sort((a, b) => b?.run_time - a?.run_time)
         .slice(0, 5)
         .map(t => `* ${fullName(t)} (${humanizeDuration(parseFloat(t.run_time))})`)

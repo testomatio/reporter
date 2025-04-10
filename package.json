@@ -81,7 +81,7 @@
     "chai": "^4.3.6",
     "codeceptjs": "^3.6.5",
     "cucumber": "^6.0.7",
-    "eslint": "^8.57.0",
+    "eslint": "^9.24.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-import": "^2.25.4",

@@ -93,7 +93,6 @@ class Logger {
         logs.push(arg.join(' '));
       } else {
         try {
-          // eslint-disable-next-line no-unused-expressions
           this.prettyObjects ? logs.push(JSON.stringify(arg, null, 2)) : logs.push(JSON.stringify(arg));
         } catch (e) {
           debug('Error while stringify object', e);
@@ -123,7 +122,7 @@ class Logger {
           current +
           // strings are splitted by args when use tagged template, thus we add arg after each string
           // it looks like: `string1 arg1 string2 arg2 string3`
-          (args[index] !== undefined // eslint-disable-line no-nested-ternary
+          (args[index] !== undefined
             ? typeof args[index] === 'string'
               ? args[index] // add arg as it is
               : this.#stringifyLogs(args[index]) // stringify arg

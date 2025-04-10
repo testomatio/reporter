@@ -31,7 +31,6 @@ class Client {
    * Create a Testomat client instance
    * @returns
    */
-  // eslint-disable-next-line
   constructor(params = {}) {
     this.paramsForPipesFactory = params;
     this.pipeStore = {};

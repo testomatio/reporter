@@ -498,7 +498,6 @@ function reduceTestCases(prev, item) {
         title = title.replace(/\(.*?\)/, '').trim();
       }
 
-      // eslint-disable-next-line
       stack = `${
         testCaseItem['system-out'] || testCaseItem.output || testCaseItem.log || ''
       }\n\n${stack}\n\n${suiteOutput}\n\n${suiteErr}`.trim();

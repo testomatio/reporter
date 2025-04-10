@@ -50,7 +50,6 @@ const ansiRegExp = () => {
 
 const isValidUrl = s => {
   try {
-    // eslint-disable-next-line no-new
     new URL(s);
     return true;
   } catch (err) {
@@ -300,7 +299,6 @@ const decamelize = text => {
  * @returns
  */
 function removeColorCodes(input) {
-  // eslint-disable-next-line no-control-regex
   return input.replace(/\x1b\[[0-9;]*m/g, '');
 }
 
@@ -313,7 +311,6 @@ const testRunnerHelper = {
     try {
       // TODO: expect?.getState()?.testPath + ' ' + expect?.getState()?.currentTestName
       // @ts-expect-error "expect" could only be defined inside Jest environement (forbidden to import it outside)
-      // eslint-disable-next-line no-undef
       return expect?.getState()?.currentTestName;
     } catch (e) {
       return null;
