@@ -188,7 +188,7 @@ components:
           description: The status of the test
         rid:
           type: string
-          description: Unique identifier of test report (if the test is reported several times)        
+          description: Unique identifier of test report (if the test is reported several times)
         title:
           type: string
           description: The title of the test
@@ -229,7 +229,7 @@ components:
         meta:
           type: object
           description: Additional metadata associated with the test
-          example: {"key": "value"}
+          example: { 'key': 'value' }
 
     Step:
       type: object
