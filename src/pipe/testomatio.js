@@ -15,9 +15,7 @@ import { config } from '../config.js';
 
 const debug = createDebugMessages('@testomatio/reporter:pipe:testomatio');
 
-if (process.env.TESTOMATIO_RUN) {
-  // process.env.runId = process.env.TESTOMATIO_RUN;
-}
+if (process.env.TESTOMATIO_RUN) process.env.runId = process.env.TESTOMATIO_RUN;
 
 /**
  * @typedef {import('../../types/types.js').Pipe} Pipe
@@ -102,7 +100,7 @@ class TestomatioPipe {
     // do not finish this run (for parallel testing)
     this.proceed = process.env.TESTOMATIO_PROCEED;
     this.jiraId = process.env.TESTOMATIO_JIRA_ID;
-    this.runId = params.runId || process.env.runId;
+    this.runId = params.runId || process.env.TESTOMATIO_RUN;
     this.createNewTests = params.createNewTests ?? !!process.env.TESTOMATIO_CREATE;
     this.hasUnmatchedTests = false;
     this.requestFailures = 0;
