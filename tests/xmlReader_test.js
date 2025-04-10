@@ -247,30 +247,6 @@ describe('XML Reader', () => {
     expect(tests[0].suite_title).to.include('User');
   });
 
-  it('should parse JUnit C#', () => {
-    const reader = new XmlReader({ lang: 'c#' });
-    reader.connectAdapter();
-    const jsonData = reader.parse(path.join(__dirname, 'data/csharp_tid.xml'));
-
-    expect(jsonData.status).to.eql('failed');
-    const stats = reader.calculateStats();
-    expect(stats.status).to.eql('failed');
-    expect(stats.tests_count).to.eql(3);
-    expect(jsonData.tests.length).to.eql(stats.tests_count);
-
-    reader.fetchSourceCode();
-    reader.formatErrors();
-    reader.formatTests();
-
-    jsonData.tests.forEach(t => {
-      expect(t).to.contain.keys(['stack', 'create', 'status', 'title', 'run_time', 'suite_title']);
-    });
-
-    const tests = jsonData.tests;
-    expect(tests[0].title).to.include('Create a Web Lead');
-    expect(tests[0].suite_title).to.include('User');
-  });
-
   it('should parse TIDs from JUnit C#', () => {
     const reader = new XmlReader({ lang: 'c#' });
     reader.connectAdapter();
