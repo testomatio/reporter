@@ -2,7 +2,7 @@
 
 import { Command } from 'commander';
 import { spawn } from 'cross-spawn';
-import glob from 'glob';
+import { glob } from 'glob';
 import createDebugMessages from 'debug';
 import TestomatClient from '../client.js';
 import XmlReader from '../xmlReader.js';
@@ -119,6 +119,28 @@ program
       runTests();
     }
   });
+
+// program
+// .command('xml')
+// .description('Parse XML reports and upload to Testomat.io')
+// .argument('<pattern>', 'XML file pattern')
+// .option('-d, --dir <dir>', 'Project directory')
+// .option('--java-tests [java-path]', 'Load Java tests from path, by default: src/test/java')
+// .option('--lang <lang>', 'Language used (python, ruby, java)')
+// .option('--timelimit <time>', 'default time limit in seconds to kill a stuck process')
+// .action(async (pattern, opts) => {
+//   if (!pattern.endsWith('.xml')) {
+//     pattern += '.xml';
+//   }
+//   let { javaTests, lang } = opts;
+//   if (javaTests === true) javaTests = 'src/test/java';
+//   lang = lang?.toLowerCase();
+//   const runReader = new XmlReader({ javaTests, lang });
+//   const files = glob.sync(pattern, { cwd: opts.dir || process.cwd() });
+//   if (!files.length) {
+//     console.log(APP_PREFIX, `Report can't be created. No XML files found 😥`);
+//     process.exit(1);
+//   }
 
 program
   .command('xml')
