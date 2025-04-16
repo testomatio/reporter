@@ -460,7 +460,11 @@ function reduceTestCases(prev, item) {
   }
 
   // suite inside test case
-  if (item['test-suite'] && item['test-suite']['test-case']) testCases.push(...item['test-suite']['test-case']);
+  const testCase = item['test-suite']?.['test-case'];
+   if (testCase) {
+     const nestedCases = Array.isArray(testCase) ? testCase : [testCase];
+     testCases.push(...nestedCases);
+   }
 
   const suiteOutput = item['system-out'] || item.output || item.log || '';
   const suiteErr = item['system-err'] || item.output || item.log || '';
