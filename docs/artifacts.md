@@ -274,6 +274,11 @@ Example for Playwright trace policy settings
 
 ![Testomatio - Copy Api key](./images/API_key_5.png)
 
+  > [!NOTE]  
+  > According to specified object lifecycles rules in R2 bucket, all objects automatically deleted after 7 days.
+
+![Testomatio - Object remove](./images/Object_remove.png)
+
 **3. Connecting the Bucket to Testomatio**
 
 - **Overview:** Integration with R2 streamlines testing and data management.
