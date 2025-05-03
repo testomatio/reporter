@@ -16,7 +16,11 @@ Your Project API key for reporting to Testomat.io.
 
 #### `TESTOMATIO_CREATE`
 
-Create test IDs.
+Create test IDs
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_CREATE=1 <actual run command>
+```
 
 #### `TESTOMATIO_DISABLE_BATCH_UPLOAD`
 
@@ -74,6 +78,24 @@ Example:
 TESTOMATIO_INTERCEPT_CONSOLE_LOGS=true <actual run command>
 ```
 
+#### `TESTOMATIO_MARK_DETACHED`
+
+If some tests from a project were not reported in this run, you can mark them as detached.
+
+**This works only for XML reports**
+
+Example:
+
+```
+TESTOMATIO_MARK_DETACHED=true npx @testomatio/reporter xml "tests/**/*.xml"
+```
+
+If you pass a tag, only absent tests with this tag will be marked as detached:
+
+```
+TESTOMATIO_MARK_DETACHED=@core npx @testomatio/reporter xml "tests/**/*.xml"
+```
+
 #### `TESTOMATIO_MAX_REQUEST_FAILURES`
 
 Maximum number of failed requests. If more requests fail, reporting will stop.
@@ -95,7 +117,7 @@ Do not finalize the run.
 Example:
 
 ```
-TESTOMATIO={API_KEY} _TESTOMATIO_PROCEED=1 <actual run command>
+TESTOMATIO={API_KEY} TESTOMATIO_PROCEED=1 <actual run command>
 ```
 
 #### `TESTOMATIO_RUN`
@@ -111,6 +133,13 @@ Example:
 ```
 TESTOMATIO={API_KEY} TESTOMATIO_RUNGROUP_TITLE="Build ${BUILD_ID}" <actual run command>
 ```
+
+Use `/` separator to create a nested rungroup:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_RUNGROUP_TITLE="Builds/${BUILD_ID}" <actual run command>
+```
+
 
 #### `TESTOMATIO_SHARED_RUN`
 
@@ -157,10 +186,6 @@ Example:
 ```
 TESTOMATIO={API_KEY} TESTOMATIO_TITLE="title for the report" <actual run command>
 ```
-
-#### `TESTOMATIO_TITLE_IDS`
-
-Configure title IDs.
 
 #### `TESTOMATIO_UPDATE_CODE`
 

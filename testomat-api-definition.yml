@@ -180,6 +180,9 @@ components:
         status:
           $ref: '#/components/schemas/TestStatus'
           description: The status of the test
+        rid:
+          type: string
+          description: Unique identifier of test report (if the test is reported several times)        
         title:
           type: string
           description: The title of the test

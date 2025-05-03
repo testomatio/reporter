@@ -247,6 +247,19 @@ describe('XML Reader', () => {
     expect(tests[0].suite_title).to.include('User');
   });
 
+  it('should parse TIDs from JUnit C#', () => {
+    const reader = new XmlReader({ lang: 'c#' });
+    reader.connectAdapter();
+    const jsonData = reader.parse(path.join(__dirname, 'data/csharp_tid.xml'));
+    reader.fetchSourceCode();
+    reader.formatErrors();
+    reader.formatTests();
+
+    expect(jsonData.tests[0].test_id).to.eql('12345678');
+    expect(jsonData.tests[1].test_id).to.eql('a0b1c2d3');
+  });
+
+
   it('should parse NUnit TRX XML', () => {
     const reader = new XmlReader();
     const jsonData = reader.parse(path.join(__dirname, 'data/nunit.xml'));
