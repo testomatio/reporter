@@ -1,3 +1,4 @@
+import path from 'path';
 import Adapter from './adapter.js';
 
 class CSharpAdapter extends Adapter {
@@ -14,3 +15,9 @@ class CSharpAdapter extends Adapter {
 }
 
 export default CSharpAdapter;
+
+function namespaceToFileName(fileName) {
+  const fileParts = fileName.split('.');
+  fileParts[fileParts.length - 1] = fileParts[fileParts.length - 1]?.replace(/\$.*/, '');
+  return `${fileParts.join(path.sep)}.java`;
+}

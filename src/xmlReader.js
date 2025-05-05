@@ -510,6 +510,7 @@ function reduceTestCases(prev, item) {
       let status = STATUS.PASSED.toString();
       if ('failure' in testCaseItem || 'error' in testCaseItem) status = STATUS.FAILED;
       if ('skipped' in testCaseItem) status = STATUS.SKIPPED;
+      if (testCaseItem.result && Object.values(STATUS).includes(testCaseItem.result.toLowerCase())) status = testCaseItem.result.toLowerCase();
 
       let rid = null;
       if (testCaseItem.id) rid = `${ridRunId}-${testCaseItem.id}`;
