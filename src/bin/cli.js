@@ -13,10 +13,13 @@ import { readLatestRunId } from '../utils/utils.js';
 import pc from 'picocolors';
 import { filesize as prettyBytes } from 'filesize';
 import dotenv from 'dotenv';
+import { checkForEnvPassedAsArguments } from '../utils/cli_utils.js';
 
 const debug = createDebugMessages('@testomatio/reporter:xml-cli');
 console.log(pc.cyan(pc.bold(` 🤩 Testomat.io Reporter v${version}`)));
 const program = new Command();
+
+checkForEnvPassedAsArguments();
 
 program
   .version(version)
