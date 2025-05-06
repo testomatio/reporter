@@ -5,8 +5,11 @@ import { glob } from 'glob';
 import createDebugMessages from 'debug';
 import { APP_PREFIX } from '../constants.js';
 import XmlReader from '../xmlReader.js';
-import { version } from '../../package.json';
+import { createRequire } from 'module';
 import dotenv from 'dotenv';
+
+const dynamicRequire = createRequire(import.meta.url);
+const { version } = dynamicRequire('../../package.json');
 
 const debug = createDebugMessages('@testomatio/reporter:xml-cli');
 console.log(pc.cyan(pc.bold(` 🤩 Testomat.io XML Reporter v${version}`)));

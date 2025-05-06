@@ -8,9 +8,14 @@ class CSharpAdapter extends Adapter {
     if (example) t.example = { ...example[1].split(',') };
     const suite = t.suite_title.split('.');
     t.suite_title = suite.pop();
-    t.file = suite.join('/');
+    t.file = namespaceToFileName(t.file);
     t.title = title.trim();
     return t;
+  }
+
+  getFilePath(t) {
+    const fileName = namespaceToFileName(t.file);
+    return fileName;
   }
 }
 
@@ -19,5 +24,5 @@ export default CSharpAdapter;
 function namespaceToFileName(fileName) {
   const fileParts = fileName.split('.');
   fileParts[fileParts.length - 1] = fileParts[fileParts.length - 1]?.replace(/\$.*/, '');
-  return `${fileParts.join(path.sep)}.java`;
+  return `${fileParts.join(path.sep)}.cs`;
 }

@@ -13,6 +13,7 @@ import {
   fetchSourceCodeFromStackTrace,
   fetchIdFromCode,
   humanize,
+  TEST_ID_REGEX,
 } from './utils/utils.js';
 import { pipesFactory } from './pipe/index.js';
 import adapterFactory from './junit-adapter/index.js';
@@ -26,7 +27,7 @@ const debug = createDebugMessages('@testomatio/reporter:xml');
 const ridRunId = randomUUID();
 
 const TESTOMATIO_URL = process.env.TESTOMATIO_URL || 'https://app.testomat.io';
-const { TESTOMATIO_RUNGROUP_TITLE, TESTOMATIO_TITLE, TESTOMATIO_ENV, TESTOMATIO_RUN, TESTOMATIO_MARK_DETACHED } =
+const { TESTOMATIO_RUNGROUP_TITLE, TESTOMATIO_MAX_STACK_TRACE, TESTOMATIO_TITLE, TESTOMATIO_ENV, TESTOMATIO_RUN, TESTOMATIO_MARK_DETACHED } =
   process.env;
 
 const options = {
@@ -36,6 +37,8 @@ const options = {
   attributeNamePrefix: '',
   parseTagValue: true,
 };
+
+const MAX_OUTPUT_LENGTH = parseInt(TESTOMATIO_MAX_STACK_TRACE, 10) || 10000;
 
 const reduceOptions = {};
 
@@ -91,7 +94,7 @@ class XmlReader {
     ];
 
     for (const regex of cutRegexes) {
-      xmlData = xmlData.replace(regex, (_, p1, p2, p3) => `${p1}${p2.substring(0, 5000)}${p3}`);
+      xmlData = xmlData.replace(regex, (_, p1, p2, p3) => `${p1}${p2.substring(0, MAX_OUTPUT_LENGTH)}${p3}`);
     }
 
     const jsonResult = this.parser.parse(xmlData);
@@ -341,6 +344,7 @@ class XmlReader {
           if (file.endsWith('.rb')) this.stats.language = 'ruby';
           if (file.endsWith('.js')) this.stats.language = 'js';
           if (file.endsWith('.ts')) this.stats.language = 'ts';
+          if (file.endsWith('.cs')) this.stats.language = 'csharp';
         }
 
         if (!fs.existsSync(file)) {
@@ -471,7 +475,7 @@ function reduceTestCases(prev, item) {
   testCases
     .filter(t => !!t)
     .forEach(testCaseItem => {
-      const file = testCaseItem.file || item.filepath || '';
+      const file = testCaseItem.file || item.filepath || item.fullname || '';
 
       let stack = '';
       let message = '';
@@ -505,12 +509,18 @@ function reduceTestCases(prev, item) {
       stack = `${
         testCaseItem['system-out'] || testCaseItem.output || testCaseItem.log || ''
       }\n\n${stack}\n\n${suiteOutput}\n\n${suiteErr}`.trim();
-      const testId = fetchIdFromOutput(stack);
+      let testId = fetchIdFromOutput(stack);
+
+      if (tags?.length && !testId) {
+        testId = tags.filter(t => t.startsWith('T')).map(t => `@${t}`).find(t => t.match(TEST_ID_REGEX))?.slice(2);
+      }
 
       let status = STATUS.PASSED.toString();
       if ('failure' in testCaseItem || 'error' in testCaseItem) status = STATUS.FAILED;
       if ('skipped' in testCaseItem) status = STATUS.SKIPPED;
-      if (testCaseItem.result && Object.values(STATUS).includes(testCaseItem.result.toLowerCase())) status = testCaseItem.result.toLowerCase();
+      if (testCaseItem.result && Object.values(STATUS).includes(testCaseItem.result.toLowerCase())) {
+        status = testCaseItem.result.toLowerCase();
+      }
 
       let rid = null;
       if (testCaseItem.id) rid = `${ridRunId}-${testCaseItem.id}`;
@@ -558,7 +568,8 @@ function fetchProperties(item) {
 
   const prop = [item.properties?.property].flat().find(p => p.name === 'Description');
   if (prop) title = prop.value;
-  [item.properties?.property]
+
+  [...item.properties?.property]
     .flat()
     .filter(p => p.name === 'Category')
     .forEach(p => tags.push(p.value));

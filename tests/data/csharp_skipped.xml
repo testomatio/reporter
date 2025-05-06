@@ -9,7 +9,7 @@
               <test-case name="VerifyChangesInOrderItemActionLog" fullname="E2E.Tests.Tests.Billing.ActionLogScenarios.VerifyChangesInOrderItemActionLog" methodname="VerifyChangesInOrderItemActionLog" classname="ActionLogScenarios" result="Skipped" start-time="2025-04-14T16:33:27Z" end-time="2025-04-14T16:33:27Z" duration="0.002322" asserts="0" seed="1387745748">
                 <properties>
                   <property name="Category" value="Billing" />
-                  <property name="Category" value="T18043f76" />
+                  <property name="Category" value="T00000076" />
                 </properties>
                 <output><![CDATA[Some Reason
 ]]></output>
@@ -17,7 +17,7 @@
               <test-case name="VerifyChangesInServiceOrderActionLog" fullname="E2E.Tests.Tests.Billing.ActionLogScenarios.VerifyChangesInServiceOrderActionLog" methodname="VerifyChangesInServiceOrderActionLog" classname="ActionLogScenarios" result="Passed" start-time="2025-04-14T16:33:27Z" end-time="2025-04-14T16:33:48Z" duration="21.423854" asserts="0" seed="515124301">
                 <properties>
                   <property name="Category" value="Billing" />
-                  <property name="Category" value="T575eb8be" />
+                  <property name="Category" value="T000000be" />
                 </properties>
                 <output><![CDATA[[Test] ActionLogScenarios.VerifyChangesInServiceOrderActionLog
 [ID] tid://@T575eb8be
