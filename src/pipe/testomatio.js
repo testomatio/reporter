@@ -1,12 +1,6 @@
 import createDebugMessages from 'debug';
 import pc from 'picocolors';
-
-// Retry interceptor function
-import axiosRetry from 'axios-retry';
-
-// Default axios instance
-import axios from 'axios';
-
+import { Gaxios } from 'gaxios';
 import JsonCycle from 'json-cycle';
 import { APP_PREFIX, STATUS, AXIOS_TIMEOUT, REPORTER_REQUEST_RETRIES } from '../constants.js';
 import { isValidUrl, foundedTestLog } from '../utils/utils.js';
@@ -57,43 +51,30 @@ class TestomatioPipe {
     this.groupTitle = params.groupTitle || process.env.TESTOMATIO_RUNGROUP_TITLE;
     this.env = process.env.TESTOMATIO_ENV;
     this.label = process.env.TESTOMATIO_LABEL;
-    // Create a new instance of axios with a custom config
-    this.axios = axios.create({
+
+    // Create a new instance of gaxios with a custom config
+    this.client = new Gaxios({
       baseURL: `${this.url.trim()}`,
       timeout: AXIOS_TIMEOUT,
-      proxy: proxy
-        ? {
-            host: proxy.hostname,
-            port: parseInt(proxy.port, 10),
-            protocol: proxy.protocol,
+      proxy: proxy ? proxy.toString() : undefined,
+      retry: true,
+      retryConfig: {
+        retry: REPORTER_REQUEST_RETRIES.retriesPerRequest,
+        retryDelay: REPORTER_REQUEST_RETRIES.retryTimeout,
+        shouldRetry: (error) => {
+          if (!error.response) return false;
+          switch (error.response?.status) {
+            case 400: // Bad request (probably wrong API key)
+            case 404: // Test not matched
+            case 429: // Rate limit exceeded
+            case 500: // Internal server error
+              return false;
+            default:
+              break;
           }
-        : false,
-    });
-
-    // Pass the axios instance to the retry function
-    axiosRetry(this.axios, {
-      // do not use retries for unit tests
-      retries: REPORTER_REQUEST_RETRIES.retriesPerRequest, // Number of retries
-      shouldResetTimeout: true,
-      retryCondition: error => {
-        if (!error.response) return false;
-        switch (error.response?.status) {
-          case 400: // Bad request (probably wrong API key)
-          case 404: // Test not matched
-          case 429: // Rate limit exceeded
-          case 500: // Internal server error
-            return false;
-          default:
-            break;
+          return error.response?.status >= 401; // Retry on 401+ and 5xx
         }
-        return error.response?.status >= 401; // Retry on 401+ and 5xx
-      },
-      retryDelay: () => REPORTER_REQUEST_RETRIES.retryTimeout, // sum = 15sec
-      onRetry: async (retryCount, error) => {
-        this.retriesTimestamps.push(Date.now());
-
-        debug(`${error.message || `Request failed ${error.status}`}. Retry #${retryCount} ...`);
-      },
+      }
     });
 
     this.isEnabled = true;
@@ -134,12 +115,15 @@ class TestomatioPipe {
         return;
       }
 
-      const resp = await this.axios.get('/api/test_grep', q);
-      const { data } = resp;
+      const resp = await this.client.request({
+        method: 'GET',
+        url: '/api/test_grep',
+        params: q
+      });
 
-      if (Array.isArray(data?.tests) && data?.tests?.length > 0) {
-        foundedTestLog(APP_PREFIX, data.tests);
-        return data.tests;
+      if (Array.isArray(resp.data?.tests) && resp.data?.tests?.length > 0) {
+        foundedTestLog(APP_PREFIX, resp.data.tests);
+        return resp.data.tests;
       }
 
       console.log(APP_PREFIX, `⛔  No tests found for your --filter --> ${type}=${id}`);
@@ -163,7 +147,6 @@ class TestomatioPipe {
 
     // GitHub Actions Url
     if (!buildUrl && process.env.GITHUB_RUN_ID) {
-      // eslint-disable-next-line max-len
       buildUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
     }
 
@@ -199,16 +182,23 @@ class TestomatioPipe {
     if (this.runId) {
       this.store.runId = this.runId;
       debug(`Run with id ${this.runId} already created, updating...`);
-      const resp = await this.axios.put(`/api/reporter/${this.runId}`, runParams);
+      const resp = await this.client.request({
+        method: 'PUT',
+        url: `/api/reporter/${this.runId}`,
+        data: runParams
+      });
       if (resp.data.artifacts) setS3Credentials(resp.data.artifacts);
       return;
     }
 
     debug('Creating run...');
     try {
-      const resp = await this.axios.post(`/api/reporter`, runParams, {
+      const resp = await this.client.request({
+        method: 'POST',
+        url: '/api/reporter',
+        data: runParams,
         maxContentLength: Infinity,
-        maxBodyLength: Infinity,
+        responseType: 'json'
       });
 
       this.runId = resp.data.uid;
@@ -225,6 +215,7 @@ class TestomatioPipe {
       debug('Run created', this.runId);
     } catch (err) {
       const errorText = err.response?.data?.message || err.message;
+      debug('Error creating run', err);
       console.log(errorText || err);
       if (!this.apiKey) console.error('Testomat.io API key is not set');
       if (!this.apiKey?.startsWith('tstmt')) console.error('Testomat.io API key is invalid');
@@ -271,7 +262,15 @@ class TestomatioPipe {
 
     debug('Adding test', json);
 
-    return this.axios.post(`/api/reporter/${this.runId}/testrun`, json, axiosAddTestrunRequestConfig).catch(err => {
+    return this.client.request({
+      method: 'POST',
+      url: `/api/reporter/${this.runId}/testrun`,
+      data: json,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      maxContentLength: Infinity
+    }).catch(err => {
       this.requestFailures++;
       this.notReportedTestsCount++;
       if (err.response) {
@@ -323,38 +322,43 @@ class TestomatioPipe {
     const testsToSend = this.batch.tests.splice(0);
     debug('📨 Batch upload', testsToSend.length, 'tests');
 
-    return this.axios
-      .post(
-        `/api/reporter/${this.runId}/testrun`,
-        { api_key: this.apiKey, tests: testsToSend, batch_index: this.batch.batchIndex },
-        axiosAddTestrunRequestConfig,
-      )
-      .catch(err => {
-        this.requestFailures++;
-        this.notReportedTestsCount += testsToSend.length;
-        if (err.response) {
-          if (err.response.status >= 400) {
-            const responseData = err.response.data || { message: '' };
-            console.log(
-              APP_PREFIX,
-              pc.yellow(`Warning: ${responseData.message} (${err.response.status})`),
-              // pc.grey(data?.title || ''),
-            );
-            if (err.response?.data?.message?.includes('could not be matched')) {
-              this.hasUnmatchedTests = true;
-            }
-            return;
-          }
+    return this.client.request({
+      method: 'POST',
+      url: `/api/reporter/${this.runId}/testrun`,
+      data: { 
+        api_key: this.apiKey, 
+        tests: testsToSend, 
+        batch_index: this.batch.batchIndex 
+      },
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      maxContentLength: Infinity
+    }).catch(err => {
+      this.requestFailures++;
+      this.notReportedTestsCount += testsToSend.length;
+      if (err.response) {
+        if (err.response.status >= 400) {
+          const responseData = err.response.data || { message: '' };
           console.log(
             APP_PREFIX,
-            pc.yellow(`Warning: (${err.response?.status})`),
-            `Report couldn't be processed: ${err?.response?.data?.message}`,
+            pc.yellow(`Warning: ${responseData.message} (${err.response.status})`),
           );
-          printCreateIssue(err);
-        } else {
-          console.log(APP_PREFIX, "Report couldn't be processed", err);
+          if (err.response?.data?.message?.includes('could not be matched')) {
+            this.hasUnmatchedTests = true;
+          }
+          return;
         }
-      });
+        console.log(
+          APP_PREFIX,
+          pc.yellow(`Warning: (${err.response?.status})`),
+          `Report couldn't be processed: ${err?.response?.data?.message}`,
+        );
+        printCreateIssue(err);
+      } else {
+        console.log(APP_PREFIX, "Report couldn't be processed", err);
+      }
+    });
   };
 
   /**
@@ -413,12 +417,16 @@ class TestomatioPipe {
 
     try {
       if (this.runId && !this.proceed) {
-        await this.axios.put(`/api/reporter/${this.runId}`, {
-          api_key: this.apiKey,
-          duration: params.duration,
-          status_event,
-          detach: params.detach,
-          tests: params.tests,
+        await this.client.request({
+          method: 'PUT',
+          url: `/api/reporter/${this.runId}`,
+          data: {
+            api_key: this.apiKey,
+            duration: params.duration,
+            status_event,
+            detach: params.detach,
+            tests: params.tests,
+          }
         });
         if (this.runUrl) {
           console.log(APP_PREFIX, '📊 Report Saved. Report URL:', pc.magenta(this.runUrl));
@@ -484,14 +492,5 @@ function printCreateIssue(err) {
     console.log('```');
   });
 }
-
-const axiosAddTestrunRequestConfig = {
-  maxContentLength: Infinity,
-  maxBodyLength: Infinity,
-  headers: {
-    // Overwrite Axios's automatically set Content-Type
-    'Content-Type': 'application/json',
-  },
-};
 
 export default TestomatioPipe;

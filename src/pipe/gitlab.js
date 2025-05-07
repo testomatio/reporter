@@ -1,5 +1,5 @@
 import createDebugMessages from 'debug';
-import axios from 'axios';
+import { Gaxios } from 'gaxios';
 import pc from 'picocolors';
 import humanizeDuration from 'humanize-duration';
 import merge from 'lodash.merge';
@@ -45,6 +45,12 @@ class GitLabPipe {
     }
 
     this.isEnabled = true;
+    this.client = new Gaxios({
+      baseURL: 'https://gitlab.com/api/v4',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
 
     debug('GitLab Pipe: Enabled');
   }
@@ -157,16 +163,21 @@ class GitLabPipe {
     }
 
     // eslint-disable-next-line max-len
-    const commentsRequestURL = `https://gitlab.com/api/v4/projects/${this.ENV.CI_PROJECT_ID}/merge_requests/${this.ENV.CI_MERGE_REQUEST_IID}/notes`;
+    const commentsRequestURL = `/projects/${this.ENV.CI_PROJECT_ID}/merge_requests/${this.ENV.CI_MERGE_REQUEST_IID}/notes`;
 
     // delete previous report
-    await deletePreviousReport(axios, commentsRequestURL, this.hiddenCommentData, this.token);
+    await deletePreviousReport(this.client, commentsRequestURL, this.hiddenCommentData, this.token);
 
     // add current report
     debug(`Adding comment via url: ${commentsRequestURL}`);
 
     try {
-      const addCommentResponse = await axios.post(`${commentsRequestURL}?access_token=${this.token}`, { body });
+      const addCommentResponse = await this.client.request({
+        method: 'POST',
+        url: commentsRequestURL,
+        params: { access_token: this.token },
+        data: { body }
+      });
 
       const commentID = addCommentResponse.data.id;
       // eslint-disable-next-line max-len
@@ -191,14 +202,18 @@ class GitLabPipe {
   updateRun() {}
 }
 
-async function deletePreviousReport(axiosInstance, commentsRequestURL, hiddenCommentData, token) {
+async function deletePreviousReport(client, commentsRequestURL, hiddenCommentData, token) {
   if (process.env.GITLAB_KEEP_OUTDATED_REPORTS) return;
 
   // get comments
   let comments = [];
 
   try {
-    const response = await axiosInstance.get(`${commentsRequestURL}?access_token=${token}`);
+    const response = await client.request({
+      method: 'GET',
+      url: commentsRequestURL,
+      params: { access_token: token }
+    });
     comments = response.data;
   } catch (e) {
     console.error('Error while attempt to retrieve comments on GitLab Merge Request:\n', e);
@@ -211,8 +226,12 @@ async function deletePreviousReport(axiosInstance, commentsRequestURL, hiddenCom
     if (comment.body.includes(hiddenCommentData)) {
       try {
         // delete previous comment
-        const deleteCommentURL = `${commentsRequestURL}/${comment.id}?access_token=${token}`;
-        await axiosInstance.delete(deleteCommentURL);
+        const deleteCommentURL = `${commentsRequestURL}/${comment.id}`;
+        await client.request({
+          method: 'DELETE',
+          url: deleteCommentURL,
+          params: { access_token: token }
+        });
       } catch (e) {
         console.warn(`Can't delete previously added comment with testomat.io report. Ignore.`);
       }

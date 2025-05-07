@@ -1,6 +1,6 @@
 {
   "name": "@testomatio/reporter",
-  "version": "2.0.0",
+  "version": "2.0.0-beta.1-gaxios",
   "description": "Testomatio Reporter Client",
   "engines": {
     "node": ">=18"
@@ -16,8 +16,7 @@
     "@cucumber/cucumber": "^10.9.0",
     "@octokit/rest": "^21.1.1",
     "aws-sdk": "^2.1072.0",
-    "axios": "^1.6.2",
-    "axios-retry": "^3.9.1",
+    "gaxios": "^6.0.0",
     "callsite-record": "^4.1.4",
     "commander": "^12",
     "cross-spawn": "^7.0.3",
