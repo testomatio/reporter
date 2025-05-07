@@ -27,8 +27,9 @@ const debug = createDebugMessages('@testomatio/reporter:xml');
 const ridRunId = randomUUID();
 
 const TESTOMATIO_URL = process.env.TESTOMATIO_URL || 'https://app.testomat.io';
-const { TESTOMATIO_RUNGROUP_TITLE, TESTOMATIO_MAX_STACK_TRACE, TESTOMATIO_TITLE, TESTOMATIO_ENV, TESTOMATIO_RUN, TESTOMATIO_MARK_DETACHED } =
-  process.env;
+const { TESTOMATIO_RUNGROUP_TITLE, TESTOMATIO_SUITE,
+  TESTOMATIO_MAX_STACK_TRACE, TESTOMATIO_TITLE, TESTOMATIO_ENV,
+  TESTOMATIO_RUN, TESTOMATIO_MARK_DETACHED } = process.env;
 
 const options = {
   ignoreDeclaration: true,
@@ -539,6 +540,7 @@ function reduceTestCases(prev, item) {
         run_time: parseFloat(testCaseItem.time || testCaseItem.duration) * 1000,
         status,
         title,
+        root_suite_id: TESTOMATIO_SUITE,
         suite_title: suiteTitle,
       });
     });

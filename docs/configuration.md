@@ -16,10 +16,20 @@ Your Project API key for reporting to Testomat.io.
 
 #### `TESTOMATIO_CREATE`
 
-Create test IDs
+Create test which are not yet exist in a project
 
 ```
 TESTOMATIO={API_KEY} TESTOMATIO_CREATE=1 <actual run command>
+```
+
+#### `TESTOMATIO_SUITE`
+
+Place newly created tests into a specific suite. Can be used on XML import or combined with `TESTOMATIO_CREATE=1`. Suite should be specified by its ID:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_CREATE=1 TESTOMATIO_SUITE=@S1235678 <actual run command>
+
+TESTOMATIO={API_KEY} TESTOMATIO_SUITE=@S1235678 npx @testomatio/reporter xml <xml files>
 ```
 
 #### `TESTOMATIO_DISABLE_BATCH_UPLOAD`
