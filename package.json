@@ -16,7 +16,7 @@
     "@cucumber/cucumber": "^10.9.0",
     "@octokit/rest": "^21.1.1",
     "aws-sdk": "^2.1072.0",
-    "gaxios": "^6.0.0",
+    "gaxios": "7.0.0-rc.4",
     "callsite-record": "^4.1.4",
     "commander": "^12",
     "cross-spawn": "^7.0.3",
