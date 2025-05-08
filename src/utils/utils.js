@@ -5,8 +5,12 @@ import fs from 'fs';
 import isValid from 'is-valid-path';
 import createDebugMessages from 'debug';
 import os from 'os';
+import { fileURLToPath } from 'url';
 
 const debug = createDebugMessages('@testomatio/reporter:util');
+
+// Use __dirname directly since we're compiling to CommonJS
+const __dirname = path.resolve();
 
 /**
  * @param {String} testTitle - Test title
@@ -354,6 +358,12 @@ function formatStep(step, shift = 0) {
   }
 
   return lines;
+}
+
+export function getPackageVersion() {
+  const packageJsonPath = path.resolve(__dirname, '../../package.json');
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+  return packageJson.version;
 }
 
 export {

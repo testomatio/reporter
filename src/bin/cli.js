@@ -7,7 +7,7 @@ import createDebugMessages from 'debug';
 import TestomatClient from '../client.js';
 import XmlReader from '../xmlReader.js';
 import { APP_PREFIX, STATUS } from '../constants.js';
-import { version } from '../../package.json';
+import { getPackageVersion } from '../utils/utils.js';
 import { config } from '../config.js';
 import { readLatestRunId } from '../utils/utils.js';
 import pc from 'picocolors';
@@ -15,6 +15,7 @@ import { filesize as prettyBytes } from 'filesize';
 import dotenv from 'dotenv';
 
 const debug = createDebugMessages('@testomatio/reporter:xml-cli');
+const version = getPackageVersion();
 console.log(pc.cyan(pc.bold(` 🤩 Testomat.io Reporter v${version}`)));
 const program = new Command();
 

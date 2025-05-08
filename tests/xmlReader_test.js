@@ -263,6 +263,38 @@ describe('XML Reader', () => {
     expect(jsonData.tests[1].test_id).to.eql('a0b1c2d3');
   });
 
+  it('should parse C# JUnit XML with skipped tests', () => {
+    const reader = new XmlReader({ lang: 'c#' });
+    const jsonData = reader.parse(path.join(dirname, 'data/csharp_skipped.xml'));
+
+    expect(jsonData.status).to.eql('passed');
+    expect(jsonData.tests_count).to.eql(2);
+    expect(jsonData.tests.length).to.eql(2);
+
+    reader.formatTests();
+
+    // Verify test statuses
+    const tests = jsonData.tests;
+    expect(tests[0].status).to.eql('skipped');
+    expect(tests[1].status).to.eql('passed');
+
+    // Verify test titles
+    expect(tests[0].title).to.eql('VerifyChangesInOrderItemActionLog');
+    expect(tests[1].title).to.eql('VerifyChangesInServiceOrderActionLog');
+
+    // Verify suite titles
+    expect(tests[0].suite_title).to.eql('E2E.Tests.Payment.UserScenarios');
+    expect(tests[1].suite_title).to.eql('E2E.Tests.Payment.UserScenarios');
+
+    // Verify tags/categories
+    expect(tests[0].tags).to.include('Payment');
+    expect(tests[0].tags).to.include('T00000076');
+    expect(tests[1].tags).to.include('Payment');
+    expect(tests[1].tags).to.include('T000000be');
+
+    // Verify test IDs
+    expect(tests[1].test_id).to.eql('T575eb8be');
+  });
 
   it('should parse NUnit TRX XML', () => {
     const reader = new XmlReader();

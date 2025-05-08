@@ -4,10 +4,11 @@ import { Command } from 'commander';
 import pc from 'picocolors';
 import TestomatClient from '../client.js';
 import { APP_PREFIX, STATUS } from '../constants.js';
-import { version } from '../../package.json';
+import { getPackageVersion } from '../utils/utils.js';
 import { config } from '../config.js';
 import dotenv from 'dotenv';
 
+const version = getPackageVersion();
 console.log(pc.cyan(pc.bold(` 🤩 Testomat.io Reporter v${version}`)));
 const program = new Command();
 
