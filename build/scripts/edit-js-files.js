@@ -4,6 +4,16 @@ import path from 'path';
 // Directory containing the files
 const directoryPath = path.join(process.cwd(), 'lib');
 
+// Create directory if it doesn't exist
+async function ensureDirectoryExists(dirPath) {
+  try {
+    await fs.access(dirPath);
+  } catch {
+    await fs.mkdir(dirPath, { recursive: true });
+    console.log(`Created directory: ${dirPath}`);
+  }
+}
+
 // Function to replace text in a file
 async function replaceTextInFile(filePath) {
   try {
@@ -36,6 +46,7 @@ async function removeStringWithDirnameDeclaration(filePath) {
 
 // Function to recursively process directories
 async function processDirectory(directoryPath) {
+  await ensureDirectoryExists(directoryPath);
   const entries = await fs.readdir(directoryPath, { withFileTypes: true });
 
   for (const entry of entries) {
@@ -75,4 +86,7 @@ async function addNonDefaultExportxToTheEndOfFile(filePath) {
 }
 
 // Start processing the directory
-processDirectory(directoryPath);
+(async () => {
+  await ensureDirectoryExists(directoryPath);
+  await processDirectory(directoryPath);
+})();

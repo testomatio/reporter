@@ -49,7 +49,6 @@
     "testcafe"
   ],
   "scripts": {
-    "@cucumber/cucumber": "^10.9.0",
     "clear-exportdir": "rm -rf export/",
     "pretty": "npx prettier --check .",
     "pretty:fix": "prettier --write .",
@@ -68,8 +67,9 @@
     "test:adapter:playwright:example": "npx playwright test --config='./tests/adapter/examples/playwright/playwright.config.ts'",
     "test:adapter:vitest:example": "npx vitest --config='./tests/adapter/examples/vitest/vitest.config.ts'",
     "test:storage": "npx mocha tests-storage/artifact-storage.test.js && npx mocha tests-storage/data-storage.test.js && TESTOMATIO_INTERCEPT_CONSOLE_LOGS=true npx mocha tests-storage/logger.test.js && npx mocha tests-storage/logger-2.test.js && npx mocha tests-storage/reporter-functions.test.js",
-    "//": "builds code from /src (esm) into /lib (commonjs)",
-    "build": "rm -rf ./cjs && tsc --module commonjs && npx tsx build/scripts/edit-js-files.js && npx tsx build/scripts/edit-package-json.js && chmod +x ./build/scripts/copy-tesmplate.sh && ./build/scripts/copy-tesmplate.sh"
+    "build": "rm -rf ./cjs && tsc --module commonjs && npx tsx build/scripts/edit-js-files.js && npx tsx build/scripts/edit-package-json.js && chmod +x ./build/scripts/copy-tesmplate.sh && ./build/scripts/copy-tesmplate.sh",
+    "build:bun": "rm -rf ./cjs && bun build ./src/reporter.js ./src/bin/reportXml.js ./src/bin/startTest.js ./src/bin/uploadArtifacts.js --outdir ./cjs --target node",
+    "build:watch:bun": "rm -rf ./cjs && bun build ./src/bin/reportXml.js ./src/bin/startTest.js ./src/bin/uploadArtifacts.js --outdir ./cjs --target node --watch --onSuccess \"build/scripts/post-build.js\""
   },
   "devDependencies": {
     "@playwright/test": "^1.49.1",

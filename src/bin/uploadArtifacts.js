@@ -5,12 +5,13 @@ import pc from 'picocolors';
 import createDebugMessages from 'debug';
 import TestomatClient from '../client.js';
 import { APP_PREFIX } from '../constants.js';
-import { version } from '../../package.json';
+import { getPackageVersion } from '../utils/utils.js';
 import { config } from '../config.js';
 import { readLatestRunId } from '../utils/utils.js';
 import dotenv from 'dotenv';
 
 const debug = createDebugMessages('@testomatio/reporter:upload-cli');
+const version = getPackageVersion();
 console.log(pc.cyan(pc.bold(` 🤩 Testomat.io Reporter v${version}`)));
 const program = new Command();
 
