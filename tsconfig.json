@@ -6,8 +6,8 @@
     "declaration": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "module": "CommonJS",
-    "moduleResolution": "Node",
+    "module": "CommonJS", // esnext for esm
+    "moduleResolution": "node",
     "noImplicitAny": false,
     "noImplicitThis": false,
     "resolveJsonModule": true,
@@ -16,8 +16,7 @@
     "typeRoots": ["./types", "./node_modules/@types"],
     "target": "ES2022",
     "rootDir": "./src",
-    "outDir": "./lib",
-    "noEmit": true
+    "outDir": "./lib" // change for esm
   },
   "compileOnSave": true,
   "include": ["src/"],
