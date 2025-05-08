@@ -586,11 +586,15 @@ function fetchProperties(item) {
 
   if (!item.properties) return {};
 
-  const prop = [item.properties?.property].flat().find(p => p.name === 'Description');
+  // Handle both single property and array of properties
+  const properties = Array.isArray(item.properties.property) 
+    ? item.properties.property 
+    : [item.properties.property].filter(Boolean);
+
+  const prop = properties.find(p => p.name === 'Description');
   if (prop) title = prop.value;
 
-  [...item.properties?.property]
-    .flat()
+  properties
     .filter(p => p.name === 'Category')
     .forEach(p => tags.push(p.value));
   return { title, tags };

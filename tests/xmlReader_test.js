@@ -3,7 +3,7 @@ import { expect, assert } from 'chai';
 import ServerMock from 'mock-http-server';
 import { config } from './adapter/config/index.js';
 import { registerHandlers } from './adapter/utils/index.js';
-import XmlReader from '../lib/xmlReader.js';
+import XmlReader from '../src/xmlReader.js';
 import { fileURLToPath } from 'url';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -254,7 +254,7 @@ describe('XML Reader', () => {
   it('should parse TIDs from JUnit C#', () => {
     const reader = new XmlReader({ lang: 'c#' });
     reader.connectAdapter();
-    const jsonData = reader.parse(path.join(__dirname, 'data/csharp_tid.xml'));
+    const jsonData = reader.parse(path.join(dirname, 'data/csharp_tid.xml'));
     reader.fetchSourceCode();
     reader.formatErrors();
     reader.formatTests();
@@ -279,12 +279,13 @@ describe('XML Reader', () => {
     expect(tests[1].status).to.eql('passed');
 
     // Verify test titles
-    expect(tests[0].title).to.eql('VerifyChangesInOrderItemActionLog');
-    expect(tests[1].title).to.eql('VerifyChangesInServiceOrderActionLog');
+    expect(tests[0].title).to.eql('Verify Service Started');
+    expect(tests[1].title).to.eql('Verify Changes In Service Saved');
 
+    expect(tests[0].file).to.eql('E2E/Tests/Payment/UserScenarios.cs');
     // Verify suite titles
-    expect(tests[0].suite_title).to.eql('E2E.Tests.Payment.UserScenarios');
-    expect(tests[1].suite_title).to.eql('E2E.Tests.Payment.UserScenarios');
+    expect(tests[0].suite_title).to.eql('UserScenarios');
+    expect(tests[1].suite_title).to.eql('UserScenarios');
 
     // Verify tags/categories
     expect(tests[0].tags).to.include('Payment');
@@ -293,7 +294,7 @@ describe('XML Reader', () => {
     expect(tests[1].tags).to.include('T000000be');
 
     // Verify test IDs
-    expect(tests[1].test_id).to.eql('T575eb8be');
+    expect(tests[1].test_id).to.eql('575eb8be');
   });
 
   it('should parse NUnit TRX XML', () => {
