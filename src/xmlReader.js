@@ -399,13 +399,14 @@ class XmlReader {
   async uploadArtifacts() {
     for (const test of this.tests.filter(t => !!t.stack)) {
       let files = [];
-      if (test.files?.length) files = test.files.map(f => path.join(process.cwd(), f));
-      files = [...files, ...fetchFilesFromStackTrace(test.stack)];
+      if (!test.files?.length) continue;
+
+      files = test.files.map(f => path.isAbsolute(f) ? f : path.join(process.cwd(), f));
 
       if (!files.length) continue;
 
       const runId = this.runId || this.store.runId || Date.now().toString();
-      test.artifacts = await Promise.all(files.map(f => this.uploader.uploadFileByPath(f, [runId])));
+      test.artifacts = await Promise.all(files.map(f => this.uploader.uploadFileByPath(f, [runId, path.basename(f)])));
       console.log(APP_PREFIX, `🗄️ Uploaded ${pc.bold(`${files.length} artifacts`)} for test ${test.title}`);
     }
   }
@@ -526,6 +527,22 @@ function reduceTestCases(prev, item) {
       let rid = null;
       if (testCaseItem.id) rid = `${ridRunId}-${testCaseItem.id}`;
 
+      // Extract attachments
+      let files = [];
+      if (testCaseItem.attachments) {
+        const attachments = Array.isArray(testCaseItem.attachments.attachment) 
+          ? testCaseItem.attachments.attachment 
+          : [testCaseItem.attachments.attachment];
+
+        files = attachments
+          .filter(a => a && a.filePath)
+          .map(a => a.filePath);
+      }
+
+      // Extract files from stack trace using existing utility
+      const stackFiles = fetchFilesFromStackTrace(stack);
+      files = [...new Set([...files, ...stackFiles])]; // Remove duplicates
+
       prev.push({
         rid,
         file,
@@ -542,6 +559,7 @@ function reduceTestCases(prev, item) {
         title,
         root_suite_id: TESTOMATIO_SUITE,
         suite_title: suiteTitle,
+        files,
       });
     });
   return prev;
