@@ -61,6 +61,7 @@ class TestomatioPipe {
       retryConfig: {
         retry: REPORTER_REQUEST_RETRIES.retriesPerRequest,
         retryDelay: REPORTER_REQUEST_RETRIES.retryTimeout,
+        httpMethodsToRetry: ['GET','PUT','HEAD','OPTIONS','DELETE','POST'],
         shouldRetry: (error) => {
           if (!error.response) return false;
           switch (error.response?.status) {
