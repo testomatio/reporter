@@ -486,9 +486,9 @@ function printCreateIssue(err) {
     if (!err.config) return;
 
     const time = new Date().toUTCString();
-    const { data, url, baseURL, method } = err?.config || {};
+    const { body, url, baseURL, method } = err?.config || {};
     console.log('```js');
-    console.log({ data: data?.replace(/"(tstmt_[^"]+)"/g, 'tstmt_*'), url, baseURL, method, time });
+    console.log({ body: body?.replace(/"(tstmt_[^"]+)"/g, 'tstmt_*'), url, baseURL, method, time });
     console.log('```');
   });
 }
