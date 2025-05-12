@@ -13,6 +13,7 @@ import {
   fetchSourceCodeFromStackTrace,
   fetchIdFromCode,
   humanize,
+  TEST_ID_REGEX,
 } from './utils/utils.js';
 import { pipesFactory } from './pipe/index.js';
 import adapterFactory from './junit-adapter/index.js';
@@ -26,8 +27,9 @@ const debug = createDebugMessages('@testomatio/reporter:xml');
 const ridRunId = randomUUID();
 
 const TESTOMATIO_URL = process.env.TESTOMATIO_URL || 'https://app.testomat.io';
-const { TESTOMATIO_RUNGROUP_TITLE, TESTOMATIO_TITLE, TESTOMATIO_ENV, TESTOMATIO_RUN, TESTOMATIO_MARK_DETACHED } =
-  process.env;
+const { TESTOMATIO_RUNGROUP_TITLE, TESTOMATIO_SUITE,
+  TESTOMATIO_MAX_STACK_TRACE, TESTOMATIO_TITLE, TESTOMATIO_ENV,
+  TESTOMATIO_RUN, TESTOMATIO_MARK_DETACHED } = process.env;
 
 const options = {
   ignoreDeclaration: true,
@@ -36,6 +38,8 @@ const options = {
   attributeNamePrefix: '',
   parseTagValue: true,
 };
+
+const MAX_OUTPUT_LENGTH = parseInt(TESTOMATIO_MAX_STACK_TRACE, 10) || 10000;
 
 const reduceOptions = {};
 
@@ -91,7 +95,7 @@ class XmlReader {
     ];
 
     for (const regex of cutRegexes) {
-      xmlData = xmlData.replace(regex, (_, p1, p2, p3) => `${p1}${p2.substring(0, 5000)}${p3}`);
+      xmlData = xmlData.replace(regex, (_, p1, p2, p3) => `${p1}${p2.substring(0, MAX_OUTPUT_LENGTH)}${p3}`);
     }
 
     const jsonResult = this.parser.parse(xmlData);
@@ -341,6 +345,7 @@ class XmlReader {
           if (file.endsWith('.rb')) this.stats.language = 'ruby';
           if (file.endsWith('.js')) this.stats.language = 'js';
           if (file.endsWith('.ts')) this.stats.language = 'ts';
+          if (file.endsWith('.cs')) this.stats.language = 'csharp';
         }
 
         if (!fs.existsSync(file)) {
@@ -394,13 +399,14 @@ class XmlReader {
   async uploadArtifacts() {
     for (const test of this.tests.filter(t => !!t.stack)) {
       let files = [];
-      if (test.files?.length) files = test.files.map(f => path.join(process.cwd(), f));
-      files = [...files, ...fetchFilesFromStackTrace(test.stack)];
+      if (!test.files?.length) continue;
+
+      files = test.files.map(f => path.isAbsolute(f) ? f : path.join(process.cwd(), f));
 
       if (!files.length) continue;
 
       const runId = this.runId || this.store.runId || Date.now().toString();
-      test.artifacts = await Promise.all(files.map(f => this.uploader.uploadFileByPath(f, [runId])));
+      test.artifacts = await Promise.all(files.map(f => this.uploader.uploadFileByPath(f, [runId, path.basename(f)])));
       console.log(APP_PREFIX, `🗄️ Uploaded ${pc.bold(`${files.length} artifacts`)} for test ${test.title}`);
     }
   }
@@ -471,7 +477,7 @@ function reduceTestCases(prev, item) {
   testCases
     .filter(t => !!t)
     .forEach(testCaseItem => {
-      const file = testCaseItem.file || item.filepath || '';
+      const file = testCaseItem.file || item.filepath || item.fullname || '';
 
       let stack = '';
       let message = '';
@@ -505,14 +511,37 @@ function reduceTestCases(prev, item) {
       stack = `${
         testCaseItem['system-out'] || testCaseItem.output || testCaseItem.log || ''
       }\n\n${stack}\n\n${suiteOutput}\n\n${suiteErr}`.trim();
-      const testId = fetchIdFromOutput(stack);
+      let testId = fetchIdFromOutput(stack);
+
+      if (tags?.length && !testId) {
+        testId = tags.filter(t => t.startsWith('T')).map(t => `@${t}`).find(t => t.match(TEST_ID_REGEX))?.slice(2);
+      }
 
       let status = STATUS.PASSED.toString();
       if ('failure' in testCaseItem || 'error' in testCaseItem) status = STATUS.FAILED;
       if ('skipped' in testCaseItem) status = STATUS.SKIPPED;
+      if (testCaseItem.result && Object.values(STATUS).includes(testCaseItem.result.toLowerCase())) {
+        status = testCaseItem.result.toLowerCase();
+      }
 
       let rid = null;
       if (testCaseItem.id) rid = `${ridRunId}-${testCaseItem.id}`;
+
+      // Extract attachments
+      let files = [];
+      if (testCaseItem.attachments) {
+        const attachments = Array.isArray(testCaseItem.attachments.attachment) 
+          ? testCaseItem.attachments.attachment 
+          : [testCaseItem.attachments.attachment];
+
+        files = attachments
+          .filter(a => a && a.filePath)
+          .map(a => a.filePath);
+      }
+
+      // Extract files from stack trace using existing utility
+      const stackFiles = fetchFilesFromStackTrace(stack);
+      files = [...new Set([...files, ...stackFiles])]; // Remove duplicates
 
       prev.push({
         rid,
@@ -528,7 +557,9 @@ function reduceTestCases(prev, item) {
         run_time: parseFloat(testCaseItem.time || testCaseItem.duration) * 1000,
         status,
         title,
+        root_suite_id: TESTOMATIO_SUITE,
         suite_title: suiteTitle,
+        files,
       });
     });
   return prev;
@@ -555,10 +586,15 @@ function fetchProperties(item) {
 
   if (!item.properties) return {};
 
-  const prop = [item.properties?.property].flat().find(p => p.name === 'Description');
+  // Handle both single property and array of properties
+  const properties = Array.isArray(item.properties.property) 
+    ? item.properties.property 
+    : [item.properties.property].filter(Boolean);
+
+  const prop = properties.find(p => p.name === 'Description');
   if (prop) title = prop.value;
-  [item.properties?.property]
-    .flat()
+
+  properties
     .filter(p => p.name === 'Category')
     .forEach(p => tags.push(p.value));
   return { title, tags };

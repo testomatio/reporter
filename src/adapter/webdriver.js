@@ -1,4 +1,4 @@
-import WDIOReporter, { RunnerStats } from '@wdio/reporter';
+import { default as WDIOReporter, RunnerStats } from '@wdio/reporter';
 import TestomatClient from '../client.js';
 import { getTestomatIdFromTestTitle, fileSystem } from '../utils/utils.js';
 import { services } from '../services/index.js';
