@@ -92,9 +92,9 @@ export class DebugPipe {
 
   async finishRun(params) {
     if (!this.isEnabled) return;
-    this.logToFile({ actions: 'finishRun', params });
     await this.batchUpload();
     if (this.batch.intervalFunction) clearInterval(this.batch.intervalFunction);
+    this.logToFile({ actions: 'finishRun', params });
     console.log(APP_PREFIX, '🪲. Debug Saved to', this.logFilePath);
   }
 
