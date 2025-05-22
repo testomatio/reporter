@@ -495,7 +495,7 @@ function reduceTestCases(prev, item) {
       const preferClassname = reduceOptions.preferClassname || isParametrized;
 
       // SpecFlow config
-      let { title, tags } = fetchProperties(isParametrized ? item : testCaseItem);
+      let { title, tags, testId } = fetchProperties(isParametrized ? item : testCaseItem);
       let example = null;
       const suiteTitle = preferClassname ? testCaseItem.classname : item.name || testCaseItem.classname;
 
@@ -511,7 +511,8 @@ function reduceTestCases(prev, item) {
       stack = `${
         testCaseItem['system-out'] || testCaseItem.output || testCaseItem.log || ''
       }\n\n${stack}\n\n${suiteOutput}\n\n${suiteErr}`.trim();
-      let testId = fetchIdFromOutput(stack);
+
+      if (!testId) testId = fetchIdFromOutput(stack);
 
       if (tags?.length && !testId) {
         testId = tags.filter(t => t.startsWith('T')).map(t => `@${t}`).find(t => t.match(TEST_ID_REGEX))?.slice(2);
@@ -594,8 +595,14 @@ function fetchProperties(item) {
   const prop = properties.find(p => p.name === 'Description');
   if (prop) title = prop.value;
 
+  let testId = properties.find(p => p.name === 'ID')?.value;
+
+  if (testId?.startsWith('@')) testId = testId.slice(1);
+  if (testId?.startsWith('T')) testId = testId.slice(1);
+
   properties
     .filter(p => p.name === 'Category')
     .forEach(p => tags.push(p.value));
-  return { title, tags };
+
+  return { title, tags, testId };
 }
