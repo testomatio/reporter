@@ -5,8 +5,15 @@ import fs from 'fs';
 import isValid from 'is-valid-path';
 import createDebugMessages from 'debug';
 import os from 'os';
+import { fileURLToPath } from 'url';
 
 const debug = createDebugMessages('@testomatio/reporter:util');
+
+// Use __dirname directly since we're compiling to CommonJS
+// prettier-ignore
+// @ts-ignore
+// eslint-disable-next-line max-len
+const __dirname = typeof global.__dirname !== 'undefined' ? global.__dirname : path.dirname(fileURLToPath(import.meta.url));
 
 /**
  * @param {String} testTitle - Test title
@@ -50,7 +57,6 @@ const ansiRegExp = () => {
 
 const isValidUrl = s => {
   try {
-    // eslint-disable-next-line no-new
     new URL(s);
     return true;
   } catch (err) {
@@ -108,7 +114,7 @@ const fetchSourceCodeFromStackTrace = (stack = '') => {
     .join('\n');
 };
 
-const TEST_ID_REGEX = /@T([\w\d]{8})/;
+export const TEST_ID_REGEX = /@T([\w\d]{8})/;
 
 const fetchIdFromCode = (code, opts = {}) => {
   const comments = code
@@ -128,12 +134,9 @@ const fetchIdFromCode = (code, opts = {}) => {
 };
 
 const fetchIdFromOutput = output => {
-  const lines = output
-    .split('\n')
-    .map(l => l.trim())
-    .filter(l => l.startsWith('tid://'));
+  const TID_FULL_PATTERN = new RegExp(`tid:\\/\\/.*?(${TEST_ID_REGEX.source})`);
 
-  return lines.find(c => c.match(TEST_ID_REGEX))?.match(TEST_ID_REGEX)?.[1];
+  return output.match(TID_FULL_PATTERN)?.[2];
 };
 
 const fetchSourceCode = (contents, opts = {}) => {
@@ -152,6 +155,9 @@ const fetchSourceCode = (contents, opts = {}) => {
     if (opts.lang === 'java') {
       lineIndex = lines.findIndex(l => l.includes(`test${title}`));
       if (lineIndex === -1) lineIndex = lines.findIndex(l => l.includes(`@DisplayName("${title}`));
+      if (lineIndex === -1) lineIndex = lines.findIndex(l => l.includes(`public void ${title}`));
+      if (lineIndex === -1) lineIndex = lines.findIndex(l => l.includes(`${title}(`));
+    } else if (opts.lang === 'csharp') {
       if (lineIndex === -1) lineIndex = lines.findIndex(l => l.includes(`public void ${title}`));
       if (lineIndex === -1) lineIndex = lines.findIndex(l => l.includes(`${title}(`));
     } else {
@@ -300,7 +306,6 @@ const decamelize = text => {
  * @returns
  */
 function removeColorCodes(input) {
-  // eslint-disable-next-line no-control-regex
   return input.replace(/\x1b\[[0-9;]*m/g, '');
 }
 
@@ -313,7 +318,6 @@ const testRunnerHelper = {
     try {
       // TODO: expect?.getState()?.testPath + ' ' + expect?.getState()?.currentTestName
       // @ts-expect-error "expect" could only be defined inside Jest environement (forbidden to import it outside)
-      // eslint-disable-next-line no-undef
       return expect?.getState()?.currentTestName;
     } catch (e) {
       return null;
@@ -357,6 +361,12 @@ function formatStep(step, shift = 0) {
   }
 
   return lines;
+}
+
+export function getPackageVersion() {
+  const packageJsonPath = path.resolve(__dirname, '../../package.json');
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+  return packageJson.version;
 }
 
 export {

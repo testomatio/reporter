@@ -1,6 +1,6 @@
 {
   "name": "@testomatio/reporter",
-  "version": "2.0.0",
+  "version": "2.0.0-beta.5-xml",
   "description": "Testomatio Reporter Client",
   "engines": {
     "node": ">=18"
@@ -16,8 +16,7 @@
     "@cucumber/cucumber": "^10.9.0",
     "@octokit/rest": "^21.1.1",
     "aws-sdk": "^2.1072.0",
-    "axios": "^1.6.2",
-    "axios-retry": "^3.9.1",
+    "gaxios": ">=6.0 || >=7.0.0-rc.4 || <8",
     "callsite-record": "^4.1.4",
     "commander": "^12",
     "cross-spawn": "^7.0.3",
@@ -49,7 +48,6 @@
     "testcafe"
   ],
   "scripts": {
-    "@cucumber/cucumber": "^10.9.0",
     "clear-exportdir": "rm -rf export/",
     "pretty": "npx prettier --check .",
     "pretty:fix": "prettier --write .",
@@ -68,8 +66,9 @@
     "test:adapter:playwright:example": "npx playwright test --config='./tests/adapter/examples/playwright/playwright.config.ts'",
     "test:adapter:vitest:example": "npx vitest --config='./tests/adapter/examples/vitest/vitest.config.ts'",
     "test:storage": "npx mocha tests-storage/artifact-storage.test.js && npx mocha tests-storage/data-storage.test.js && TESTOMATIO_INTERCEPT_CONSOLE_LOGS=true npx mocha tests-storage/logger.test.js && npx mocha tests-storage/logger-2.test.js && npx mocha tests-storage/reporter-functions.test.js",
-    "//": "builds code from /src (esm) into /lib (commonjs)",
-    "build": "rm -rf ./cjs && tsc --module commonjs && npx tsx build/scripts/edit-js-files.js && npx tsx build/scripts/edit-package-json.js && chmod +x ./build/scripts/copy-tesmplate.sh && ./build/scripts/copy-tesmplate.sh"
+    "build": "rm -rf ./cjs && tsc --module commonjs && npx tsx build/scripts/edit-js-files.js && npx tsx build/scripts/edit-package-json.js && chmod +x ./build/scripts/copy-tesmplate.sh && ./build/scripts/copy-tesmplate.sh",
+    "build:bun": "rm -rf ./cjs && bun build ./src/reporter.js ./src/bin/reportXml.js ./src/bin/startTest.js ./src/bin/uploadArtifacts.js --outdir ./cjs --target node && bun build/scripts/edit-js-files.js && bun build/scripts/edit-package-json.js && chmod +x ./build/scripts/copy-tesmplate.sh && ./build/scripts/copy-tesmplate.sh",
+    "build:watch:bun": "rm -rf ./cjs && bun build ./src/bin/reportXml.js ./src/bin/startTest.js ./src/bin/uploadArtifacts.js --outdir ./cjs --target node --watch --onSuccess \"build/scripts/post-build.js\""
   },
   "devDependencies": {
     "@playwright/test": "^1.49.1",
@@ -81,8 +80,7 @@
     "chai": "^4.3.6",
     "codeceptjs": "^3.6.5",
     "cucumber": "^6.0.7",
-    "eslint": "^8.57.0",
-    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint": "^9.24.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-import": "^2.25.4",
     "jasmine": "^5.2.0",

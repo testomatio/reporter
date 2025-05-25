@@ -7,7 +7,11 @@ import { APP_PREFIX } from '../constants.js';
 import XmlReader from '../xmlReader.js';
 import { version } from '../../package.json';
 import { checkForEnvPassedAsArguments } from '../utils/cli_utils.js';
+import { getPackageVersion } from '../utils/utils.js';
 import dotenv from 'dotenv';
+import path from 'path';
+
+const version = getPackageVersion();
 
 const debug = createDebugMessages('@testomatio/reporter:xml-cli');
 console.log(pc.cyan(pc.bold(` 🤩 Testomat.io XML Reporter v${version}`)));

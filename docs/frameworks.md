@@ -343,7 +343,6 @@ TESTOMATIO={API_KEY} npx newman run {collection_name.json} -r testomatio
 
 `TESTOMATIO={API_KEY} npx nightwatch --reporter @testomatio/reporter/nightwatch`
 
-
 ### Detox
 
 > 📐 When used with [Testomat.io Application](https://app.testomat.io) it is recommended to import automated tests first via [check-tests](https://github.com/testomatio/check-tests#cli). To create items on the fly set `TESTOMATIO_CREATE=1` env variable.

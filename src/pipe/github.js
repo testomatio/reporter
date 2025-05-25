@@ -3,7 +3,6 @@ import path from 'path';
 import pc from 'picocolors';
 import humanizeDuration from 'humanize-duration';
 import merge from 'lodash.merge';
-import { Octokit } from '@octokit/rest';
 import { APP_PREFIX, testomatLogoURL } from '../constants.js';
 import { ansiRegExp, isSameTest } from '../utils/utils.js';
 import { statusEmoji, fullName } from '../utils/pipe_utils.js';
@@ -64,6 +63,7 @@ class GitHubPipe {
     if (!this.issue) return;
 
     if (runParams.tests) runParams.tests.forEach(t => this.addTest(t));
+    const { Octokit } = await import('@octokit/rest');
 
     this.octokit = new Octokit({
       auth: this.token,
@@ -154,7 +154,6 @@ class GitHubPipe {
     if (this.tests.length > 0) {
       body += '\n<details>\n<summary><h3>🐢 Slowest Tests</h3></summary>\n\n';
       body += this.tests
-        // eslint-disable-next-line no-unsafe-optional-chaining
         .sort((a, b) => b?.run_time - a?.run_time)
         .slice(0, 5)
         .map(t => `* ${fullName(t)} (${humanizeDuration(parseFloat(t.run_time))})`)

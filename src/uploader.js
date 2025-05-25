@@ -255,7 +255,7 @@ export class S3Uploader {
     debug('File:', filePath, 'exists, size:', prettyBytes(fileSize));
 
     const fileStream = fs.createReadStream(filePath);
-    const Key = pathInS3.join('/');
+    const Key = pathInS3.filter(p => !!p).join('/');
 
     const link = await this.#uploadToS3(fileStream, Key, { path: filePath, size: fileSize });
 
@@ -272,7 +272,7 @@ export class S3Uploader {
   async uploadFileAsBuffer(buffer, pathInS3) {
     if (!this.isEnabled) return;
 
-    let Key = pathInS3.join('/');
+    let Key = pathInS3.filter(p => !!p).join('/');
     const ext = this.#getFileExtBase64(buffer);
 
     if (ext) {

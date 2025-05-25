@@ -1,6 +1,6 @@
 import TestomatClient from '../client.js';
 import { config } from '../config.js';
-import { STATUS } from '../constants';
+import { STATUS } from '../constants.js';
 import { getTestomatIdFromTestTitle } from '../utils/utils.js';
 
 const apiKey = config.TESTOMATIO;

@@ -2,20 +2,24 @@
 
 import { Command } from 'commander';
 import { spawn } from 'cross-spawn';
-import glob from 'glob';
+import { glob } from 'glob';
 import createDebugMessages from 'debug';
 import TestomatClient from '../client.js';
 import XmlReader from '../xmlReader.js';
 import { APP_PREFIX, STATUS } from '../constants.js';
-import { version } from '../../package.json';
+import { getPackageVersion } from '../utils/utils.js';
 import { config } from '../config.js';
 import { readLatestRunId } from '../utils/utils.js';
 import pc from 'picocolors';
 import { filesize as prettyBytes } from 'filesize';
 import dotenv from 'dotenv';
 import { checkForEnvPassedAsArguments } from '../utils/cli_utils.js';
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
 
 const debug = createDebugMessages('@testomatio/reporter:xml-cli');
+const version = getPackageVersion();
 console.log(pc.cyan(pc.bold(` 🤩 Testomat.io Reporter v${version}`)));
 const program = new Command();
 
@@ -122,6 +126,28 @@ program
       runTests();
     }
   });
+
+// program
+// .command('xml')
+// .description('Parse XML reports and upload to Testomat.io')
+// .argument('<pattern>', 'XML file pattern')
+// .option('-d, --dir <dir>', 'Project directory')
+// .option('--java-tests [java-path]', 'Load Java tests from path, by default: src/test/java')
+// .option('--lang <lang>', 'Language used (python, ruby, java)')
+// .option('--timelimit <time>', 'default time limit in seconds to kill a stuck process')
+// .action(async (pattern, opts) => {
+//   if (!pattern.endsWith('.xml')) {
+//     pattern += '.xml';
+//   }
+//   let { javaTests, lang } = opts;
+//   if (javaTests === true) javaTests = 'src/test/java';
+//   lang = lang?.toLowerCase();
+//   const runReader = new XmlReader({ javaTests, lang });
+//   const files = glob.sync(pattern, { cwd: opts.dir || process.cwd() });
+//   if (!files.length) {
+//     console.log(APP_PREFIX, `Report can't be created. No XML files found 😥`);
+//     process.exit(1);
+//   }
 
 program
   .command('xml')
@@ -273,6 +299,109 @@ program
           )}`,
         );
       });
+    }
+  });
+
+program
+  .command('replay')
+  .description('Replay test data from debug file and re-send to Testomat.io')
+  .argument('[debug-file]', 'Path to debug file (defaults to /tmp/testomatio.debug.latest.json)')
+  .action(async (debugFile, opts) => {
+    // Use default debug file if none provided
+    if (!debugFile) {
+      debugFile = path.join(os.tmpdir(), 'testomatio.debug.latest.json');
+    }
+
+    if (!fs.existsSync(debugFile)) {
+      console.log(APP_PREFIX, `❌ Debug file not found: ${debugFile}`);
+      return process.exit(1);
+    }
+
+    console.log(APP_PREFIX, `🪲 Replaying data from debug file: ${debugFile}`);
+
+    try {
+      const fileContent = fs.readFileSync(debugFile, 'utf-8');
+      const lines = fileContent.trim().split('\n').filter(Boolean);
+
+      if (lines.length === 0) {
+        console.log(APP_PREFIX, '❌ Debug file is empty');
+        return process.exit(1);
+      }
+
+      let runParams = {};
+      let finishParams = {};
+      let parseErrors = 0;
+      const allTests = [];
+
+      // Parse debug file line by line
+      for (const [lineIndex, line] of lines.entries()) {
+        try {
+          const logEntry = JSON.parse(line);
+
+          if (logEntry.data === 'variables' && logEntry.testomatioEnvVars) {
+            Object.assign(process.env, logEntry.testomatioEnvVars, process.env);
+          } else if (logEntry.action === 'createRun') {
+            runParams = logEntry.params || {};
+          } else if (logEntry.action === 'addTestsBatch' && logEntry.tests) {
+            allTests.push(...logEntry.tests);
+          } else if (logEntry.action === 'addTest' && logEntry.testId) {
+            allTests.push(logEntry.testId);
+          } else if (logEntry.actions === 'finishRun') {
+            finishParams = logEntry.params || {};
+          }
+        } catch (err) {
+          parseErrors++;
+          if (parseErrors <= 3) {
+            // Only show first 3 parse errors
+            console.warn(APP_PREFIX, `⚠️  Failed to parse line ${lineIndex + 1}: ${line.substring(0, 100)}...`);
+          }
+        }
+      }
+
+      if (parseErrors > 3) {
+        console.warn(APP_PREFIX, `⚠️  ${parseErrors - 3} more parse errors occurred`);
+      }
+
+      console.log(APP_PREFIX, `📊 Found ${allTests.length} tests to replay`);
+
+      if (allTests.length === 0) {
+        console.log(APP_PREFIX, '❌ No test data found in debug file');
+        return process.exit(1);
+      }
+
+      const apiKey = config.TESTOMATIO;
+      if (!apiKey) {
+        console.log(APP_PREFIX, '❌ TESTOMATIO API key not found. Set TESTOMATIO environment variable.');
+        return process.exit(1);
+      }
+
+      // Create client and restore the run
+      const client = new TestomatClient({
+        apiKey,
+        isBatchEnabled: true,
+        ...runParams,
+      });
+
+      console.log(APP_PREFIX, '🚀 Publishing to run...');
+      await client.createRun(runParams);
+
+      // Send each test result - let client.js handle the data mapping and formatting
+      for (const [index, test] of allTests.entries()) {
+        try {
+          await client.addTestRun(test.status, test);
+        } catch (err) {
+          console.warn(APP_PREFIX, `⚠️  Failed to send test ${index + 1}: ${err.message}`);
+        }
+      }
+
+      await client.updateRunStatus(finishParams.status || STATUS.FINISHED, finishParams.parallel || false);
+
+      console.log(APP_PREFIX, `✅ Successfully replayed ${allTests.length} tests from debug file`);
+      process.exit(0);
+    } catch (err) {
+      console.error(APP_PREFIX, '❌ Error replaying debug data:', err.message);
+      console.error(err.stack);
+      process.exit(1);
     }
   });
 
