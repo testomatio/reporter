@@ -10,9 +10,8 @@ import { fileURLToPath } from 'url';
 const debug = createDebugMessages('@testomatio/reporter:util');
 
 // Use __dirname directly since we're compiling to CommonJS
-// @ts-ignore - import.meta is only available in ESM
-// eslint-disable-next-line max-len
-const __dirname = typeof global.__dirname !== 'undefined' ? global.__dirname : path.dirname(fileURLToPath(import.meta.url));
+// @ts-ignore
+const __dirname = typeof global.__dirname !== 'undefined' ? global.__dirname : path.dirname(fileURLToPath(import.meta.url)); // eslint-disable-line max-len
 
 /**
  * @param {String} testTitle - Test title
