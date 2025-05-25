@@ -11,4 +11,4 @@ import './edit-package-json.js';
 // Make copy-tesmplate.sh executable and run it
 const templateScript = join(process.cwd(), 'build', 'scripts', 'copy-tesmplate.sh');
 await chmod(templateScript, '755');
-execSync(templateScript, { stdio: 'inherit' }); 
+execSync(templateScript, { stdio: 'inherit' });

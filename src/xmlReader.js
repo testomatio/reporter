@@ -27,9 +27,15 @@ const debug = createDebugMessages('@testomatio/reporter:xml');
 const ridRunId = randomUUID();
 
 const TESTOMATIO_URL = process.env.TESTOMATIO_URL || 'https://app.testomat.io';
-const { TESTOMATIO_RUNGROUP_TITLE, TESTOMATIO_SUITE,
-  TESTOMATIO_MAX_STACK_TRACE, TESTOMATIO_TITLE, TESTOMATIO_ENV,
-  TESTOMATIO_RUN, TESTOMATIO_MARK_DETACHED } = process.env;
+const {
+  TESTOMATIO_RUNGROUP_TITLE,
+  TESTOMATIO_SUITE,
+  TESTOMATIO_MAX_STACK_TRACE,
+  TESTOMATIO_TITLE,
+  TESTOMATIO_ENV,
+  TESTOMATIO_RUN,
+  TESTOMATIO_MARK_DETACHED,
+} = process.env;
 
 const options = {
   ignoreDeclaration: true,
@@ -401,7 +407,7 @@ class XmlReader {
       let files = [];
       if (!test.files?.length) continue;
 
-      files = test.files.map(f => path.isAbsolute(f) ? f : path.join(process.cwd(), f));
+      files = test.files.map(f => (path.isAbsolute(f) ? f : path.join(process.cwd(), f)));
 
       if (!files.length) continue;
 
@@ -467,10 +473,10 @@ function reduceTestCases(prev, item) {
 
   // suite inside test case
   const testCase = item['test-suite']?.['test-case'];
-   if (testCase) {
-     const nestedCases = Array.isArray(testCase) ? testCase : [testCase];
-     testCases.push(...nestedCases);
-   }
+  if (testCase) {
+    const nestedCases = Array.isArray(testCase) ? testCase : [testCase];
+    testCases.push(...nestedCases);
+  }
 
   const suiteOutput = item['system-out'] || item.output || item.log || '';
   const suiteErr = item['system-err'] || item.output || item.log || '';
@@ -495,7 +501,7 @@ function reduceTestCases(prev, item) {
       const preferClassname = reduceOptions.preferClassname || isParametrized;
 
       // SpecFlow config
-      let { title, tags } = fetchProperties(isParametrized ? item : testCaseItem);
+      let { title, tags, testId } = fetchProperties(isParametrized ? item : testCaseItem);
       let example = null;
       const suiteTitle = preferClassname ? testCaseItem.classname : item.name || testCaseItem.classname;
 
@@ -511,10 +517,15 @@ function reduceTestCases(prev, item) {
       stack = `${
         testCaseItem['system-out'] || testCaseItem.output || testCaseItem.log || ''
       }\n\n${stack}\n\n${suiteOutput}\n\n${suiteErr}`.trim();
-      let testId = fetchIdFromOutput(stack);
+
+      if (!testId) testId = fetchIdFromOutput(stack);
 
       if (tags?.length && !testId) {
-        testId = tags.filter(t => t.startsWith('T')).map(t => `@${t}`).find(t => t.match(TEST_ID_REGEX))?.slice(2);
+        testId = tags
+          .filter(t => t.startsWith('T'))
+          .map(t => `@${t}`)
+          .find(t => t.match(TEST_ID_REGEX))
+          ?.slice(2);
       }
 
       let status = STATUS.PASSED.toString();
@@ -530,13 +541,11 @@ function reduceTestCases(prev, item) {
       // Extract attachments
       let files = [];
       if (testCaseItem.attachments) {
-        const attachments = Array.isArray(testCaseItem.attachments.attachment) 
-          ? testCaseItem.attachments.attachment 
+        const attachments = Array.isArray(testCaseItem.attachments.attachment)
+          ? testCaseItem.attachments.attachment
           : [testCaseItem.attachments.attachment];
 
-        files = attachments
-          .filter(a => a && a.filePath)
-          .map(a => a.filePath);
+        files = attachments.filter(a => a && a.filePath).map(a => a.filePath);
       }
 
       // Extract files from stack trace using existing utility
@@ -587,15 +596,19 @@ function fetchProperties(item) {
   if (!item.properties) return {};
 
   // Handle both single property and array of properties
-  const properties = Array.isArray(item.properties.property) 
-    ? item.properties.property 
+  const properties = Array.isArray(item.properties.property)
+    ? item.properties.property
     : [item.properties.property].filter(Boolean);
 
   const prop = properties.find(p => p.name === 'Description');
   if (prop) title = prop.value;
 
-  properties
-    .filter(p => p.name === 'Category')
-    .forEach(p => tags.push(p.value));
-  return { title, tags };
+  let testId = properties.find(p => p.name === 'ID')?.value;
+
+  if (testId?.startsWith('@')) testId = testId.slice(1);
+  if (testId?.startsWith('T')) testId = testId.slice(1);
+
+  properties.filter(p => p.name === 'Category').forEach(p => tags.push(p.value));
+
+  return { title, tags, testId };
 }
