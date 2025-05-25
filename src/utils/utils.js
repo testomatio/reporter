@@ -5,8 +5,15 @@ import fs from 'fs';
 import isValid from 'is-valid-path';
 import createDebugMessages from 'debug';
 import os from 'os';
+import { fileURLToPath } from 'url';
 
 const debug = createDebugMessages('@testomatio/reporter:util');
+
+// Use __dirname directly since we're compiling to CommonJS
+// prettier-ignore
+// @ts-ignore
+// eslint-disable-next-line max-len
+const __dirname = typeof global.__dirname !== 'undefined' ? global.__dirname : path.dirname(fileURLToPath(import.meta.url));
 
 /**
  * @param {String} testTitle - Test title
@@ -107,7 +114,7 @@ const fetchSourceCodeFromStackTrace = (stack = '') => {
     .join('\n');
 };
 
-const TEST_ID_REGEX = /@T([\w\d]{8})/;
+export const TEST_ID_REGEX = /@T([\w\d]{8})/;
 
 const fetchIdFromCode = (code, opts = {}) => {
   const comments = code
@@ -148,6 +155,9 @@ const fetchSourceCode = (contents, opts = {}) => {
     if (opts.lang === 'java') {
       lineIndex = lines.findIndex(l => l.includes(`test${title}`));
       if (lineIndex === -1) lineIndex = lines.findIndex(l => l.includes(`@DisplayName("${title}`));
+      if (lineIndex === -1) lineIndex = lines.findIndex(l => l.includes(`public void ${title}`));
+      if (lineIndex === -1) lineIndex = lines.findIndex(l => l.includes(`${title}(`));
+    } else if (opts.lang === 'csharp') {
       if (lineIndex === -1) lineIndex = lines.findIndex(l => l.includes(`public void ${title}`));
       if (lineIndex === -1) lineIndex = lines.findIndex(l => l.includes(`${title}(`));
     } else {
@@ -351,6 +361,12 @@ function formatStep(step, shift = 0) {
   }
 
   return lines;
+}
+
+export function getPackageVersion() {
+  const packageJsonPath = path.resolve(__dirname, '../../package.json');
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+  return packageJson.version;
 }
 
 export {

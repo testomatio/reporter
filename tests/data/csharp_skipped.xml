@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" duration="21.426175999999998" testcasecount="2" total="2" passed="1" failed="0" inconclusive="0" skipped="1" result="Passed" start-time="2025-04-14T16:32:51Z" end-time="2025-04-14T16:33:48Z">
+  <test-suite type="Assembly" name="E2E.Tests.dll" fullname="/path/to/E2E.Tests.dll" total="2" passed="1" failed="0" inconclusive="0" skipped="1" result="Passed" start-time="2025-04-14T16:33:27Z" end-time="2025-04-14T16:33:48Z" duration="21.426176">
+    <test-suite type="TestSuite" name="E2E" fullname="E2E" total="2" passed="1" failed="0" inconclusive="0" skipped="1" result="Passed" start-time="2025-04-14T16:33:27Z" end-time="2025-04-14T16:33:48Z" duration="21.426176">
+      <test-suite type="TestSuite" name="Tests" fullname="E2E.Tests" total="2" passed="1" failed="0" inconclusive="0" skipped="1" result="Passed" start-time="2025-04-14T16:33:27Z" end-time="2025-04-14T16:33:48Z" duration="21.426176">
+        <test-suite type="TestSuite" name="Tests" fullname="E2E.Tests" total="2" passed="1" failed="0" inconclusive="0" skipped="1" result="Passed" start-time="2025-04-14T16:33:27Z" end-time="2025-04-14T16:33:48Z" duration="21.426176">
+          <test-suite type="TestSuite" name="Payment" fullname="E2E.Tests.Payment" total="2" passed="1" failed="0" inconclusive="0" skipped="1" result="Passed" start-time="2025-04-14T16:33:27Z" end-time="2025-04-14T16:33:48Z" duration="21.426176">
+            <test-suite type="TestFixture" name="UserScenarios" fullname="E2E.Tests.Payment.UserScenarios" classname="E2E.Tests.Payment.UserScenarios" total="2" passed="1" failed="0" inconclusive="0" skipped="1" result="Passed" start-time="2025-04-14T16:33:27Z" end-time="2025-04-14T16:33:48Z" duration="21.426176">
+              <test-case name="VerifyServiceStarted" fullname="E2E.Tests.Payment.UserScenarios.VerifyServiceStarted" methodname="VerifyServiceStarted" classname="UserScenarios" result="Skipped" start-time="2025-04-14T16:33:27Z" end-time="2025-04-14T16:33:27Z" duration="0.002322" asserts="0" seed="1387745748">
+                <properties>
+                  <property name="Category" value="Payment" />
+                  <property name="Category" value="T00000076" />
+                </properties>
+                <output><![CDATA[Some Reason
+]]></output>
+              </test-case>
+              <test-case name="VerifyChangesInServiceSaved" fullname="E2E.Tests.Payment.UserScenarios.VerifyChangesInServiceSaved" methodname="VerifyChangesInServiceSaved" classname="UserScenarios" result="Passed" start-time="2025-04-14T16:33:27Z" end-time="2025-04-14T16:33:48Z" duration="21.423854" asserts="0" seed="515124301">
+                <properties>
+                  <property name="Category" value="Payment" />
+                  <property name="Category" value="T000000be" />
+                </properties>
+                <output><![CDATA[[Test] UserScenarios.VerifyChangesInServiceSaved
+[ID] tid://@T575eb8be
+[16:33:28 INF] Sending POST request to: https://api.example.com/api/customers/add
+[16:33:28 DBG] Request body: {"Email":"[REDACTED]","FirstName":null,"LastName":"[REDACTED]","EnterpriseId":"[REDACTED]","ProfileId":"[REDACTED]","AccessToken":"[REDACTED]","Client":"TestAutomation"}
+[16:33:28 DBG] Response status is 200
+[16:33:29 INF] Sending POST request to: https://api.example.com/api/services/getAll
+
+
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+    <errors />
+  </test-suite>
+</test-run>

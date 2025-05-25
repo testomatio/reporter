@@ -184,6 +184,86 @@ TESTOMATIO=tstmt_* npx @testomatio/reporter upload-artifacts
 
 However, `upload-artifacts` command will upload all files after the run, without blocking the final result.
 
+### 6. replay
+
+Replay test data from a debug file and re-send it to Testomat.io. This command is useful for recovering test results when the original test run failed to upload properly.
+
+#### Usage
+
+```bash
+npx @testomatio/reporter replay [debug-file] [options]
+```
+
+#### Arguments
+
+- `[debug-file]` - Path to the debug file created by the Debug Pipe (optional, defaults to `/tmp/testomatio.debug.latest.json`)
+
+#### Options
+
+- `--env-file <envfile>` - Load environment variables from env file
+
+#### Examples
+
+**Replay from default debug file:**
+
+```bash
+TESTOMATIO=<your-api-key> npx @testomatio/reporter replay
+```
+
+**Replay from custom debug file:**
+
+```bash
+TESTOMATIO=<your-api-key> npx @testomatio/reporter replay /path/to/custom-debug.json
+```
+
+#### Prerequisites
+
+1. **Debug file**: The debug file must be created by running tests with `TESTOMATIO_DEBUG=1` environment variable
+2. **API key**: Set `TESTOMATIO` environment variable with your API key
+3. **Valid debug data**: The debug file must contain test batch data
+
+#### How it works
+
+1. **Parse debug file**: Reads the debug file line by line and extracts:
+
+   - Environment variables
+   - Run parameters
+   - Test batch data
+   - Finish parameters
+
+2. **Restore environment**: Restores Testomatio environment variables if not already set
+
+3. **Create new run**: Creates a new test run in Testomat.io
+
+4. **Send test results**: Sends each test result from the debug file
+
+5. **Finish run**: Marks the run as completed with the original status
+
+#### Debug File Format
+
+Debug files are created automatically when `TESTOMATIO_DEBUG=1` is set. They are always saved as `/tmp/testomatio.debug.latest.json` and contain JSON lines with:
+
+```json
+{"t":"+0ms","datetime":"2025-05-25T11:32:27.992Z","timestamp":1748172747992}
+{"t":"+0ms","data":"variables","testomatioEnvVars":{"TESTOMATIO_URL":"http://localhost:3000"}}
+{"t":"+1ms","action":"createRun","params":{}}
+{"t":"+32.3s","action":"addTestsBatch","tests":[...]}
+{"t":"+0ms","actions":"finishRun","params":{"status":"failed","parallel":false}}
+```
+
+#### Error Handling
+
+- **File not found**: Command exits with error code 1
+- **Empty file**: Command exits with error code 1
+- **No test data**: Command exits with error code 1
+- **Parse errors**: Warnings are shown but processing continues
+- **API errors**: Individual test failures are logged but don't stop the process
+
+#### Related
+
+- [Debug Pipe Documentation](./pipes/debug.md)
+- [Environment Variables](./environment.md)
+
 ## Environment Variables
 
 Many commands rely on environment variables. You can set these in a command line, in a `.env` file, or use the `--env-file` option to specify a custom env file. Important variables include:
