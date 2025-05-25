@@ -11,8 +11,7 @@ const debug = createDebugMessages('@testomatio/reporter:util');
 
 // Use __dirname directly since we're compiling to CommonJS
 // @ts-ignore - import.meta is only available in ESM
-const currentDir = path.dirname(fileURLToPath(import.meta.url));
-const __dirname = typeof global.__dirname !== 'undefined' ? global.__dirname : currentDir;
+const __dirname = typeof global.__dirname !== 'undefined' ? global.__dirname : path.dirname(fileURLToPath(import.meta.url));
 
 /**
  * @param {String} testTitle - Test title
