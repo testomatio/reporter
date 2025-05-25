@@ -7,10 +7,13 @@ import { APP_PREFIX, STATUS } from '../constants.js';
 import { getPackageVersion } from '../utils/utils.js';
 import { config } from '../config.js';
 import dotenv from 'dotenv';
+import { checkForEnvPassedAsArguments } from '../utils/cli_utils.js';
 
 const version = getPackageVersion();
 console.log(pc.cyan(pc.bold(` 🤩 Testomat.io Reporter v${version}`)));
 const program = new Command();
+
+checkForEnvPassedAsArguments();
 
 program
   .option('-c, --command <cmd>', 'Test runner command')
