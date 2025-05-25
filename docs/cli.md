@@ -205,11 +205,13 @@ npx @testomatio/reporter replay [debug-file] [options]
 #### Examples
 
 **Replay from default debug file:**
+
 ```bash
 TESTOMATIO=<your-api-key> npx @testomatio/reporter replay
 ```
 
 **Replay from custom debug file:**
+
 ```bash
 TESTOMATIO=<your-api-key> npx @testomatio/reporter replay /path/to/custom-debug.json
 ```
@@ -223,6 +225,7 @@ TESTOMATIO=<your-api-key> npx @testomatio/reporter replay /path/to/custom-debug.
 #### How it works
 
 1. **Parse debug file**: Reads the debug file line by line and extracts:
+
    - Environment variables
    - Run parameters
    - Test batch data

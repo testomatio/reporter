@@ -348,7 +348,8 @@ program
           }
         } catch (err) {
           parseErrors++;
-          if (parseErrors <= 3) { // Only show first 3 parse errors
+          if (parseErrors <= 3) {
+            // Only show first 3 parse errors
             console.warn(APP_PREFIX, `⚠️  Failed to parse line ${lineIndex + 1}: ${line.substring(0, 100)}...`);
           }
         }
@@ -372,7 +373,7 @@ program
       }
 
       // Create client and restore the run
-      const client = new TestomatClient({ 
+      const client = new TestomatClient({
         apiKey,
         isBatchEnabled: true,
         ...runParams,
@@ -394,7 +395,6 @@ program
 
       console.log(APP_PREFIX, `✅ Successfully replayed ${allTests.length} tests from debug file`);
       process.exit(0);
-
     } catch (err) {
       console.error(APP_PREFIX, '❌ Error replaying debug data:', err.message);
       console.error(err.stack);

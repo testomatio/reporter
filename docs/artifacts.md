@@ -244,8 +244,8 @@ Please note, that you need to enable [Use Private URLs for Test Artifacts](https
 
 ![Testomatio - Set permissions for Api key](./images/API_key_4.png)
 
-  > [!WARNING]  
-  > If you set permission for bucket "Object..." need setup CORS policy manually, for "Admins" it is not required
+> [!WARNING]  
+> If you set permission for bucket "Object..." need setup CORS policy manually, for "Admins" it is not required
 
 **Policy Settings**:
 
