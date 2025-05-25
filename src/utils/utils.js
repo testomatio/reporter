@@ -10,7 +10,10 @@ import { fileURLToPath } from 'url';
 const debug = createDebugMessages('@testomatio/reporter:util');
 
 // Use __dirname directly since we're compiling to CommonJS
-const __dirname = path.resolve();
+// prettier-ignore
+// @ts-ignore
+// eslint-disable-next-line max-len
+const __dirname = typeof global.__dirname !== 'undefined' ? global.__dirname : path.dirname(fileURLToPath(import.meta.url));
 
 /**
  * @param {String} testTitle - Test title

@@ -1,6 +1,6 @@
 {
   "name": "@testomatio/reporter",
-  "version": "2.0.0",
+  "version": "2.0.0-beta.5-xml",
   "description": "Testomatio Reporter Client",
   "engines": {
     "node": ">=18"
@@ -68,7 +68,7 @@
     "test:adapter:vitest:example": "npx vitest --config='./tests/adapter/examples/vitest/vitest.config.ts'",
     "test:storage": "npx mocha tests-storage/artifact-storage.test.js && npx mocha tests-storage/data-storage.test.js && TESTOMATIO_INTERCEPT_CONSOLE_LOGS=true npx mocha tests-storage/logger.test.js && npx mocha tests-storage/logger-2.test.js && npx mocha tests-storage/reporter-functions.test.js",
     "build": "rm -rf ./cjs && tsc --module commonjs && npx tsx build/scripts/edit-js-files.js && npx tsx build/scripts/edit-package-json.js && chmod +x ./build/scripts/copy-tesmplate.sh && ./build/scripts/copy-tesmplate.sh",
-    "build:bun": "rm -rf ./cjs && bun build ./src/reporter.js ./src/bin/reportXml.js ./src/bin/startTest.js ./src/bin/uploadArtifacts.js --outdir ./cjs --target node",
+    "build:bun": "rm -rf ./cjs && bun build ./src/reporter.js ./src/bin/reportXml.js ./src/bin/startTest.js ./src/bin/uploadArtifacts.js --outdir ./cjs --target node && bun build/scripts/edit-js-files.js && bun build/scripts/edit-package-json.js && chmod +x ./build/scripts/copy-tesmplate.sh && ./build/scripts/copy-tesmplate.sh",
     "build:watch:bun": "rm -rf ./cjs && bun build ./src/bin/reportXml.js ./src/bin/startTest.js ./src/bin/uploadArtifacts.js --outdir ./cjs --target node --watch --onSuccess \"build/scripts/post-build.js\""
   },
   "devDependencies": {

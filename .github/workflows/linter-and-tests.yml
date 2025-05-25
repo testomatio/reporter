@@ -24,7 +24,6 @@ jobs:
       - run: node -v
       - run: npm ci
       - run: npm run lint
-      - run: npm run pretty:fix
       # - run: npm run test:adapter:playwright:example
       - run: npm run build
       - run: npm run test
