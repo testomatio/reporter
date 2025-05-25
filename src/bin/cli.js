@@ -327,8 +327,8 @@ program
 
       let runParams = {};
       let finishParams = {};
-      let allTests = [];
       let parseErrors = 0;
+      const allTests = [];
 
       // Parse debug file line by line
       for (const [lineIndex, line] of lines.entries()) {
@@ -342,7 +342,6 @@ program
           } else if (logEntry.action === 'addTestsBatch' && logEntry.tests) {
             allTests.push(...logEntry.tests);
           } else if (logEntry.action === 'addTest' && logEntry.testId) {
-            // Handle individual test additions (non-batch mode)
             allTests.push(logEntry.testId);
           } else if (logEntry.actions === 'finishRun') {
             finishParams = logEntry.params || {};
