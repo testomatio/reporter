@@ -13,10 +13,7 @@ import { readLatestRunId } from '../utils/utils.js';
 import pc from 'picocolors';
 import { filesize as prettyBytes } from 'filesize';
 import dotenv from 'dotenv';
-import fs from 'fs';
-import path from 'path';
-import os from 'os';
-import ReplayService from '../replay.js';
+import Replay from '../replay.js';
 
 const debug = createDebugMessages('@testomatio/reporter:xml-cli');
 const version = getPackageVersion();
@@ -307,7 +304,7 @@ program
   .option('--dry-run', 'Preview the data without sending to Testomat.io')
   .action(async (debugFile, opts) => {
     try {
-      const replayService = new ReplayService({
+      const replayService = new Replay({
         apiKey: config.TESTOMATIO,
         dryRun: opts.dryRun,
         onLog: (message) => console.log(APP_PREFIX, message),

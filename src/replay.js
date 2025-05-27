@@ -5,7 +5,7 @@ import TestomatClient from './client.js';
 import { STATUS } from './constants.js';
 import { config } from './config.js';
 
-export class ReplayService {
+export class Replay {
   constructor(options = {}) {
     this.apiKey = options.apiKey || config.TESTOMATIO || undefined;
     this.dryRun = options.dryRun || false;
@@ -242,4 +242,4 @@ export class ReplayService {
   }
 }
 
-export default ReplayService; 
+export default Replay; 
