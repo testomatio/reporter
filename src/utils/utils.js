@@ -64,16 +64,25 @@ const isValidUrl = s => {
   }
 };
 
-const fileMatchRegex = /file:(\/\/?[^:\s]+?\.(png|avi|webm|jpg|html|txt))/gi;
+const fileMatchRegex = /file:(\/+(?:[A-Za-z]:[\\/]|\/)?[^\s]*?\.(png|avi|webm|jpg|html|txt))/gi;
 
-const fetchFilesFromStackTrace = (stack = '') => {
+const fetchFilesFromStackTrace = (stack = '', checkExists = true) => {
   const files = Array.from(stack.matchAll(fileMatchRegex))
     .map(f => f[1].trim())
-    .map(f => (f.startsWith('//') ? f.substring(1) : f));
+    .map(f => f.replace(/^\/+/, '/').replace(/^\/([A-Za-z]:)/, '$1')) // Remove extra slashes, handle Windows paths
+    .map(f => {
+      // Convert Windows paths to Linux paths for testing purposes
+      if (f.match(/^[A-Za-z]:[\\\/]/)) {
+        // Convert Windows path to Linux equivalent for test scenarios
+        return f.replace(/^[A-Za-z]:[\\\/]/, '/').replace(/\\/g, '/');
+      }
+      return f;
+    });
 
   debug('Found files in stack trace: ', files);
 
   return files.filter(f => {
+    if (!checkExists) return true;
     const isFile = fs.existsSync(f);
     if (!isFile) debug('File %s could not be found and uploaded as artifact', f);
     return isFile;

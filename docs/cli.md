@@ -186,83 +186,56 @@ However, `upload-artifacts` command will upload all files after the run, without
 
 ### 6. replay
 
-Replay test data from a debug file and re-send it to Testomat.io. This command is useful for recovering test results when the original test run failed to upload properly.
+The `replay` command allows you to re-send test data from debug files to Testomat.io. This is useful when your original test run failed to upload results properly.
 
-#### Usage
-
+**Usage:**
 ```bash
 npx @testomatio/reporter replay [debug-file] [options]
 ```
 
-#### Arguments
+**Arguments:**
+- `debug-file` (optional) - Path to debug file. Defaults to `/tmp/testomatio.debug.latest.json`
 
-- `[debug-file]` - Path to the debug file created by the Debug Pipe (optional, defaults to `/tmp/testomatio.debug.latest.json`)
-
-#### Options
-
+**Options:**
+- `--dry-run` - Preview the data without sending to Testomat.io
 - `--env-file <envfile>` - Load environment variables from env file
 
-#### Examples
-
-**Replay from default debug file:**
+**Examples:**
 
 ```bash
+# Replay the latest debug data
 TESTOMATIO=<your-api-key> npx @testomatio/reporter replay
+
+# Replay from a specific debug file
+TESTOMATIO=<your-api-key> npx @testomatio/reporter replay /path/to/debug.json
+
+# Preview what would be sent without actually sending
+TESTOMATIO=<your-api-key> npx @testomatio/reporter replay --dry-run
+
+# Use environment file
+npx @testomatio/reporter replay --env-file .env.staging
 ```
 
-**Replay from custom debug file:**
+**How it works:**
 
-```bash
-TESTOMATIO=<your-api-key> npx @testomatio/reporter replay /path/to/custom-debug.json
-```
+The replay command uses the `ReplayService` class (located in `src/replay.js`) to:
 
-#### Prerequisites
+1. Parse the debug file line by line
+2. Extract environment variables, run parameters, test data, and finish parameters
+3. Restore environment variables (without overriding existing ones)
+4. Create a new test run using the TestomatClient
+5. Send each test result individually
+6. Update the run status when complete
 
-1. **Debug file**: The debug file must be created by running tests with `TESTOMATIO_DEBUG=1` environment variable
-2. **API key**: Set `TESTOMATIO` environment variable with your API key
-3. **Valid debug data**: The debug file must contain test batch data
+**Debug File Format:**
 
-#### How it works
+Debug files contain JSON lines with timing information and test data:
+- Environment variables: Testomatio-related environment variables
+- Run parameters: Parameters used to create the test run  
+- Test batches: All test results with full details including steps, errors, and metadata
+- Finish parameters: Final run status and configuration
 
-1. **Parse debug file**: Reads the debug file line by line and extracts:
-
-   - Environment variables
-   - Run parameters
-   - Test batch data
-   - Finish parameters
-
-2. **Restore environment**: Restores Testomatio environment variables if not already set
-
-3. **Create new run**: Creates a new test run in Testomat.io
-
-4. **Send test results**: Sends each test result from the debug file
-
-5. **Finish run**: Marks the run as completed with the original status
-
-#### Debug File Format
-
-Debug files are created automatically when `TESTOMATIO_DEBUG=1` is set. They are always saved as `/tmp/testomatio.debug.latest.json` and contain JSON lines with:
-
-```json
-{"t":"+0ms","datetime":"2025-05-25T11:32:27.992Z","timestamp":1748172747992}
-{"t":"+0ms","data":"variables","testomatioEnvVars":{"TESTOMATIO_URL":"http://localhost:3000"}}
-{"t":"+1ms","action":"createRun","params":{}}
-{"t":"+32.3s","action":"addTestsBatch","tests":[...]}
-{"t":"+0ms","actions":"finishRun","params":{"status":"failed","parallel":false}}
-```
-
-#### Error Handling
-
-- **File not found**: Command exits with error code 1
-- **Empty file**: Command exits with error code 1
-- **No test data**: Command exits with error code 1
-- **Parse errors**: Warnings are shown but processing continues
-- **API errors**: Individual test failures are logged but don't stop the process
-
-#### Related
-
-- [Debug Pipe Documentation](./pipes/debug.md)
-- [Environment Variables](./environment.md)
+For more details about debug files, see the [Debug Pipe documentation](pipes/debug.md).
 
 ## Environment Variables
 

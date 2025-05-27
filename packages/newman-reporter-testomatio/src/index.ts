@@ -18,7 +18,7 @@ import pc from 'picocolors';
 const log = debug('newman-reporter-testomatio');
 type TestStatus = 'passed' | 'failed' | 'skipped' | 'finished';
 type ResponseSize = { body: number; header: number; total: number };
-// FIXME: when add chulk to package.json, this reporter does not work. have to investigate and try to fix
+// FIXME: when add chalk to package.json, this reporter does not work. have to investigate and try to fix
 
 const APP_PREFIX = pc.gray('[TESTOMATIO-NEWMAN-REPORTER]');
 
