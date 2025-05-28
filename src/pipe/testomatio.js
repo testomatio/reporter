@@ -367,6 +367,8 @@ class TestomatioPipe {
    * Adds a test to the batch uploader (or reports a single test if batch uploading is disabled)
    */
   addTest(data) {
+    this.isEnabled = this.apiKey ?? this.isEnabled;
+
     if (!this.isEnabled) return;
     if (!this.runId) return;
 
@@ -375,11 +377,15 @@ class TestomatioPipe {
     data.api_key = this.apiKey;
     data.create = this.createNewTests;
 
-    if (!this.batch.isEnabled) this.#uploadSingleTest(data);
+    let uploading = null;
+    if (!this.batch.isEnabled) uploading = this.#uploadSingleTest(data);
     else this.batch.tests.push(data);
 
     // if test is added after run which is already finished
-    if (!this.batch.intervalFunction) this.#batchUpload();
+     if (!this.batch.intervalFunction) uploading = this.#batchUpload();
+
+     // return promise to be able to wait for it
+    return uploading;
   }
 
   /**
