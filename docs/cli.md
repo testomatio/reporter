@@ -188,13 +188,15 @@ However, `upload-artifacts` command will upload all files after the run, without
 
 The `replay` command allows you to re-send test data from debug files to Testomat.io. This is useful when your original test run failed to upload results properly.
 
+**Important:** To make replay work, tests should be executed with `DEBUG=1` variable set, to ensure they are running in debug mode and save data into a file.
+
 **Usage:**
 ```bash
 npx @testomatio/reporter replay [debug-file] [options]
 ```
 
 **Arguments:**
-- `debug-file` (optional) - Path to debug file. Defaults to `/tmp/testomatio.debug.latest.json`
+- `debug-file` (optional) - Path to debug file. Defaults to latest created debug file, i.e. `/tmp/testomatio.debug.latest.json`
 
 **Options:**
 - `--dry-run` - Preview the data without sending to Testomat.io
@@ -203,6 +205,9 @@ npx @testomatio/reporter replay [debug-file] [options]
 **Examples:**
 
 ```bash
+# run playwright tests and store debug information
+TESTOMATIO=<your-api-key> DEBUG=1 npx playwright test
+
 # Replay the latest debug data
 TESTOMATIO=<your-api-key> npx @testomatio/reporter replay
 
@@ -226,14 +231,6 @@ The replay command uses the `ReplayService` class (located in `src/replay.js`) t
 4. Create a new test run using the TestomatClient
 5. Send each test result individually
 6. Update the run status when complete
-
-**Debug File Format:**
-
-Debug files contain JSON lines with timing information and test data:
-- Environment variables: Testomatio-related environment variables
-- Run parameters: Parameters used to create the test run  
-- Test batches: All test results with full details including steps, errors, and metadata
-- Finish parameters: Final run status and configuration
 
 For more details about debug files, see the [Debug Pipe documentation](pipes/debug.md).
 
