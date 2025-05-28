@@ -184,6 +184,59 @@ TESTOMATIO=tstmt_* npx @testomatio/reporter upload-artifacts
 
 However, `upload-artifacts` command will upload all files after the run, without blocking the final result.
 
+### 6. replay
+
+The `replay` command allows you to re-send test data from debug files to Testomat.io. This is useful when your original test run failed to upload results properly.
+
+**Usage:**
+```bash
+npx @testomatio/reporter replay [debug-file] [options]
+```
+
+**Arguments:**
+- `debug-file` (optional) - Path to debug file. Defaults to `/tmp/testomatio.debug.latest.json`
+
+**Options:**
+- `--dry-run` - Preview the data without sending to Testomat.io
+- `--env-file <envfile>` - Load environment variables from env file
+
+**Examples:**
+
+```bash
+# Replay the latest debug data
+TESTOMATIO=<your-api-key> npx @testomatio/reporter replay
+
+# Replay from a specific debug file
+TESTOMATIO=<your-api-key> npx @testomatio/reporter replay /path/to/debug.json
+
+# Preview what would be sent without actually sending
+TESTOMATIO=<your-api-key> npx @testomatio/reporter replay --dry-run
+
+# Use environment file
+npx @testomatio/reporter replay --env-file .env.staging
+```
+
+**How it works:**
+
+The replay command uses the `ReplayService` class (located in `src/replay.js`) to:
+
+1. Parse the debug file line by line
+2. Extract environment variables, run parameters, test data, and finish parameters
+3. Restore environment variables (without overriding existing ones)
+4. Create a new test run using the TestomatClient
+5. Send each test result individually
+6. Update the run status when complete
+
+**Debug File Format:**
+
+Debug files contain JSON lines with timing information and test data:
+- Environment variables: Testomatio-related environment variables
+- Run parameters: Parameters used to create the test run  
+- Test batches: All test results with full details including steps, errors, and metadata
+- Finish parameters: Final run status and configuration
+
+For more details about debug files, see the [Debug Pipe documentation](pipes/debug.md).
+
 ## Environment Variables
 
 Many commands rely on environment variables. You can set these in a command line, in a `.env` file, or use the `--env-file` option to specify a custom env file. Important variables include:

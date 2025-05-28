@@ -13,6 +13,7 @@ import { readLatestRunId } from '../utils/utils.js';
 import pc from 'picocolors';
 import { filesize as prettyBytes } from 'filesize';
 import dotenv from 'dotenv';
+import Replay from '../replay.js';
 
 const debug = createDebugMessages('@testomatio/reporter:xml-cli');
 const version = getPackageVersion();
@@ -293,6 +294,50 @@ program
           )}`,
         );
       });
+    }
+  });
+
+program
+  .command('replay')
+  .description('Replay test data from debug file and re-send to Testomat.io')
+  .argument('[debug-file]', 'Path to debug file (defaults to /tmp/testomatio.debug.latest.json)')
+  .option('--dry-run', 'Preview the data without sending to Testomat.io')
+  .action(async (debugFile, opts) => {
+    try {
+      const replayService = new Replay({
+        apiKey: config.TESTOMATIO,
+        dryRun: opts.dryRun,
+        onLog: (message) => console.log(APP_PREFIX, message),
+        onError: (message) => console.error(APP_PREFIX, '⚠️ ', message),
+        onProgress: ({ current, total }) => {
+          if (current % 10 === 0 || current === total) {
+            console.log(APP_PREFIX, `📊 Progress: ${current}/${total} tests processed`);
+          }
+        }
+      });
+
+      const result = await replayService.replay(debugFile);
+
+      if (result.dryRun) {
+        console.log(APP_PREFIX, '🔍 Dry run completed:');
+        console.log(APP_PREFIX, `  - Tests found: ${result.testsCount}`);
+        console.log(APP_PREFIX, `  - Environment variables: ${Object.keys(result.envVars).length}`);
+        console.log(APP_PREFIX, `  - Run parameters:`, result.runParams);
+        console.log(APP_PREFIX, '  Use without --dry-run to actually send the data');
+      } else {
+        console.log(APP_PREFIX, `✅ Successfully replayed ${result.successCount}/${result.testsCount} tests`);
+        if (result.failureCount > 0) {
+          console.log(APP_PREFIX, `⚠️  ${result.failureCount} tests failed to upload`);
+        }
+      }
+
+      process.exit(0);
+    } catch (err) {
+      console.error(APP_PREFIX, '❌ Error replaying debug data:', err.message);
+      if (err.message.includes('Debug file not found')) {
+        console.error(APP_PREFIX, '💡 Hint: Run tests with TESTOMATIO_DEBUG=1 to generate debug files');
+      }
+      process.exit(1);
     }
   });
 

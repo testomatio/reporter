@@ -44,6 +44,7 @@ curl -X POST "https://app.testomat.io/api/reporter?api_key=tstmt_your_api_key" \
 ```
 
 **HTTP Request:**
+
 ```
 POST https://app.testomat.io/api/reporter?api_key=tstmt_your_api_key
 Content-Type: application/json
@@ -63,6 +64,7 @@ all params are **optional**:
 - `group_title` (string): Put this run into Rungroup found by its title
 
 **Response:**
+
 ```json
 {
   "uid": "a0b1c2d3",
@@ -81,6 +83,7 @@ You can report test results individually or in batches:
 ### Individual Test Reporting
 
 **CURL Example:**
+
 ```bash
 curl -X POST "https://app.testomat.io/api/reporter/a0b1c2d3/testrun?api_key=tstmt_your_api_key" \
   -H "Content-Type: application/json" \
@@ -95,6 +98,7 @@ curl -X POST "https://app.testomat.io/api/reporter/a0b1c2d3/testrun?api_key=tstm
 ```
 
 **HTTP Request:**
+
 ```
 POST https://app.testomat.io/api/reporter/a0b1c2d3/testrun?api_key=tstmt_your_api_key
 Content-Type: application/json
@@ -112,6 +116,7 @@ Content-Type: application/json
 ### Batch Test Reporting
 
 **CURL Example:**
+
 ```bash
 curl -X POST "https://app.testomat.io/api/reporter/a0b1c2d3/testrun?api_key=tstmt_your_api_key" \
   -H "Content-Type: application/json" \
@@ -149,6 +154,7 @@ curl -X POST "https://app.testomat.io/api/reporter/a0b1c2d3/testrun?api_key=tstm
 ```
 
 **HTTP Request:**
+
 ```
 POST https://app.testomat.io/api/reporter/a0b1c2d3/testrun?api_key=tstmt_your_api_key
 Content-Type: application/json
@@ -188,6 +194,7 @@ Content-Type: application/json
 ```
 
 **Key Test Properties:**
+
 - `title` (string): Test name
 - `status` (string): Must be "passed", "failed", or "skipped"
 - `test_id` (string): ID of the test in Testomat.io (optional)
@@ -246,6 +253,7 @@ By using different `rid` values, both test executions will be reported separatel
 When all tests are reported, finish the test run:
 
 **CURL Example:**
+
 ```bash
 curl -X PUT "https://app.testomat.io/api/reporter/a0b1c2d3?api_key=tstmt_your_api_key" \
   -H "Content-Type: application/json" \
@@ -256,6 +264,7 @@ curl -X PUT "https://app.testomat.io/api/reporter/a0b1c2d3?api_key=tstmt_your_ap
 ```
 
 **HTTP Request:**
+
 ```
 PUT https://app.testomat.io/api/reporter/a0b1c2d3?api_key=tstmt_your_api_key
 Content-Type: application/json
@@ -267,6 +276,7 @@ Content-Type: application/json
 ```
 
 **Finishing Options:**
+
 - `status_event`: Use "finish" to calculate status from test results, or explicitly set "pass" or "fail"
 - `duration`: Total run duration in seconds
 
@@ -275,6 +285,7 @@ Content-Type: application/json
 If you want to automatically create tests in Testomat.io that don't exist yet, include `"create": true` in your request:
 
 **CURL Example:**
+
 ```bash
 curl -X POST "https://app.testomat.io/api/reporter/a0b1c2d3/testrun?api_key=tstmt_your_api_key" \
   -H "Content-Type: application/json" \
@@ -286,6 +297,7 @@ curl -X POST "https://app.testomat.io/api/reporter/a0b1c2d3/testrun?api_key=tstm
 ```
 
 **HTTP Request:**
+
 ```
 POST https://app.testomat.io/api/reporter/a0b1c2d3/testrun?api_key=tstmt_your_api_key
 Content-Type: application/json
@@ -357,6 +369,7 @@ Content-Type: application/json
 Each step can include the following properties:
 
 - `category` (string): Classifies the step type. Common values include:
+
   - `user`: High-level user action steps
   - `framework`: Internal framework operations
   - `hook`: Test hooks like beforeEach, afterEach
@@ -368,7 +381,6 @@ Each step can include the following properties:
 - `steps` (array): Nested steps (sub-steps)
 
 - `error` (object): Error information if the step failed
-
 
 ### Example: Complex Test with Steps and Error
 
@@ -489,11 +501,11 @@ To make Testomat.io display artifacts, configure its access in Settings > Artifa
 
 Instead of AWS S3 you can use any other S3 provider like:
 
-* Google Cloud Storage
-* Digital Ocean Spaces
-* MinIO
-* Cloudflare R2
-* etc
+- Google Cloud Storage
+- Digital Ocean Spaces
+- MinIO
+- Cloudflare R2
+- etc
 
 ## Reporting Parameterized Tests
 

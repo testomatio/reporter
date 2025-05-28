@@ -297,6 +297,17 @@ describe('XML Reader', () => {
     expect(tests[1].test_id).to.eql('575eb8be');
   });
 
+  it('should parse C# JUnit XML with test IDs', () => {
+    const reader = new XmlReader({ lang: 'c#' });
+    reader.connectAdapter();
+    const jsonData = reader.parse(path.join(dirname, 'data/csharp_id.xml'));
+    reader.fetchSourceCode();
+    reader.formatErrors();
+    reader.formatTests();
+
+    expect(jsonData.tests[0].test_id).to.eql('00000076');
+  });
+
   it('should parse NUnit TRX XML', () => {
     const reader = new XmlReader();
     const jsonData = reader.parse(path.join(dirname, 'data/nunit.xml'));

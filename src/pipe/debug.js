@@ -25,7 +25,22 @@ export class DebugPipe {
 
       debug('Creating debug file:', this.logFilePath);
       fs.writeFileSync(this.logFilePath, '');
-      console.log(APP_PREFIX, '🪲. Debug created:');
+
+      // Create symlink to ensure consistent path to latest debug file
+      const symlinkPath = path.join(os.tmpdir(), 'testomatio.debug.latest.json');
+      try {
+        // Remove existing symlink if it exists
+        if (fs.existsSync(symlinkPath)) {
+          fs.unlinkSync(symlinkPath);
+        }
+        // Create new symlink pointing to the timestamped debug file
+        fs.symlinkSync(this.logFilePath, symlinkPath);
+        debug('Created symlink:', symlinkPath, '->', this.logFilePath);
+      } catch (err) {
+        debug('Failed to create symlink:', err.message);
+      }
+
+      console.log(APP_PREFIX, '🪲 Debug file created');
       this.testomatioEnvVars = Object.keys(process.env)
         .filter(key => key.startsWith('TESTOMATIO_'))
         .reduce((acc, key) => {
@@ -95,7 +110,7 @@ export class DebugPipe {
     await this.batchUpload();
     if (this.batch.intervalFunction) clearInterval(this.batch.intervalFunction);
     this.logToFile({ action: 'finishRun', params });
-    console.log(APP_PREFIX, '🪲. Debug Saved to', this.logFilePath);
+    console.log(APP_PREFIX, '🪲 Debug Saved to', this.logFilePath);
   }
 
   toString() {
