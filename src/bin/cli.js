@@ -13,9 +13,7 @@ import { readLatestRunId } from '../utils/utils.js';
 import pc from 'picocolors';
 import { filesize as prettyBytes } from 'filesize';
 import dotenv from 'dotenv';
-import fs from 'fs';
-import path from 'path';
-import os from 'os';
+import Replay from '../replay.js';
 
 const debug = createDebugMessages('@testomatio/reporter:xml-cli');
 const version = getPackageVersion();
@@ -303,101 +301,42 @@ program
   .command('replay')
   .description('Replay test data from debug file and re-send to Testomat.io')
   .argument('[debug-file]', 'Path to debug file (defaults to /tmp/testomatio.debug.latest.json)')
+  .option('--dry-run', 'Preview the data without sending to Testomat.io')
   .action(async (debugFile, opts) => {
-    // Use default debug file if none provided
-    if (!debugFile) {
-      debugFile = path.join(os.tmpdir(), 'testomatio.debug.latest.json');
-    }
-
-    if (!fs.existsSync(debugFile)) {
-      console.log(APP_PREFIX, `❌ Debug file not found: ${debugFile}`);
-      return process.exit(1);
-    }
-
-    console.log(APP_PREFIX, `🪲 Replaying data from debug file: ${debugFile}`);
-
     try {
-      const fileContent = fs.readFileSync(debugFile, 'utf-8');
-      const lines = fileContent.trim().split('\n').filter(Boolean);
-
-      if (lines.length === 0) {
-        console.log(APP_PREFIX, '❌ Debug file is empty');
-        return process.exit(1);
-      }
-
-      let runParams = {};
-      let finishParams = {};
-      let parseErrors = 0;
-      const allTests = [];
-
-      // Parse debug file line by line
-      for (const [lineIndex, line] of lines.entries()) {
-        try {
-          const logEntry = JSON.parse(line);
-
-          if (logEntry.data === 'variables' && logEntry.testomatioEnvVars) {
-            Object.assign(process.env, logEntry.testomatioEnvVars, process.env);
-          } else if (logEntry.action === 'createRun') {
-            runParams = logEntry.params || {};
-          } else if (logEntry.action === 'addTestsBatch' && logEntry.tests) {
-            allTests.push(...logEntry.tests);
-          } else if (logEntry.action === 'addTest' && logEntry.testId) {
-            allTests.push(logEntry.testId);
-          } else if (logEntry.actions === 'finishRun') {
-            finishParams = logEntry.params || {};
-          }
-        } catch (err) {
-          parseErrors++;
-          if (parseErrors <= 3) {
-            // Only show first 3 parse errors
-            console.warn(APP_PREFIX, `⚠️  Failed to parse line ${lineIndex + 1}: ${line.substring(0, 100)}...`);
+      const replayService = new Replay({
+        apiKey: config.TESTOMATIO,
+        dryRun: opts.dryRun,
+        onLog: (message) => console.log(APP_PREFIX, message),
+        onError: (message) => console.error(APP_PREFIX, '⚠️ ', message),
+        onProgress: ({ current, total }) => {
+          if (current % 10 === 0 || current === total) {
+            console.log(APP_PREFIX, `📊 Progress: ${current}/${total} tests processed`);
           }
         }
-      }
-
-      if (parseErrors > 3) {
-        console.warn(APP_PREFIX, `⚠️  ${parseErrors - 3} more parse errors occurred`);
-      }
-
-      console.log(APP_PREFIX, `📊 Found ${allTests.length} tests to replay`);
-
-      if (allTests.length === 0) {
-        console.log(APP_PREFIX, '❌ No test data found in debug file');
-        return process.exit(1);
-      }
-
-      const apiKey = config.TESTOMATIO;
-      if (!apiKey) {
-        console.log(APP_PREFIX, '❌ TESTOMATIO API key not found. Set TESTOMATIO environment variable.');
-        return process.exit(1);
-      }
-
-      // Create client and restore the run
-      const client = new TestomatClient({
-        apiKey,
-        isBatchEnabled: true,
-        ...runParams,
       });
 
-      console.log(APP_PREFIX, '🚀 Publishing to run...');
-      await client.createRun(runParams);
+      const result = await replayService.replay(debugFile);
 
-      // Send each test result - let client.js handle the data mapping and formatting
-      for (const [index, test] of allTests.entries()) {
-        try {
-          await client.addTestRun(test.status, test);
-        } catch (err) {
-          console.warn(APP_PREFIX, `⚠️  Failed to send test ${index + 1}: ${err.message}`);
+      if (result.dryRun) {
+        console.log(APP_PREFIX, '🔍 Dry run completed:');
+        console.log(APP_PREFIX, `  - Tests found: ${result.testsCount}`);
+        console.log(APP_PREFIX, `  - Environment variables: ${Object.keys(result.envVars).length}`);
+        console.log(APP_PREFIX, `  - Run parameters:`, result.runParams);
+        console.log(APP_PREFIX, '  Use without --dry-run to actually send the data');
+      } else {
+        console.log(APP_PREFIX, `✅ Successfully replayed ${result.successCount}/${result.testsCount} tests`);
+        if (result.failureCount > 0) {
+          console.log(APP_PREFIX, `⚠️  ${result.failureCount} tests failed to upload`);
         }
       }
 
-      await client.updateRunStatus(finishParams.status || STATUS.FINISHED, finishParams.parallel || false);
-
-      console.log(APP_PREFIX, `✅ Successfully replayed ${allTests.length} tests from debug file`);
       process.exit(0);
     } catch (err) {
       console.error(APP_PREFIX, '❌ Error replaying debug data:', err.message);
-      console.error(err.stack);
+      if (err.message.includes('Debug file not found')) {
+        console.error(APP_PREFIX, '💡 Hint: Run tests with TESTOMATIO_DEBUG=1 to generate debug files');
+      }
       process.exit(1);
     }
   });

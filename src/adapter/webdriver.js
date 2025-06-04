@@ -81,6 +81,7 @@ class WebdriverReporter extends WDIOReporter {
       .map(el => Buffer.from(el.result.value, 'base64'));
 
     await this.client.addTestRun(state, {
+      rid: test.uid || '',
       manuallyAttachedArtifacts: test.artifacts,
       error,
       logs: test.logs,

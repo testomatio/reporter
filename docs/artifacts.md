@@ -304,11 +304,7 @@ Testomat.io Reporter has built-in support and automatically uploads saved artifa
 - Playwright
 - CodeceptJS
 - Сypress
-- WebdriverIO
-- Playwright
-- CodeceptJS
-- Сypress
-- WebdriverIO
+- WebdriverIO ([details](./frameworks.md#webdriverio))
 
 If a screenshot, a video, or a trace was saved and attached to test, Testomat.io Reporter will automatically upload any of these as artifacts.
 
