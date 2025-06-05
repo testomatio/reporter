@@ -102,6 +102,10 @@ class PlaywrightReporter {
         projectDependencies: project.dependencies?.length ? project.dependencies : null,
         ...testMeta,
         ...project.metadata, // metadata has any type (in playwright), but we will stringify it in client.js
+        ...test.annotations?.reduce((acc, annotation) => {
+          acc[annotation.type] = annotation.description;
+          return acc;
+        }, {}),
       },
       file: test.location?.file,
     });

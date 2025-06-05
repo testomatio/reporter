@@ -10,7 +10,7 @@ import { glob } from 'glob';
 import path, { sep } from 'path';
 import { fileURLToPath } from 'node:url';
 import { S3Uploader } from './uploader.js';
-import { formatStep, storeRunId } from './utils/utils.js';
+import { formatStep, storeRunId, validateSuiteId } from './utils/utils.js';
 import { filesize as prettyBytes } from 'filesize';
 
 const debug = createDebugMessages('@testomatio/reporter:client');
@@ -245,6 +245,10 @@ class Client {
 
     const artifacts = (await Promise.all(uploadedFiles)).filter(n => !!n);
 
+    const workspaceDir = process.env.TESTOMATIO_WORKDIR || process.cwd();
+    const relativeFile = file ? path.relative(workspaceDir, file) : file;
+    const rootSuiteId = validateSuiteId(process.env.TESTOMATIO_SUITE);
+
     const data = {
       rid,
       files,
@@ -252,7 +256,7 @@ class Client {
       status,
       stack: fullLogs,
       example,
-      file,
+      file: relativeFile,
       code,
       title,
       suite_title,
@@ -262,6 +266,7 @@ class Client {
       run_time: typeof time === 'number' ? time : parseFloat(time),
       artifacts,
       meta,
+      ...(rootSuiteId && { root_suite_id: rootSuiteId }),
     };
 
     // debug('Adding test run...', data);

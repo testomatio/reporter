@@ -1,0 +1,26 @@
+{
+  "name": "testomatio-playwright-example",
+  "version": "1.0.0",
+  "description": "Example Playwright project with Testomat.io reporter",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report",
+    "test:create": "TESTOMATIO_CREATE=1 playwright test",
+    "test:workdir": "TESTOMATIO_WORKDIR=/custom/path TESTOMATIO_CREATE=1 playwright test"
+  },
+  "keywords": [
+    "playwright",
+    "testing",
+    "testomat.io",
+    "reporter"
+  ],
+  "author": "Testomat.io",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.40.0"
+  },
+  "dependencies": {}
+}

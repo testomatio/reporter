@@ -1,6 +1,6 @@
 {
   "name": "@testomatio/reporter",
-  "version": "2.0.0-beta.5-xml",
+  "version": "2.0.0-beta.3",
   "description": "Testomatio Reporter Client",
   "engines": {
     "node": ">=18"
@@ -54,7 +54,9 @@
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "format": "npm run lint:fix && npm run pretty:fix",
-    "test": "mocha tests/**",
+    "test": "mocha tests/** --ignore tests/adapter/playwright.test.js --ignore tests/adapter/codecept.test.js",
+    "test:frameworks": "mocha tests/adapter/playwright.test.js tests/adapter/codecept.test.js",
+    "install-example-deps": "cd example/playwright && npm install && cd ../codecept && npm install",
     "init": "cd ./tests/adapter/examples/cucumber && npm i",
     "test:adapter": "node node_modules/mocha/bin/mocha './tests/adapter/index.test.js'",
     "test:pipes": "mocha './tests/pipes/*_test.js'",
