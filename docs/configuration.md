@@ -22,6 +22,14 @@ Create test which are not yet exist in a project
 TESTOMATIO={API_KEY} TESTOMATIO_CREATE=1 <actual run command>
 ```
 
+#### `TESTOMATIO_WORKDIR`
+
+Specify a custom working directory for relative file paths in test reports. When tests are created with `TESTOMATIO_CREATE=1`, file paths will be relative to this directory instead of the current working directory.
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_CREATE=1 TESTOMATIO_WORKDIR=/path/to/project <actual run command>
+```
+
 #### `TESTOMATIO_SUITE`
 
 Place newly created tests into a specific suite. Can be used on XML import or combined with `TESTOMATIO_CREATE=1`. Suite should be specified by its ID:
