@@ -15,7 +15,7 @@ on:
 jobs:
   linter-and-tests-on-latest-node:
     runs-on: ubuntu-latest
-    name: Linter&tests (latest node)
+    name: Linter & Tests (latest node)
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -31,7 +31,7 @@ jobs:
 
   framework-tests:
     runs-on: ubuntu-latest
-    name: Framework Adapter Tests (node 22)
+    name: Framework Adapter Tests (latest node)
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -40,13 +40,13 @@ jobs:
       - run: node -v
       - run: npm ci
       - run: npm run build
-      
+
       # Install framework dependencies from example directories
       - name: Install example dependencies
         run: npm run install-example-deps
       - name: Install Playwright browsers
         run: npx playwright install chromium
-        
+
       # Run framework adapter tests
       - run: npm run test:frameworks
 
