@@ -89,7 +89,11 @@ export class DebugPipe {
   async addTest(data) {
     if (!this.isEnabled) return;
 
-    if (!this.batch.isEnabled) this.logToFile({ action: 'addTest', testId: data });
+    if (!this.batch.isEnabled) {
+      const logData = { action: 'addTest', testId: data };
+      if (this.store.runId) logData.runId = this.store.runId;
+      this.logToFile(logData);
+    }
     else this.batch.tests.push(data);
 
     if (!this.batch.intervalFunction) await this.batchUpload();
@@ -102,7 +106,9 @@ export class DebugPipe {
 
     const testsToSend = this.batch.tests.splice(0);
 
-    this.logToFile({ action: 'addTestsBatch', tests: testsToSend });
+    const logData = { action: 'addTestsBatch', tests: testsToSend };
+    if (this.store.runId) logData.runId = this.store.runId;
+    this.logToFile(logData);
   }
 
   async finishRun(params) {
