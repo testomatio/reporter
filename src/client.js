@@ -155,9 +155,9 @@ class Client {
         suite_title: 'Unknown suite',
       };
 
-    // Add timestamp if not already present
+    // Add timestamp if not already present (microseconds since Unix epoch)
     if (!testData.timestamp) {
-      testData.timestamp = new Date().toISOString();
+      testData.timestamp = Math.floor(performance.now() * 1000) + Date.now() * 1000;
     }
 
     /**
