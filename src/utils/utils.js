@@ -40,10 +40,22 @@ const getTestomatIdFromTestTitle = testTitle => {
 const parseSuite = suiteTitle => {
   const captures = suiteTitle.match(/@S[\w\d]{8}/);
   if (captures) {
-    return captures[1];
+    return captures[0];
   }
 
   return null;
+};
+
+/**
+ * Validates TESTOMATIO_SUITE environment variable format
+ * @param {String} suiteId - suite ID to validate
+ * @returns {String|null} validated suite ID or null if invalid
+ */
+const validateSuiteId = suiteId => {
+  if (!suiteId) return null;
+  
+  const match = suiteId.match(SUITE_ID_REGEX);
+  return match ? match[0] : null;
 };
 
 const ansiRegExp = () => {
@@ -124,6 +136,7 @@ const fetchSourceCodeFromStackTrace = (stack = '') => {
 };
 
 export const TEST_ID_REGEX = /@T([\w\d]{8})/;
+export const SUITE_ID_REGEX = /@S([\w\d]{8})/;
 
 const fetchIdFromCode = (code, opts = {}) => {
   const comments = code
@@ -399,4 +412,5 @@ export {
   specificTestInfo,
   storeRunId,
   testRunnerHelper,
+  validateSuiteId,
 };
