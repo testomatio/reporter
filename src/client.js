@@ -157,7 +157,7 @@ class Client {
 
     // Add timestamp if not already present (microseconds since Unix epoch)
     if (!testData.timestamp) {
-      testData.timestamp = Math.floor(performance.now() * 1000) + Date.now() * 1000;
+      testData.timestamp = Math.floor((performance.timeOrigin + performance.now()) * 1000);
     }
 
     /**
