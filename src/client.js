@@ -155,6 +155,11 @@ class Client {
         suite_title: 'Unknown suite',
       };
 
+    // Add timestamp if not already present
+    if (!testData.timestamp) {
+      testData.timestamp = new Date().toISOString();
+    }
+
     /**
      * @type {TestData}
      */
@@ -172,6 +177,7 @@ class Client {
       suite_title,
       suite_id,
       test_id,
+      timestamp,
       manuallyAttachedArtifacts,
     } = testData;
     let { message = '', meta = {} } = testData;
@@ -264,6 +270,7 @@ class Client {
       test_id,
       message,
       run_time: typeof time === 'number' ? time : parseFloat(time),
+      timestamp,
       artifacts,
       meta,
       ...(rootSuiteId && { root_suite_id: rootSuiteId }),

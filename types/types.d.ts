@@ -50,6 +50,9 @@ export interface TestData {
   /** The time it took to execute the test case, in milliseconds. */
   time?: number;
 
+  /** Timestamp when the test was reported, in ISO 8601 format. */
+  timestamp?: string;
+
   /** Additional data associated with the test case. Used for parametrized tests. */
   example?: any;
 
