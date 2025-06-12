@@ -86,6 +86,16 @@ Example:
 TESTOMATIO_EXCLUDE_SKIPPED=1 <actual run command>
 ```
 
+#### `TESTOMATIO_NO_TIMESTAMP`
+
+Disable automatic timestamp generation for test results. By default, the reporter automatically adds timestamps to test data. Use this option if you run tests in parallel on different machines where time is not synchronized.
+
+Example:
+
+```
+TESTOMATIO_NO_TIMESTAMP=1 <actual run command>
+```
+
 #### `TESTOMATIO_INTERCEPT_CONSOLE_LOGS`
 
 Intercept console logs and add them to your report.
