@@ -483,7 +483,7 @@ function reduceTestCases(prev, item) {
   testCases
     .filter(t => !!t)
     .forEach(testCaseItem => {
-      const file = testCaseItem.file || item.filepath || item.fullname || '';
+      const file = testCaseItem.file || item.filepath || item.fullname || item.package || '';
 
       let stack = '';
       let message = '';
