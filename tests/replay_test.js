@@ -407,6 +407,130 @@ describe('ReplayService', () => {
         expect(err.message).to.include('No test data found in debug file');
       }
     });
+
+    it('should use existing run_id from debug pipe when available', async () => {
+      const existingRunId = 'existing-run-id-from-debug-pipe';
+      
+      const debugData = [
+        { data: 'variables', testomatioEnvVars: { TESTOMATIO: 'test-key' } },
+        { action: 'createRun', params: { title: 'Test Run' } },
+        { action: 'addTestsBatch', runId: existingRunId, tests: [
+          { id: 'test1', status: 'passed', title: 'Test 1' },
+          { id: 'test2', status: 'failed', title: 'Test 2' }
+        ]},
+        { actions: 'finishRun', params: { status: 'finished' } }
+      ];
+
+      fs.writeFileSync(debugFile, debugData.map(line => JSON.stringify(line)).join('\n'));
+
+      const result = await replayService.replay(debugFile);
+
+      expect(result.success).to.be.true;
+      expect(result.runId).to.equal(existingRunId);
+      
+      // Should NOT have called createRun since we're using existing runId
+      expect(mockClient.createRunCalled).to.be.false;
+      
+      // Should have logged that we're using existing run ID
+      expect(mockLogs.some(log => log.includes(`Using existing run ID: ${existingRunId}`))).to.be.true;
+      
+      // Should still process tests and finish run
+      expect(mockClient.addTestRunCalls).to.have.length(2);
+      expect(mockClient.updateRunStatusCalls).to.have.length(1);
+    });
+
+    it('should use existing run_id from addTest entries when available', async () => {
+      const existingRunId = 'existing-run-id-from-addtest';
+      
+      const debugData = [
+        { data: 'variables', testomatioEnvVars: { TESTOMATIO: 'test-key' } },
+        { action: 'createRun', params: { title: 'Test Run' } },
+        { action: 'addTest', runId: existingRunId, testId: { id: 'test1', status: 'passed', title: 'Test 1' } },
+        { action: 'addTest', runId: existingRunId, testId: { id: 'test2', status: 'failed', title: 'Test 2' } },
+        { actions: 'finishRun', params: { status: 'finished' } }
+      ];
+
+      fs.writeFileSync(debugFile, debugData.map(line => JSON.stringify(line)).join('\n'));
+
+      const result = await replayService.replay(debugFile);
+
+      expect(result.success).to.be.true;
+      expect(result.runId).to.equal(existingRunId);
+      
+      // Should NOT have called createRun since we're using existing runId
+      expect(mockClient.createRunCalled).to.be.false;
+      
+      // Should have logged that we're using existing run ID
+      expect(mockLogs.some(log => log.includes(`Using existing run ID: ${existingRunId}`))).to.be.true;
+    });
+
+    it('should create new run when no run_id is found in debug data', async () => {
+      const debugData = [
+        { data: 'variables', testomatioEnvVars: { TESTOMATIO: 'test-key' } },
+        { action: 'createRun', params: { title: 'Test Run' } },
+        { action: 'addTestsBatch', tests: [
+          { id: 'test1', status: 'passed', title: 'Test 1' }
+        ]},
+        { actions: 'finishRun', params: { status: 'finished' } }
+      ];
+
+      fs.writeFileSync(debugFile, debugData.map(line => JSON.stringify(line)).join('\n'));
+
+      const result = await replayService.replay(debugFile);
+
+      expect(result.success).to.be.true;
+      expect(result.runId).to.equal('test-run-id'); // Mock client runId
+      
+      // Should have called createRun since no existing runId
+      expect(mockClient.createRunCalled).to.be.true;
+      
+      // Should have logged about publishing to run
+      expect(mockLogs.some(log => log.includes('Publishing to run...'))).to.be.true;
+    });
+
+    it('should use first found run_id when multiple exist', async () => {
+      const firstRunId = 'first-run-id';
+      const secondRunId = 'second-run-id';
+      
+      const debugData = [
+        { action: 'createRun', params: { title: 'Test Run' } },
+        { action: 'addTestsBatch', runId: firstRunId, tests: [
+          { id: 'test1', status: 'passed' }
+        ]},
+        { action: 'addTest', runId: secondRunId, testId: { id: 'test2', status: 'passed' } }
+      ];
+
+      fs.writeFileSync(debugFile, debugData.map(line => JSON.stringify(line)).join('\n'));
+
+      const result = await replayService.replay(debugFile);
+
+      expect(result.runId).to.equal(firstRunId);
+      expect(mockClient.createRunCalled).to.be.false;
+    });
+
+    it('should include run_id in dry run results', async () => {
+      const dryRunService = new ReplayService({
+        apiKey: 'test-key',
+        dryRun: true,
+        onLog: mockOnLog
+      });
+
+      const existingRunId = 'dry-run-existing-id';
+      
+      const debugData = [
+        { action: 'createRun', params: { title: 'Test Run' } },
+        { action: 'addTestsBatch', runId: existingRunId, tests: [
+          { id: 'test1', status: 'passed' }
+        ]}
+      ];
+
+      fs.writeFileSync(debugFile, debugData.map(line => JSON.stringify(line)).join('\n'));
+
+      const result = await dryRunService.replay(debugFile);
+
+      expect(result.dryRun).to.be.true;
+      expect(result.runId).to.equal(existingRunId);
+    });
   });
 
   describe('integration scenarios', () => {

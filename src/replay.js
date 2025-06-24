@@ -45,6 +45,7 @@ export class Replay {
     const testsMap = new Map(); // Use Map to deduplicate by rid
     const testsWithoutRid = []; // For tests without rid (backward compatibility)
     const envVars = {};
+    let runId = null;
 
     // Parse debug file line by line
     for (const [lineIndex, line] of lines.entries()) {
@@ -56,6 +57,10 @@ export class Replay {
         } else if (logEntry.action === 'createRun') {
           runParams = logEntry.params || {};
         } else if (logEntry.action === 'addTestsBatch' && logEntry.tests) {
+          // Extract runId if available
+          if (logEntry.runId && !runId) {
+            runId = logEntry.runId;
+          }
           // Process each test in the batch
           for (const test of logEntry.tests) {
             if (test.rid) {
@@ -89,6 +94,10 @@ export class Replay {
             }
           }
         } else if (logEntry.action === 'addTest' && logEntry.testId) {
+          // Extract runId if available
+          if (logEntry.runId && !runId) {
+            runId = logEntry.runId;
+          }
           const test = logEntry.testId;
           if (test.rid) {
             // Handle tests with rid (deduplicate)
@@ -129,7 +138,8 @@ export class Replay {
       tests: allTests,
       envVars,
       parseErrors,
-      totalLines: lines.length
+      totalLines: lines.length,
+      runId
     };
   }
 
@@ -164,7 +174,7 @@ export class Replay {
 
     // Parse the debug file
     const debugData = this.parseDebugFile(debugFile);
-    const { runParams, finishParams, tests, envVars } = debugData;
+    const { runParams, finishParams, tests, envVars, runId } = debugData;
 
     this.onLog(`Found ${tests.length} tests to replay`);
 
@@ -182,6 +192,7 @@ export class Replay {
         runParams,
         finishParams,
         envVars,
+        runId,
         dryRun: true
       };
     }
@@ -193,8 +204,14 @@ export class Replay {
       ...runParams,
     });
 
-    this.onLog('Publishing to run...');
-    await client.createRun(runParams);
+    // Use the stored runId if available, otherwise create a new run
+    if (runId) {
+      this.onLog(`Using existing run ID: ${runId}`);
+      client.runId = runId;
+    } else {
+      this.onLog('Publishing to run...');
+      await client.createRun(runParams);
+    }
 
     // Send each test result
     let successCount = 0;
@@ -233,7 +250,7 @@ export class Replay {
       runParams,
       finishParams,
       envVars,
-      runId: client.runId
+      runId: runId || client.runId
     };
 
     this.onLog(`Successfully replayed ${successCount}/${tests.length} tests from debug file`);

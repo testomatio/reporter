@@ -133,6 +133,7 @@ Bring this reporter on CI and never lose test results again!
 - 🗄️ [Artifacts](./docs/artifacts.md)
 - 🔂 [Workflows](./docs/workflows.md)
 - 🖊️ [Logger](./docs/logger.md)
+- 🪲 [Debug File Format](./docs/debug-file-format.md)
 
 ## Development
 
