@@ -151,6 +151,7 @@ function CodeceptReporter(config) {
     const logs = getTestLogs(test);
     const manuallyAttachedArtifacts = services.artifacts.get(test.fullTitle());
     const keyValues = services.keyValues.get(test.fullTitle());
+    const labels = services.labels.get(test.fullTitle());
     services.setContext(null);
 
     client.addTestRun(STATUS.PASSED, {
@@ -164,6 +165,7 @@ function CodeceptReporter(config) {
       logs,
       manuallyAttachedArtifacts,
       meta: keyValues,
+      labels: labels,
     });
     // output.stop();
   });
@@ -208,6 +210,7 @@ function CodeceptReporter(config) {
     const logs = getTestLogs(test);
     const manuallyAttachedArtifacts = services.artifacts.get(test.fullTitle());
     const keyValues = services.keyValues.get(test.fullTitle());
+    const labels = services.labels.get(test.fullTitle());
     services.setContext(null);
 
     client.addTestRun(STATUS.FAILED, {
@@ -223,6 +226,7 @@ function CodeceptReporter(config) {
       logs,
       manuallyAttachedArtifacts,
       meta: keyValues,
+      labels: labels,
     });
 
     debug('artifacts', artifacts);

@@ -180,7 +180,7 @@ class Client {
       timestamp,
       manuallyAttachedArtifacts,
     } = testData;
-    let { message = '', meta = {} } = testData;
+    let { message = '', meta = {}, labels = {} } = testData;
 
     // stringify meta values and limit keys and values length to 255
     meta = Object.entries(meta)
@@ -218,6 +218,8 @@ class Client {
         if (key) acc[key] = value;
         return acc;
       }, {});
+
+    // Labels are simple array of strings, no processing needed
 
     let errorFormatted = '';
     if (error) {
@@ -273,6 +275,7 @@ class Client {
       timestamp,
       artifacts,
       meta,
+      labels,
       ...(rootSuiteId && { root_suite_id: rootSuiteId }),
     };
 

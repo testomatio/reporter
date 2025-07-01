@@ -8,11 +8,13 @@ declare module '@testomatio/reporter' {
     logger: typeof services.logger,
     meta: typeof reporterFunctions.keyValue,
     step: typeof reporterFunctions.step,
+    label: typeof reporterFunctions.label,
   };
 
   export const artifact: typeof reporterFunctions.artifact;
   export const log: typeof reporterFunctions.log;
   export const meta: typeof reporterFunctions.keyValue;
+  export const label: typeof reporterFunctions.label;
 }
 
 export interface FileType {
@@ -84,6 +86,9 @@ export interface TestData {
 
   /** Meta information (key: value) */
   meta?: { [key: string]: any } | {};
+
+  /** Labels array (e.g. ['smoke', 'severity:high', 'feature:login']) */
+  labels?: string[];
 }
 
 /**
