@@ -74,7 +74,7 @@
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-import": "^2.25.4",
     "jasmine": "^3.10.0",
-    "jest": "^27.4.7",
+    "jest": "^27.5.1",
     "jsdom": "^22.1.0",
     "mocha": "^11.1.0",
     "mock-http-server": "^1.4.5",
