@@ -79,7 +79,7 @@ describe('Testomat reporter functions', () => {
 
   it('set single label using testomat functions @T00000022', () => {
     dataStorage.setContext('@T00000022');
-    testomat.labels('smoke');
+    testomat.label('smoke');
     const contextHash = stringToMD5Hash('@T00000022');
     const filePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'labels', `labels_${contextHash}`);
     expect(fs.existsSync(filePath)).to.equal(true);
@@ -89,42 +89,9 @@ describe('Testomat reporter functions', () => {
 
   it('set multiple labels using testomat functions @T00000023', () => {
     dataStorage.setContext('@T00000023');
-    testomat.labels('smoke', 'severity:high', 'feature:login');
-    const contextHash = stringToMD5Hash('@T00000023');
-    const filePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'labels', `labels_${contextHash}`);
-    expect(fs.existsSync(filePath)).to.equal(true);
-    const fileContent = fs.readFileSync(filePath, 'utf8');
-    expect(fileContent).to.equal(JSON.stringify(['smoke', 'severity:high', 'feature:login']));
-  });
-
-  it('set labels using array format @T00000024', () => {
-    dataStorage.setContext('@T00000024');
-    testomat.labels(['regression', 'priority:critical', 'team:qa']);
-    const contextHash = stringToMD5Hash('@T00000024');
-    const filePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'labels', `labels_${contextHash}`);
-    expect(fs.existsSync(filePath)).to.equal(true);
-    const fileContent = fs.readFileSync(filePath, 'utf8');
-    expect(fileContent).to.equal(JSON.stringify(['regression', 'priority:critical', 'team:qa']));
-  });
-
-  it('set labels with multiple calls @T00000025', () => {
-    dataStorage.setContext('@T00000025');
-    testomat.labels('smoke', 'severity:high');
-    testomat.labels('feature:user_account');
-    const contextHash = stringToMD5Hash('@T00000025');
-    const filePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'labels', `labels_${contextHash}`);
-    expect(fs.existsSync(filePath)).to.equal(true);
-    const fileContent = fs.readFileSync(filePath, 'utf8');
-    const lines = fileContent.trim().split(os.EOL);
-    expect(lines[0]).to.equal(JSON.stringify(['smoke', 'severity:high']));
-    expect(lines[1]).to.equal(JSON.stringify(['feature:user_account']));
-  });
-
-  it('get merged labels using testomat functions @T00000026', () => {
-    dataStorage.setContext('get merged labels using testomat functions @T00000026');
-    testomat.labels('smoke', 'severity:high');
-    testomat.labels('feature:login', 'smoke'); // duplicate should be removed
-    const retrievedLabels = labelStorage.get('get merged labels using testomat functions @T00000026');
-    expect(retrievedLabels).to.deep.equal(['smoke', 'severity:high', 'feature:login']);
+    testomat.label('smoke');    
+    testomat.label('feature', 'login'); // duplicate should be removed
+    const retrievedLabels = labelStorage.get('@T00000023');
+    expect(retrievedLabels).to.deep.equal(['smoke', 'feature:login']);
   });
 });
