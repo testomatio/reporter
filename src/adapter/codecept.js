@@ -18,7 +18,6 @@ const { event, recorder, codecept } = global.codeceptjs;
 
 let currentMetaStep = [];
 let stepShift = 0;
-let isRunningHook = false;
 
 let stepStart = new Date();
 
@@ -75,14 +74,6 @@ function CodeceptReporter(config) {
     services.setContext(suite.fullTitle());
   });
 
-  event.dispatcher.on(event.hook.before, () => {
-    isRunningHook = true;
-  });
-
-  event.dispatcher.on(event.hook.after, () => {
-    isRunningHook = false;
-  });
-
   event.dispatcher.on(event.suite.after, () => {
     services.setContext(null);
   });
@@ -117,9 +108,7 @@ function CodeceptReporter(config) {
     await uploadAttachments(client, videos, '🎞️ Uploading', 'video');
     await uploadAttachments(client, traces, '📁 Uploading', 'trace');
 
-    const status = result.hasFailed ? STATUS.FAILED : STATUS.PASSED;
-    // @ts-ignore
-    client.updateRunStatus(status);
+    client.updateRunStatus('finished');
   });
 
   event.dispatcher.on(event.test.passed, test => {
