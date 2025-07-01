@@ -179,8 +179,9 @@ class Client {
       test_id,
       timestamp,
       manuallyAttachedArtifacts,
+      labels,
     } = testData;
-    let { message = '', meta = {}, labels = {} } = testData;
+    let { message = '', meta = {} } = testData;
 
     // stringify meta values and limit keys and values length to 255
     meta = Object.entries(meta)
