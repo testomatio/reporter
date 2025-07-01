@@ -10,6 +10,7 @@
 - [JUnit](#junit)
 - [Mocha](#mocha)
 - [Newman/Postman](#newman)
+- [Nightwatch](#nightwatch)
 - [Playwright](#playwright)
 - [Protractor](#protractor)
 - [Selenide](#selenide)
@@ -264,11 +265,9 @@ exports.config = {
 For making screenshots on failed tests add the following hook to `wdio.conf.js`:
 
 ```js
-    afterTest: function (test, context, { error, result, duration, passed, retries }) {
-        if (error) {
-            browser.takeScreenshot()
-        }
-    },
+afterTest: function (test, context, { error }) {
+  if (error) browser.takeScreenshot()
+}
 ```
 
 Run the following command from you project folder:
@@ -329,6 +328,18 @@ TESTOMATIO={API_KEY} npx newman run {collection_name.json} -r testomatio
 ```
 
 > 📑 [Example Project](https://github.com/testomatio/examples/tree/master/newman)
+
+### Nightwatch
+
+> 📐 When used with [Testomat.io Application](https://app.testomat.io) it is recommended to import automated tests first via [check-tests](https://github.com/testomatio/check-tests#cli). To create items on the fly set `TESTOMATIO_CREATE=1` env variable.
+
+1. Install Testomatio reporter:
+
+`npm install @testomatio/reporter --save-dev`
+
+2. Add testomatio reporter to your testrun command:
+
+`TESTOMATIO={API_KEY} npx nightwatch --reporter @testomatio/reporter/nightwatch`
 
 ### Detox
 

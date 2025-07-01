@@ -1,7 +1,7 @@
 import { APP_PREFIX, testomatLogoURL } from '../constants.js';
 import { ansiRegExp, isSameTest } from '../utils/utils.js';
 import { statusEmoji, fullName } from '../utils/pipe_utils.js';
-import axios from 'axios';
+import { Gaxios } from 'gaxios';
 import pc from 'picocolors';
 import humanizeDuration from 'humanize-duration';
 import merge from 'lodash.merge';
@@ -40,6 +40,13 @@ export class BitbucketPipe {
     }
 
     this.isEnabled = true;
+    this.client = new Gaxios({
+      baseURL: 'https://api.bitbucket.org/2.0',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.token}`
+      }
+    });
 
     debug('Bitbucket Pipe: Enabled');
   }
@@ -166,26 +173,21 @@ export class BitbucketPipe {
 
     // Construct Bitbucket API URL for comments
     // eslint-disable-next-line max-len
-    const commentsRequestURL = `https://api.bitbucket.org/2.0/repositories/${this.ENV.BITBUCKET_WORKSPACE}/${this.ENV.BITBUCKET_REPO_SLUG}/pullrequests/${this.ENV.BITBUCKET_PR_ID}/comments`;
+    const commentsRequestURL = `/repositories/${this.ENV.BITBUCKET_WORKSPACE}/${this.ENV.BITBUCKET_REPO_SLUG}/pullrequests/${this.ENV.BITBUCKET_PR_ID}/comments`;
 
     // Delete previous report
-    await deletePreviousReport(axios, commentsRequestURL, this.hiddenCommentData, this.token);
+    await deletePreviousReport(this.client, commentsRequestURL, this.hiddenCommentData);
 
     // Add current report
     debug(`Adding comment via URL: ${commentsRequestURL}`);
     debug(`Final Bitbucket API call body: ${body}`);
 
     try {
-      const addCommentResponse = await axios.post(
-        commentsRequestURL,
-        { content: { raw: body } },
-        {
-          headers: {
-            Authorization: `Bearer ${this.token}`,
-            'Content-Type': 'application/json',
-          },
-        },
-      );
+      const addCommentResponse = await this.client.request({
+        method: 'POST',
+        url: commentsRequestURL,
+        data: { content: { raw: body } }
+      });
 
       const commentID = addCommentResponse.data.id;
       // eslint-disable-next-line max-len
@@ -210,18 +212,16 @@ export class BitbucketPipe {
   updateRun() {}
 }
 
-async function deletePreviousReport(axiosInstance, commentsRequestURL, hiddenCommentData, token) {
+async function deletePreviousReport(client, commentsRequestURL, hiddenCommentData) {
   if (process.env.BITBUCKET_KEEP_OUTDATED_REPORTS) return;
 
   // Get comments
   let comments = [];
 
   try {
-    const response = await axiosInstance.get(commentsRequestURL, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
+    const response = await client.request({
+      method: 'GET',
+      url: commentsRequestURL
     });
     comments = response.data.values;
   } catch (e) {
@@ -236,11 +236,9 @@ async function deletePreviousReport(axiosInstance, commentsRequestURL, hiddenCom
       try {
         // Delete previous comment
         const deleteCommentURL = `${commentsRequestURL}/${comment.id}`;
-        await axiosInstance.delete(deleteCommentURL, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
+        await client.request({
+          method: 'DELETE',
+          url: deleteCommentURL
         });
       } catch (e) {
         console.warn(`Can't delete previously added comment with testomat.io report. Ignored.`);

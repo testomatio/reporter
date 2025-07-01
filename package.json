@@ -1,6 +1,6 @@
 {
   "name": "@testomatio/reporter",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Testomatio Reporter Client",
   "engines": {
     "node": ">=18"
@@ -14,10 +14,9 @@
     "@aws-sdk/client-s3": "^3.279.0",
     "@aws-sdk/lib-storage": "^3.279.0",
     "@cucumber/cucumber": "^10.9.0",
-    "@octokit/rest": "^19.0.5",
+    "@octokit/rest": "^21.1.1",
     "aws-sdk": "^2.1072.0",
-    "axios": "^1.6.2",
-    "axios-retry": "^3.9.1",
+    "gaxios": ">=6.0 || >=7.0.0-rc.4 || <8",
     "callsite-record": "^4.1.4",
     "commander": "^12",
     "cross-spawn": "^7.0.3",
@@ -49,14 +48,15 @@
     "testcafe"
   ],
   "scripts": {
-    "@cucumber/cucumber": "^10.9.0",
     "clear-exportdir": "rm -rf export/",
     "pretty": "npx prettier --check .",
     "pretty:fix": "prettier --write .",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "format": "npm run lint:fix && npm run pretty:fix",
-    "test": "mocha tests/**",
+    "test": "mocha tests/** --ignore tests/adapter/playwright.test.js --ignore tests/adapter/codecept.test.js",
+    "test:frameworks": "mocha tests/adapter/playwright.test.js tests/adapter/codecept.test.js",
+    "install-example-deps": "cd example/playwright && npm install && cd ../codecept && npm install",
     "init": "cd ./tests/adapter/examples/cucumber && npm i",
     "test:adapter": "node node_modules/mocha/bin/mocha './tests/adapter/index.test.js'",
     "test:pipes": "mocha './tests/pipes/*_test.js'",
@@ -68,8 +68,9 @@
     "test:adapter:playwright:example": "npx playwright test --config='./tests/adapter/examples/playwright/playwright.config.ts'",
     "test:adapter:vitest:example": "npx vitest --config='./tests/adapter/examples/vitest/vitest.config.ts'",
     "test:storage": "npx mocha tests-storage/artifact-storage.test.js && npx mocha tests-storage/data-storage.test.js && TESTOMATIO_INTERCEPT_CONSOLE_LOGS=true npx mocha tests-storage/logger.test.js && npx mocha tests-storage/logger-2.test.js && npx mocha tests-storage/reporter-functions.test.js",
-    "//": "builds code from /src (esm) into /lib (commonjs)",
-    "build": "rm -rf ./cjs && tsc --module commonjs && npx tsx build/scripts/edit-js-files.js && npx tsx build/scripts/edit-package-json.js && chmod +x ./build/scripts/copy-tesmplate.sh && ./build/scripts/copy-tesmplate.sh"
+    "build": "rm -rf ./cjs && tsc --module commonjs && npx tsx build/scripts/edit-js-files.js && npx tsx build/scripts/edit-package-json.js && chmod +x ./build/scripts/copy-tesmplate.sh && ./build/scripts/copy-tesmplate.sh",
+    "build:bun": "rm -rf ./cjs && bun build ./src/reporter.js ./src/bin/reportXml.js ./src/bin/startTest.js ./src/bin/uploadArtifacts.js --outdir ./cjs --target node && bun build/scripts/edit-js-files.js && bun build/scripts/edit-package-json.js && chmod +x ./build/scripts/copy-tesmplate.sh && ./build/scripts/copy-tesmplate.sh",
+    "build:watch:bun": "rm -rf ./cjs && bun build ./src/bin/reportXml.js ./src/bin/startTest.js ./src/bin/uploadArtifacts.js --outdir ./cjs --target node --watch --onSuccess \"build/scripts/post-build.js\""
   },
   "devDependencies": {
     "@playwright/test": "^1.49.1",
@@ -81,8 +82,7 @@
     "chai": "^4.3.6",
     "codeceptjs": "^3.6.5",
     "cucumber": "^6.0.7",
-    "eslint": "^8.57.0",
-    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint": "^9.24.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-import": "^2.25.4",
     "jasmine": "^5.2.0",
@@ -123,6 +123,7 @@
     "./lib/adapter/mocha/mocha.js": "./lib/adapter/mocha.js",
     "./mocha": "./lib/adapter/mocha.js",
     "./lib/adapter/playwright.js": "./lib/adapter/playwright.js",
+    "./nightwatch": "./lib/adapter/nightwatch.js",
     "./playwright": "./lib/adapter/playwright.js",
     "./vitest": "./lib/adapter/vitest.js",
     "./lib/adapter/webdriver.js": "./lib/adapter/webdriver.js",

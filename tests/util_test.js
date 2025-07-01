@@ -44,6 +44,59 @@ tries = 1000                  | # of calls to property
     expect(files).to.include(file1);
   });
 
+  it('#fetchFilesFromStackTrace | should match images with file:/// (3 slashes)', () => {
+    const file1 = `${process.cwd()}/tests/data/artifacts/failed_test.png`;
+    const file2 = `${process.cwd()}/tests/data/artifacts/screenshot1.png`;
+
+    const stack = `
+Test execution failed at step 3
+Screenshot captured: file:///${file1}
+Additional evidence: file:///${file2}
+
+Stack trace:
+at IntegrationTests.Features.MultipleFiles.TestWithMultipleArtifacts()
+    `;
+    const files = fetchFilesFromStackTrace(stack);
+    expect(files).to.include(file1);
+    expect(files).to.include(file2);
+    expect(files.length).to.eql(2);
+  });
+
+  it('#fetchFilesFromStackTrace | should extract multiple files from C# JUnit XML stack traces', () => {
+    const stack = `
+Test started at 2023-10-25T15:58:13
+Step 1: Navigate to login page - PASSED
+Step 2: Enter credentials - PASSED  
+Step 3: Click submit button - FAILED
+
+Evidence files captured:
+- Screenshot: file:///workdir/projects/testomatio/reporter/tests/data/artifacts/failed_test.png
+- Additional screenshot: file:///workdir/projects/testomatio/reporter/tests/data/artifacts/screenshot1.png
+- Additional screenshot: file://workdir/projects/testomatio/reporter/tests/data/artifacts/screenshot2.png
+- Windows path: file:/C:\\Users\\workdir\\projects\\testomatio\\reporter\\tests\\data\\artifacts\\failed_step1.png
+- Windows 2 path: file://C:/Users/workdir/projects/testomatio/reporter/tests/data/artifacts/failed_step2.png
+
+Test completed with failures
+
+Stack trace:
+at IntegrationTests.Features.MultipleFiles.TestWithMultipleArtifacts() in C:\\Projects\\Tests\\MultipleFiles.cs:line 42
+at Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter.Execution.TestMethodRunner.RunTestMethod()
+    `;
+    
+    // Test without file existence check to verify regex extraction
+    const files = fetchFilesFromStackTrace(stack, false);
+    
+    expect(files).to.be.an('array');
+    expect(files.length).to.eql(5);
+    
+    // Verify all expected files are extracted
+    expect(files).to.include('/workdir/projects/testomatio/reporter/tests/data/artifacts/failed_test.png');
+    expect(files).to.include('/workdir/projects/testomatio/reporter/tests/data/artifacts/screenshot1.png');
+    expect(files).to.include('/workdir/projects/testomatio/reporter/tests/data/artifacts/screenshot2.png');
+    expect(files).to.include('/Users/workdir/projects/testomatio/reporter/tests/data/artifacts/failed_step1.png');
+    expect(files).to.include('/Users/workdir/projects/testomatio/reporter/tests/data/artifacts/failed_step2.png');
+  });
+
   it('#fetchSourceCodeFromStackTrace | prefixed with at ', () => {
     const stack = `
 Expected: <4.0>
@@ -113,7 +166,6 @@ ${process.cwd()}/tests/data/cli/RunCest.php:24
     `;
 
     const test = fetchSourceCode(code, { lang: 'java', title: 'UserLogin' });
-    // console.log(test);
 
     expect(test).to.include(`UserLogin`);
     expect(test).to.include(`@Te4e19da3`);

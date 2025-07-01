@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import fs from 'fs';
-import {DebugPipe} from '../../lib/pipe/debug.js';
+import { DebugPipe } from '../../lib/pipe/debug.js';
 
 const LOG_DATA = {
   action: 'testAction',
@@ -62,7 +62,7 @@ describe('DebugPipe logging tests', () => {
     debugPipe.batch.intervalFunction = setInterval(() => {}, 5000);
     await debugPipe.finishRun({});
     const savedData = fs.readFileSync(logFilePath, 'utf-8').trim().split('\n');
-    expect(savedData.some(line => line.includes('"actions":"finishRun"'))).to.be.true;
+    expect(savedData.some(line => line.includes('"action":"finishRun"'))).to.be.true;
   });
 
   it('should append data to the same log file', async () => {

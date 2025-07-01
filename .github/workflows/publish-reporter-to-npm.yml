@@ -13,7 +13,13 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 16
-      - run: npm i
+      - run: npm ci
+
+      # build for all versions except 1.x.x
+      - name: build
+        run: npm run build
+        if: startsWith(github.event.release.tag_name, '1.') == false
+
       - run: git config --global user.name "GitHub CD bot"
       - run: git config --global user.email "github-cd-bot@example.com"
       - run: npm version ${{ github.event.release.tag_name }}

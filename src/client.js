@@ -10,7 +10,7 @@ import { glob } from 'glob';
 import path, { sep } from 'path';
 import { fileURLToPath } from 'node:url';
 import { S3Uploader } from './uploader.js';
-import { formatStep, storeRunId } from './utils/utils.js';
+import { formatStep, storeRunId, validateSuiteId } from './utils/utils.js';
 import { filesize as prettyBytes } from 'filesize';
 
 const debug = createDebugMessages('@testomatio/reporter:client');
@@ -31,7 +31,6 @@ class Client {
    * Create a Testomat client instance
    * @returns
    */
-  // eslint-disable-next-line
   constructor(params = {}) {
     this.paramsForPipesFactory = params;
     this.pipeStore = {};
@@ -79,7 +78,7 @@ class Client {
     try {
       const filterPipe = this.pipes.find(p => p.constructor.name.toLowerCase() === `${pipe.toLowerCase()}pipe`);
 
-      if (!filterPipe.isEnabled) {
+      if (!filterPipe?.isEnabled) {
         // TODO:for the future for the another pipes
         console.warn(
           APP_PREFIX,
@@ -156,6 +155,11 @@ class Client {
         suite_title: 'Unknown suite',
       };
 
+    // Add timestamp if not already present (microseconds since Unix epoch)
+    if (!testData.timestamp && !process.env.TESTOMATIO_NO_TIMESTAMP) {
+      testData.timestamp = Math.floor((performance.timeOrigin + performance.now()) * 1000);
+    }
+
     /**
      * @type {TestData}
      */
@@ -173,6 +177,7 @@ class Client {
       suite_title,
       suite_id,
       test_id,
+      timestamp,
       manuallyAttachedArtifacts,
     } = testData;
     let { message = '', meta = {} } = testData;
@@ -246,6 +251,10 @@ class Client {
 
     const artifacts = (await Promise.all(uploadedFiles)).filter(n => !!n);
 
+    const workspaceDir = process.env.TESTOMATIO_WORKDIR || process.cwd();
+    const relativeFile = file ? path.relative(workspaceDir, file) : file;
+    const rootSuiteId = validateSuiteId(process.env.TESTOMATIO_SUITE);
+
     const data = {
       rid,
       files,
@@ -253,7 +262,7 @@ class Client {
       status,
       stack: fullLogs,
       example,
-      file,
+      file: relativeFile,
       code,
       title,
       suite_title,
@@ -261,8 +270,10 @@ class Client {
       test_id,
       message,
       run_time: typeof time === 'number' ? time : parseFloat(time),
+      timestamp,
       artifacts,
       meta,
+      ...(rootSuiteId && { root_suite_id: rootSuiteId }),
     };
 
     // debug('Adding test run...', data);

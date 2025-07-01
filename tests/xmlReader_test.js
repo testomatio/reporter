@@ -3,7 +3,7 @@ import { expect, assert } from 'chai';
 import ServerMock from 'mock-http-server';
 import { config } from './adapter/config/index.js';
 import { registerHandlers } from './adapter/utils/index.js';
-import XmlReader from '../lib/xmlReader.js';
+import XmlReader from '../src/xmlReader.js';
 import { fileURLToPath } from 'url';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -249,6 +249,63 @@ describe('XML Reader', () => {
     const tests = jsonData.tests;
     expect(tests[0].title).to.include('Create a Web Lead');
     expect(tests[0].suite_title).to.include('User');
+  });
+
+  it('should parse TIDs from JUnit C#', () => {
+    const reader = new XmlReader({ lang: 'c#' });
+    reader.connectAdapter();
+    const jsonData = reader.parse(path.join(dirname, 'data/csharp_tid.xml'));
+    reader.fetchSourceCode();
+    reader.formatErrors();
+    reader.formatTests();
+
+    expect(jsonData.tests[0].test_id).to.eql('12345678');
+    expect(jsonData.tests[1].test_id).to.eql('a0b1c2d3');
+  });
+
+  it('should parse C# JUnit XML with skipped tests', () => {
+    const reader = new XmlReader({ lang: 'c#' });
+    const jsonData = reader.parse(path.join(dirname, 'data/csharp_skipped.xml'));
+
+    expect(jsonData.status).to.eql('passed');
+    expect(jsonData.tests_count).to.eql(2);
+    expect(jsonData.tests.length).to.eql(2);
+
+    reader.formatTests();
+
+    // Verify test statuses
+    const tests = jsonData.tests;
+    expect(tests[0].status).to.eql('skipped');
+    expect(tests[1].status).to.eql('passed');
+
+    // Verify test titles
+    expect(tests[0].title).to.eql('Verify Service Started');
+    expect(tests[1].title).to.eql('Verify Changes In Service Saved');
+
+    expect(tests[0].file).to.eql('E2E/Tests/Payment/UserScenarios.cs');
+    // Verify suite titles
+    expect(tests[0].suite_title).to.eql('UserScenarios');
+    expect(tests[1].suite_title).to.eql('UserScenarios');
+
+    // Verify tags/categories
+    expect(tests[0].tags).to.include('Payment');
+    expect(tests[0].tags).to.include('T00000076');
+    expect(tests[1].tags).to.include('Payment');
+    expect(tests[1].tags).to.include('T000000be');
+
+    // Verify test IDs
+    expect(tests[1].test_id).to.eql('575eb8be');
+  });
+
+  it('should parse C# JUnit XML with test IDs', () => {
+    const reader = new XmlReader({ lang: 'c#' });
+    reader.connectAdapter();
+    const jsonData = reader.parse(path.join(dirname, 'data/csharp_id.xml'));
+    reader.fetchSourceCode();
+    reader.formatErrors();
+    reader.formatTests();
+
+    expect(jsonData.tests[0].test_id).to.eql('00000076');
   });
 
   it('should parse NUnit TRX XML', () => {

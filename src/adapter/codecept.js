@@ -4,7 +4,6 @@ import TestomatClient from '../client.js';
 import { STATUS, APP_PREFIX, TESTOMAT_TMP_STORAGE_DIR } from '../constants.js';
 import { getTestomatIdFromTestTitle, fileSystem } from '../utils/utils.js';
 import { services } from '../services/index.js';
-// eslint-disable-next-line
 import codeceptjs from 'codeceptjs';
 
 const debug = createDebugMessages('@testomatio/reporter:adapter:codeceptjs');
@@ -227,7 +226,6 @@ function CodeceptReporter(config) {
     for (let i = 0; i < Math.max(currentMetaStep.length, metaSteps.length); i++) {
       if (currentMetaStep[i] !== metaSteps[i]) {
         stepShift = 2 * i;
-        // eslint-disable-next-line no-continue
         if (!metaSteps[i]) continue;
         if (metaSteps[i].isBDD()) {
           global.testomatioDataStore?.steps?.push(

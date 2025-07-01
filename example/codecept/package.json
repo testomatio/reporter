@@ -1,0 +1,26 @@
+{
+  "name": "testomatio-codecept-example",
+  "version": "1.0.0",
+  "description": "Example CodeceptJS project with Testomat.io reporter",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "codeceptjs run",
+    "test:simple": "codeceptjs run simple_test.js",
+    "test:debug": "DEBUG=1 TESTOMATIO_DEBUG=1 TESTOMATIO_DISABLE_BATCH_UPLOAD=1 codeceptjs run simple_test.js",
+    "test:create": "TESTOMATIO_CREATE=1 codeceptjs run simple_test.js",
+    "test:workdir": "TESTOMATIO_WORKDIR=/custom/path TESTOMATIO_CREATE=1 codeceptjs run simple_test.js"
+  },
+  "keywords": [
+    "codeceptjs",
+    "testing",
+    "testomat.io",
+    "reporter"
+  ],
+  "author": "Testomat.io",
+  "license": "MIT",
+  "devDependencies": {
+    "codeceptjs": "^3.5.0"
+  },
+  "dependencies": {}
+}

@@ -1,5 +1,4 @@
-// eslint-disable-next-line
-import WDIOReporter, { RunnerStats } from '@wdio/reporter';
+import { default as WDIOReporter, RunnerStats } from '@wdio/reporter';
 import TestomatClient from '../client.js';
 import { getTestomatIdFromTestTitle, fileSystem } from '../utils/utils.js';
 import { services } from '../services/index.js';
@@ -82,6 +81,7 @@ class WebdriverReporter extends WDIOReporter {
       .map(el => Buffer.from(el.result.value, 'base64'));
 
     await this.client.addTestRun(state, {
+      rid: test.uid || '',
       manuallyAttachedArtifacts: test.artifacts,
       error,
       logs: test.logs,
