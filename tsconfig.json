@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "checkJs": true,
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "noImplicitAny": false,
+    "noImplicitThis": false,
+    "noEmit": true,
+    "types": ["node"],
+    "target": "es2022"
+  },
+  "compileOnSave": true,
+  "include": ["lib", "types.d.ts", "vitest-types.d.ts"],
+  "exclude": ["typings/tests"]
+}
