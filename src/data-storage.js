@@ -41,7 +41,7 @@ class DataStorage {
   /**
    * Puts any data to storage (file or global variable).
    * If file: stores data as text, if global variable – stores as array of data.
-   * @param {'log' | 'artifact' | 'keyvalue'} dataType
+   * @param {'log' | 'artifact' | 'keyvalue' | 'labels'} dataType
    * @param {*} data anything you want to store (string, object, array, etc)
    * @param {*} context could be testId or any context (test name, suite name, including their IDs etc)
    * suite name + test name is used by default
@@ -70,7 +70,7 @@ class DataStorage {
    * Returns data, stored for specific test/context (or data which was stored without test id specified).
    * This method will get data from global variable and/or from from file (previosly saved with put method).
    *
-   * @param {'log' | 'artifact' | 'keyvalue'} dataType
+   * @param {'log' | 'artifact' | 'keyvalue' | 'labels'} dataType
    * @param {string} context
    * @returns {any []} array of data (any type), null (if no data found for context) or string (if data type is log)
    */
@@ -108,7 +108,7 @@ class DataStorage {
   }
 
   /**
-   * @param {'log' | 'artifact' | 'keyvalue'} dataType
+   * @param {'log' | 'artifact' | 'keyvalue' | 'labels'} dataType
    * @param {string} context
    * @returns aray of data (any type)
    */
@@ -127,7 +127,7 @@ class DataStorage {
   }
 
   /**
-   * @param {'log' | 'artifact' | 'keyvalue'} dataType
+   * @param {'log' | 'artifact' | 'keyvalue' | 'labels'} dataType
    * @param {*} context
    * @returns array of data (any type)
    */
@@ -151,7 +151,7 @@ class DataStorage {
 
   /**
    * Puts data to global variable. Unlike the file storage, stores data in array (file storage just append as string).
-   * @param {'log' | 'artifact' | 'keyvalue'} dataType
+   * @param {'log' | 'artifact' | 'keyvalue' | 'labels'} dataType
    * @param {*} data
    * @param {*} context
    */
@@ -166,7 +166,7 @@ class DataStorage {
 
   /**
    * Puts data to file. Unlike the global variable storage, stores data as string
-   * @param {'log' | 'artifact' | 'keyvalue'} dataType
+   * @param {'log' | 'artifact' | 'keyvalue' | 'labels'} dataType
    * @param {*} data
    * @param {string} context
    * @returns

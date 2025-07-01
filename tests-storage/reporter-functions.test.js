@@ -6,6 +6,7 @@ import { TESTOMAT_TMP_STORAGE_DIR } from '../lib/constants.js';
 import { fileSystem, removeColorCodes } from '../lib/utils/utils.js';
 import testomat from '../lib/reporter.js';
 import { keyValueStorage } from '../lib/services/key-values.js';
+import { labelStorage } from '../lib/services/labels.js';
 import { dataStorage, stringToMD5Hash } from '../lib/data-storage.js';
 
 describe('Testomat reporter functions', () => {
@@ -74,5 +75,23 @@ describe('Testomat reporter functions', () => {
     testomat.meta(keyValue2);
     const retrievedKeyValue = keyValueStorage.get('get key value pairs using testomat functions @T00000021');
     expect(retrievedKeyValue).to.deep.equal({ ...keyValue, ...keyValue2 });
+  });
+
+  it('set single label using testomat functions @T00000022', () => {
+    dataStorage.setContext('@T00000022');
+    testomat.label('smoke');
+    const contextHash = stringToMD5Hash('@T00000022');
+    const filePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'labels', `labels_${contextHash}`);
+    expect(fs.existsSync(filePath)).to.equal(true);
+    const fileContent = fs.readFileSync(filePath, 'utf8');
+    expect(fileContent).to.equal(JSON.stringify(['smoke']));
+  });
+
+  it('set multiple labels using testomat functions @T00000023', () => {
+    dataStorage.setContext('@T00000023');
+    testomat.label('smoke');    
+    testomat.label('feature', 'login'); // duplicate should be removed
+    const retrievedLabels = labelStorage.get('@T00000023');
+    expect(retrievedLabels).to.deep.equal(['smoke', 'feature:login']);
   });
 });

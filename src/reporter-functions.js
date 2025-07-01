@@ -47,9 +47,50 @@ function setKeyValue(keyValue, value = null) {
   services.keyValues.put(keyValue);
 }
 
+/**
+ * Add a single label to the test report
+ * @param {string} key - label key (e.g. 'severity', 'feature', or just 'smoke' for labels without values)
+ * @param {string} [value] - optional label value (e.g. 'high', 'login')
+ */
+function setLabel(key, value = null) {
+  if (!key || typeof key !== 'string') {
+    console.warn('Label key must be a non-empty string');
+    return;
+  }
+
+  // Limit key length to 255 characters
+  if (key.length > 255) {
+    console.warn('Label key is too long, trimmed to 255 characters:', key);
+    key = key.substring(0, 255);
+  }
+
+  let labelString = key;
+  if (value !== null && value !== undefined && value !== '') {
+    if (typeof value !== 'string') {
+      console.warn('Label value must be a string, converting:', value);
+      value = String(value);
+    }
+    // Limit value length to 255 characters
+    if (value.length > 255) {
+      console.warn('Label value is too long, trimmed to 255 characters:', value);
+      value = value.substring(0, 255);
+    }
+    labelString = `${key}:${value}`;
+  }
+
+  // Limit total label length to 255 characters
+  if (labelString.length > 255) {
+    console.warn('Label is too long, trimmed to 255 characters:', labelString);
+    labelString = labelString.substring(0, 255);
+  }
+
+  services.labels.put([labelString]);
+}
+
 export default {
   artifact: saveArtifact,
   log: logMessage,
   step: addStep,
   keyValue: setKeyValue,
+  label: setLabel,
 };
