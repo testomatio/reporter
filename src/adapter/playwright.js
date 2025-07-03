@@ -9,6 +9,7 @@ import TestomatioClient from '../client.js';
 import { getTestomatIdFromTestTitle, fileSystem } from '../utils/utils.js';
 import { services } from '../services/index.js';
 import { dataStorage } from '../data-storage.js';
+import { extensionMap } from '../utils/constants.js';
 
 const reportTestPromises = [];
 
@@ -129,15 +130,9 @@ class PlaywrightReporter {
     }
     if (artifact.body) {
       let filePath = generateTmpFilepath(artifact.name);
-      // Check if file already has an extension
       const hasExtension = artifact.name && path.extname(artifact.name);
       if (!hasExtension && artifact.contentType) {
-        const mimeType = artifact.contentType.split('/')[1];
-        const extensionMap = {
-          jpeg: 'jpg',
-          plain: 'txt',
-        };
-        const extension = extensionMap[mimeType] || mimeType;
+        const extension = extensionMap[artifact.contentType] || artifact.contentType.split('/')[1];
         if (extension) filePath += `.${extension}`;
       }
       fs.writeFileSync(filePath, artifact.body);
