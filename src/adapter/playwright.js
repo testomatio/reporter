@@ -9,6 +9,7 @@ import TestomatioClient from '../client.js';
 import { getTestomatIdFromTestTitle, fileSystem } from '../utils/utils.js';
 import { services } from '../services/index.js';
 import { dataStorage } from '../data-storage.js';
+import { extensionMap } from '../utils/constants.js';
 
 const reportTestPromises = [];
 
@@ -125,20 +126,18 @@ class PlaywrightReporter {
   #getArtifactPath(artifact) {
     if (artifact.path) {
       if (path.isAbsolute(artifact.path)) return artifact.path;
-
       return path.join(this.config.outputDir || this.config.projects[0].outputDir, artifact.path);
     }
-
     if (artifact.body) {
       let filePath = generateTmpFilepath(artifact.name);
-
-      const extension = artifact.contentType?.split('/')[1]?.replace('jpeg', 'jpg');
-      if (extension) filePath += `.${extension}`;
-
+      const hasExtension = artifact.name && path.extname(artifact.name);
+      if (!hasExtension && artifact.contentType) {
+        const extension = extensionMap[artifact.contentType] || artifact.contentType.split('/')[1];
+        if (extension) filePath += `.${extension}`;
+      }
       fs.writeFileSync(filePath, artifact.body);
       return filePath;
     }
-
     return null;
   }
 
