@@ -7,7 +7,7 @@ import { promisify } from 'util';
 
 const execAsync = promisify(exec);
 
-describe('Playwright Adapter Tests', function() {
+describe('Playwright Adapter Tests', function () {
   this.timeout(60000); // Longer timeout for test execution
 
   let debugFilePath;
@@ -29,7 +29,7 @@ describe('Playwright Adapter Tests', function() {
   // Helper function to run Playwright tests with debug enabled
   async function runPlaywrightTest(testFile = 'simple.spec.js', extraEnv = {}) {
     const cmd = `npx playwright test ${testFile}`;
-    
+
     try {
       const { stdout, stderr } = await execAsync(cmd, {
         cwd: exampleDir,
@@ -38,10 +38,10 @@ describe('Playwright Adapter Tests', function() {
           DEBUG: '1',
           TESTOMATIO_DEBUG: '1',
           TESTOMATIO_DISABLE_BATCH_UPLOAD: '1',
-          ...extraEnv
-        }
+          ...extraEnv,
+        },
       });
-      
+
       console.log('Test execution output:', stdout);
       if (stderr) console.log('Test execution stderr:', stderr);
     } catch (error) {
@@ -51,22 +51,25 @@ describe('Playwright Adapter Tests', function() {
 
     // Verify debug file was created and return parsed data
     expect(fs.existsSync(debugFilePath)).to.be.true;
-    
+
     const debugContent = fs.readFileSync(debugFilePath, 'utf-8');
-    const debugLines = debugContent.trim().split('\n').filter(line => line.trim());
+    const debugLines = debugContent
+      .trim()
+      .split('\n')
+      .filter(line => line.trim());
     expect(debugLines.length).to.be.greaterThan(0);
-    
+
     const debugData = debugLines.map(line => JSON.parse(line));
     const testEntries = debugData.filter(entry => entry.action === 'addTest');
     expect(testEntries.length).to.be.greaterThan(0);
-    
+
     return { debugData, testEntries };
   }
 
   describe('Basic Functionality', () => {
     it('should execute tests and generate debug data', async () => {
       const { debugData, testEntries } = await runPlaywrightTest();
-      
+
       // Verify we got test data
       expect(testEntries.length).to.be.greaterThan(0);
       expect(debugData.length).to.be.greaterThan(0);
@@ -78,20 +81,16 @@ describe('Playwright Adapter Tests', function() {
       const { testEntries } = await runPlaywrightTest();
 
       // Find test with status annotation (passing test)
-      const testWithStatusAnnotation = testEntries.find(entry =>
-        entry.testId &&
-        entry.testId.meta &&
-        entry.testId.meta.status
+      const testWithStatusAnnotation = testEntries.find(
+        entry => entry.testId && entry.testId.meta && entry.testId.meta.status,
       );
 
       expect(testWithStatusAnnotation).to.exist;
       expect(testWithStatusAnnotation.testId.meta.status).to.equal('reliable');
 
       // Find test with bug annotation (failing test)
-      const testWithBugAnnotation = testEntries.find(entry =>
-        entry.testId &&
-        entry.testId.meta &&
-        entry.testId.meta.bug
+      const testWithBugAnnotation = testEntries.find(
+        entry => entry.testId && entry.testId.meta && entry.testId.meta.bug,
       );
 
       expect(testWithBugAnnotation).to.exist;
@@ -107,7 +106,9 @@ describe('Playwright Adapter Tests', function() {
       testEntries.forEach(entry => {
         if (entry.testId && entry.testId.file) {
           expect(entry.testId.file).to.not.match(/^\/home/);
-          expect(entry.testId.file).to.include('tests/simple.spec.js');
+          // Normalize path separators for cross-platform compatibility
+          const normalizedPath = entry.testId.file.replace(/\\/g, '/');
+          expect(normalizedPath).to.include('tests/simple.spec.js');
         }
       });
     });
@@ -115,14 +116,16 @@ describe('Playwright Adapter Tests', function() {
     it('should respect TESTOMATIO_WORKDIR environment variable', async () => {
       const customWorkdir = path.join(process.cwd(), 'example');
       const { testEntries } = await runPlaywrightTest('simple.spec.js', {
-        TESTOMATIO_WORKDIR: customWorkdir
+        TESTOMATIO_WORKDIR: customWorkdir,
       });
 
       // Check that file paths are relative to custom workdir
       testEntries.forEach(entry => {
         if (entry.testId && entry.testId.file) {
           expect(entry.testId.file).to.not.match(/^\/home/);
-          expect(entry.testId.file).to.include('playwright/tests/simple.spec.js');
+          // Normalize path separators for cross-platform compatibility
+          const normalizedPath = entry.testId.file.replace(/\\/g, '/');
+          expect(normalizedPath).to.include('playwright/tests/simple.spec.js');
         }
       });
     });
