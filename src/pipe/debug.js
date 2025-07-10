@@ -26,18 +26,19 @@ export class DebugPipe {
       debug('Creating debug file:', this.logFilePath);
       fs.writeFileSync(this.logFilePath, '');
 
-      // Create symlink to ensure consistent path to latest debug file
-      const symlinkPath = path.join(os.tmpdir(), 'testomatio.debug.latest.json');
+      // Create latest debug file reference (Windows compatible)
+      this.latestFilePath = path.join(os.tmpdir(), 'testomatio.debug.latest.json');
       try {
-        // Remove existing symlink if it exists
-        if (fs.existsSync(symlinkPath)) {
-          fs.unlinkSync(symlinkPath);
+        // Remove existing latest file if it exists
+        if (fs.existsSync(this.latestFilePath)) {
+          fs.rmSync(this.latestFilePath);
         }
-        // Create new symlink pointing to the timestamped debug file
-        fs.symlinkSync(this.logFilePath, symlinkPath);
-        debug('Created symlink:', symlinkPath, '->', this.logFilePath);
+        // Initialize latest file
+        fs.writeFileSync(this.latestFilePath, '');
+        debug('Created latest debug file:', this.latestFilePath);
       } catch (err) {
-        debug('Failed to create symlink:', err.message);
+        debug('Failed to create latest debug file:', err.message);
+        this.latestFilePath = null; // Disable latest file if creation fails
       }
 
       console.log(APP_PREFIX, '🪲 Debug file created');
@@ -67,7 +68,19 @@ export class DebugPipe {
     this.lastActionTimestamp = Date.now();
 
     const logLine = JSON.stringify({ t: `+${prettyMs(timePassedFromLastAction)}`, ...logData });
-    fs.appendFileSync(this.logFilePath, `${logLine}\n`);
+    const logLineWithNewline = `${logLine}\n`;
+
+    // Write to timestamped debug file
+    fs.appendFileSync(this.logFilePath, logLineWithNewline);
+
+    // Also write to latest debug file for Windows compatibility
+    if (this.latestFilePath) {
+      try {
+        fs.appendFileSync(this.latestFilePath, logLineWithNewline);
+      } catch (err) {
+        debug('Failed to write to latest debug file:', err.message);
+      }
+    }
   }
 
   async prepareRun(opts) {
@@ -93,8 +106,7 @@ export class DebugPipe {
       const logData = { action: 'addTest', testId: data };
       if (this.store.runId) logData.runId = this.store.runId;
       this.logToFile(logData);
-    }
-    else this.batch.tests.push(data);
+    } else this.batch.tests.push(data);
 
     if (!this.batch.intervalFunction) await this.batchUpload();
   }
@@ -117,6 +129,9 @@ export class DebugPipe {
     if (this.batch.intervalFunction) clearInterval(this.batch.intervalFunction);
     this.logToFile({ action: 'finishRun', params });
     console.log(APP_PREFIX, '🪲 Debug Saved to', this.logFilePath);
+    if (this.latestFilePath) {
+      console.log(APP_PREFIX, '🪲 Latest Debug file:', this.latestFilePath);
+    }
   }
 
   toString() {
