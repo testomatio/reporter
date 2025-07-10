@@ -282,7 +282,7 @@ Example for Playwright trace policy settings
   - In the Testomatio panel, enter the API keys and bucket address.
   - Configure the paths and access parameters as required.
 
-![Testomatio - Set bucket credentials](./images/artifacts_testomat.png)
+![Testomatio - Set bucket credentials](./images/artifacts-testomat.png)
 
 ## Adding Artifacts
 
