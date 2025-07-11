@@ -179,6 +179,7 @@ class Client {
       test_id,
       timestamp,
       manuallyAttachedArtifacts,
+      labels,
     } = testData;
     let { message = '', meta = {} } = testData;
 
@@ -218,6 +219,8 @@ class Client {
         if (key) acc[key] = value;
         return acc;
       }, {});
+
+    // Labels are simple array of strings, no processing needed
 
     let errorFormatted = '';
     if (error) {
@@ -273,6 +276,7 @@ class Client {
       timestamp,
       artifacts,
       meta,
+      labels,
       ...(rootSuiteId && { root_suite_id: rootSuiteId }),
     };
 

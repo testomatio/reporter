@@ -8,6 +8,7 @@ export const log = reporterFunctions.log;
 export const logger = services.logger;
 export const meta = reporterFunctions.keyValue;
 export const step = reporterFunctions.step;
+export const label = reporterFunctions.label;
 
 /**
  * @typedef {import('./reporter-functions.js')} artifact
@@ -15,6 +16,7 @@ export const step = reporterFunctions.step;
  * @typedef {import('./services/index.js')} logger
  * @typedef {import('./reporter-functions.js')} meta
  * @typedef {import('./reporter-functions.js')} step
+ * @typedef {import('./reporter-functions.js')} label
  */
 export default {
   /**
@@ -27,6 +29,7 @@ export default {
   logger: services.logger,
   meta: reporterFunctions.keyValue,
   step: reporterFunctions.step,
+  label: reporterFunctions.label,
 
   // TestomatClient,
   // TRConstants,
