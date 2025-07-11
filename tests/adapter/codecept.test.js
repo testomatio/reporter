@@ -1,75 +1,31 @@
 import { expect } from 'chai';
-import { exec } from 'child_process';
 import fs from 'fs';
-import os from 'os';
 import path from 'path';
-import { promisify } from 'util';
-
-const execAsync = promisify(exec);
+import { CodeceptTestRunner } from './utils/codecept.js';
 
 describe('CodeceptJS Adapter Tests', function () {
   this.timeout(60000); // Longer timeout for test execution
 
-  let debugFilePath;
-  let exampleDir;
+  let testRunner;
 
   before(() => {
-    // Use our new example directory
-    exampleDir = path.join(process.cwd(), 'example', 'codecept');
-    debugFilePath = path.join(os.tmpdir(), 'testomatio.debug.latest.json');
+    testRunner = new CodeceptTestRunner();
+    testRunner.setupTestEnvironment();
   });
 
   afterEach(() => {
-    // Clean up debug file after each test
-    if (fs.existsSync(debugFilePath)) {
-      fs.unlinkSync(debugFilePath);
-    }
+    testRunner.cleanupTestEnvironment();
   });
 
-  // Helper function to run CodeceptJS tests with debug enabled
+  // Unified helper function using testRunner
   async function runCodeceptTest(testFile = 'simple_test.js', extraEnv = {}) {
-    const cmd = `npx codeceptjs run ${testFile}`;
+    const result = await testRunner.runCodeceptTest(testFile, extraEnv);
 
-    let stdout, stderr;
-    try {
-      const result = await execAsync(cmd, {
-        cwd: exampleDir,
-        env: {
-          ...process.env,
-          TESTOMATIO: 'test-key',
-          DEBUG: '1',
-          TESTOMATIO_DEBUG: '1',
-          TESTOMATIO_DISABLE_BATCH_UPLOAD: '1',
-          ...extraEnv,
-        },
-      });
-      stdout = result.stdout;
-      stderr = result.stderr;
-    } catch (error) {
-      // Tests might fail (we have intentional failures), but adapter should still work
-      stdout = error.stdout || '';
-      stderr = error.stderr || '';
-      console.log('Test execution completed with some failures (expected)');
-    }
-
-    console.log('Test execution output:', stdout);
-    if (stderr) console.log('Test execution stderr:', stderr);
-
-    // Verify debug file was created and return parsed data
-    expect(fs.existsSync(debugFilePath)).to.be.true;
-
-    const debugContent = fs.readFileSync(debugFilePath, 'utf-8');
-    const debugLines = debugContent
-      .trim()
-      .split('\n')
-      .filter(line => line.trim());
-    expect(debugLines.length).to.be.greaterThan(0);
-
-    const debugData = debugLines.map(line => JSON.parse(line));
-    const testEntries = debugData.filter(entry => entry.action === 'addTest');
-    expect(testEntries.length).to.be.greaterThan(0);
-
-    return { stdout, stderr, debugData, testEntries };
+    // Verify debug data was created
+    expect(result.debugData.length).to.be.greaterThan(0);
+    expect(result.testEntries.length).to.be.greaterThan(0);
+    
+    return result;
   }
 
   describe('Basic Functionality', () => {
@@ -99,7 +55,7 @@ describe('CodeceptJS Adapter Tests', function () {
       expect(stdout).to.include('should always fail');
 
       // Check for failure details
-      expect(stdout).to.include('This should fail intentionally');
+      expect(stdout).to.include('expected 2 to equal 3');
       expect(stdout).to.include('AssertionError');
     });
   });
@@ -107,7 +63,7 @@ describe('CodeceptJS Adapter Tests', function () {
   describe('Configuration', () => {
     it('should use testomat plugin configuration', async () => {
       // Read the codecept config to verify testomat plugin is configured
-      const configPath = path.join(exampleDir, 'codecept.conf.js');
+      const configPath = path.join(testRunner.exampleDir, 'codecept.conf.js');
       const configContent = fs.readFileSync(configPath, 'utf-8');
 
       expect(configContent).to.include('testomat');
@@ -126,7 +82,7 @@ describe('CodeceptJS Adapter Tests', function () {
 
   describe('File Structure', () => {
     it('should have simple test file with correct structure', () => {
-      const testFilePath = path.join(exampleDir, 'simple_test.js');
+      const testFilePath = path.join(testRunner.exampleDir, 'simple_test.js');
       expect(fs.existsSync(testFilePath)).to.be.true;
 
       const testContent = fs.readFileSync(testFilePath, 'utf-8');
@@ -136,7 +92,7 @@ describe('CodeceptJS Adapter Tests', function () {
     });
 
     it('should have package.json configured for CommonJS', () => {
-      const packagePath = path.join(exampleDir, 'package.json');
+      const packagePath = path.join(testRunner.exampleDir, 'package.json');
       expect(fs.existsSync(packagePath)).to.be.true;
 
       const packageContent = JSON.parse(fs.readFileSync(packagePath, 'utf-8'));
@@ -162,7 +118,7 @@ describe('CodeceptJS Adapter Tests', function () {
       expect(failingTest).to.exist;
       expect(failingTest.testId.title).to.equal('should always fail');
       expect(failingTest.testId.suite_title).to.equal('Simple Tests');
-      expect(failingTest.testId.message).to.include('This should fail intentionally');
+      expect(failingTest.testId.message).to.include('expected 2 to equal 3');
     });
 
     it('should capture test execution metadata', async () => {
@@ -188,8 +144,8 @@ describe('CodeceptJS Adapter Tests', function () {
 
       // Should have error details
       expect(failingTest.testId.stack).to.include('AssertionError');
-      expect(failingTest.testId.stack).to.include('This should fail intentionally');
-      expect(failingTest.testId.message).to.include('This should fail intentionally');
+      expect(failingTest.testId.stack).to.include('expected 2 to equal 3');
+      expect(failingTest.testId.message).to.include('expected 2 to equal 3');
     });
   });
 });

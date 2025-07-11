@@ -29,9 +29,9 @@ jobs:
       - run: npm run test
       - run: npm run test:storage
 
-  framework-tests:
+  playwright-tests:
     runs-on: ubuntu-latest
-    name: Framework Adapter Tests (latest node)
+    name: Playwright Adapter Tests
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -41,14 +41,33 @@ jobs:
       - run: npm ci
       - run: npm run build
 
-      # Install framework dependencies from example directories
-      - name: Install example dependencies
-        run: npm run install-example-deps
+      # Install Playwright dependencies
+      - name: Install Playwright dependencies
+        run: cd example/playwright && npm install
       - name: Install Playwright browsers
         run: npx playwright install chromium
 
-      # Run framework adapter tests
-      - run: npm run test:frameworks
+      # Run Playwright adapter tests
+      - run: npm run test:playwright
+
+  codecept-tests:
+    runs-on: ubuntu-latest
+    name: CodeceptJS Adapter Tests
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+      - run: node -v
+      - run: npm ci
+      - run: npm run build
+
+      # Install CodeceptJS dependencies
+      - name: Install CodeceptJS dependencies
+        run: cd example/codecept && npm install
+
+      # Run CodeceptJS adapter tests
+      - run: npm run test:codecept
 
   tests:
     runs-on: ubuntu-latest
