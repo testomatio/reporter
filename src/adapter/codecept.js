@@ -36,7 +36,7 @@ if (MAJOR_VERSION === 3 && MINOR_VERSION < 7) {
 }
 
 function CodeceptReporter(config) {
-  let failedTests = [];
+  const failedTests = [];
   let videos = [];
   let traces = [];
   const reportTestPromises = [];
@@ -55,7 +55,7 @@ function CodeceptReporter(config) {
   };
 
   output.debug = function(msg) {
-    originalOutput.debug(msg)
+    originalOutput.debug(msg);
     dataStorage.putData('log', repeat(this.stepShift) + pc.cyan(msg.toString()));
   };
 
@@ -66,7 +66,7 @@ function CodeceptReporter(config) {
   };
 
   output.log = function(msg) {
-    originalOutput.log(msg)
+    originalOutput.log(msg);
     dataStorage.putData('log', repeat(this.stepShift) + pc.gray(msg));
   };
 
@@ -173,7 +173,7 @@ function CodeceptReporter(config) {
   });
 
   event.dispatcher.on(event.step.started, step => {
-    const stepText = `${repeat(output.stepShift)} ${step.toCliStyled ? step.toCliStyled() : step.toString()}`
+    const stepText = `${repeat(output.stepShift)} ${step.toCliStyled ? step.toCliStyled() : step.toString()}`;
     dataStorage.putData('log', stepText);
   });
 
