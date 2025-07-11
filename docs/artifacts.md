@@ -48,7 +48,7 @@ Then provide the same S3 credentials in "Settings > Artifacts" section of a proj
 
 Links to files will be pre-signed and expire automatically in 10 minutes.
 
-![Testomatio - Private Access](./images/Test_artifacts.png)
+![Testomatio - Private Access](./images/test-artifacts.png)
 
 > Test Artifacts settings are available only to managers and owners of a project!
 
@@ -69,7 +69,7 @@ Recommended way is to set S3 bucket credentials as environment variables:
 
 If you use Testomat.io Application, you can set those variables inside **Settings > Artifacts** page: enable "Share credentials" toggle to pass credentials into reporter and fill in S3 credentials into the displayed form.
 
-![Testomatio - Configuration](./images/Configuration.png)
+![Testomatio - Configuration](./images/configuration.png)
 
 In this case Testomat.io Reporter will obtain S3 credentials for server and use them to save artifacts.
 
@@ -197,7 +197,7 @@ S3_FORCE_PATH_STYLE=true
 
 Google Cloud Storage can work via S3 protocol if **Interoperability mode** is enabled.
 
-![Testomatio - Google Cloud Storage](./images/Google_Cloud.png)
+![Testomatio - Google Cloud Storage](./images/google-cloud.png)
 
 Open Cloud Storage. Create a bucket for artifacts, then inside Settings select "Interoperability". Create `ACCESS_KEY` and `SECRET_ACCESS_KEY` for the current user.
 
@@ -223,9 +223,9 @@ Please note, that you need to enable [Use Private URLs for Test Artifacts](https
   - Navigate to the **R2** section and select the option to create a new bucket.
   - Choose a unique name and a region for the bucket.
 
-![Testomatio - Create a new bucket](./images/Create_bucket_1.png)
+![Testomatio - Create a new bucket](./images/create-bucket-1.png)
 
-![Testomatio - Set bucket name](./images/Create_bucket_2.png)
+![Testomatio - Set bucket name](./images/create-bucket-2.png)
 
 **2. Creating API Keys for the Bucket**
 
@@ -236,20 +236,20 @@ Please note, that you need to enable [Use Private URLs for Test Artifacts](https
   - Generate a new API key with read/write permissions.
   - Save and verify the generated key.
 
-![Testomatio - Generate API keys for bucket](./images/API_key_1.png)
+![Testomatio - Generate API keys for bucket](./images/api-key-1.png)
 
-![Testomatio - Select Api variant](./images/API_key_2.png)
+![Testomatio - Select Api variant](./images/api-key-2.png)
 
-![Testomatio - Create Api key](./images/API_key_3.png)
+![Testomatio - Create Api key](./images/api-key-3.png)
 
-![Testomatio - Set permissions for Api key](./images/API_key_4.png)
+![Testomatio - Set permissions for Api key](./images/api-key-4.png)
 
 > [!WARNING]  
 > If you set permission for bucket "Object..." need setup CORS policy manually, for "Admins" it is not required
 
 **Policy Settings**:
 
-![Testomatio - policy settings 2](./images/Policy.png)
+![Testomatio - policy settings 2](./images/policy.png)
 
 Example for Playwright trace policy settings
 
@@ -272,7 +272,7 @@ Example for Playwright trace policy settings
 ]
 ```
 
-![Testomatio - Copy Api key](./images/API_key_5.png)
+![Testomatio - Copy Api key](./images/api-key-5.png)
 
 **3. Connecting the Bucket to Testomatio**
 
@@ -282,7 +282,7 @@ Example for Playwright trace policy settings
   - In the Testomatio panel, enter the API keys and bucket address.
   - Configure the paths and access parameters as required.
 
-![Testomatio - Set bucket credentials](./images/Artifacts_Testomat.png)
+![Testomatio - Set bucket credentials](./images/artifacts-testomat.png)
 
 ## Adding Artifacts
 

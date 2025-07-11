@@ -7,7 +7,7 @@ import { promisify } from 'util';
 
 const execAsync = promisify(exec);
 
-describe('Playwright Adapter Tests', function() {
+describe('Playwright Adapter Tests', function () {
   this.timeout(60000); // Longer timeout for test execution
 
   let debugFilePath;
@@ -38,7 +38,7 @@ describe('Playwright Adapter Tests', function() {
   // Helper function to run Playwright tests with debug enabled
   async function runPlaywrightTest(testFile = 'simple.spec.js', extraEnv = {}) {
     const cmd = `npx playwright test ${testFile}`;
-    
+
     try {
       const { stdout, stderr } = await execAsync(cmd, {
         cwd: exampleDir,
@@ -47,17 +47,17 @@ describe('Playwright Adapter Tests', function() {
           DEBUG: '1',
           TESTOMATIO_DEBUG: '1',
           TESTOMATIO_DISABLE_BATCH_UPLOAD: '1',
-          ...extraEnv
-        }
+          ...extraEnv,
+        },
       });
       
-      // console.log('Test execution output:', stdout);
-      // if (stderr) console.log('Test execution stderr:', stderr);
+      console.log('Test execution output:', stdout);
+      if (stderr) console.log('Test execution stderr:', stderr);
     } catch (error) {
       // Tests might fail (we have intentional failures), but adapter should still work
       console.log('Test execution completed with some failures (expected)');
-      // if (error.stdout) console.log('Error stdout:', error.stdout);
-      // if (error.stderr) console.log('Error stderr:', error.stderr);
+      if (error.stdout) console.log('Error stdout:', error.stdout);
+      if (error.stderr) console.log('Error stderr:', error.stderr);
     }
 
     // Wait a moment for debug file to be finalized
@@ -73,28 +73,31 @@ describe('Playwright Adapter Tests', function() {
       }))
       .sort((a, b) => b.mtime - a.mtime);
 
-    // console.log('Found debug files:', tmpFiles.map(f => f.name));
+    console.log('Found debug files:', tmpFiles.map(f => f.name));
     expect(tmpFiles.length).to.be.greaterThan(0, 'No debug files found');
     
     // Use the most recent debug file
     debugFilePath = tmpFiles[0].path;
-    // console.log('Using debug file:', debugFilePath);
+    console.log('Using debug file:', debugFilePath);
     
     const debugContent = fs.readFileSync(debugFilePath, 'utf-8');
-    const debugLines = debugContent.trim().split('\n').filter(line => line.trim());
+    const debugLines = debugContent
+      .trim()
+      .split('\n')
+      .filter(line => line.trim());
     expect(debugLines.length).to.be.greaterThan(0);
-    
+
     const debugData = debugLines.map(line => JSON.parse(line));
     const testEntries = debugData.filter(entry => entry.action === 'addTest');
     expect(testEntries.length).to.be.greaterThan(0);
-    
+
     return { debugData, testEntries };
   }
 
   describe('Basic Functionality', () => {
     it('should execute tests and generate debug data', async () => {
       const { debugData, testEntries } = await runPlaywrightTest();
-      
+
       // Verify we got test data
       expect(testEntries.length).to.be.greaterThan(0);
       expect(debugData.length).to.be.greaterThan(0);
@@ -106,20 +109,16 @@ describe('Playwright Adapter Tests', function() {
       const { testEntries } = await runPlaywrightTest();
 
       // Find test with status annotation (passing test)
-      const testWithStatusAnnotation = testEntries.find(entry =>
-        entry.testId &&
-        entry.testId.meta &&
-        entry.testId.meta.status
+      const testWithStatusAnnotation = testEntries.find(
+        entry => entry.testId && entry.testId.meta && entry.testId.meta.status,
       );
 
       expect(testWithStatusAnnotation).to.exist;
       expect(testWithStatusAnnotation.testId.meta.status).to.equal('reliable');
 
       // Find test with bug annotation (failing test)
-      const testWithBugAnnotation = testEntries.find(entry =>
-        entry.testId &&
-        entry.testId.meta &&
-        entry.testId.meta.bug
+      const testWithBugAnnotation = testEntries.find(
+        entry => entry.testId && entry.testId.meta && entry.testId.meta.bug,
       );
 
       expect(testWithBugAnnotation).to.exist;
@@ -135,7 +134,9 @@ describe('Playwright Adapter Tests', function() {
       testEntries.forEach(entry => {
         if (entry.testId && entry.testId.file) {
           expect(entry.testId.file).to.not.match(/^\/home/);
-          expect(entry.testId.file).to.include('tests/simple.spec.js');
+          // Normalize path separators for cross-platform compatibility
+          const normalizedPath = entry.testId.file.replace(/\\/g, '/');
+          expect(normalizedPath).to.include('tests/simple.spec.js');
         }
       });
     });
@@ -143,14 +144,16 @@ describe('Playwright Adapter Tests', function() {
     it('should respect TESTOMATIO_WORKDIR environment variable', async () => {
       const customWorkdir = path.join(process.cwd(), 'example');
       const { testEntries } = await runPlaywrightTest('simple.spec.js', {
-        TESTOMATIO_WORKDIR: customWorkdir
+        TESTOMATIO_WORKDIR: customWorkdir,
       });
 
       // Check that file paths are relative to custom workdir
       testEntries.forEach(entry => {
         if (entry.testId && entry.testId.file) {
           expect(entry.testId.file).to.not.match(/^\/home/);
-          expect(entry.testId.file).to.include('playwright/tests/simple.spec.js');
+          // Normalize path separators for cross-platform compatibility
+          const normalizedPath = entry.testId.file.replace(/\\/g, '/');
+          expect(normalizedPath).to.include('playwright/tests/simple.spec.js');
         }
       });
     });
