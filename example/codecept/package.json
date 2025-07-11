@@ -22,5 +22,7 @@
   "devDependencies": {
     "codeceptjs": "^3.5.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@codeceptjs/expect-helper": "^1.0.2"
+  }
 }

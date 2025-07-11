@@ -236,7 +236,7 @@ components:
       properties:
         category:
           type: string
-          description: The category of the step
+          description: The category of the step (framework, user, hook)
         title:
           type: string
           description: The title of the step

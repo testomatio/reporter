@@ -56,6 +56,9 @@
     "format": "npm run lint:fix && npm run pretty:fix",
     "test": "mocha tests/** --ignore tests/adapter/playwright.test.js --ignore tests/adapter/codecept.test.js",
     "test:frameworks": "mocha tests/adapter/playwright.test.js tests/adapter/codecept.test.js",
+    "test:codecept": "mocha tests/adapter/codecept.test.js tests/adapter/codecept_comprehensive.test.js tests/adapter/codecept_steps_sections.test.js",
+    "test:codecept:bug948": "mocha tests/adapter/codecept_aftersuite_failure.test.js",
+    "test:codecept:steps": "mocha tests/adapter/codecept_steps_sections.test.js",
     "install-example-deps": "cd example/playwright && npm install && cd ../codecept && npm install",
     "init": "cd ./tests/adapter/examples/cucumber && npm i",
     "test:adapter": "node node_modules/mocha/bin/mocha './tests/adapter/index.test.js'",
@@ -69,7 +72,7 @@
     "test:adapter:vitest:example": "npx vitest --config='./tests/adapter/examples/vitest/vitest.config.ts'",
     "test:storage": "npx mocha tests-storage/artifact-storage.test.js && npx mocha tests-storage/data-storage.test.js && TESTOMATIO_INTERCEPT_CONSOLE_LOGS=true npx mocha tests-storage/logger.test.js && npx mocha tests-storage/logger-2.test.js && npx mocha tests-storage/reporter-functions.test.js",
     "build": "rm -rf ./cjs && tsc --module commonjs && npx tsx build/scripts/edit-js-files.js && npx tsx build/scripts/edit-package-json.js && chmod +x ./build/scripts/copy-tesmplate.sh && ./build/scripts/copy-tesmplate.sh",
-    "build:bun": "rm -rf ./cjs && bun build ./src/reporter.js ./src/bin/reportXml.js ./src/bin/startTest.js ./src/bin/uploadArtifacts.js --outdir ./cjs --target node && bun build/scripts/edit-js-files.js && bun build/scripts/edit-package-json.js && chmod +x ./build/scripts/copy-tesmplate.sh && ./build/scripts/copy-tesmplate.sh",
+    "build:bun": "rm -rf ./cjs && bunx tsc --module commonjs && npx tsx build/scripts/edit-js-files.js && npx tsx build/scripts/edit-package-json.js && chmod +x ./build/scripts/copy-tesmplate.sh && ./build/scripts/copy-tesmplate.sh",
     "build:watch:bun": "rm -rf ./cjs && bun build ./src/bin/reportXml.js ./src/bin/startTest.js ./src/bin/uploadArtifacts.js --outdir ./cjs --target node --watch --onSuccess \"build/scripts/post-build.js\""
   },
   "devDependencies": {

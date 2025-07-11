@@ -4,6 +4,7 @@ import TestomatClient from '../client.js';
 import { STATUS, APP_PREFIX, TESTOMAT_TMP_STORAGE_DIR } from '../constants.js';
 import { getTestomatIdFromTestTitle, fileSystem } from '../utils/utils.js';
 import { services } from '../services/index.js';
+import { dataStorage } from '../data-storage.js';
 import codeceptjs from 'codeceptjs';
 
 const debug = createDebugMessages('@testomatio/reporter:adapter:codeceptjs');
@@ -14,14 +15,17 @@ if (!global.codeceptjs) {
 }
 
 // @ts-ignore
-const { event, recorder, codecept } = global.codeceptjs;
-
-let currentMetaStep = [];
-let stepShift = 0;
+const { event, recorder, codecept, output } = global.codeceptjs;
 
 let stepStart = new Date();
 
 const [, MAJOR_VERSION, MINOR_VERSION] = codecept.version().match(/(\d+)\.(\d+)/).map(Number);
+
+// Constants for hook execution order
+const HOOK_EXECUTION_ORDER = {
+  PRE_TEST: ['BeforeSuiteHook', 'BeforeHook'],
+  POST_TEST: ['AfterHook', 'AfterSuiteHook']
+};
 
 const DATA_REGEXP = /[|\s]+?(\{".*\}|\[.*\])/;
 
@@ -53,7 +57,48 @@ function CodeceptReporter(config) {
 
   const client = new TestomatClient({ apiKey });
 
+  // Store original output methods for fallback
+  const originalOutput = {
+    debug: output.debug,
+    log: output.log,
+    step: output.step,
+    say: output.say,
+  };
+
+  output.debug = function(msg) {
+    originalOutput.debug(msg)
+    dataStorage.putData('log', repeat(this.stepShift) + pc.cyan(msg.toString()));
+  };
+
+  output.say = function(message, color = 'cyan') {
+    originalOutput.say(message, color);
+    const sayMsg = repeat(this.stepShift) + `  ${pc.bold(pc[color](message))}`;
+    dataStorage.putData('log', sayMsg);
+  };
+
+  output.log = function(msg) {
+    originalOutput.log(msg)
+    dataStorage.putData('log', repeat(this.stepShift) + pc.gray(msg));
+  };
+
   recorder.startUnlessRunning();
+
+  const hookSteps = new Map();
+  let currentHook = null;
+
+  // Hook event listeners
+  event.dispatcher.on(event.hook.started, (hook) => {
+    currentHook = hook.name;
+    hookSteps.set(hook.name, []);
+  });
+
+  event.dispatcher.on(event.hook.passed, () => {
+    currentHook = null;
+  });
+
+  event.dispatcher.on(event.hook.failed, () => {
+    currentHook = null;
+  });
 
   // Listening to events
   event.dispatcher.on(event.all.before, () => {
@@ -79,19 +124,7 @@ function CodeceptReporter(config) {
   });
 
   event.dispatcher.on(event.test.before, test => {
-    global.testomatioDataStore.steps = [];
-
-    recorder.add(() => {
-      currentMetaStep = [];
-      // output.reset();
-      // output.start();
-      stepShift = 0;
-    });
-
-    if (!global.testomatioDataStore) global.testomatioDataStore = {};
-    // reset steps
-    global.testomatioDataStore.steps = [];
-
+    initializeTestDataStore();
     services.setContext(test.fullTitle());
   });
 
@@ -111,141 +144,49 @@ function CodeceptReporter(config) {
     client.updateRunStatus('finished');
   });
 
-  event.dispatcher.on(event.test.passed, test => {
-    const { uid, tags, title } = test;
-    if (uid && failedTests.includes(uid)) {
-      failedTests = failedTests.filter(failed => uid !== failed);
-    }
-    const testObj = getTestAndMessage(title);
-
-    const logs = getTestLogs(test);
-    const manuallyAttachedArtifacts = services.artifacts.get(test.fullTitle());
-    const keyValues = services.keyValues.get(test.fullTitle());
-    services.setContext(null);
-
-    client.addTestRun(STATUS.PASSED, {
-      ...stripExampleFromTitle(title),
-      rid: uid,
-      suite_title: test.parent && test.parent.title,
-      message: testObj.message,
-      time: test.duration,
-      steps: test.steps,
-      test_id: getTestomatIdFromTestTitle(`${title} ${tags?.join(' ')}`),
-      logs,
-      manuallyAttachedArtifacts,
-      meta: { ...keyValues, ...test.meta },
-    });
-    // output.stop();
-  });
-
   event.dispatcher.on(event.test.after, test => {
-    let error = null;
-    if (test.state && test.state !== STATUS.FAILED) return;
-    if (test.err) error = test.err;
     const { uid, tags, title, artifacts } = test;
+    const error = test.err || null;
     failedTests.push(uid || title);
     const testObj = getTestAndMessage(title);
-
-    const files = [];
-    if (artifacts.screenshot) files.push({ path: artifacts.screenshot, type: 'image/png' });
-    // todo: video must be uploaded later....
-
+    const files = buildArtifactFiles(artifacts);
     const logs = getTestLogs(test);
     const manuallyAttachedArtifacts = services.artifacts.get(test.fullTitle());
     const keyValues = services.keyValues.get(test.fullTitle());
+    const stepHierarchy = buildUnifiedStepHierarchy(test.steps, hookSteps);
+
     services.setContext(null);
 
-    client.addTestRun(STATUS.FAILED, {
+    client.addTestRun(test.state, {
       ...stripExampleFromTitle(title),
       rid: uid,
       test_id: getTestomatIdFromTestTitle(`${title} ${tags?.join(' ')}`),
-      suite_title: test.parent && test.parent.title,
+      suite_title: test.parent && stripTagsFromTitle(stripExampleFromTitle(test.parent.title).title),
       error,
       message: testObj.message,
       time: getDuration(test),
       files,
-      steps: test.steps,
+      steps: stepHierarchy, // Array of step objects per API schema
       logs,
       manuallyAttachedArtifacts,
       meta: { ...keyValues, ...test.meta },
     });
 
-    debug('artifacts', artifacts);
-
-    for (const aid in artifacts) {
-      if (aid.startsWith('video')) videos.push({ rid: uid, title, path: artifacts[aid], type: 'video/webm' });
-      if (aid.startsWith('trace')) traces.push({ rid: uid, title, path: artifacts[aid], type: 'application/zip' });
-    }
-
-    // output.stop();
-  });
-
-  event.dispatcher.on(event.test.skipped, test => {
-    const { uid, tags, title } = test;
-    if (failedTests.includes(uid || title)) return;
-
-    const testObj = getTestAndMessage(title);
-    client.addTestRun(STATUS.SKIPPED, {
-      rid: uid,
-      ...stripExampleFromTitle(title),
-      test_id: getTestomatIdFromTestTitle(`${title} ${tags?.join(' ')}`),
-      suite_title: test.parent && test.parent.title,
-      message: testObj.message,
-      time: test.duration,
-    });
-    // output.stop();
+    processArtifactsForUpload(artifacts, uid, title, videos, traces);
   });
 
   event.dispatcher.on(event.step.started, step => {
-    stepShift = 0;
     step.started = true;
     stepStart = new Date();
   });
 
   event.dispatcher.on(event.step.finished, step => {
     if (!step.started) return;
-    let processingStep = step;
-    const metaSteps = [];
-    while (processingStep.metaStep) {
-      metaSteps.unshift(processingStep.metaStep);
-      processingStep = processingStep.metaStep;
-    }
-    const shift = metaSteps.length;
 
-    for (let i = 0; i < Math.max(currentMetaStep.length, metaSteps.length); i++) {
-      if (currentMetaStep[i] !== metaSteps[i]) {
-        stepShift = 2 * i;
-        if (!metaSteps[i]) continue;
-        if (metaSteps[i].isBDD()) {
-          global.testomatioDataStore?.steps?.push(
-            repeat(stepShift) + pc.bold(metaSteps[i].toString()) + metaSteps[i].comment,
-          );
-        } else {
-          global.testomatioDataStore?.steps?.push(repeat(stepShift) + pc.green(pc.bold(metaSteps[i].toString())));
-        }
-      }
-    }
-    currentMetaStep = metaSteps;
-    stepShift = 2 * shift;
-
-    const durationMs = +new Date() - +stepStart;
-    let duration = '';
-    if (durationMs) {
-      duration = repeat(1) + pc.gray(`(${durationMs}ms)`);
-    }
-
-    if (step.status === STATUS.FAILED) {
-      // output.push(repeat(stepShift) + pc.red(step.toString()) + duration);
-      global.testomatioDataStore?.steps?.push(repeat(stepShift) + pc.red(step.toString()) + duration);
-    } else {
-      // output.push(repeat(stepShift) + step.toString() + duration);
-      global.testomatioDataStore?.steps?.push(repeat(stepShift) + step.toString() + duration);
-    }
-  });
-
-  event.dispatcher.on(event.step.comment, step => {
-    // output.push(pc.cyan.bold(step.toString()));
-    global.testomatioDataStore?.steps?.push(pc.cyan(pc.bold(step.toString())));
+    const stepText = `${repeat(output.stepShift)} ${step.toCliStyled ? step.toCliStyled() : step.toString()}`
+    dataStorage.putData('log', stepText);
+    processMetaStepsForDisplay(step);
+    captureHookStep(step, stepStart.getTime(), Date.now(), currentHook, hookSteps);
   });
 }
 
@@ -285,14 +226,75 @@ function stripExampleFromTitle(title) {
   const res = title.match(DATA_REGEXP);
   if (!res) return { title, example: null };
 
-  const example = JSON.parse(res[1]);
-  title = title.replace(DATA_REGEXP, '').trim();
+  try {
+    const example = JSON.parse(res[1]);
+    title = title.replace(DATA_REGEXP, '').trim();
+    return { title, example };
+  } catch (e) {
+    // If JSON parsing fails, return title without example
+    debug('Failed to parse example JSON:', res[1], e.message);
+    return { title: title.replace(DATA_REGEXP, '').trim(), example: null };
+  }
+}
 
-  return { title, example };
+function stripTagsFromTitle(title) {
+  // Remove @tags from the end of titles (e.g., "Hooks Test Suite @hooks" -> "Hooks Test Suite")
+  return title.replace(/\s+@[\w-]+\s*$/, '').trim();
 }
 
 function repeat(num) {
   return ''.padStart(num, ' ');
+}
+
+// Helper functions for cleaner event handling
+function initializeTestDataStore() {
+  if (!global.testomatioDataStore) global.testomatioDataStore = {};
+  global.testomatioDataStore.steps = [];
+}
+
+function buildArtifactFiles(artifacts) {
+  const files = [];
+  if (artifacts.screenshot) {
+    files.push({ path: artifacts.screenshot, type: 'image/png' });
+  }
+  return files;
+}
+
+function processArtifactsForUpload(artifacts, uid, title, videos, traces) {
+  for (const aid in artifacts) {
+    if (aid.startsWith('video')) {
+      videos.push({ rid: uid, title, path: artifacts[aid], type: 'video/webm' });
+    }
+    if (aid.startsWith('trace')) {
+      traces.push({ rid: uid, title, path: artifacts[aid], type: 'application/zip' });
+    }
+  }
+}
+
+function processMetaStepsForDisplay(step) {
+  const metaSteps = [];
+  let processingStep = step;
+  
+  while (processingStep.metaStep) {
+    metaSteps.unshift(processingStep.metaStep);
+    processingStep = processingStep.metaStep;
+  }
+}
+
+function captureHookStep(step, startTime, endTime, currentHook, hookSteps) {
+  if (!currentHook) return;
+  
+  const hookStepsArray = hookSteps.get(currentHook) || [];
+  hookStepsArray.push({
+    name: step.name,
+    actor: step.actor,
+    args: step.args,
+    status: step.status,
+    startTime,
+    endTime,
+    helperMethod: step.helperMethod
+  });
+  hookSteps.set(currentHook, hookStepsArray);
 }
 
 // TODO: think about moving to some common utils
@@ -312,47 +314,139 @@ function getTestLogs(test) {
   return logs;
 }
 
-function appendStep(step, shift = 0) {
-  // nesting too deep, ignore those steps
-  if (shift >= 10) return;
-
-  let newCategory = step.category;
-  switch (newCategory) {
-    case 'test.step':
-      newCategory = 'user';
-      break;
-    case 'hook':
-      newCategory = 'hook';
-      break;
-    case 'attach':
-      return null; // Skip steps with category 'attach'
-    default:
-      newCategory = 'framework';
+// Build step hierarchy using CodeceptJS built-in methods
+function buildUnifiedStepHierarchy(steps, hookSteps) {
+  const hierarchy = [];
+  
+  // Add pre-test hooks
+  addHooksToHierarchy(hierarchy, hookSteps, HOOK_EXECUTION_ORDER.PRE_TEST);
+  
+  // Process test steps if they exist
+  if (steps && steps.length > 0) {
+    processTestSteps(steps, hierarchy);
   }
+  
+  // Add post-test hooks
+  addHooksToHierarchy(hierarchy, hookSteps, HOOK_EXECUTION_ORDER.POST_TEST);
+  
+  return hierarchy;
+}
 
-  const formattedSteps = [];
-  for (const child of step.steps || []) {
-    const appendedChild = appendStep(child, shift + 2);
-    if (appendedChild) {
-      formattedSteps.push(appendedChild);
+function addHooksToHierarchy(hierarchy, hookSteps, hookNames) {
+  for (const hookName of hookNames) {
+    if (hookSteps.has(hookName)) {
+      const hookSection = createHookSection(hookName, hookSteps.get(hookName));
+      if (hookSection) hierarchy.push(hookSection);
     }
   }
+}
 
-  const resultStep = {
-    category: newCategory,
-    title: step.title,
-    duration: step.duration,
+function processTestSteps(steps, hierarchy) {
+  const sectionMap = new Map();
+  
+  for (const step of steps) {
+    const formattedStep = formatCodeceptStep(step);
+    if (!formattedStep) continue;
+    
+    if (step.metaStep) {
+      // Step belongs to a section (meta step)
+      const sectionKey = step.metaStep;
+      let sectionStep = sectionMap.get(sectionKey);
+      
+      if (!sectionStep) {
+        sectionStep = createSectionStep(step.metaStep);
+        sectionMap.set(sectionKey, sectionStep);
+        hierarchy.push(sectionStep);
+      }
+      
+      sectionStep.steps.push(formattedStep);
+      sectionStep.duration += formattedStep.duration || 0;
+    } else {
+      // Regular step
+      hierarchy.push(formattedStep);
+    }
+  }
+}
+
+
+function createSectionStep(metaStep) {
+  return {
+    category: 'user',
+    title: metaStep.toString(), // Use built-in toString method
+    duration: metaStep.duration || 0, // Use built-in duration
+    steps: []
   };
+}
 
-  if (formattedSteps.length) {
-    resultStep.steps = formattedSteps.filter(s => !!s);
+function createHookSection(hookName, steps) {
+  if (!steps || steps.length === 0) return null;
+  
+  const hookSection = {
+    category: 'hook',
+    title: formatHookName(hookName),
+    duration: 0,
+    steps: []
+  };
+  
+  for (const step of steps) {
+    const formattedStep = formatHookStep(step);
+    if (formattedStep) {
+      hookSection.steps.push(formattedStep);
+      hookSection.duration += formattedStep.duration || 0;
+    }
   }
+  
+  return hookSection.steps.length > 0 ? hookSection : null;
+}
 
-  if (step.error !== undefined) {
-    resultStep.error = step.error;
+function formatHookName(hookName) {
+  return hookName.replace(/Hook$/, '');
+}
+
+
+// Format CodeceptJS step using its built-in methods
+function formatCodeceptStep(step) {
+  if (!step) return null;
+  
+  const category = step.constructor.name === 'HelperStep' ? 'framework' : 'user';
+  const title = step.toString(); // Use built-in toString
+  const duration = step.duration || 0; // Use built-in duration
+  
+  const formattedStep = {
+    category,
+    title,
+    duration
+  };
+  
+  // Add error if step failed
+  if (step.status === 'failed' && step.err) {
+    formattedStep.error = {
+      message: step.err.message || 'Step failed',
+      stack: step.err.stack || ''
+    };
   }
+  
+  return formattedStep;
+}
 
-  return resultStep;
+function formatHookStep(step) {
+  if (!step) return null;
+  
+  // For hook steps, construct title from available properties
+  let title = step.name;
+  if (step.actor && step.name) {
+    title = `${step.actor}.${step.name}`;
+    if (step.args && step.args.length > 0) {
+      const argsStr = step.args.map(arg => JSON.stringify(arg)).join(', ');
+      title += `(${argsStr})`;
+    }
+  }
+  
+  return {
+    category: 'hook',
+    title,
+    duration: step.duration || 0
+  };
 }
 
 export { CodeceptReporter };
