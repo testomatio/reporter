@@ -113,8 +113,6 @@ dist
 #Export files folder
 export/
 
-tests/adapter/examples/codecept/output/
-
 # Test results and artifacts
 test-results/
 */test-results/
