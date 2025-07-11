@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { CodeceptTestRunner } from './codecept-test-utils.js';
+import { CodeceptTestRunner } from './utils/codecept.js';
 
 describe('CodeceptJS AfterSuite Failure Bug (#948)', function() {
   this.timeout(60000);
@@ -18,9 +18,6 @@ describe('CodeceptJS AfterSuite Failure Bug (#948)', function() {
   // Unified helper function using testRunner
   async function runCodeceptTest(testFile, extraEnv = {}) {
     const result = await testRunner.runCodeceptTest(testFile, extraEnv);
-    
-    console.log('Test execution output:', result.stdout);
-    if (result.stderr) console.log('Test execution stderr:', result.stderr);
 
     // Expected - tests will fail due to AfterSuite failure
     // Verify debug data was created

@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import fs from 'fs';
 import path from 'path';
-import { CodeceptTestRunner } from './codecept-test-utils.js';
+import { CodeceptTestRunner } from './utils/codecept.js';
 
 describe('CodeceptJS Adapter Tests', function() {
   this.timeout(60000); // Longer timeout for test execution
@@ -63,7 +63,7 @@ describe('CodeceptJS Adapter Tests', function() {
   describe('Configuration', () => {
     it('should use testomat plugin configuration', async () => {
       // Read the codecept config to verify testomat plugin is configured
-      const configPath = path.join(exampleDir, 'codecept.conf.js');
+      const configPath = path.join(testRunner.exampleDir, 'codecept.conf.js');
       const configContent = fs.readFileSync(configPath, 'utf-8');
       
       expect(configContent).to.include('testomat');
@@ -82,7 +82,7 @@ describe('CodeceptJS Adapter Tests', function() {
 
   describe('File Structure', () => {
     it('should have simple test file with correct structure', () => {
-      const testFilePath = path.join(exampleDir, 'simple_test.js');
+      const testFilePath = path.join(testRunner.exampleDir, 'simple_test.js');
       expect(fs.existsSync(testFilePath)).to.be.true;
       
       const testContent = fs.readFileSync(testFilePath, 'utf-8');
@@ -92,7 +92,7 @@ describe('CodeceptJS Adapter Tests', function() {
     });
 
     it('should have package.json configured for CommonJS', () => {
-      const packagePath = path.join(exampleDir, 'package.json');
+      const packagePath = path.join(testRunner.exampleDir, 'package.json');
       expect(fs.existsSync(packagePath)).to.be.true;
       
       const packageContent = JSON.parse(fs.readFileSync(packagePath, 'utf-8'));

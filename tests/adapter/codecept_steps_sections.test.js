@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { CodeceptTestRunner } from './codecept-test-utils.js';
+import { CodeceptTestRunner } from './utils/codecept.js';
 
 describe('CodeceptJS Steps and Sections Reporting', function() {
   this.timeout(60000);
@@ -23,9 +23,6 @@ describe('CodeceptJS Steps and Sections Reporting', function() {
     };
     
     const result = await testRunner.runCodeceptTest(testConfig, extraEnv);
-    
-    console.log('Test execution output:', result.stdout);
-    if (result.stderr) console.log('Test execution stderr:', result.stderr);
 
     // Verify debug data was created
     expect(result.debugData.length).to.be.greaterThan(0);
@@ -40,7 +37,6 @@ describe('CodeceptJS Steps and Sections Reporting', function() {
       expect(testEntries.length).to.equal(1);
       const testEntry = testEntries[0];
       
-      console.log('Test entry:', JSON.stringify(testEntry.testId, null, 2));
       
       // Check basic test properties
       expect(testEntry.testId.status).to.equal('passed');
@@ -67,7 +63,6 @@ describe('CodeceptJS Steps and Sections Reporting', function() {
       
       // Check stack field formatting
       const stack = testEntry.testId.stack;
-      console.log('Stack:', stack);
       expect(stack).to.include('################[ Logs ]################');
       expect(stack).to.include('User Authentication');
       expect(stack).to.include('Data Processing');

@@ -89,7 +89,6 @@ export class DebugPipe {
   async addTest(data) {
     if (!this.isEnabled) return;
 
-    console.log('addTest', data);
     if (!this.batch.isEnabled) {
       const logData = { action: 'addTest', testId: data };
       if (this.store.runId) logData.runId = this.store.runId;

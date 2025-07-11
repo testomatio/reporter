@@ -17,8 +17,6 @@ if (!global.codeceptjs) {
 // @ts-ignore
 const { event, recorder, codecept, output } = global.codeceptjs;
 
-let stepStart = new Date();
-
 const [, MAJOR_VERSION, MINOR_VERSION] = codecept.version().match(/(\d+)\.(\d+)/).map(Number);
 
 // Constants for hook execution order
@@ -45,15 +43,6 @@ function CodeceptReporter(config) {
 
   const testTimeMap = {};
   const { apiKey } = config;
-
-  const getDuration = test => {
-    if (!test.uid) return 0;
-    if (testTimeMap[test.uid]) {
-      return Date.now() - testTimeMap[test.uid];
-    }
-
-    return 0;
-  };
 
   const client = new TestomatClient({ apiKey });
 
@@ -89,15 +78,23 @@ function CodeceptReporter(config) {
   // Hook event listeners
   event.dispatcher.on(event.hook.started, (hook) => {
     currentHook = hook.name;
+    let title = hook.hookName;
+    if (hook.suite) title += ' ' + hook.suite.fullTitle();
+    if (hook.test) title += ' ' + hook.test.fullTitle();
+    if (hook.ctx.currentTest) title += ' ' + hook.ctx.currentTest.fullTitle();
+
+    services.setContext(title);
     hookSteps.set(hook.name, []);
   });
 
   event.dispatcher.on(event.hook.passed, () => {
     currentHook = null;
+    services.setContext(null);
   });
 
   event.dispatcher.on(event.hook.failed, () => {
     currentHook = null;
+    services.setContext(null);
   });
 
   // Listening to events
@@ -114,9 +111,7 @@ function CodeceptReporter(config) {
   });
 
   event.dispatcher.on(event.suite.before, suite => {
-    global.testomatioDataStore.steps = [];
-
-    services.setContext(suite.fullTitle());
+    dataStorage.setContext(suite.fullTitle());
   });
 
   event.dispatcher.on(event.suite.after, () => {
@@ -145,7 +140,7 @@ function CodeceptReporter(config) {
   });
 
   event.dispatcher.on(event.test.after, test => {
-    const { uid, tags, title, artifacts } = test;
+    const { uid, tags, title, artifacts } = test.simplify();
     const error = test.err || null;
     failedTests.push(uid || title);
     const testObj = getTestAndMessage(title);
@@ -154,6 +149,7 @@ function CodeceptReporter(config) {
     const manuallyAttachedArtifacts = services.artifacts.get(test.fullTitle());
     const keyValues = services.keyValues.get(test.fullTitle());
     const stepHierarchy = buildUnifiedStepHierarchy(test.steps, hookSteps);
+    const labels = services.labels.get(test.fullTitle());
 
     services.setContext(null);
 
@@ -164,10 +160,11 @@ function CodeceptReporter(config) {
       suite_title: test.parent && stripTagsFromTitle(stripExampleFromTitle(test.parent.title).title),
       error,
       message: testObj.message,
-      time: getDuration(test),
+      time: test.duration,
       files,
       steps: stepHierarchy, // Array of step objects per API schema
       logs,
+      labels,
       manuallyAttachedArtifacts,
       meta: { ...keyValues, ...test.meta },
     });
@@ -176,17 +173,13 @@ function CodeceptReporter(config) {
   });
 
   event.dispatcher.on(event.step.started, step => {
-    step.started = true;
-    stepStart = new Date();
+    const stepText = `${repeat(output.stepShift)} ${step.toCliStyled ? step.toCliStyled() : step.toString()}`
+    dataStorage.putData('log', stepText);
   });
 
   event.dispatcher.on(event.step.finished, step => {
-    if (!step.started) return;
-
-    const stepText = `${repeat(output.stepShift)} ${step.toCliStyled ? step.toCliStyled() : step.toString()}`
-    dataStorage.putData('log', stepText);
     processMetaStepsForDisplay(step);
-    captureHookStep(step, stepStart.getTime(), Date.now(), currentHook, hookSteps);
+    captureHookStep(step, currentHook, hookSteps);
   });
 }
 
@@ -281,8 +274,11 @@ function processMetaStepsForDisplay(step) {
   }
 }
 
-function captureHookStep(step, startTime, endTime, currentHook, hookSteps) {
+function captureHookStep(step, currentHook, hookSteps) {
   if (!currentHook) return;
+
+  const startTime = step.startTime;
+  const endTime = step.endTime;
   
   const hookStepsArray = hookSteps.get(currentHook) || [];
   hookStepsArray.push({
@@ -299,17 +295,36 @@ function captureHookStep(step, startTime, endTime, currentHook, hookSteps) {
 
 // TODO: think about moving to some common utils
 function getTestLogs(test) {
-  const suiteLogsArr = services.logger.getLogs(test.parent.fullTitle());
-  const suiteLogs = suiteLogsArr ? suiteLogsArr.join('\n').trim() : '';
-  const testLogsArr = services.logger.getLogs(test.fullTitle());
+  // Contexts for each log section
+  const suiteTitle = test.parent.fullTitle();
+  const testTitle = test.fullTitle();
+  const beforeSuiteLogsArr = services.logger.getLogs(`BeforeSuite ${suiteTitle}`);
+  const beforeLogsArr = services.logger.getLogs(`Before ${testTitle}`);
+  const testLogsArr = services.logger.getLogs(testTitle);
+  const afterLogsArr = services.logger.getLogs(`After ${testTitle}`);
+  const afterSuiteLogsArr = services.logger.getLogs(`AfterSuite ${suiteTitle}`);
+
+  const beforeSuiteLogs = beforeSuiteLogsArr ? beforeSuiteLogsArr.join('\n').trim() : '';
+  const beforeLogs = beforeLogsArr ? beforeLogsArr.join('\n').trim() : '';
   const testLogs = testLogsArr ? testLogsArr.join('\n').trim() : '';
+  const afterLogs = afterLogsArr ? afterLogsArr.join('\n').trim() : '';
+  const afterSuiteLogs = afterSuiteLogsArr ? afterSuiteLogsArr.join('\n').trim() : '';
 
   let logs = '';
-  if (suiteLogs) {
-    logs += `${pc.bold('\t--- BeforeSuite ---')}\n${suiteLogs}`;
+  if (beforeSuiteLogs) {
+    logs += `${pc.bold('--- BeforeSuite ---')}\n${beforeSuiteLogs}`;
+  }
+  if (beforeLogs) {
+    logs += `\n${pc.bold('--- Before ---')}\n${beforeLogs}`;
   }
   if (testLogs) {
-    logs += `\n${pc.bold('\t--- Test ---')}\n${testLogs}`;
+    logs += `\n${pc.bold('--- Test ---')}\n${testLogs}`;
+  }
+  if (afterLogs) {
+    logs += `\n${pc.bold('--- After ---')}\n${afterLogs}`;
+  }
+  if (afterSuiteLogs) {
+    logs += `\n${pc.bold('--- AfterSuite ---')}\n${afterSuiteLogs}`;
   }
   return logs;
 }

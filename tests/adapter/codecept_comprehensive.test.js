@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { CodeceptTestRunner } from './codecept-test-utils.js';
+import { CodeceptTestRunner } from './utils/codecept.js';
 
 describe('CodeceptJS Comprehensive Adapter Tests', function() {
   this.timeout(120000); // Longer timeout for comprehensive test execution
@@ -18,9 +18,6 @@ describe('CodeceptJS Comprehensive Adapter Tests', function() {
   // Unified helper function using testRunner
   async function runCodeceptTest(testFile = 'comprehensive_test.js', extraEnv = {}) {
     const result = await testRunner.runCodeceptTest(testFile, extraEnv);
-    
-    console.log('Test execution output:', result.stdout);
-    if (result.stderr) console.log('Test execution stderr:', result.stderr);
 
     // Verify debug data was created
     expect(result.debugData.length).to.be.greaterThan(0);

@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { CodeceptTestRunner } from './codecept-test-utils.js';
+import { CodeceptTestRunner } from './utils/codecept.js';
 
 describe('CodeceptJS Hooks and Step Hierarchy', function() {
   this.timeout(120000);
@@ -18,9 +18,6 @@ describe('CodeceptJS Hooks and Step Hierarchy', function() {
   // Unified helper function using testRunner
   async function runCodeceptTest(testFile, extraEnv = {}) {
     const result = await testRunner.runCodeceptTest(testFile, extraEnv);
-    
-    console.log('Test execution output:', result.stdout);
-    if (result.stderr) console.log('Test execution stderr:', result.stderr);
 
     // Verify debug data was created
     expect(result.debugData.length).to.be.greaterThan(0);
