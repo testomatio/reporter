@@ -1,4 +1,6 @@
 import { expect } from 'chai';
+import path from 'path';
+import fs from 'fs';
 import { CodeceptTestRunner } from './utils/codecept.js';
 
 describe('CodeceptJS AfterSuite Failure Bug (#948)', function() {
@@ -56,7 +58,7 @@ AfterSuite(() => {
 });
 `;
 
-    const testFilePath = path.join(exampleDir, 'aftersuite_failure_test.js');
+    const testFilePath = path.join(testRunner.exampleDir, 'aftersuite_failure_test.js');
     fs.writeFileSync(testFilePath, testContent);
     
     expect(fs.existsSync(testFilePath)).to.be.true;
@@ -160,7 +162,7 @@ Scenario('Another test after failing BeforeSuite', ({ I, test }) => {
 });
 `;
 
-    const beforeSuiteTestPath = path.join(exampleDir, 'beforesuite_failure_test.js');
+    const beforeSuiteTestPath = path.join(testRunner.exampleDir, 'beforesuite_failure_test.js');
     fs.writeFileSync(beforeSuiteTestPath, beforeSuiteTestContent);
     
     const { testEntries, stdout } = await runCodeceptTest('beforesuite_failure_test.js');
@@ -186,7 +188,7 @@ Scenario('Another test after failing BeforeSuite', ({ I, test }) => {
     ];
     
     testFiles.forEach(file => {
-      const filePath = path.join(exampleDir, file);
+      const filePath = path.join(testRunner.exampleDir, file);
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
       }

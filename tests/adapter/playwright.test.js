@@ -16,7 +16,16 @@ describe('Playwright Adapter Tests', function() {
   before(() => {
     // Use our new example directory
     exampleDir = path.join(process.cwd(), 'example', 'playwright');
+  });
+
+  beforeEach(() => {
+    // Use the latest symlink path
     debugFilePath = path.join(os.tmpdir(), 'testomatio.debug.latest.json');
+    // Clean up any existing debug files before starting
+    const symlinkPath = path.join(os.tmpdir(), 'testomatio.debug.latest.json');
+    if (fs.existsSync(symlinkPath)) {
+      fs.unlinkSync(symlinkPath);
+    }
   });
 
   afterEach(() => {
@@ -42,15 +51,34 @@ describe('Playwright Adapter Tests', function() {
         }
       });
       
-      console.log('Test execution output:', stdout);
-      if (stderr) console.log('Test execution stderr:', stderr);
+      // console.log('Test execution output:', stdout);
+      // if (stderr) console.log('Test execution stderr:', stderr);
     } catch (error) {
       // Tests might fail (we have intentional failures), but adapter should still work
       console.log('Test execution completed with some failures (expected)');
+      // if (error.stdout) console.log('Error stdout:', error.stdout);
+      // if (error.stderr) console.log('Error stderr:', error.stderr);
     }
 
-    // Verify debug file was created and return parsed data
-    expect(fs.existsSync(debugFilePath)).to.be.true;
+    // Wait a moment for debug file to be finalized
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Find the most recent debug file created during this test
+    const tmpFiles = fs.readdirSync(os.tmpdir())
+      .filter(f => f.startsWith('testomatio.debug.') && f.endsWith('.json') && !f.includes('latest'))
+      .map(f => ({
+        name: f,
+        path: path.join(os.tmpdir(), f),
+        mtime: fs.statSync(path.join(os.tmpdir(), f)).mtime
+      }))
+      .sort((a, b) => b.mtime - a.mtime);
+
+    // console.log('Found debug files:', tmpFiles.map(f => f.name));
+    expect(tmpFiles.length).to.be.greaterThan(0, 'No debug files found');
+    
+    // Use the most recent debug file
+    debugFilePath = tmpFiles[0].path;
+    // console.log('Using debug file:', debugFilePath);
     
     const debugContent = fs.readFileSync(debugFilePath, 'utf-8');
     const debugLines = debugContent.trim().split('\n').filter(line => line.trim());

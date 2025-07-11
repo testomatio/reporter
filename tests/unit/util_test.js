@@ -6,7 +6,7 @@ import {
   fetchIdFromCode,
   fetchIdFromOutput,
   fetchSourceCode,
-} from '../lib/utils/utils.js';
+} from '../../src/utils/utils.js';
 
 describe('Utils', () => {
   it('#fetchFilesFromStackTrace | should match images from stack trace', () => {

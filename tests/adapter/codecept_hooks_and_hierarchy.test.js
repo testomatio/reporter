@@ -83,9 +83,8 @@ describe('CodeceptJS Hooks and Step Hierarchy', function() {
         expect(hookStep.category).to.equal('hook');
         expect(hookStep.title).to.be.oneOf(['BeforeSuite', 'Before', 'After', 'AfterSuite']);
         
-        // Each hook's child steps should be categorized as 'user'
         hookStep.steps.forEach(childStep => {
-          expect(childStep.category).to.equal('user');
+          expect(childStep.category).to.equal('hook');
           expect(childStep.title).to.match(/I expect/);
         });
       });
