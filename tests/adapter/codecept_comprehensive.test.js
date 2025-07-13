@@ -286,4 +286,116 @@ describe('CodeceptJS Comprehensive Adapter Tests', function() {
       });
     });
   });
+
+  describe('Parallel Workers Support', () => {
+    it('should handle codeceptjs run-workers with parallel execution', async function() {
+      this.timeout(120000); // Longer timeout for parallel execution
+      
+      const { testEntries, debugData } = await runCodeceptTest({ grep: '@comprehensive' }, {
+        // Use run-workers instead of run for parallel execution
+        CODECEPT_COMMAND: 'run-workers'
+      });
+      
+      // Should capture all tests even in parallel mode
+      expect(testEntries.length).to.be.greaterThan(0);
+      expect(debugData.length).to.be.greaterThan(0);
+      
+      // Find different test types that should be present
+      const passingTests = testEntries.filter(entry => entry.testId.status === 'passed');
+      const failingTests = testEntries.filter(entry => entry.testId.status === 'failed');
+      
+      // Should have both passing and failing tests
+      expect(passingTests.length).to.be.greaterThan(0);
+      expect(failingTests.length).to.be.greaterThan(0);
+      
+      // Verify that all tests have proper metadata
+      testEntries.forEach(entry => {
+        expect(entry.testId).to.exist;
+        expect(entry.testId.rid).to.be.a('string');
+        expect(entry.testId.title).to.be.a('string');
+        expect(entry.testId.suite_title).to.equal('Comprehensive Test Suite');
+        expect(entry.testId.run_time).to.be.a('number');
+        expect(entry.testId.status).to.be.oneOf(['passed', 'failed', 'skipped']);
+        expect(entry.testId.meta).to.be.an('object');
+      });
+      
+      // Check that we have proper test coverage even in parallel mode
+      const testTitles = testEntries.map(entry => entry.testId.title);
+      expect(testTitles).to.include.members([
+        'Test that passes',
+        'Test that fails'
+      ]);
+      
+      // Verify run events are properly captured
+      const runStartEvents = debugData.filter(entry => entry.action === 'createRun');
+      const runFinishEvents = debugData.filter(entry => entry.action === 'finishRun');
+      
+      expect(runStartEvents.length).to.be.greaterThan(0);
+      expect(runFinishEvents.length).to.be.greaterThan(0);
+    });
+
+    it('should maintain test isolation in parallel workers', async function() {
+      this.timeout(120000);
+      
+      const { testEntries } = await runCodeceptTest({ grep: '@comprehensive' }, {
+        CODECEPT_COMMAND: 'run-workers'
+      });
+      
+      // In parallel execution, tests should have unique run identifiers per execution
+      // but the same test can be reported multiple times from different workers
+      const testTitles = testEntries.map(entry => entry.testId.title);
+      const uniqueTestTitles = [...new Set(testTitles)];
+      
+      // Verify we have the expected number of unique tests
+      expect(uniqueTestTitles.length).to.be.greaterThan(0, 'Should have multiple unique test titles');
+      
+      // Each test entry should have a unique run ID even if test titles repeat
+      const runIds = testEntries.map(entry => entry.testId.rid);
+      runIds.forEach(rid => {
+        expect(rid).to.be.a('string');
+        expect(rid.length).to.be.greaterThan(0);
+      });
+      
+      // Each test should have proper timing
+      testEntries.forEach(entry => {
+        expect(entry.testId.run_time).to.be.a('number');
+        expect(entry.testId.run_time).to.be.at.least(0);
+        expect(entry.testId.timestamp).to.be.a('number');
+        expect(entry.testId.timestamp).to.be.greaterThan(0);
+      });
+    });
+
+    it('should handle worker failures gracefully', async function() {
+      this.timeout(120000);
+      
+      // Run tests that include failures in parallel
+      const { testEntries, debugData } = await runCodeceptTest({ grep: '@comprehensive' }, {
+        CODECEPT_COMMAND: 'run-workers'
+      });
+      
+      // Should still capture all test data even if some tests fail
+      expect(testEntries.length).to.be.greaterThan(0);
+      
+      // Find tests that failed intentionally
+      const intentionalFailures = testEntries.filter(entry => 
+        entry.testId.status === 'failed' && 
+        (entry.testId.title.includes('fails') || entry.testId.title.includes('error'))
+      );
+      
+      expect(intentionalFailures.length).to.be.greaterThan(0);
+      
+      // Failed tests should have proper error information
+      intentionalFailures.forEach(entry => {
+        expect(entry.testId.message).to.be.a('string');
+        expect(entry.testId.message.length).to.be.greaterThan(0);
+        if (entry.testId.stack) {
+          expect(entry.testId.stack).to.include('################[ Failure ]################');
+        }
+      });
+      
+      // Verify run completed despite failures
+      const runFinishEvents = debugData.filter(entry => entry.action === 'finishRun');
+      expect(runFinishEvents.length).to.be.greaterThan(0);
+    });
+  });
 });

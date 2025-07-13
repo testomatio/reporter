@@ -75,8 +75,37 @@ function CodeceptReporter(config) {
   const hookSteps = new Map();
   let currentHook = null;
 
+  event.dispatcher.on(event.workers.before, () => {
+    recorder.add('Creating new run', async () => {
+      await client.createRun();
+      process.env.TESTOMATIO_RUN = client.runId;
+      process.env.TESTOMATIO_PROCEED = 'true';
+      debug('Run ID:', client.runId);
+    });
+  });
+
+  event.dispatcher.on(event.workers.after, () => {
+    client.updateRunStatus('finished');
+  });
+
+  // Listening to events
+  event.dispatcher.on(event.all.before, () => {
+    // clear tmp dir
+    // fileSystem.clearDir(TESTOMAT_TMP_STORAGE_DIR);
+
+    // recorder.add('Creating new run', () => );
+    recorder.add('Creating new run', () => {
+      return client.createRun();
+    });
+    videos = [];
+    traces = [];
+
+    if (!global.testomatioDataStore) global.testomatioDataStore = {};
+  });
+
   // Hook event listeners
   event.dispatcher.on(event.hook.started, (hook) => {
+    output.stepShift = 2;
     currentHook = hook.name;
     let title = hook.hookName;
     if (hook.suite) title += ' ' + hook.suite.fullTitle();
@@ -87,28 +116,12 @@ function CodeceptReporter(config) {
     hookSteps.set(hook.name, []);
   });
 
-  event.dispatcher.on(event.hook.passed, () => {
+  event.dispatcher.on(event.hook.finished, () => {
     currentHook = null;
+    output.stepShift = 2;
     services.setContext(null);
   });
 
-  event.dispatcher.on(event.hook.failed, () => {
-    currentHook = null;
-    services.setContext(null);
-  });
-
-  // Listening to events
-  event.dispatcher.on(event.all.before, () => {
-    // clear tmp dir
-    fileSystem.clearDir(TESTOMAT_TMP_STORAGE_DIR);
-
-    // recorder.add('Creating new run', () => );
-    client.createRun();
-    videos = [];
-    traces = [];
-
-    if (!global.testomatioDataStore) global.testomatioDataStore = {};
-  });
 
   event.dispatcher.on(event.suite.before, suite => {
     dataStorage.setContext(suite.fullTitle());
@@ -267,7 +280,7 @@ function processArtifactsForUpload(artifacts, uid, title, videos, traces) {
 function processMetaStepsForDisplay(step) {
   const metaSteps = [];
   let processingStep = step;
-  
+
   while (processingStep.metaStep) {
     metaSteps.unshift(processingStep.metaStep);
     processingStep = processingStep.metaStep;
@@ -279,7 +292,7 @@ function captureHookStep(step, currentHook, hookSteps) {
 
   const startTime = step.startTime;
   const endTime = step.endTime;
-  
+
   const hookStepsArray = hookSteps.get(currentHook) || [];
   hookStepsArray.push({
     name: step.name,
@@ -332,18 +345,18 @@ function getTestLogs(test) {
 // Build step hierarchy using CodeceptJS built-in methods
 function buildUnifiedStepHierarchy(steps, hookSteps) {
   const hierarchy = [];
-  
+
   // Add pre-test hooks
   addHooksToHierarchy(hierarchy, hookSteps, HOOK_EXECUTION_ORDER.PRE_TEST);
-  
+
   // Process test steps if they exist
   if (steps && steps.length > 0) {
     processTestSteps(steps, hierarchy);
   }
-  
+
   // Add post-test hooks
   addHooksToHierarchy(hierarchy, hookSteps, HOOK_EXECUTION_ORDER.POST_TEST);
-  
+
   return hierarchy;
 }
 
@@ -358,22 +371,22 @@ function addHooksToHierarchy(hierarchy, hookSteps, hookNames) {
 
 function processTestSteps(steps, hierarchy) {
   const sectionMap = new Map();
-  
+
   for (const step of steps) {
     const formattedStep = formatCodeceptStep(step);
     if (!formattedStep) continue;
-    
+
     if (step.metaStep) {
       // Step belongs to a section (meta step)
       const sectionKey = step.metaStep;
       let sectionStep = sectionMap.get(sectionKey);
-      
+
       if (!sectionStep) {
         sectionStep = createSectionStep(step.metaStep);
         sectionMap.set(sectionKey, sectionStep);
         hierarchy.push(sectionStep);
       }
-      
+
       sectionStep.steps.push(formattedStep);
       sectionStep.duration += formattedStep.duration || 0;
     } else {
@@ -395,14 +408,14 @@ function createSectionStep(metaStep) {
 
 function createHookSection(hookName, steps) {
   if (!steps || steps.length === 0) return null;
-  
+
   const hookSection = {
     category: 'hook',
     title: formatHookName(hookName),
     duration: 0,
     steps: []
   };
-  
+
   for (const step of steps) {
     const formattedStep = formatHookStep(step);
     if (formattedStep) {
@@ -410,7 +423,7 @@ function createHookSection(hookName, steps) {
       hookSection.duration += formattedStep.duration || 0;
     }
   }
-  
+
   return hookSection.steps.length > 0 ? hookSection : null;
 }
 
@@ -422,17 +435,17 @@ function formatHookName(hookName) {
 // Format CodeceptJS step using its built-in methods
 function formatCodeceptStep(step) {
   if (!step) return null;
-  
+
   const category = step.constructor.name === 'HelperStep' ? 'framework' : 'user';
   const title = step.toString(); // Use built-in toString
   const duration = step.duration || 0; // Use built-in duration
-  
+
   const formattedStep = {
     category,
     title,
     duration
   };
-  
+
   // Add error if step failed
   if (step.status === 'failed' && step.err) {
     formattedStep.error = {
@@ -440,13 +453,13 @@ function formatCodeceptStep(step) {
       stack: step.err.stack || ''
     };
   }
-  
+
   return formattedStep;
 }
 
 function formatHookStep(step) {
   if (!step) return null;
-  
+
   // For hook steps, construct title from available properties
   let title = step.name;
   if (step.actor && step.name) {
@@ -456,7 +469,7 @@ function formatHookStep(step) {
       title += `(${argsStr})`;
     }
   }
-  
+
   return {
     category: 'hook',
     title,
