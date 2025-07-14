@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import fs from 'fs';
 import path from 'path';
-import { CodeceptTestRunner } from './utils/codecept.js';
+import { runTests, runWorkers, CodeceptTestRunner } from './utils/codecept.js';
 
 describe('CodeceptJS Adapter Tests', function () {
   this.timeout(60000); // Longer timeout for test execution
@@ -17,20 +17,12 @@ describe('CodeceptJS Adapter Tests', function () {
     testRunner.cleanupTestEnvironment();
   });
 
-  // Unified helper function using testRunner
-  async function runCodeceptTest(testFile = 'simple_test.js', extraEnv = {}) {
-    const result = await testRunner.runCodeceptTest(testFile, extraEnv);
-
-    // Verify debug data was created
-    expect(result.debugData.length).to.be.greaterThan(0);
-    expect(result.testEntries.length).to.be.greaterThan(0);
-    
-    return result;
-  }
+  // Remove custom runCodeceptTest helper
+  // Use runTests or runWorkers directly in tests
 
   describe('Basic Functionality', () => {
     it('should execute tests and generate debug data', async () => {
-      const { stdout, debugData, testEntries } = await runCodeceptTest();
+      const { stdout, debugData, testEntries } = await runTests();
 
       // Verify test execution
       expect(stdout).to.include('Simple Tests');
@@ -48,7 +40,7 @@ describe('CodeceptJS Adapter Tests', function () {
 
   describe('Test Execution Results', () => {
     it('should handle both passing and failing tests', async () => {
-      const { stdout } = await runCodeceptTest();
+      const { stdout } = await runTests();
 
       // Check for pass/fail indicators
       expect(stdout).to.include('should always pass');
@@ -71,7 +63,7 @@ describe('CodeceptJS Adapter Tests', function () {
     });
 
     it('should handle TESTOMATIO environment variable', async () => {
-      const { stdout } = await runCodeceptTest('simple_test.js', {
+      const { stdout } = await runTests({}, {
         TESTOMATIO: 'custom-test-key',
       });
 
@@ -102,7 +94,7 @@ describe('CodeceptJS Adapter Tests', function () {
 
   describe('Debug Pipe Integration', () => {
     it('should capture test metadata and status', async () => {
-      const { testEntries } = await runCodeceptTest();
+      const { testEntries } = await runTests();
 
       // Should have exactly 2 tests
       expect(testEntries.length).to.equal(2);
@@ -122,7 +114,7 @@ describe('CodeceptJS Adapter Tests', function () {
     });
 
     it('should capture test execution metadata', async () => {
-      const { testEntries } = await runCodeceptTest();
+      const { testEntries } = await runTests();
 
       // Check that all tests have required metadata
       testEntries.forEach(entry => {
@@ -137,7 +129,7 @@ describe('CodeceptJS Adapter Tests', function () {
     });
 
     it('should handle test failures with proper error information', async () => {
-      const { testEntries } = await runCodeceptTest();
+      const { testEntries } = await runTests();
 
       const failingTest = testEntries.find(entry => entry.testId.status === 'failed');
       expect(failingTest).to.exist;

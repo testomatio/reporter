@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { CodeceptTestRunner } from './utils/codecept.js';
+import { runTests, runWorkers, CodeceptTestRunner } from './utils/codecept.js';
 
 describe('CodeceptJS Comprehensive Adapter Tests', function() {
   this.timeout(120000); // Longer timeout for comprehensive test execution
@@ -15,19 +15,12 @@ describe('CodeceptJS Comprehensive Adapter Tests', function() {
     testRunner.cleanupTestEnvironment();
   });
 
-  // Unified helper function using testRunner
-  async function runCodeceptTest(testFile = 'comprehensive_test.js', extraEnv = {}) {
-    const result = await testRunner.runCodeceptTest(testFile, extraEnv);
-
-    // Verify debug data was created
-    expect(result.debugData.length).to.be.greaterThan(0);
-    
-    return result;
-  }
+  // Remove custom runCodeceptTest helper
+  // Use runTests or runWorkers directly in tests
 
   describe('Comprehensive Test Scenarios', () => {
     it('should handle passing, failing, and skipped tests', async () => {
-      const { testEntries } = await runCodeceptTest('comprehensive_test.js');
+      const { testEntries } = await runTests('comprehensive_test.js');
       
       // Find different test types
       const passingTests = testEntries.filter(entry => entry.testId.status === 'passed');
@@ -49,7 +42,7 @@ describe('CodeceptJS Comprehensive Adapter Tests', function() {
     });
 
     it('should handle data-driven tests correctly', async () => {
-      const { testEntries } = await runCodeceptTest('comprehensive_test.js');
+      const { testEntries } = await runTests('comprehensive_test.js');
       
       // Look for data-driven tests
       const dataTests = testEntries.filter(entry => 
@@ -68,7 +61,7 @@ describe('CodeceptJS Comprehensive Adapter Tests', function() {
     });
 
     it('should capture test metadata and execution details', async () => {
-      const { testEntries } = await runCodeceptTest('comprehensive_test.js');
+      const { testEntries } = await runTests('comprehensive_test.js');
       
       testEntries.forEach(entry => {
         expect(entry.testId).to.exist;
@@ -82,7 +75,7 @@ describe('CodeceptJS Comprehensive Adapter Tests', function() {
     });
 
     it('should handle async tests properly', async () => {
-      const { testEntries } = await runCodeceptTest('comprehensive_test.js');
+      const { testEntries } = await runTests('comprehensive_test.js');
       
       const asyncTest = testEntries.find(entry => 
         entry.testId.title.includes('async operation')
@@ -96,7 +89,7 @@ describe('CodeceptJS Comprehensive Adapter Tests', function() {
 
   describe('Hook Execution Tests', () => {
     it('should execute BeforeSuite and AfterSuite hooks', async () => {
-      const { stdout, testEntries } = await runCodeceptTest('hooks_test.js');
+      const { stdout, testEntries } = await runTests('hooks_test.js');
       
       // Check hook execution in output
       expect(stdout).to.include('BeforeSuite: Setting up test environment');
@@ -118,14 +111,14 @@ describe('CodeceptJS Comprehensive Adapter Tests', function() {
     });
 
     it('should execute Before and After hooks for each test', async () => {
-      const { stdout } = await runCodeceptTest('hooks_test.js');
+      const { stdout } = await runTests('hooks_test.js');
       
       expect(stdout).to.include('Before: Setting up individual test');
       expect(stdout).to.include('After: Cleaning up individual test');
     });
 
     it('should handle failing hooks gracefully', async () => {
-      const { stdout, testEntries } = await runCodeceptTest('failing_hooks_test.js');
+      const { stdout, testEntries } = await runTests('failing_hooks_test.js');
       
       // Should still report tests even when hooks fail
       expect(testEntries.length).to.be.greaterThan(0);
@@ -141,7 +134,7 @@ describe('CodeceptJS Comprehensive Adapter Tests', function() {
 
   describe('Error Handling', () => {
     it('should handle tests that throw errors', async () => {
-      const { testEntries } = await runCodeceptTest('comprehensive_test.js');
+      const { testEntries } = await runTests('comprehensive_test.js');
       
       // Find test that throws error
       const errorTest = testEntries.find(entry => 
@@ -156,7 +149,7 @@ describe('CodeceptJS Comprehensive Adapter Tests', function() {
     });
 
     it('should handle async test failures properly', async () => {
-      const { testEntries } = await runCodeceptTest('comprehensive_test.js');
+      const { testEntries } = await runTests('comprehensive_test.js');
       
       const asyncTest = testEntries.find(entry => 
         entry.testId.title.includes('async operation')
@@ -168,7 +161,7 @@ describe('CodeceptJS Comprehensive Adapter Tests', function() {
     });
 
     it('should handle various expect assertions', async () => {
-      const { testEntries } = await runCodeceptTest('comprehensive_test.js');
+      const { testEntries } = await runTests('comprehensive_test.js');
       
       // Find test with various assertions
       const assertionTest = testEntries.find(entry => 
@@ -180,7 +173,7 @@ describe('CodeceptJS Comprehensive Adapter Tests', function() {
     });
 
     it('should handle string assertion tests', async () => {
-      const { testEntries } = await runCodeceptTest('comprehensive_test.js');
+      const { testEntries } = await runTests('comprehensive_test.js');
       
       // Find test with string assertions
       const stringTest = testEntries.find(entry => 
@@ -194,7 +187,7 @@ describe('CodeceptJS Comprehensive Adapter Tests', function() {
 
   describe('Test Object Injection', () => {
     it('should properly inject test object into scenarios', async () => {
-      const { stdout } = await runCodeceptTest('comprehensive_test.js');
+      const { stdout } = await runTests('comprehensive_test.js');
       
       // Check that test object injection works and logs are present
       expect(stdout).to.include('Current test:');
@@ -203,7 +196,7 @@ describe('CodeceptJS Comprehensive Adapter Tests', function() {
     });
 
     it('should capture test metadata through injection', async () => {
-      const { testEntries } = await runCodeceptTest('hooks_test.js');
+      const { testEntries } = await runTests('hooks_test.js');
       
       // Verify that tests with injection still capture proper metadata
       testEntries.forEach(entry => {
@@ -217,7 +210,7 @@ describe('CodeceptJS Comprehensive Adapter Tests', function() {
 
   describe('Reporter Integration', () => {
     it('should capture test steps and execution flow', async () => {
-      const { testEntries } = await runCodeceptTest('comprehensive_test.js');
+      const { testEntries } = await runTests('comprehensive_test.js');
       
       // Look for test with multiple steps
       const multiStepTest = testEntries.find(entry => 
@@ -231,7 +224,7 @@ describe('CodeceptJS Comprehensive Adapter Tests', function() {
     });
 
     it('should handle feature tags properly', async () => {
-      const { testEntries } = await runCodeceptTest('comprehensive_test.js');
+      const { testEntries } = await runTests('comprehensive_test.js');
       
       // Check that tests capture feature-level tags
       const comprehensiveTests = testEntries.filter(entry => 
@@ -247,7 +240,7 @@ describe('CodeceptJS Comprehensive Adapter Tests', function() {
     });
 
     it('should maintain run consistency across different test types', async () => {
-      const { debugData } = await runCodeceptTest('comprehensive_test.js');
+      const { debugData } = await runTests('comprehensive_test.js');
       
       // Check for run start and end events
       const runEvents = debugData.filter(entry => 
@@ -268,7 +261,7 @@ describe('CodeceptJS Comprehensive Adapter Tests', function() {
 
   describe('CodeceptJS 3.7+ Features', () => {
     it('should support modern CodeceptJS event system', async () => {
-      const { stdout } = await runCodeceptTest('comprehensive_test.js');
+      const { stdout } = await runTests('comprehensive_test.js');
       
       // Should not show version warnings for 3.7+
       expect(stdout).to.not.include('CodeceptJS 3.7+ is supported');
@@ -276,7 +269,7 @@ describe('CodeceptJS Comprehensive Adapter Tests', function() {
     });
 
     it('should handle new step reporting format', async () => {
-      const { testEntries } = await runCodeceptTest('comprehensive_test.js');
+      const { testEntries } = await runTests('comprehensive_test.js');
       
       testEntries.forEach(entry => {
         // Should have proper step structure for 3.7+
@@ -291,10 +284,7 @@ describe('CodeceptJS Comprehensive Adapter Tests', function() {
     it('should handle codeceptjs run-workers with parallel execution', async function() {
       this.timeout(120000); // Longer timeout for parallel execution
       
-      const { testEntries, debugData } = await runCodeceptTest({ grep: '@comprehensive' }, {
-        // Use run-workers instead of run for parallel execution
-        CODECEPT_COMMAND: 'run-workers'
-      });
+      const { testEntries, debugData } = await runWorkers({ grep: '@comprehensive' });
       
       // Should capture all tests even in parallel mode
       expect(testEntries.length).to.be.greaterThan(0);
@@ -337,9 +327,7 @@ describe('CodeceptJS Comprehensive Adapter Tests', function() {
     it('should maintain test isolation in parallel workers', async function() {
       this.timeout(120000);
       
-      const { testEntries } = await runCodeceptTest({ grep: '@comprehensive' }, {
-        CODECEPT_COMMAND: 'run-workers'
-      });
+      const { testEntries } = await runWorkers({ grep: '@comprehensive' });
       
       // In parallel execution, tests should have unique run identifiers per execution
       // but the same test can be reported multiple times from different workers
@@ -369,9 +357,7 @@ describe('CodeceptJS Comprehensive Adapter Tests', function() {
       this.timeout(120000);
       
       // Run tests that include failures in parallel
-      const { testEntries, debugData } = await runCodeceptTest({ grep: '@comprehensive' }, {
-        CODECEPT_COMMAND: 'run-workers'
-      });
+      const { testEntries, debugData } = await runWorkers({ grep: '@comprehensive' });
       
       // Should still capture all test data even if some tests fail
       expect(testEntries.length).to.be.greaterThan(0);

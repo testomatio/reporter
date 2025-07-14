@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import path from 'path';
 import fs from 'fs';
-import { CodeceptTestRunner } from './utils/codecept.js';
+import { runTests, runWorkers, CodeceptTestRunner } from './utils/codecept.js';
 
 describe('CodeceptJS AfterSuite Failure Bug (#948)', function() {
   this.timeout(60000);
@@ -17,16 +17,8 @@ describe('CodeceptJS AfterSuite Failure Bug (#948)', function() {
     testRunner.cleanupTestEnvironment();
   });
 
-  // Unified helper function using testRunner
-  async function runCodeceptTest(testFile, extraEnv = {}) {
-    const result = await testRunner.runCodeceptTest(testFile, extraEnv);
-
-    // Expected - tests will fail due to AfterSuite failure
-    // Verify debug data was created
-    expect(result.debugData.length).to.be.greaterThan(0);
-    
-    return result;
-  }
+  // Remove custom runCodeceptTest helper
+  // Use runTests or runWorkers directly in tests
 
   it('should create test file with failing AfterSuite hook', async () => {
     // First, create a test file that reproduces the issue
@@ -65,7 +57,7 @@ AfterSuite(() => {
   });
 
   it('should reproduce issue #948: AfterSuite failure marks all tests as failed', async () => {
-    const { testEntries, stdout } = await runCodeceptTest('aftersuite_failure_test.js');
+    const { testEntries, stdout } = await runTests('aftersuite_failure_test.js');
     
     console.log('=== CURRENT BEHAVIOR (BUG) ===');
     console.log('Test entries found:', testEntries.length);
@@ -106,7 +98,7 @@ AfterSuite(() => {
   });
 
   it('should define the CORRECT expected behavior for AfterSuite failures', async () => {
-    const { testEntries } = await runCodeceptTest('aftersuite_failure_test.js');
+    const { testEntries } = await runTests('aftersuite_failure_test.js');
     
     console.log('=== EXPECTED BEHAVIOR (AFTER FIX) ===');
     
@@ -165,7 +157,7 @@ Scenario('Another test after failing BeforeSuite', ({ I, test }) => {
     const beforeSuiteTestPath = path.join(testRunner.exampleDir, 'beforesuite_failure_test.js');
     fs.writeFileSync(beforeSuiteTestPath, beforeSuiteTestContent);
     
-    const { testEntries, stdout } = await runCodeceptTest('beforesuite_failure_test.js');
+    const { testEntries, stdout } = await runTests('beforesuite_failure_test.js');
     
     console.log('=== BeforeSuite Failure Test ===');
     

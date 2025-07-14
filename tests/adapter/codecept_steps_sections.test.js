@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { CodeceptTestRunner } from './utils/codecept.js';
+import { runTests, runWorkers, CodeceptTestRunner } from './utils/codecept.js';
 
 describe('CodeceptJS Steps and Sections Reporting', function() {
   this.timeout(60000);
@@ -15,24 +15,15 @@ describe('CodeceptJS Steps and Sections Reporting', function() {
     testRunner.cleanupTestEnvironment();
   });
 
-  // Unified helper function using testRunner with grep support
-  async function runCodeceptTest(testGrep, extraEnv = {}) {
-    const testConfig = {
-      testFile: 'steps_sections_test.js',
-      grep: testGrep
-    };
-    
-    const result = await testRunner.runCodeceptTest(testConfig, extraEnv);
-
-    // Verify debug data was created
-    expect(result.debugData.length).to.be.greaterThan(0);
-    
-    return result;
-  }
+  // Remove custom runCodeceptTest helper
+  // Use runTests or runWorkers directly in tests
 
   describe('Section Formatting in Steps', () => {
     it('should preserve Section formatting in passed test steps', async () => {
-      const { testEntries } = await runCodeceptTest('Test with multiple sections and steps');
+      const { testEntries } = await runTests({
+        testFile: 'steps_sections_test.js',
+        grep: 'Test with multiple sections and steps'
+      });
       
       expect(testEntries.length).to.equal(1);
       const testEntry = testEntries[0];
@@ -70,7 +61,10 @@ describe('CodeceptJS Steps and Sections Reporting', function() {
     });
 
     it('should preserve Section formatting in failed test steps', async () => {
-      const { testEntries } = await runCodeceptTest('Test with failing step in section');
+      const { testEntries } = await runTests({
+        testFile: 'steps_sections_test.js',
+        grep: 'Test with failing step in section'
+      });
       
       expect(testEntries.length).to.equal(1);
       const testEntry = testEntries[0];
@@ -101,7 +95,10 @@ describe('CodeceptJS Steps and Sections Reporting', function() {
     });
 
     it('should handle complex nested sections properly', async () => {
-      const { testEntries } = await runCodeceptTest('Test with complex data operations');
+      const { testEntries } = await runTests({
+        testFile: 'steps_sections_test.js',
+        grep: 'Test with complex data operations'
+      });
       
       expect(testEntries.length).to.equal(1);
       const testEntry = testEntries[0];
@@ -147,7 +144,10 @@ describe('CodeceptJS Steps and Sections Reporting', function() {
 
   describe('Step Timing and Metadata', () => {
     it('should include step timing information', async () => {
-      const { testEntries } = await runCodeceptTest('Test with multiple sections and steps');
+      const { testEntries } = await runTests({
+        testFile: 'steps_sections_test.js',
+        grep: 'Test with multiple sections and steps'
+      });
       
       const testEntry = testEntries[0];
       const steps = testEntry.testId.steps;
@@ -159,7 +159,10 @@ describe('CodeceptJS Steps and Sections Reporting', function() {
     });
 
     it('should handle steps without timing gracefully', async () => {
-      const { testEntries } = await runCodeceptTest('Test with complex data operations');
+      const { testEntries } = await runTests({
+        testFile: 'steps_sections_test.js',
+        grep: 'Test with complex data operations'
+      });
       
       const testEntry = testEntries[0];
       const steps = testEntry.testId.steps;
@@ -177,8 +180,14 @@ describe('CodeceptJS Steps and Sections Reporting', function() {
   describe('Integration with Reporter', () => {
     it('should maintain step formatting consistency across test types', async () => {
       // Run multiple tests and verify consistent formatting
-      const { testEntries: passedEntries } = await runCodeceptTest('Test with multiple sections and steps');
-      const { testEntries: failedEntries } = await runCodeceptTest('Test with failing step in section');
+      const { testEntries: passedEntries } = await runTests({
+        testFile: 'steps_sections_test.js',
+        grep: 'Test with multiple sections and steps'
+      });
+      const { testEntries: failedEntries } = await runTests({
+        testFile: 'steps_sections_test.js',
+        grep: 'Test with failing step in section'
+      });
       
       expect(passedEntries.length).to.equal(1);
       expect(failedEntries.length).to.equal(1);
@@ -206,7 +215,10 @@ describe('CodeceptJS Steps and Sections Reporting', function() {
     });
 
     it('should properly escape and format step content', async () => {
-      const { testEntries } = await runCodeceptTest('Test with complex data operations');
+      const { testEntries } = await runTests({
+        testFile: 'steps_sections_test.js',
+        grep: 'Test with complex data operations'
+      });
       
       const testEntry = testEntries[0];
       const steps = testEntry.testId.steps;

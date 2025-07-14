@@ -17,14 +17,14 @@ describe('CodeceptJS Hooks and Step Hierarchy', function() {
 
   // Unified helper function using testRunner
   async function runCodeceptTest(testFile, extraEnv = {}) {
-    const result = await testRunner.runCodeceptTest(testFile, extraEnv);
-
-    // Verify debug data was created
+    let result;
+    if (extraEnv.CODECEPT_COMMAND === 'run-workers') {
+      result = await testRunner.runWorkers(testFile, extraEnv);
+    } else {
+      result = await testRunner.run(testFile, extraEnv);
+    }
     expect(result.debugData.length).to.be.greaterThan(0);
-    
-    // Filter for both addTest and addTestsBatch actions for compatibility
     const testEntries = result.debugData.filter(entry => entry.action === 'addTestsBatch' || entry.action === 'addTest');
-    
     return { ...result, testEntries };
   }
 
