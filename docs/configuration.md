@@ -148,6 +148,14 @@ Example:
 TESTOMATIO={API_KEY} TESTOMATIO_PROCEED=1 <actual run command>
 ```
 
+#### `TESTOMATIO_PUBLISH`
+
+Publish run after reporting and provide a public URL:
+
+```
+TESTOMATIO_PUBLISH=1 TESTOMATIO={API_KEY} <actual run command>
+```
+
 #### `TESTOMATIO_RUN`
 
 Add a report to the run by ID.

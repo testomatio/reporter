@@ -3,7 +3,7 @@ import { expect, assert } from 'chai';
 import ServerMock from 'mock-http-server';
 import { config } from './adapter/config/index.js';
 import { registerHandlers } from './adapter/utils/index.js';
-import XmlReader from '../src/xmlReader.js';
+import XmlReader from '../../src/xmlReader.js';
 import { fileURLToPath } from 'url';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));

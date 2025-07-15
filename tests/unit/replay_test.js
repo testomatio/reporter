@@ -2,9 +2,9 @@ import { expect } from 'chai';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-import ReplayService from '../src/replay.js';
-import TestomatClient from '../src/client.js';
-import { STATUS } from '../src/constants.js';
+import ReplayService from '../../src/replay.js';
+import TestomatClient from '../../src/client.js';
+import { STATUS } from '../../src/constants.js';
 
 describe('ReplayService', () => {
   let tempDir;
