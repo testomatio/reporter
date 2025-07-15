@@ -370,7 +370,7 @@ class TestomatioPipe {
     this.isEnabled = !!(this.apiKey ?? this.isEnabled);
     if (!this.isEnabled) return;
 
-    this.runId |= this.runId || process.env.runId || this.store.runId || readLatestRunId();
+    this.runId = this.runId || process.env.runId || this.store.runId || readLatestRunId();
     if (!this.runId) {
       console.warn(APP_PREFIX, pc.red('Run ID is not set, skipping test reporting'));
       return;
