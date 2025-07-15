@@ -99,7 +99,7 @@
     "prettier": "^3.2.5",
     "puppeteer": "^22.15.0",
     "typescript": "^5.5.4",
-    "vitest": "^1.6.0"
+    "vitest": "^3.2.4"
   },
   "bin": {
     "@testomatio/reporter": "./lib/bin/cli.js",
