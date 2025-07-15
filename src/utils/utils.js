@@ -353,17 +353,35 @@ function storeRunId(runId) {
   fs.writeFileSync(filePath, runId);
 }
 
+/**
+ * 
+ * @returns {String|null} latest run ID
+ */
 function readLatestRunId() {
   try {
     const filePath = path.join(os.tmpdir(), `testomatio.latest.run`);
     const stats = fs.statSync(filePath);
     const diff = +new Date() - +stats.mtime;
     const diffHours = diff / 1000 / 60 / 60;
-    if (diffHours > 1) return;
+    if (diffHours > 1) return null;
 
-    return fs.readFileSync(filePath)?.toString()?.trim();
+    return fs.readFileSync(filePath)?.toString()?.trim() ?? null
   } catch (e) {
+    console.warn('Could not read latest run ID from file: ', e);
     return null;
+  }
+}
+
+function cleanLatestRunId() {
+  try {
+    const filePath = path.join(os.tmpdir(), `testomatio.latest.run`);
+    const runId = readLatestRunId();
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+    debug(`Cleaned latest run ID (${runId}) file`, filePath);
+  } catch (e) {
+    console.warn('Could not clean latest run ID file: ', e);
   }
 }
 
@@ -393,6 +411,7 @@ export function getPackageVersion() {
 
 export {
   ansiRegExp,
+  cleanLatestRunId,
   isSameTest,
   fetchSourceCode,
   fetchSourceCodeFromStackTrace,

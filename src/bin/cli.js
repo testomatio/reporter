@@ -7,7 +7,7 @@ import createDebugMessages from 'debug';
 import TestomatClient from '../client.js';
 import XmlReader from '../xmlReader.js';
 import { APP_PREFIX, STATUS } from '../constants.js';
-import { getPackageVersion } from '../utils/utils.js';
+import { cleanLatestRunId, getPackageVersion } from '../utils/utils.js';
 import { config } from '../config.js';
 import { readLatestRunId } from '../utils/utils.js';
 import pc from 'picocolors';
@@ -36,6 +36,8 @@ program
   .command('start')
   .description('Start a new run and return its ID')
   .action(async () => {
+    cleanLatestRunId();
+
     console.log('Starting a new Run on Testomat.io...');
     const apiKey = process.env['INPUT_TESTOMATIO-KEY'] || config.TESTOMATIO;
     const client = new TestomatClient({ apiKey });
@@ -70,6 +72,7 @@ program
 
 program
   .command('run')
+  .alias('test')
   .description('Run tests with the specified command')
   .argument('<command>', 'Test runner command')
   .option('--filter <filter>', 'Additional execution filter')
@@ -100,25 +103,25 @@ program
 
     console.log(APP_PREFIX, `🚀 Running`, pc.green(command));
 
-    const runTests = () => {
+    const runTests = async () => {
       const testCmds = command.split(' ');
       const cmd = spawn(testCmds[0], testCmds.slice(1), { stdio: 'inherit' });
 
-      cmd.on('close', code => {
+      cmd.on('close', async code => {
         const emoji = code === 0 ? '🟢' : '🔴';
         console.log(APP_PREFIX, emoji, `Runner exited with ${pc.bold(code)}`);
         if (apiKey) {
           const status = code === 0 ? 'passed' : 'failed';
-          client.updateRunStatus(status, true);
+          await client.updateRunStatus(status, true);
         }
         process.exit(code);
       });
     };
 
     if (apiKey) {
-      client.createRun().then(runTests);
+      await client.createRun().then(runTests);
     } else {
-      runTests();
+      await runTests();
     }
   });
 
