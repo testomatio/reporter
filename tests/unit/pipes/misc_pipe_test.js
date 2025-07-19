@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { parseFilterParams, updateFilterType, generateFilterRequestParams } from '../../lib/utils/pipe_utils.js';
+import { parseFilterParams, updateFilterType, generateFilterRequestParams } from '../../../src/utils/pipe_utils.js';
 
 describe('testing ipe/misc.js functions', () => {
   describe('updateFilterType function', () => {

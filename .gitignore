@@ -113,7 +113,51 @@ dist
 #Export files folder
 export/
 
-tests/adapter/examples/codecept/output/
+# Test results and artifacts
+test-results/
+*/test-results/
+output/
+*/output/
+html-report/
+*/html-report/
+htmlOutput/
+*/htmlOutput/
+allure-results/
+*/allure-results/
+playwright-report/
+*/playwright-report/
+test-output/
+*/test-output/
+
+# Test artifacts (only in test/output directories)
+test-results/**/*.png
+test-results/**/*.jpg
+test-results/**/*.jpeg
+test-results/**/*.webm
+test-results/**/*.mp4
+test-results/**/*.trace.zip
+test-results/**/*.har
+output/**/*.png
+output/**/*.jpg
+output/**/*.jpeg
+output/**/*.webm
+output/**/*.mp4
+output/**/*.trace.zip
+output/**/*.har
+**/test-results/**/*.png
+**/test-results/**/*.jpg
+**/test-results/**/*.jpeg
+**/test-results/**/*.webm
+**/test-results/**/*.mp4
+**/test-results/**/*.trace.zip
+**/test-results/**/*.har
+**/output/**/*.png
+**/output/**/*.jpg
+**/output/**/*.jpeg
+**/output/**/*.webm
+**/output/**/*.mp4
+**/output/**/*.trace.zip
+**/output/**/*.har
 
 # build dir
 lib/

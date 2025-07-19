@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import fs from 'fs';
 import path from 'path';
 import { JSDOM } from 'jsdom';
-import HtmlPipe from '../../lib/pipe/html.js';
+import HtmlPipe from '../../../src/pipe/html.js';
 import { fileURLToPath } from 'url';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -81,7 +81,7 @@ describe('HTML report tests', () => {
       process.env.TESTOMATIO_HTML_REPORT_SAVE = '1';
 
       const name = 'testomatio-report.html';
-      const template = path.resolve(dirname, '../..', 'lib', 'template', 'testomatio.hbs');
+      const template = path.resolve(dirname, '../../..', 'src', 'template', 'testomatio.hbs');
       filepath = path.resolve(testOutputDir, name);
 
       const htmlPipe = new HtmlPipe({}, {});

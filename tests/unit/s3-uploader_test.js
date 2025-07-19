@@ -1,4 +1,4 @@
-import { S3Uploader } from '../src/uploader.js';
+import { S3Uploader } from '../../src/uploader.js';
 import { expect } from 'chai';
 import fs from 'fs';
 import os from 'os';
