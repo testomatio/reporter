@@ -365,7 +365,7 @@ function readLatestRunId() {
     const diffHours = diff / 1000 / 60 / 60;
     if (diffHours > 1) return null;
 
-    return fs.readFileSync(filePath)?.toString()?.trim() ?? null
+    return fs.readFileSync(filePath)?.toString()?.trim() ?? null;
   } catch (e) {
     console.warn('Could not read latest run ID from file: ', e);
     return null;
