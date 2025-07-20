@@ -145,5 +145,6 @@ export default WebdriverReporter;
 /* INVESTIGATION RESULTS:
   If you run tests in parallel, the WDIO creates a separate process for each parallel instance.
   As a result, there is own WDIOReporter instance for each parallel process.
-  This means, its impossible to create or finish run, because can't understand if its was already created in other process or not.
+  This means, its impossible to create or finish run, because can't understand if its was already created
+  in other process or not.
 */
