@@ -226,7 +226,6 @@ components:
           items:
             type: string
           description: An array of labels that can be assigned to the test case. Use label:value to add a values
-
         steps:
           type: array
           items:
@@ -239,9 +238,9 @@ components:
           type: object
           description: Additional metadata associated with the test
           example: { 'key': 'value' }
-        retry:
+        overwrite:
           type: boolean
-          description: Whether this test run is a retry (defaults to false)
+          description: Whether to overwrite previous status to avoid retry counters. Defaults to false
 
     Step:
       type: object
