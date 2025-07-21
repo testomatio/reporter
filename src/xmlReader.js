@@ -217,7 +217,7 @@ class XmlReader {
       if (test.example) r.example = test.example;
       if (test.file) r.file = test.file;
       r.create = true;
-      r.retry = false;
+      r.overwrite = true;
       if (r.status === 'Passed') r.status = STATUS.PASSED;
       if (r.status === 'Failed') r.status = STATUS.FAILED;
       if (r.status === 'Skipped') r.status = STATUS.SKIPPED;

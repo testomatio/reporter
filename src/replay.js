@@ -225,14 +225,12 @@ export class Replay {
 
     for (const [index, test] of tests.entries()) {
       try {
-        // Ensure retry: false is set to prevent data from being added as retry
-        const testWithRetryFlag = { ...test, retry: false };
-        await client.addTestRun(test.status, testWithRetryFlag);
+        await client.addTestRun(test.status, { ...test, overwrite: true });
         successCount++;
         this.onProgress({
           current: index + 1,
           total: tests.length,
-          test: testWithRetryFlag,
+          test,
           success: true,
         });
       } catch (err) {
