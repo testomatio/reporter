@@ -33,7 +33,10 @@ export class Replay {
     }
 
     const fileContent = fs.readFileSync(debugFile, 'utf-8');
-    const lines = fileContent.trim().split('\n').filter(line => line.trim() !== '');
+    const lines = fileContent
+      .trim()
+      .split('\n')
+      .filter(line => line.trim() !== '');
 
     if (lines.length === 0) {
       throw new Error('Debug file is empty');
@@ -77,8 +80,11 @@ export class Replay {
                     } else if (key === 'artifacts' && Array.isArray(test[key]) && test[key].length > 0) {
                       // Merge artifacts arrays
                       mergedTest.artifacts = [...(existingTest.artifacts || []), ...test[key]];
-                    } else if (existingTest[key] === null || existingTest[key] === undefined || 
-                               (Array.isArray(existingTest[key]) && existingTest[key].length === 0)) {
+                    } else if (
+                      existingTest[key] === null ||
+                      existingTest[key] === undefined ||
+                      (Array.isArray(existingTest[key]) && existingTest[key].length === 0)
+                    ) {
                       // Use new value if existing is null/undefined/empty array
                       mergedTest[key] = test[key];
                     }
@@ -139,7 +145,7 @@ export class Replay {
       envVars,
       parseErrors,
       totalLines: lines.length,
-      runId
+      runId,
     };
   }
 
@@ -193,7 +199,7 @@ export class Replay {
         finishParams,
         envVars,
         runId,
-        dryRun: true
+        dryRun: true,
       };
     }
 
@@ -219,13 +225,15 @@ export class Replay {
 
     for (const [index, test] of tests.entries()) {
       try {
-        await client.addTestRun(test.status, test);
+        // Ensure retry: false is set to prevent data from being added as retry
+        const testWithRetryFlag = { ...test, retry: false };
+        await client.addTestRun(test.status, testWithRetryFlag);
         successCount++;
         this.onProgress({
           current: index + 1,
           total: tests.length,
-          test,
-          success: true
+          test: testWithRetryFlag,
+          success: true,
         });
       } catch (err) {
         failureCount++;
@@ -235,7 +243,7 @@ export class Replay {
           total: tests.length,
           test,
           success: false,
-          error: err.message
+          error: err.message,
         });
       }
     }
@@ -250,7 +258,7 @@ export class Replay {
       runParams,
       finishParams,
       envVars,
-      runId: runId || client.runId
+      runId: runId || client.runId,
     };
 
     this.onLog(`Successfully replayed ${successCount}/${tests.length} tests from debug file`);
@@ -259,4 +267,4 @@ export class Replay {
   }
 }
 
-export default Replay; 
+export default Replay;

@@ -89,6 +89,9 @@ export interface TestData {
 
   /** Labels array (e.g. ['smoke', 'severity:high', 'feature:login']) */
   labels?: string[];
+
+  /** Whether this test run is a retry (defaults to false) */
+  retry?: boolean;
 }
 
 /**

@@ -239,6 +239,9 @@ components:
           type: object
           description: Additional metadata associated with the test
           example: { 'key': 'value' }
+        retry:
+          type: boolean
+          description: Whether this test run is a retry (defaults to false)
 
     Step:
       type: object
