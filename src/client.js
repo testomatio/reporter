@@ -183,6 +183,7 @@ class Client {
       timestamp,
       manuallyAttachedArtifacts,
       labels,
+      overwrite,
     } = testData;
     let { message = '', meta = {} } = testData;
 
@@ -280,6 +281,7 @@ class Client {
       artifacts,
       meta,
       labels,
+      overwrite,
       ...(rootSuiteId && { root_suite_id: rootSuiteId }),
     };
 
