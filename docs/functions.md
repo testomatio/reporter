@@ -1,19 +1,19 @@
 Testomat functions gives you more flexibility in reporting and make your reports more powerful.
 
+Functions can be used as ESM or CommonJS module. Use `require` instead of `import` in CommonJS.
+
+```js
+// inside TypeScript or JavaScript ESM
+import { artifact, log, meta } from '@testomatio/reporter';
+
+// inside CommonJS
+const { artifact, log, meta } = require('@testomatio/reporter');
+```
+
 ### Usage example
 
 ```javascript
-import testomat from '@testomatio/reporter'; // or const testomat = require('@testomatio/reporter');
-
-test('my test', async () => {
-  testomat.artifact('path/to/file');
-});
-```
-
-Or import only required functions:
-
-```javascript
-import { artifact, log, meta } from '@testomatio/reporter'; // or const { artifact, log } = require('@testomatio/reporter');
+import { artifact, log, meta } from '@testomatio/reporter';
 
 test('my test', async () => {
   meta('ISSUE', 'MY-123');
@@ -32,6 +32,7 @@ After you import and invoke `testomat`, autocompletion will help you to find the
 - [log](#log)
 - [step](#step)
 - [meta (key:value)](#meta)
+- [label](#label)
 
 ### Artifact
 
@@ -55,16 +56,22 @@ Similar to [step](#step) function, intended to log any additional info to the te
 ##### Usage examples:
 
 ```javascript
-testomat.log('your message');
-testomat.log(`your message ${variable}`);
-testomat.log('your message', variable1, variable2);
+import { log } from '@testomatio/reporter';
+
+test('my test', async () => {
+  log('your message');
+  log(`your message ${variable}`);
+  log('your message', variable1, variable2);
+});
 ```
 
 ```javascript
-const testomat = require('@testomatio/reporter');
+import { log } from '@testomatio/reporter';
+
 test('Your test @T12345678', async () => {
   await page.login(user);
-  testomat.log`I was logged in with user ${user}`;
+
+  log`I was logged in with user ${user}`;
   assert(loggedIn);
 
   log`I was logged in with user ${user}`; // < shorter syntax
@@ -76,11 +83,12 @@ test('Your test @T12345678', async () => {
 Adds step to the test report. Step is a human-readable description of the test action. It is used to describe the test flow. This function is similar to [log](#log) function, but looks differently in the report.
 
 ```javascript
-const testomat = require('@testomatio/reporter');
+import { step } from '@testomatio/reporter';
+
 describe('Your suite @S12345678', () => {
   test('Your test @T12345678', async () => {
     await page.login();
-    testomat.step`Login successful`;
+    step`Login successful`;
     assert(something);
   });
 });
@@ -120,6 +128,23 @@ test('Your test @T12345678', async () => {
 });
 ```
 
+## label
+
+Adds a label to the reported test. Unlike `meta` label will be persisted to the test case itself, not just to reported run. Label should exst in Testomat.io to be added. You can pass also label value, if label was created as a custom field
+
+```javascript
+import { label } from '@testomatio/reporter';
+
+describe('Your suite', () => {
+  test('I can login', async () => {
+    label('Area', 'Auth')
+    label('Severity', 'Auth')
+    label('Browser')
+    await page.login();
+  });
+});
+```
+
 ---
 
 Supported frameworks:
@@ -128,5 +153,5 @@ Supported frameworks:
 - 🟢 Cucumber
 - 🟢 Jest
 - 🟢 Mocha
-- 🔴 Playwright (use native functionality instead)
+- 🟢 Playwright (optional, use native functionality)
 - 🟢 WDIO (everything, except artifacts)

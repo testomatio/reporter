@@ -25,7 +25,22 @@ export class DebugPipe {
 
       debug('Creating debug file:', this.logFilePath);
       fs.writeFileSync(this.logFilePath, '');
-      console.log(APP_PREFIX, '🪲. Debug created:');
+
+      // Create symlink to ensure consistent path to latest debug file
+      const symlinkPath = path.join(os.tmpdir(), 'testomatio.debug.latest.json');
+      try {
+        // Remove existing symlink if it exists
+        if (fs.existsSync(symlinkPath)) {
+          fs.unlinkSync(symlinkPath);
+        }
+        // Create new symlink pointing to the timestamped debug file
+        fs.symlinkSync(this.logFilePath, symlinkPath);
+        debug('Created symlink:', symlinkPath, '->', this.logFilePath);
+      } catch (err) {
+        debug('Failed to create symlink:', err.message);
+      }
+
+      console.log(APP_PREFIX, '🪲 Debug file created');
       this.testomatioEnvVars = Object.keys(process.env)
         .filter(key => key.startsWith('TESTOMATIO_'))
         .reduce((acc, key) => {
@@ -74,7 +89,11 @@ export class DebugPipe {
   async addTest(data) {
     if (!this.isEnabled) return;
 
-    if (!this.batch.isEnabled) this.logToFile({ action: 'addTest', testId: data });
+    if (!this.batch.isEnabled) {
+      const logData = { action: 'addTest', testId: data };
+      if (this.store.runId) logData.runId = this.store.runId;
+      this.logToFile(logData);
+    }
     else this.batch.tests.push(data);
 
     if (!this.batch.intervalFunction) await this.batchUpload();
@@ -87,15 +106,17 @@ export class DebugPipe {
 
     const testsToSend = this.batch.tests.splice(0);
 
-    this.logToFile({ action: 'addTestsBatch', tests: testsToSend });
+    const logData = { action: 'addTestsBatch', tests: testsToSend };
+    if (this.store.runId) logData.runId = this.store.runId;
+    this.logToFile(logData);
   }
 
   async finishRun(params) {
     if (!this.isEnabled) return;
-    this.logToFile({ actions: 'finishRun', params });
     await this.batchUpload();
     if (this.batch.intervalFunction) clearInterval(this.batch.intervalFunction);
-    console.log(APP_PREFIX, '🪲. Debug Saved to', this.logFilePath);
+    this.logToFile({ action: 'finishRun', params });
+    console.log(APP_PREFIX, '🪲 Debug Saved to', this.logFilePath);
   }
 
   toString() {

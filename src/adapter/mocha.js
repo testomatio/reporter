@@ -1,4 +1,3 @@
-// eslint-disable-next-line global-require, import/no-extraneous-dependencies
 import Mocha from 'mocha';
 import TestomatClient from '../client.js';
 import { STATUS, TESTOMAT_TMP_STORAGE_DIR } from '../constants.js';

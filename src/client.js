@@ -10,7 +10,7 @@ import { glob } from 'glob';
 import path, { sep } from 'path';
 import { fileURLToPath } from 'node:url';
 import { S3Uploader } from './uploader.js';
-import { formatStep, storeRunId } from './utils/utils.js';
+import { formatStep, readLatestRunId, storeRunId, validateSuiteId } from './utils/utils.js';
 import { filesize as prettyBytes } from 'filesize';
 
 const debug = createDebugMessages('@testomatio/reporter:client');
@@ -31,11 +31,10 @@ class Client {
    * Create a Testomat client instance
    * @returns
    */
-  // eslint-disable-next-line
   constructor(params = {}) {
     this.paramsForPipesFactory = params;
     this.pipeStore = {};
-    this.runId = randomUUID(); // will be replaced by real run id
+    this.runId = '';
     this.queue = Promise.resolve();
 
     // @ts-ignore this line will be removed in compiled code, because __dirname is defined in commonjs
@@ -140,6 +139,9 @@ class Client {
    * @returns {Promise<PipeResult[]>}
    */
   async addTestRun(status, testData) {
+    if (!this.pipes || !this.pipes.length)
+      this.pipes = await pipesFactory(this.paramsForPipesFactory || {}, this.pipeStore);
+
     // all pipes disabled, skipping
     if (!this.pipes?.filter(p => p.isEnabled).length) return [];
 
@@ -155,6 +157,11 @@ class Client {
         title: 'Unknown test',
         suite_title: 'Unknown suite',
       };
+
+    // Add timestamp if not already present (microseconds since Unix epoch)
+    if (!testData.timestamp && !process.env.TESTOMATIO_NO_TIMESTAMP) {
+      testData.timestamp = Math.floor((performance.timeOrigin + performance.now()) * 1000);
+    }
 
     /**
      * @type {TestData}
@@ -173,7 +180,10 @@ class Client {
       suite_title,
       suite_id,
       test_id,
+      timestamp,
       manuallyAttachedArtifacts,
+      labels,
+      overwrite,
     } = testData;
     let { message = '', meta = {} } = testData;
 
@@ -214,6 +224,8 @@ class Client {
         return acc;
       }, {});
 
+    // Labels are simple array of strings, no processing needed
+
     let errorFormatted = '';
     if (error) {
       errorFormatted += this.formatError(error) || '';
@@ -246,6 +258,10 @@ class Client {
 
     const artifacts = (await Promise.all(uploadedFiles)).filter(n => !!n);
 
+    const workspaceDir = process.env.TESTOMATIO_WORKDIR || process.cwd();
+    const relativeFile = file ? path.relative(workspaceDir, file) : file;
+    const rootSuiteId = validateSuiteId(process.env.TESTOMATIO_SUITE);
+
     const data = {
       rid,
       files,
@@ -253,7 +269,7 @@ class Client {
       status,
       stack: fullLogs,
       example,
-      file,
+      file: relativeFile,
       code,
       title,
       suite_title,
@@ -261,8 +277,12 @@ class Client {
       test_id,
       message,
       run_time: typeof time === 'number' ? time : parseFloat(time),
+      timestamp,
       artifacts,
       meta,
+      labels,
+      overwrite,
+      ...(rootSuiteId && { root_suite_id: rootSuiteId }),
     };
 
     // debug('Adding test run...', data);
@@ -293,7 +313,10 @@ class Client {
    * @param {boolean} [isParallel] - Whether the current test run was executed in parallel with other tests.
    * @returns {Promise<any>} - A Promise that resolves when finishes the run.
    */
-  updateRunStatus(status, isParallel = false) {
+  async updateRunStatus(status, isParallel = false) {
+    this.pipes ||= await pipesFactory(this.paramsForPipesFactory || {}, this.pipeStore);
+    this.runId ||= readLatestRunId();
+
     debug('Updating run status...');
     // all pipes disabled, skipping
     if (!this.pipes?.filter(p => p.isEnabled).length) return Promise.resolve();

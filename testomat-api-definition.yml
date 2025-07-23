@@ -188,7 +188,7 @@ components:
           description: The status of the test
         rid:
           type: string
-          description: Unique identifier of test report (if the test is reported several times)        
+          description: Unique identifier of test report (if the test is reported several times)
         title:
           type: string
           description: The title of the test
@@ -218,6 +218,14 @@ components:
           items:
             type: string
           description: An array of URLs for uploaded artifacts associated with the test
+        substatus:
+          type: string
+          description: Optional substatus of the test
+        labels:
+          type: array
+          items:
+            type: string
+          description: An array of labels that can be assigned to the test case. Use label:value to add a values
         steps:
           type: array
           items:
@@ -229,14 +237,17 @@ components:
         meta:
           type: object
           description: Additional metadata associated with the test
-          example: {"key": "value"}
+          example: { 'key': 'value' }
+        overwrite:
+          type: boolean
+          description: Whether to overwrite previous status to avoid retry counters. Defaults to false
 
     Step:
       type: object
       properties:
         category:
           type: string
-          description: The category of the step
+          description: The category of the step (framework, user, hook)
         title:
           type: string
           description: The title of the step

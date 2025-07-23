@@ -1,13 +1,11 @@
 // const { TESTOMATIO } = require('../../config');
 
-export const config = {
+exports.config = {
   tests: './*_test.js',
   output: './output',
   helpers: {
-    Puppeteer: {
-      url: 'http://localhost',
-      show: false,
-    },
+    // Remove Puppeteer helper to avoid browser dependency
+    FileSystem: {},
   },
   include: {
     I: './steps_file.js',

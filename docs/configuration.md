@@ -16,10 +16,28 @@ Your Project API key for reporting to Testomat.io.
 
 #### `TESTOMATIO_CREATE`
 
-Create test IDs
+Create test which are not yet exist in a project
 
 ```
 TESTOMATIO={API_KEY} TESTOMATIO_CREATE=1 <actual run command>
+```
+
+#### `TESTOMATIO_WORKDIR`
+
+Specify a custom working directory for relative file paths in test reports. When tests are created with `TESTOMATIO_CREATE=1`, file paths will be relative to this directory instead of the current working directory.
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_CREATE=1 TESTOMATIO_WORKDIR=/path/to/project <actual run command>
+```
+
+#### `TESTOMATIO_SUITE`
+
+Place newly created tests into a specific suite. Can be used on XML import or combined with `TESTOMATIO_CREATE=1`. Suite should be specified by its ID:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_CREATE=1 TESTOMATIO_SUITE=@S1235678 <actual run command>
+
+TESTOMATIO={API_KEY} TESTOMATIO_SUITE=@S1235678 npx @testomatio/reporter xml <xml files>
 ```
 
 #### `TESTOMATIO_DISABLE_BATCH_UPLOAD`
@@ -66,6 +84,16 @@ Example:
 
 ```
 TESTOMATIO_EXCLUDE_SKIPPED=1 <actual run command>
+```
+
+#### `TESTOMATIO_NO_TIMESTAMP`
+
+Disable automatic timestamp generation for test results. By default, the reporter automatically adds timestamps to test data. Use this option if you run tests in parallel on different machines where time is not synchronized.
+
+Example:
+
+```
+TESTOMATIO_NO_TIMESTAMP=1 <actual run command>
 ```
 
 #### `TESTOMATIO_INTERCEPT_CONSOLE_LOGS`
@@ -118,6 +146,14 @@ Example:
 
 ```
 TESTOMATIO={API_KEY} TESTOMATIO_PROCEED=1 <actual run command>
+```
+
+#### `TESTOMATIO_PUBLISH`
+
+Publish run after reporting and provide a public URL:
+
+```
+TESTOMATIO_PUBLISH=1 TESTOMATIO={API_KEY} <actual run command>
 ```
 
 #### `TESTOMATIO_RUN`

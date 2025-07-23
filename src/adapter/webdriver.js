@@ -1,5 +1,4 @@
-// eslint-disable-next-line
-import WDIOReporter, { RunnerStats } from '@wdio/reporter';
+import { default as WDIOReporter, RunnerStats } from '@wdio/reporter';
 import TestomatClient from '../client.js';
 import { getTestomatIdFromTestTitle, fileSystem } from '../utils/utils.js';
 import { services } from '../services/index.js';
@@ -15,8 +14,10 @@ class WebdriverReporter extends WDIOReporter {
     this._addTestPromises = [];
 
     this._isSynchronising = false;
-    // NOTE: new functionality; may break everything
-    this.client.createRun();
+
+    // run is created by cli, if enabling the row below, it mat lead to multiple runs being created
+    // thus, need to check if process.env.runId is set and/or add more checks to avoid creating multiple runs
+    // this.client.createRun();
   }
 
   get isSynchronised() {
@@ -41,7 +42,6 @@ class WebdriverReporter extends WDIOReporter {
 
   onRunnerStart() {
     // clear dir with artifacts/logs
-    //
     fileSystem.clearDir(TESTOMAT_TMP_STORAGE_DIR);
   }
 
@@ -82,6 +82,7 @@ class WebdriverReporter extends WDIOReporter {
       .map(el => Buffer.from(el.result.value, 'base64'));
 
     await this.client.addTestRun(state, {
+      rid: test.uid || '',
       manuallyAttachedArtifacts: test.artifacts,
       error,
       logs: test.logs,
@@ -140,3 +141,10 @@ function getTestLogs(fullTestTitle) {
 }
 
 export default WebdriverReporter;
+
+/* INVESTIGATION RESULTS:
+  If you run tests in parallel, the WDIO creates a separate process for each parallel instance.
+  As a result, there is own WDIOReporter instance for each parallel process.
+  This means, its impossible to create or finish run, because can't understand if its was already created
+  in other process or not.
+*/

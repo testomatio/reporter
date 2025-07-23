@@ -1,18 +1,118 @@
 declare module '@testomatio/reporter' {
-  import { services } from '@testomatio/reporter/src/services/index.js';
-  import reporterFunctions from '@testomatio/reporter/src/reporter-functions.js';
+  /**
+   * Stores path to file as artifact and uploads it to the S3 storage
+   * @param data - path to file or object with path, type and name
+   * @param context - optional context parameter
+   */
+  export function artifact(data: string | ArtifactData, context?: any): void;
 
-  export default {
-    artifact: typeof reporterFunctions.artifact,
-    log: typeof reporterFunctions.log,
-    logger: typeof services.logger,
-    meta: typeof reporterFunctions.keyValue,
-    step: typeof reporterFunctions.step,
+  /**
+   * Attach log message(s) to the test report
+   * @param args - log messages
+   */
+  export function log(...args: any[]): void;
+
+  /**
+   * Similar to "log" function but marks message in report as a step
+   * @param message - step message
+   */
+  export function step(message: string): void;
+
+  /**
+   * Add key-value pair(s) to the test report
+   * @param keyValue - object { key: value } (multiple props allowed) or key (string)
+   * @param value - optional value when keyValue is a string
+   */
+  export function meta(keyValue: Record<string, string> | string, value?: string | null): void;
+
+  /**
+   * Add a single label to the test report
+   * @param key - label key (e.g. 'severity', 'feature', or just 'smoke' for labels without values)
+   * @param value - optional label value (e.g. 'high', 'login')
+   */
+  export function label(key: string, value?: string | null): void;
+
+  /**
+   * Logger service for intercepting and managing logs
+   */
+  export const logger: Logger;
+
+  interface ArtifactData {
+    path: string;
+    type: string;
+    name: string;
+  }
+
+  interface Logger {
+    logLevel: string;
+    prettyObjects: boolean;
+
+    /**
+     * Define a step inside a test. Step name is attached to the report
+     * @param strings - template literal strings
+     * @param values - template literal values
+     */
+    step(strings: any, ...values: any[]): void;
+
+    /**
+     * Get logs for a specific context
+     * @param context - testId or test context from test runner
+     */
+    getLogs(context: string): string[];
+
+    /**
+     * Template literal log function
+     * @param strings - template literal strings or message
+     * @param args - arguments
+     */
+    _templateLiteralLog(strings: any, ...args: any[]): void;
+
+    // Console methods
+    assert(...args: any[]): void;
+    debug(...args: any[]): void;
+    error(...args: any[]): void;
+    info(...args: any[]): void;
+    log(...args: any[]): void;
+    trace(...args: any[]): void;
+    warn(...args: any[]): void;
+
+    /**
+     * Intercept user logger messages
+     * @param userLogger - user's logger instance
+     */
+    intercept(userLogger: any): void;
+
+    /**
+     * Stop logger interception
+     */
+    stopInterception(): void;
+
+    /**
+     * Configure logger settings
+     * @param config - configuration options
+     */
+    configure(config?: LoggerConfig): void;
+  }
+
+  interface LoggerConfig {
+    logLevel?: string;
+    prettyObjects?: boolean;
+  }
+
+  const _default: {
+    /**
+     * @deprecated Use `log` or `testomat.log`
+     */
+    testomatioLogger: Logger;
+    artifact: typeof artifact;
+    log: typeof log;
+    logger: Logger;
+    meta: typeof meta;
+    step: typeof step;
+    label: typeof label;
   };
 
-  export const artifact: typeof reporterFunctions.artifact;
-  export const log: typeof reporterFunctions.log;
-  export const meta: typeof reporterFunctions.keyValue;
+  export default _default;
 }
 
 export interface FileType {
@@ -50,6 +150,9 @@ export interface TestData {
   /** The time it took to execute the test case, in milliseconds. */
   time?: number;
 
+  /** Timestamp when the test was reported, in microseconds since Unix epoch. */
+  timestamp?: number;
+
   /** Additional data associated with the test case. Used for parametrized tests. */
   example?: any;
 
@@ -81,6 +184,12 @@ export interface TestData {
 
   /** Meta information (key: value) */
   meta?: { [key: string]: any } | {};
+
+  /** Labels array (e.g. ['smoke', 'severity:high', 'feature:login']) */
+  labels?: string[];
+
+  /** Whether to overwrite status of this test to avoid saving as retry (defaults to false) */
+  overwrite?: boolean;
 }
 
 /**

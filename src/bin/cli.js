@@ -2,20 +2,22 @@
 
 import { Command } from 'commander';
 import { spawn } from 'cross-spawn';
-import glob from 'glob';
+import { glob } from 'glob';
 import createDebugMessages from 'debug';
 import TestomatClient from '../client.js';
 import XmlReader from '../xmlReader.js';
 import { APP_PREFIX, STATUS } from '../constants.js';
-import { version } from '../../package.json';
+import { cleanLatestRunId, getPackageVersion } from '../utils/utils.js';
 import { config } from '../config.js';
 import { readLatestRunId } from '../utils/utils.js';
 import pc from 'picocolors';
 import { filesize as prettyBytes } from 'filesize';
 import dotenv from 'dotenv';
+import Replay from '../replay.js';
 import { checkForEnvPassedAsArguments } from '../utils/cli_utils.js';
 
 const debug = createDebugMessages('@testomatio/reporter:xml-cli');
+const version = getPackageVersion();
 console.log(pc.cyan(pc.bold(` 🤩 Testomat.io Reporter v${version}`)));
 const program = new Command();
 
@@ -37,6 +39,8 @@ program
   .command('start')
   .description('Start a new run and return its ID')
   .action(async () => {
+    cleanLatestRunId();
+
     console.log('Starting a new Run on Testomat.io...');
     const apiKey = process.env['INPUT_TESTOMATIO-KEY'] || config.TESTOMATIO;
     const client = new TestomatClient({ apiKey });
@@ -71,6 +75,7 @@ program
 
 program
   .command('run')
+  .alias('test')
   .description('Run tests with the specified command')
   .argument('<command>', 'Test runner command')
   .option('--filter <filter>', 'Additional execution filter')
@@ -101,27 +106,49 @@ program
 
     console.log(APP_PREFIX, `🚀 Running`, pc.green(command));
 
-    const runTests = () => {
+    const runTests = async () => {
       const testCmds = command.split(' ');
       const cmd = spawn(testCmds[0], testCmds.slice(1), { stdio: 'inherit' });
 
-      cmd.on('close', code => {
+      cmd.on('close', async code => {
         const emoji = code === 0 ? '🟢' : '🔴';
         console.log(APP_PREFIX, emoji, `Runner exited with ${pc.bold(code)}`);
         if (apiKey) {
           const status = code === 0 ? 'passed' : 'failed';
-          client.updateRunStatus(status, true);
+          await client.updateRunStatus(status, true);
         }
         process.exit(code);
       });
     };
 
     if (apiKey) {
-      client.createRun().then(runTests);
+      await client.createRun().then(runTests);
     } else {
-      runTests();
+      await runTests();
     }
   });
+
+// program
+// .command('xml')
+// .description('Parse XML reports and upload to Testomat.io')
+// .argument('<pattern>', 'XML file pattern')
+// .option('-d, --dir <dir>', 'Project directory')
+// .option('--java-tests [java-path]', 'Load Java tests from path, by default: src/test/java')
+// .option('--lang <lang>', 'Language used (python, ruby, java)')
+// .option('--timelimit <time>', 'default time limit in seconds to kill a stuck process')
+// .action(async (pattern, opts) => {
+//   if (!pattern.endsWith('.xml')) {
+//     pattern += '.xml';
+//   }
+//   let { javaTests, lang } = opts;
+//   if (javaTests === true) javaTests = 'src/test/java';
+//   lang = lang?.toLowerCase();
+//   const runReader = new XmlReader({ javaTests, lang });
+//   const files = glob.sync(pattern, { cwd: opts.dir || process.cwd() });
+//   if (!files.length) {
+//     console.log(APP_PREFIX, `Report can't be created. No XML files found 😥`);
+//     process.exit(1);
+//   }
 
 program
   .command('xml')
@@ -273,6 +300,50 @@ program
           )}`,
         );
       });
+    }
+  });
+
+program
+  .command('replay')
+  .description('Replay test data from debug file and re-send to Testomat.io')
+  .argument('[debug-file]', 'Path to debug file (defaults to /tmp/testomatio.debug.latest.json)')
+  .option('--dry-run', 'Preview the data without sending to Testomat.io')
+  .action(async (debugFile, opts) => {
+    try {
+      const replayService = new Replay({
+        apiKey: config.TESTOMATIO,
+        dryRun: opts.dryRun,
+        onLog: (message) => console.log(APP_PREFIX, message),
+        onError: (message) => console.error(APP_PREFIX, '⚠️ ', message),
+        onProgress: ({ current, total }) => {
+          if (current % 10 === 0 || current === total) {
+            console.log(APP_PREFIX, `📊 Progress: ${current}/${total} tests processed`);
+          }
+        }
+      });
+
+      const result = await replayService.replay(debugFile);
+
+      if (result.dryRun) {
+        console.log(APP_PREFIX, '🔍 Dry run completed:');
+        console.log(APP_PREFIX, `  - Tests found: ${result.testsCount}`);
+        console.log(APP_PREFIX, `  - Environment variables: ${Object.keys(result.envVars).length}`);
+        console.log(APP_PREFIX, `  - Run parameters:`, result.runParams);
+        console.log(APP_PREFIX, '  Use without --dry-run to actually send the data');
+      } else {
+        console.log(APP_PREFIX, `✅ Successfully replayed ${result.successCount}/${result.testsCount} tests`);
+        if (result.failureCount > 0) {
+          console.log(APP_PREFIX, `⚠️  ${result.failureCount} tests failed to upload`);
+        }
+      }
+
+      process.exit(0);
+    } catch (err) {
+      console.error(APP_PREFIX, '❌ Error replaying debug data:', err.message);
+      if (err.message.includes('Debug file not found')) {
+        console.error(APP_PREFIX, '💡 Hint: Run tests with TESTOMATIO_DEBUG=1 to generate debug files');
+      }
+      process.exit(1);
     }
   });
 
