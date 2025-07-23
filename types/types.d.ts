@@ -89,6 +89,9 @@ export interface TestData {
 
   /** Labels array (e.g. ['smoke', 'severity:high', 'feature:login']) */
   labels?: string[];
+
+  /** Whether to overwrite status of this test to avoid saving as retry (defaults to false) */
+  overwrite?: boolean;
 }
 
 /**

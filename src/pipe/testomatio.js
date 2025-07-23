@@ -3,7 +3,7 @@ import pc from 'picocolors';
 import { Gaxios } from 'gaxios';
 import JsonCycle from 'json-cycle';
 import { APP_PREFIX, STATUS, AXIOS_TIMEOUT, REPORTER_REQUEST_RETRIES } from '../constants.js';
-import { isValidUrl, foundedTestLog } from '../utils/utils.js';
+import { isValidUrl, foundedTestLog, readLatestRunId } from '../utils/utils.js';
 import { parseFilterParams, generateFilterRequestParams, setS3Credentials } from '../utils/pipe_utils.js';
 import { config } from '../config.js';
 
@@ -367,10 +367,14 @@ class TestomatioPipe {
    * Adds a test to the batch uploader (or reports a single test if batch uploading is disabled)
    */
   addTest(data) {
-    this.isEnabled = this.apiKey ?? this.isEnabled;
-
+    this.isEnabled = !!(this.apiKey ?? this.isEnabled);
     if (!this.isEnabled) return;
-    if (!this.runId) return;
+
+    this.runId = this.runId || process.env.runId || this.store.runId || readLatestRunId();
+    if (!this.runId) {
+      console.warn(APP_PREFIX, pc.red('Run ID is not set, skipping test reporting'));
+      return;
+    }
 
     // add test ID + run ID
     if (data.rid) data.rid = `${this.runId}-${data.rid}`;

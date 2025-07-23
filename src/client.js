@@ -10,7 +10,7 @@ import { glob } from 'glob';
 import path, { sep } from 'path';
 import { fileURLToPath } from 'node:url';
 import { S3Uploader } from './uploader.js';
-import { formatStep, storeRunId, validateSuiteId } from './utils/utils.js';
+import { formatStep, readLatestRunId, storeRunId, validateSuiteId } from './utils/utils.js';
 import { filesize as prettyBytes } from 'filesize';
 
 const debug = createDebugMessages('@testomatio/reporter:client');
@@ -34,7 +34,7 @@ class Client {
   constructor(params = {}) {
     this.paramsForPipesFactory = params;
     this.pipeStore = {};
-    this.runId = randomUUID(); // will be replaced by real run id
+    this.runId = '';
     this.queue = Promise.resolve();
 
     // @ts-ignore this line will be removed in compiled code, because __dirname is defined in commonjs
@@ -139,6 +139,9 @@ class Client {
    * @returns {Promise<PipeResult[]>}
    */
   async addTestRun(status, testData) {
+    if (!this.pipes || !this.pipes.length)
+      this.pipes = await pipesFactory(this.paramsForPipesFactory || {}, this.pipeStore);
+
     // all pipes disabled, skipping
     if (!this.pipes?.filter(p => p.isEnabled).length) return [];
 
@@ -180,6 +183,7 @@ class Client {
       timestamp,
       manuallyAttachedArtifacts,
       labels,
+      overwrite,
     } = testData;
     let { message = '', meta = {} } = testData;
 
@@ -277,6 +281,7 @@ class Client {
       artifacts,
       meta,
       labels,
+      overwrite,
       ...(rootSuiteId && { root_suite_id: rootSuiteId }),
     };
 
@@ -308,7 +313,10 @@ class Client {
    * @param {boolean} [isParallel] - Whether the current test run was executed in parallel with other tests.
    * @returns {Promise<any>} - A Promise that resolves when finishes the run.
    */
-  updateRunStatus(status, isParallel = false) {
+  async updateRunStatus(status, isParallel = false) {
+    this.pipes ||= await pipesFactory(this.paramsForPipesFactory || {}, this.pipeStore);
+    this.runId ||= readLatestRunId();
+
     debug('Updating run status...');
     // all pipes disabled, skipping
     if (!this.pipes?.filter(p => p.isEnabled).length) return Promise.resolve();
