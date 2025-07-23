@@ -15,6 +15,9 @@ import { filesize as prettyBytes } from 'filesize';
 import dotenv from 'dotenv';
 import Replay from '../replay.js';
 import { checkForEnvPassedAsArguments } from '../utils/cli_utils.js';
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
 
 const debug = createDebugMessages('@testomatio/reporter:xml-cli');
 const version = getPackageVersion();
