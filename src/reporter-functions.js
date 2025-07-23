@@ -3,6 +3,8 @@ import { services } from './services/index.js';
 /**
  * Stores path to file as artifact and uploads it to the S3 storage
  * @param {string | {path: string, type: string, name: string}} data - path to file or object with path, type and name
+ * @param {any} [context=null] - optional context parameter
+ * @returns {void}
  */
 function saveArtifact(data, context = null) {
   if (process.env.IS_PLAYWRIGHT)
@@ -14,7 +16,8 @@ function saveArtifact(data, context = null) {
 
 /**
  * Attach log message(s) to the test report
- * @param  string
+ * @param {...any} args - log messages to attach
+ * @returns {void}
  */
 function logMessage(...args) {
   if (process.env.IS_PLAYWRIGHT) throw new Error('This function is not available in Playwright framework');
@@ -23,7 +26,8 @@ function logMessage(...args) {
 
 /**
  * Similar to "log" function but marks message in report as a step
- * @param {string} message
+ * @param {string} message - step message
+ * @returns {void}
  */
 function addStep(message) {
   if (process.env.IS_PLAYWRIGHT)
@@ -34,8 +38,9 @@ function addStep(message) {
 
 /**
  * Add key-value pair(s) to the test report
- * @param {{[key: string]: string} | string} keyValue object { key: value } (multiple props allowed) or key (string)
- * @param {string?} value
+ * @param {{[key: string]: string} | string} keyValue - object { key: value } (multiple props allowed) or key (string)
+ * @param {string|null} [value=null] - optional value when keyValue is a string
+ * @returns {void}
  */
 function setKeyValue(keyValue, value = null) {
   if (process.env.IS_PLAYWRIGHT)
@@ -50,7 +55,8 @@ function setKeyValue(keyValue, value = null) {
 /**
  * Add a single label to the test report
  * @param {string} key - label key (e.g. 'severity', 'feature', or just 'smoke' for labels without values)
- * @param {string} [value] - optional label value (e.g. 'high', 'login')
+ * @param {string|null} [value=null] - optional label value (e.g. 'high', 'login')
+ * @returns {void}
  */
 function setLabel(key, value = null) {
   if (!key || typeof key !== 'string') {
