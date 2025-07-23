@@ -289,7 +289,7 @@ describe('TestomatioPipe', () => {
 
       await testomatioPipe.prepareRun(`plan-id=${planId}`);
 
-      expect(receivedQuery.params).to.deep.equal({
+      expect(receivedQuery).to.deep.equal({
         type: 'plan',
         id: planId,
         api_key: TESTOMATIO
@@ -321,8 +321,8 @@ describe('TestomatioPipe', () => {
 
       await testomatioPipe.prepareRun(`plan-id=${planId}`);
 
-      expect(receivedQuery.params.id).to.equal('plan%20with%20spaces%20%26%20symbols'); // Should be URL encoded
-      expect(receivedQuery.params.type).to.equal('plan');
+      expect(receivedQuery.id).to.equal('plan%20with%20spaces%20%26%20symbols'); // Should be URL encoded
+      expect(receivedQuery.type).to.equal('plan');
     });
   });
 
