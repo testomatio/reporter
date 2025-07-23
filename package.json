@@ -1,6 +1,6 @@
 {
   "name": "@testomatio/reporter",
-  "version": "2.0.2",
+  "version": "2.1.0-beta.2-codeceptjs",
   "description": "Testomatio Reporter Client",
   "engines": {
     "node": ">=18"
