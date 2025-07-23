@@ -56,19 +56,20 @@ function CodeceptReporter(config) {
 
   output.debug = function(msg) {
     originalOutput.debug(msg);
-    dataStorage.putData('log', repeat(this.stepShift) + pc.cyan(msg.toString()));
+    dataStorage.putData('log', repeat(this?.stepShift || 0) + pc.cyan(msg.toString()));
   };
 
   output.say = function(message, color = 'cyan') {
     originalOutput.say(message, color);
-    const sayMsg = repeat(this.stepShift) + `  ${pc.bold(pc[color](message))}`;
+    const sayMsg = repeat(this?.stepShift || 0) + `  ${pc.bold(pc[color](message))}`;
     dataStorage.putData('log', sayMsg);
   };
 
   output.log = function(msg) {
     originalOutput.log(msg);
-    dataStorage.putData('log', repeat(this.stepShift) + pc.gray(msg));
+    dataStorage.putData('log', repeat(this?.stepShift || 0) + pc.gray(msg));
   };
+  output.stepShift = 0;
 
   recorder.startUnlessRunning();
 
