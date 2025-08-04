@@ -59,38 +59,20 @@ function setKeyValue(keyValue, value = null) {
  * @returns {void}
  */
 function setLabel(key, value = null) {
-  if (!key || typeof key !== 'string') {
-    console.warn('Label key must be a non-empty string');
-    return;
-  }
+  const labelObject = value !== null && value !== undefined && value !== '' 
+    ? { label: `${key}:${value}` } 
+    : { label: key };
+  services.links.put([labelObject]);
+}
 
-  // Limit key length to 255 characters
-  if (key.length > 255) {
-    console.warn('Label key is too long, trimmed to 255 characters:', key);
-    key = key.substring(0, 255);
-  }
-
-  let labelString = key;
-  if (value !== null && value !== undefined && value !== '') {
-    if (typeof value !== 'string') {
-      console.warn('Label value must be a string, converting:', value);
-      value = String(value);
-    }
-    // Limit value length to 255 characters
-    if (value.length > 255) {
-      console.warn('Label value is too long, trimmed to 255 characters:', value);
-      value = value.substring(0, 255);
-    }
-    labelString = `${key}:${value}`;
-  }
-
-  // Limit total label length to 255 characters
-  if (labelString.length > 255) {
-    console.warn('Label is too long, trimmed to 255 characters:', labelString);
-    labelString = labelString.substring(0, 255);
-  }
-
-  services.labels.put([labelString]);
+/**
+ * Add link(s) to the test report
+ * @param {...string} testIds - test IDs to link
+ * @returns {void}
+ */
+function linkTest(...testIds) {
+  const links = testIds.map(testId => ({ test: testId }));
+  services.links.put(links);
 }
 
 export default {
@@ -99,4 +81,5 @@ export default {
   step: addStep,
   keyValue: setKeyValue,
   label: setLabel,
+  linkTest,
 };
