@@ -11,6 +11,7 @@ import path, { sep } from 'path';
 import { fileURLToPath } from 'node:url';
 import { S3Uploader } from './uploader.js';
 import { formatStep, readLatestRunId, storeRunId, validateSuiteId } from './utils/utils.js';
+import { linkStorage } from './services/links.js';
 import { filesize as prettyBytes } from 'filesize';
 
 const debug = createDebugMessages('@testomatio/reporter:client');
@@ -182,7 +183,6 @@ class Client {
       test_id,
       timestamp,
       manuallyAttachedArtifacts,
-      labels,
       overwrite,
     } = testData;
     let { message = '', meta = {} } = testData;
@@ -224,7 +224,9 @@ class Client {
         return acc;
       }, {});
 
-    // Labels are simple array of strings, no processing needed
+    // Get links from storage using the test context
+    const testContext = suite_title ? `${suite_title} ${title}` : title;
+    const links = linkStorage.get(testContext) || [];
 
     let errorFormatted = '';
     if (error) {
@@ -280,7 +282,7 @@ class Client {
       timestamp,
       artifacts,
       meta,
-      labels,
+      links,
       overwrite,
       ...(rootSuiteId && { root_suite_id: rootSuiteId }),
     };
