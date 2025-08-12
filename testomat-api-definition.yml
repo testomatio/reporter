@@ -221,11 +221,11 @@ components:
         substatus:
           type: string
           description: Optional substatus of the test
-        labels:
+        links:
           type: array
           items:
-            type: string
-          description: An array of labels that can be assigned to the test case. Use label:value to add a values
+            $ref: '#/components/schemas/LinkObject'
+          description: An array of link objects that can be assigned to the test case. Supports test links and labels
         steps:
           type: array
           items:
@@ -273,3 +273,28 @@ components:
         box:
           type: boolean
           description: Indicates if the step should be boxed
+
+    LinkObject:
+      type: object
+      description: A link object that can represent different types of links or labels
+      oneOf:
+        - type: object
+          properties:
+            test:
+              type: string
+              description: Test identifier for linking to specific tests
+          required:
+            - test
+          additionalProperties: false
+          example:
+            test: "TEST-123"
+        - type: object
+          properties:
+            label:
+              type: string
+              description: Label for categorizing tests (e.g., 'smoke', 'severity:high')
+          required:
+            - label
+          additionalProperties: false
+          example:
+            label: "smoke"

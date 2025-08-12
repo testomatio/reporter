@@ -33,6 +33,12 @@ declare module '@testomatio/reporter' {
   export function label(key: string, value?: string | null): void;
 
   /**
+   * Add link(s) to the test report
+   * @param testIds - test IDs to link
+   */
+  export function linkTest(...testIds: string[]): void;
+
+  /**
    * Logger service for intercepting and managing logs
    */
   export const logger: Logger;
@@ -110,6 +116,7 @@ declare module '@testomatio/reporter' {
     meta: typeof meta;
     step: typeof step;
     label: typeof label;
+    linkTest: typeof linkTest;
   };
 
   export default _default;
@@ -185,8 +192,8 @@ export interface TestData {
   /** Meta information (key: value) */
   meta?: { [key: string]: any } | {};
 
-  /** Labels array (e.g. ['smoke', 'severity:high', 'feature:login']) */
-  labels?: string[];
+  /** Links array (e.g. [{test: 'TEST-123'}, {label: 'smoke'}]) */
+  links?: object[];
 
   /** Whether to overwrite status of this test to avoid saving as retry (defaults to false) */
   overwrite?: boolean;
