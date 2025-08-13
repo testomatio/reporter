@@ -298,3 +298,13 @@ components:
           additionalProperties: false
           example:
             label: "smoke"
+        - type: object
+          properties:
+            jira:
+              type: string
+              description: JIRA issue identifier for linking to specific JIRA tickets
+          required:
+            - jira
+          additionalProperties: false
+          example:
+            jira: "PROJ-123"

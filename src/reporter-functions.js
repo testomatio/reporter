@@ -75,6 +75,16 @@ function linkTest(...testIds) {
   services.links.put(links);
 }
 
+/**
+ * Add JIRA issue link(s) to the test report
+ * @param {...string} jiraIds - JIRA issue IDs to link
+ * @returns {void}
+ */
+function linkJira(...jiraIds) {
+  const links = jiraIds.map(jiraId => ({ jira: jiraId }));
+  services.links.put(links);
+}
+
 export default {
   artifact: saveArtifact,
   log: logMessage,
@@ -82,4 +92,5 @@ export default {
   keyValue: setKeyValue,
   label: setLabel,
   linkTest,
+  linkJira,
 };
