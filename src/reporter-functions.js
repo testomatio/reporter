@@ -53,12 +53,17 @@ function setKeyValue(keyValue, value = null) {
 }
 
 /**
- * Add a single label to the test report
+ * Add label(s) to the test report
  * @param {string} key - label key (e.g. 'severity', 'feature', or just 'smoke' for labels without values)
- * @param {string|null} [value=null] - optional label value (e.g. 'high', 'login')
+ * @param {string|string[]|null} [value=null] - optional label value(s) (e.g. 'high', 'login') or array of values
  * @returns {void}
  */
 function setLabel(key, value = null) {
+  if (Array.isArray(value)) {
+    value.forEach(val => setLabel(key, val));
+    return;
+  }
+
   if (!key || typeof key !== 'string') {
     console.warn('Label key must be a non-empty string');
     return;
