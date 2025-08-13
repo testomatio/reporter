@@ -23,7 +23,7 @@ class LabelStorage {
    */
   put(labels, context = null) {
     if (!labels || !Array.isArray(labels)) return;
-    dataStorage.putData('labels', labels, context);
+    dataStorage.putData('links', labels, context);
   }
 
   /**
@@ -32,7 +32,7 @@ class LabelStorage {
    * @returns {string[]} labels array, e.g. ['smoke', 'severity:high', 'feature:user_account']
    */
   get(context = null) {
-    const labelsList = dataStorage.getData('labels', context);
+    const labelsList = dataStorage.getData('links', context);
     if (!labelsList || !labelsList?.length) return [];
 
     const allLabels = [];

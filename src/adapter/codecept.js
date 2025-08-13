@@ -163,7 +163,7 @@ function CodeceptReporter(config) {
     const manuallyAttachedArtifacts = services.artifacts.get(test.fullTitle());
     const keyValues = services.keyValues.get(test.fullTitle());
     const stepHierarchy = buildUnifiedStepHierarchy(test.steps, hookSteps);
-    const labels = services.labels.get(test.fullTitle());
+    const links = services.links.get(test.fullTitle());
 
     services.setContext(null);
 
@@ -178,7 +178,7 @@ function CodeceptReporter(config) {
       files,
       steps: stepHierarchy, // Array of step objects per API schema
       logs,
-      labels,
+      links,
       manuallyAttachedArtifacts,
       meta: { ...keyValues, ...test.meta },
     });

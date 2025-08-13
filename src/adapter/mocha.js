@@ -61,6 +61,7 @@ function MochaReporter(runner, opts) {
     const logs = getTestLogs(test);
     const artifacts = services.artifacts.get(test.fullTitle());
     const keyValues = services.keyValues.get(test.fullTitle());
+    const links = services.links.get(test.fullTitle());
 
     client.addTestRun(STATUS.PASSED, {
       test_id: testId,
@@ -72,6 +73,7 @@ function MochaReporter(runner, opts) {
       logs,
       manuallyAttachedArtifacts: artifacts,
       meta: keyValues,
+      links,
     });
   });
 
@@ -79,6 +81,10 @@ function MochaReporter(runner, opts) {
     skipped += 1;
     console.log('skip: %s', test.fullTitle());
     const testId = getTestomatIdFromTestTitle(test.title);
+    const artifacts = services.artifacts.get(test.fullTitle());
+    const keyValues = services.keyValues.get(test.fullTitle());
+    const links = services.links.get(test.fullTitle());
+    
     client.addTestRun(STATUS.SKIPPED, {
       title: getTestName(test),
       suite_title: getSuiteTitle(test),
@@ -86,6 +92,9 @@ function MochaReporter(runner, opts) {
       file: getFile(test),
       test_id: testId,
       time: test.duration,
+      manuallyAttachedArtifacts: artifacts,
+      meta: keyValues,
+      links,
     });
   });
 
@@ -95,6 +104,9 @@ function MochaReporter(runner, opts) {
     const testId = getTestomatIdFromTestTitle(test.title);
 
     const logs = getTestLogs(test);
+    const artifacts = services.artifacts.get(test.fullTitle());
+    const keyValues = services.keyValues.get(test.fullTitle());
+    const links = services.links.get(test.fullTitle());
 
     client.addTestRun(STATUS.FAILED, {
       error: err,
@@ -105,6 +117,9 @@ function MochaReporter(runner, opts) {
       code: process.env.TESTOMATIO_UPDATE_CODE ? test.body.toString() : '',
       time: test.duration,
       logs,
+      manuallyAttachedArtifacts: artifacts,
+      meta: keyValues,
+      links,
     });
   });
 

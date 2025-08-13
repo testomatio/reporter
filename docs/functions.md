@@ -128,9 +128,9 @@ test('Your test @T12345678', async () => {
 });
 ```
 
-## label
+## Label
 
-Adds a label to the reported test. Unlike `meta` label will be persisted to the test case itself, not just to reported run. Label should exst in Testomat.io to be added. You can pass also label value, if label was created as a custom field
+Adds a label to the reported test. Unlike `meta` label will be persisted to the test case itself, not just to reported run. Label should exist in Testomat.io to be added. You can pass also label value, if label was created as a custom field
 
 ```javascript
 import { label } from '@testomatio/reporter';
@@ -138,7 +138,7 @@ import { label } from '@testomatio/reporter';
 describe('Your suite', () => {
   test('I can login', async () => {
     label('Area', 'Auth')
-    label('Severity', 'Auth')
+    label('Severity', 'High')
     label('Browser')
     await page.login();
   });
