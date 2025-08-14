@@ -161,8 +161,11 @@ class XmlReader {
 
     reduceOptions.preferClassname = this.stats.language === 'python';
     const resultTests = processTestSuite(jsonSuite['test-suite']);
+    
+    // Deduplicate tests based on FQN (Assembly + Namespace + Class + Method)
+    const deduplicatedTests = this.deduplicateTestsByFQN(resultTests);
 
-    this.tests = this.tests.concat(resultTests);
+    this.tests = this.tests.concat(deduplicatedTests);
 
     return {
       status: result?.toLowerCase(),
@@ -171,7 +174,7 @@ class XmlReader {
       passed_count: parseInt(passed, 10),
       failed_count: parseInt(failed, 10),
       skipped_count: parseInt(inconclusive + skipped, 10),
-      tests: resultTests,
+      tests: deduplicatedTests,
     };
   }
 
@@ -317,6 +320,145 @@ class XmlReader {
       skipped_count: tests.filter(t => t.status === STATUS.SKIPPED).length,
       tests,
     };
+  }
+
+  deduplicateTestsByFQN(tests) {
+    const fqnMap = new Map();
+    
+    tests.forEach(test => {
+      const fqn = this.generateNormalizedFQN(test);
+      
+      if (fqnMap.has(fqn)) {
+        const existingTest = fqnMap.get(fqn);
+        // Merge test properties, prioritizing Test Explorer structure but updating with IDs
+        if (test.test_id && !existingTest.test_id) {
+          existingTest.test_id = test.test_id;
+        }
+        // Keep the most complete test data
+        if (test.stack && !existingTest.stack) {
+          existingTest.stack = test.stack;
+        }
+        if (test.message && !existingTest.message) {
+          existingTest.message = test.message;
+        }
+        // Prefer Test Explorer structure (longer, more complete suite_title)
+        if (test.suite_title && test.suite_title.length > existingTest.suite_title.length) {
+          existingTest.suite_title = test.suite_title;
+          existingTest.file = this.extractCsFileFromPath(test);
+        }
+      } else {
+        // Fix file path to use proper .cs file names from source paths
+        test.file = this.extractCsFileFromPath(test);
+        fqnMap.set(fqn, test);
+      }
+    });
+    
+    return Array.from(fqnMap.values());
+  }
+
+  generateFQN(test) {
+    // Generate Fully Qualified Name: Namespace + Class + Method (standard .NET FQN)
+    // Don't include assembly as it can vary between different test structures
+    const namespace = this.extractNamespace(test);
+    const className = this.extractClassName(test);
+    const methodName = test.title;
+    
+    // Use the most complete namespace.class structure available
+    if (test.suite_title && test.suite_title.includes('.')) {
+      return `${test.suite_title}.${methodName}`;
+    }
+    
+    return `${namespace}.${className}.${methodName}`;
+  }
+
+  generateNormalizedFQN(test) {
+    // Generate normalized FQN for deduplication by extracting the core namespace.class.method
+    // This normalizes different representations of the same test
+    
+    const fullClassName = test.suite_title || '';
+    const methodName = test.title;
+    
+    // Extract the most specific namespace.class pattern
+    if (fullClassName.includes('.')) {
+      const parts = fullClassName.split('.');
+      
+      if (parts.length >= 2) {
+        const className = parts[parts.length - 1];
+        
+        // Look for common .NET namespace patterns and normalize them:
+        // TestProject.Tests.MyClass -> Tests.MyClass
+        // Tests.MyClass -> Tests.MyClass
+        // MyProject.SubNamespace.Tests.MyClass -> Tests.MyClass
+        
+        let normalizedNamespace = '';
+        for (let i = parts.length - 2; i >= 0; i--) {
+          const part = parts[i];
+          
+          // Build namespace from right to left, excluding project names
+          if (part === 'Tests' || part.endsWith('Tests') || part.includes('Test')) {
+            // Found a test namespace, use it as the normalized namespace
+            normalizedNamespace = part;
+            break;
+          } else if (i === parts.length - 2) {
+            // If no test namespace found, use the immediate parent as namespace
+            normalizedNamespace = part;
+          }
+        }
+        
+        return `${normalizedNamespace}.${className}.${methodName}`;
+      }
+    }
+    
+    // Fallback for simple class names
+    return `${fullClassName}.${methodName}`;
+  }
+
+  extractAssemblyName(test) {
+    // Extract assembly name from file path or use default
+    if (test.file) {
+      const parts = test.file.split(/[/\\]/);
+      return parts[0] || 'DefaultAssembly';
+    }
+    return 'DefaultAssembly';
+  }
+
+  extractNamespace(test) {
+    // Extract namespace from suite_title or classname
+    if (test.suite_title && test.suite_title.includes('.')) {
+      const parts = test.suite_title.split('.');
+      return parts.slice(0, -1).join('.');
+    }
+    return test.suite_title || 'DefaultNamespace';
+  }
+
+  extractClassName(test) {
+    // Extract class name from suite_title
+    if (test.suite_title && test.suite_title.includes('.')) {
+      const parts = test.suite_title.split('.');
+      return parts[parts.length - 1];
+    }
+    return test.suite_title || 'DefaultClass';
+  }
+
+  extractCsFileFromPath(test) {
+    // Extract .cs file name from source file path, not namespace
+    if (test.file) {
+      // Look for actual .cs file path patterns
+      const csFileMatch = test.file.match(/([^/\\]+\.cs)$/);
+      if (csFileMatch) {
+        return test.file;
+      }
+      
+      // If no .cs extension, assume it's a namespace path and convert to likely file name
+      const className = this.extractClassName(test);
+      const pathParts = test.file.split(/[/\\]/);
+      pathParts[pathParts.length - 1] = `${className}.cs`;
+      return pathParts.join('/');
+    }
+    
+    // Fallback to class name
+    const className = this.extractClassName(test);
+    return `${className}.cs`;
   }
 
   calculateStats() {
@@ -485,7 +627,8 @@ function reduceTestCases(prev, item) {
   testCases
     .filter(t => !!t)
     .forEach(testCaseItem => {
-      const file = testCaseItem.file || item.filepath || item.fullname || item.package || '';
+      // Use consistent Test Explorer structure: prioritize fullname for file path
+      const file = extractSourceFilePath(testCaseItem, item);
 
       let stack = '';
       let message = '';
@@ -500,12 +643,13 @@ function reduceTestCases(prev, item) {
       if (!message) message = stack.trim().split('\n')[0];
 
       const isParametrized = item.type === 'ParameterizedMethod';
-      const preferClassname = reduceOptions.preferClassname || isParametrized;
 
       // SpecFlow config
       let { title, tags, testId } = fetchProperties(isParametrized ? item : testCaseItem);
       let example = null;
-      const suiteTitle = preferClassname ? testCaseItem.classname : item.name || testCaseItem.classname;
+      
+      // Use consistent Test Explorer structure for suite title
+      const suiteTitle = extractTestExplorerSuiteTitle(testCaseItem, item);
 
       title ||= testCaseItem.name || testCaseItem.methodname || testCaseItem.classname;
       tags ||= [];
@@ -577,6 +721,57 @@ function reduceTestCases(prev, item) {
   return prev;
 }
 
+function extractSourceFilePath(testCaseItem, item) {
+  // Priority order for file path extraction to match Test Explorer structure:
+  // 1. fullname (contains full project path)
+  // 2. filepath (direct file path)
+  // 3. file attribute from test case
+  // 4. package (fallback)
+  
+  if (item.fullname) {
+    // Extract actual file path from fullname if it contains path separators
+    const fullnameParts = item.fullname.split('.');
+    if (fullnameParts.length > 2) {
+      // Reconstruct path from project.namespace.class structure
+      const projectName = fullnameParts[0];
+      const namespaceParts = fullnameParts.slice(1, -1);
+      const className = fullnameParts[fullnameParts.length - 1];
+      return `${projectName}/${namespaceParts.join('/')}/${className}.cs`;
+    }
+  }
+  
+  if (item.filepath) return item.filepath;
+  if (testCaseItem.file) return testCaseItem.file;
+  if (item.package) return item.package;
+  
+  // Fallback: construct from classname
+  if (testCaseItem.classname) {
+    const parts = testCaseItem.classname.split('.');
+    const className = parts[parts.length - 1];
+    const namespacePath = parts.slice(0, -1).join('/');
+    return `${namespacePath}/${className}.cs`;
+  }
+  
+  return '';
+}
+
+function extractTestExplorerSuiteTitle(testCaseItem, item) {
+  // Extract suite title to match Test Explorer structure (Project/Namespace hierarchy)
+  // Priority: fullname > classname > name
+  
+  if (item.fullname) {
+    // Use fullname to maintain Test Explorer structure
+    return item.fullname;
+  }
+  
+  if (testCaseItem.classname) {
+    return testCaseItem.classname;
+  }
+  
+  // Fallback to item name but prefer classname structure
+  return item.name || testCaseItem.classname || 'UnknownClass';
+}
+
 function processTestSuite(testsuite) {
   if (!testsuite) return [];
   if (testsuite.testsuite) return processTestSuite(testsuite.testsuite);
@@ -587,9 +782,17 @@ function processTestSuite(testsuite) {
     suites = [testsuite];
   }
 
-  const subSuites = suites.filter(s => s['test-suite'] && !testsuite['test-case']);
+  // Only process suites that have test cases OR child suites, but avoid double processing
+  const subSuites = suites.filter(s => s['test-suite'] && !s['test-case']);
+  const leafSuites = suites.filter(s => s['test-case'] || s.testcase);
 
-  return [...subSuites.map(s => processTestSuite(s['test-suite'])), ...suites.reduce(reduceTestCases, [])].flat();
+  // Process child suites recursively
+  const childResults = subSuites.map(s => processTestSuite(s['test-suite'])).flat();
+  
+  // Process leaf suites with actual test cases
+  const leafResults = leafSuites.reduce(reduceTestCases, []);
+
+  return [...childResults, ...leafResults];
 }
 
 function fetchProperties(item) {
