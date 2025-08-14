@@ -53,17 +53,23 @@ function setKeyValue(keyValue, value = null) {
 }
 
 /**
- * Add a single label to the test report
+ * Add label(s) to the test report
  * @param {string} key - label key (e.g. 'severity', 'feature', or just 'smoke' for labels without values)
- * @param {string|null} [value=null] - optional label value (e.g. 'high', 'login')
+ * @param {string|string[]|null} [value=null] - optional label value(s) (e.g. 'high', 'login') or array of values
  * @returns {void}
  */
 function setLabel(key, value = null) {
+  if (Array.isArray(value)) {
+    value.forEach(val => setLabel(key, val));
+    return;
+  }
+
   const labelObject = value !== null && value !== undefined && value !== '' 
     ? { label: `${key}:${value}` } 
     : { label: key };
   services.links.put([labelObject]);
 }
+
 
 /**
  * Add link(s) to the test report
