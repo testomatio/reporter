@@ -330,17 +330,66 @@ class XmlReader {
       
       if (fqnMap.has(fqn)) {
         const existingTest = fqnMap.get(fqn);
-        // Merge test properties, prioritizing Test Explorer structure but updating with IDs
-        if (test.test_id && !existingTest.test_id) {
-          existingTest.test_id = test.test_id;
+        
+        // For parameterized tests, merge as Examples
+        if (test.example) {
+          // Initialize examples array if it doesn't exist
+          if (!existingTest.examples) {
+            existingTest.examples = [];
+            // Add the existing test's example as the first item
+            if (existingTest.example) {
+              existingTest.examples.push({
+                parameters: existingTest.example,
+                status: existingTest.status,
+                run_time: existingTest.run_time,
+                message: existingTest.message,
+                stack: existingTest.stack
+              });
+            }
+          }
+          
+          // Add this test's execution as an example
+          existingTest.examples.push({
+            parameters: test.example,
+            status: test.status,
+            run_time: test.run_time,
+            message: test.message,
+            stack: test.stack
+          });
+          
+          // Update the main test status to reflect the worst status
+          if (test.status === 'failed' || existingTest.status === 'failed') {
+            existingTest.status = 'failed';
+          } else if (test.status === 'skipped' && existingTest.status !== 'failed') {
+            existingTest.status = 'skipped';
+          }
+          
+          // Update total run time
+          existingTest.run_time = (existingTest.run_time || 0) + (test.run_time || 0);
+          
+          // Merge stack traces if they're different
+          if (test.stack && test.stack !== existingTest.stack) {
+            existingTest.stack = existingTest.stack + '\n\n---\n\n' + test.stack;
+          }
+          
+          // Merge messages if they're different
+          if (test.message && test.message !== existingTest.message) {
+            existingTest.message = existingTest.message + '; ' + test.message;
+          }
+        } else {
+          // Merge test properties for non-parameterized tests, prioritizing Test Explorer structure
+          if (test.test_id && !existingTest.test_id) {
+            existingTest.test_id = test.test_id;
+          }
+          // Keep the most complete test data
+          if (test.stack && !existingTest.stack) {
+            existingTest.stack = test.stack;
+          }
+          if (test.message && !existingTest.message) {
+            existingTest.message = test.message;
+          }
         }
-        // Keep the most complete test data
-        if (test.stack && !existingTest.stack) {
-          existingTest.stack = test.stack;
-        }
-        if (test.message && !existingTest.message) {
-          existingTest.message = test.message;
-        }
+        
         // Prefer Test Explorer structure (longer, more complete suite_title)
         if (test.suite_title && test.suite_title.length > existingTest.suite_title.length) {
           existingTest.suite_title = test.suite_title;
@@ -373,7 +422,7 @@ class XmlReader {
 
   generateNormalizedFQN(test) {
     // Generate normalized FQN for deduplication by extracting the core namespace.class.method
-    // This normalizes different representations of the same test
+    // For parameterized tests, we want the SAME FQN so they merge into one test with multiple Examples
     
     const fullClassName = test.suite_title || '';
     const methodName = test.title;
@@ -654,9 +703,14 @@ function reduceTestCases(prev, item) {
       title ||= testCaseItem.name || testCaseItem.methodname || testCaseItem.classname;
       tags ||= [];
 
-      const exampleMatches = testCaseItem.name?.match(/\S\((.*?)\)/);
+      // Store original test name for parameter extraction
+      const originalTestName = testCaseItem.name || testCaseItem.methodname;
+      
+      const exampleMatches = originalTestName?.match(/\((.*?)\)$/);
       if (exampleMatches) {
-        example = { ...exampleMatches[1].split(',').map(v => v.trim().replace(/[^\w\s-]/g, '')) };
+        // Extract and store parameters as Examples
+        const parameterValues = exampleMatches[1].split(',').map(v => v.trim().replace(/['"]/g, ''));
+        example = { ...parameterValues };
         title = title.replace(/\(.*?\)/, '').trim();
       }
 
@@ -712,6 +766,7 @@ function reduceTestCases(prev, item) {
         run_time: parseFloat(testCaseItem.time || testCaseItem.duration) * 1000,
         status,
         title,
+        originalTestName, // Store original name for parameter-aware FQN generation
         root_suite_id: TESTOMATIO_SUITE,
         suite_title: suiteTitle,
         files,
