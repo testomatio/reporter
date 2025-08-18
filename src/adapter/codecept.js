@@ -25,6 +25,9 @@ const HOOK_EXECUTION_ORDER = {
   POST_TEST: ['AfterHook', 'AfterSuiteHook']
 };
 
+// codeceptjs workers are self-contained
+dataStorage.isFileStorage = false;
+
 const DATA_REGEXP = /[|\s]+?(\{".*\}|\[.*\])/;
 
 if (MAJOR_VERSION < 3) {

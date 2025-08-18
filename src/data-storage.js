@@ -192,8 +192,7 @@ function stringToMD5Hash(str) {
   const md5 = crypto.createHash('md5');
   md5.update(str);
   const hash = md5.digest('hex');
-
-  return hash;
+  return `${process.env.runId || 'run'}_${hash}`;
 }
 
 export const dataStorage = DataStorage.getInstance();
