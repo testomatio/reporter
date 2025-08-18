@@ -187,7 +187,8 @@ class TestomatioPipe {
       const resp = await this.client.request({
         method: 'PUT',
         url: `/api/reporter/${this.runId}`,
-        data: runParams
+        data: runParams,
+        responseType: 'json'
       });
       if (resp.data.artifacts) setS3Credentials(resp.data.artifacts);
       return;
