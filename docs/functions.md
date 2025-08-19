@@ -159,7 +159,7 @@ test('my test', async () => {
   linkTest('TEST-123');
   
   // Link multiple test IDs
-  linkTest('TEST-456', 'TEST-789');
+  linkTest('@T888ef960', '@Tf2916e65');
   
   await page.login();
   assert(something);
