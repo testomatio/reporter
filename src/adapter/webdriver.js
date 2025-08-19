@@ -52,12 +52,10 @@ class WebdriverReporter extends WDIOReporter {
   onTestEnd(test) {
     test.suite = test.parent;
     const logs = getTestLogs(test.fullTitle);
-    // TODO: FIX: artifacts for some reason leads to empty report on Testomat.io
-    // const artifacts = services.artifacts.get(test.fullTitle);
-    // const keyValues = services.keyValues.get(test.fullTitle);
+    test.artifacts = services.artifacts.get(test.fullTitle);
+    test.meta = services.keyValues.get(test.fullTitle);
+    test.links = services.links.get(test.fullTitle);
     test.logs = logs;
-    // test.artifacts = artifacts;
-    // test.meta = keyValues;
 
     this._addTestPromises.push(this.addTest(test));
   }
@@ -72,7 +70,7 @@ class WebdriverReporter extends WDIOReporter {
   async addTest(test) {
     if (!this.client) return;
 
-    const { title, _duration: duration, state, error, output } = test;
+    const { title, _duration: duration, state, error, output, links, artifacts, meta, logs } = test;
 
     const testId = getTestomatIdFromTestTitle(title);
 
@@ -83,10 +81,11 @@ class WebdriverReporter extends WDIOReporter {
 
     await this.client.addTestRun(state, {
       rid: test.uid || '',
-      manuallyAttachedArtifacts: test.artifacts,
+      manuallyAttachedArtifacts: artifacts,
       error,
-      logs: test.logs,
-      meta: test.meta,
+      logs,
+      meta,
+      links,
       title,
       test_id: testId,
       time: duration,

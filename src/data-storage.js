@@ -116,7 +116,7 @@ class DataStorage {
     try {
       if (global?.testomatioDataStore[dataType]) {
         const testData = global.testomatioDataStore[dataType][context];
-        if (testData) debug(`"${dataType}" data for constext "${context}":`, testData.join(', '));
+        if (testData) debug('<=', dataType, 'global', context, testData);
         return testData || [];
       }
       // debug(`No ${this.dataType} data for context ${context} in <global> storage`);
@@ -137,7 +137,7 @@ class DataStorage {
       const filepath = join(dataDirPath, `${dataType}_${context}`);
       if (fs.existsSync(filepath)) {
         const testDataAsText = fs.readFileSync(filepath, 'utf-8');
-        if (testDataAsText) debug(`"${dataType}" data for context "${context}":`, testDataAsText);
+        if (testDataAsText) debug('<=', dataType, 'file', context, testDataAsText);
         const testDataArr = testDataAsText?.split(os.EOL) || [];
         return testDataArr;
       }
@@ -156,7 +156,7 @@ class DataStorage {
    * @param {*} context
    */
   #putDataToGlobalVar(dataType, data, context) {
-    debug('Saving data to global variable for ', context, ':', data);
+    debug('=>', dataType, 'global', context, data);
     if (!global.testomatioDataStore) global.testomatioDataStore = {};
     if (!global.testomatioDataStore?.[dataType]) global.testomatioDataStore[dataType] = {};
 
@@ -177,7 +177,7 @@ class DataStorage {
     const filename = `${dataType}_${context}`;
     const filepath = join(dataDirPath, filename);
     if (!fs.existsSync(dataDirPath)) fileSystem.createDir(dataDirPath);
-    debug(`Saving data to file for context "${context}" to ${filepath}. Data: ${JSON.stringify(data)}`);
+    debug('=>', dataType, 'file', context, data);
 
     // append new line if file already exists (in this case its definitely includes some data)
     if (fs.existsSync(filepath)) {

@@ -59,8 +59,11 @@ function setKeyValue(keyValue, value = null) {
  * @returns {void}
  */
 function setLabel(key, value = null) {
-  const labelObject = value !== null && value !== undefined && value !== '' 
-    ? { label: `${key}:${value}` } 
+  if (Array.isArray(value)) {
+    return value.forEach(label => setLabel(key, label));
+  }
+  const labelObject = value !== null && value !== undefined && value !== ''
+    ? { label: `${key}:${value}` }
     : { label: key };
   services.links.put([labelObject]);
 }

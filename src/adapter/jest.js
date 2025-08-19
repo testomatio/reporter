@@ -59,6 +59,7 @@ export class JestReporter {
       const logs = getTestLogs(result);
       const artifacts = services.artifacts.get(result.fullName);
       const keyValues = services.keyValues.get(result.fullName);
+      const links = services.links.get(result.fullName);
 
       const deducedStatus = status === 'pending' ? 'skipped' : status;
       // In jest if test is not matched with test name pattern it is considered as skipped.
@@ -72,6 +73,7 @@ export class JestReporter {
           title,
           time: duration,
           logs,
+          links,
           manuallyAttachedArtifacts: artifacts,
           meta: keyValues,
         });
