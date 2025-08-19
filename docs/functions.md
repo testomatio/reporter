@@ -156,7 +156,7 @@ import { linkTest } from '@testomatio/reporter';
 
 test('my test', async () => {
   // Link single test ID
-  linkTest('TEST-123');
+  linkTest('f2916e65');
   
   // Link multiple test IDs
   linkTest('@T888ef960', '@Tf2916e65');
