@@ -184,6 +184,7 @@ class Client {
       timestamp,
       manuallyAttachedArtifacts,
       overwrite,
+      tags,
     } = testData;
     let { message = '', meta = {} } = testData;
 
@@ -284,6 +285,7 @@ class Client {
       meta,
       links,
       overwrite,
+      tags,
       ...(rootSuiteId && { root_suite_id: rootSuiteId }),
     };
 
