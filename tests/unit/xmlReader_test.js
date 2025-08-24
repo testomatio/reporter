@@ -406,6 +406,43 @@ describe('XML Reader', () => {
     expect(tests[0].suite_title).to.include('ApiFeature');
   });
 
+  it('should parse NUnit parameterized tests correctly', () => {
+    const reader = new XmlReader({ lang: 'c#' });
+    const jsonData = reader.parse(path.join(dirname, 'data/nunit_parameterized.xml'));
+
+    expect(jsonData.status).to.eql('failed');
+    expect(jsonData.tests_count).to.eql(1); // Should be 1 test with 2 examples
+    expect(jsonData.tests.length).to.eql(1);
+
+    const test = jsonData.tests[0];
+    
+    // Should have examples array with 2 executions
+    expect(test.examples).to.be.an('array');
+    expect(test.examples.length).to.eql(2);
+    
+    // Verify test properties
+    expect(test.title).to.eql('PostCashTransactionOnCashierPageNew');
+    expect(test.suite_title).to.eql('Tests.NUnit_Tests.Billing.Cashier.CashierShiftScenariosNew');
+    expect(test.file).to.include('CashierShiftScenariosNew.cs');
+    expect(test.test_id).to.eql('566a9209');
+    
+    // Verify examples have correct parameters and statuses
+    const example1 = test.examples[0];
+    const example2 = test.examples[1];
+    
+    expect(example1.parameters[0]).to.eql('True');
+    expect(example1.status).to.eql('passed');
+    
+    expect(example2.parameters[0]).to.eql('False');
+    expect(example2.status).to.eql('failed');
+    
+    // Main test should have failed status (worst case)
+    expect(test.status).to.eql('failed');
+    
+    // Run time should be sum of both executions
+    expect(test.run_time).to.be.above(3000); // 1.432391 + 1.598833 seconds * 1000
+  });
+
   describe('#request', () => {
     before(function () {
       this.timeout(5000);

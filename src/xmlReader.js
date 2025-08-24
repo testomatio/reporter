@@ -332,12 +332,12 @@ class XmlReader {
         const existingTest = fqnMap.get(fqn);
         
         // For parameterized tests, merge as Examples
-        if (test.example) {
+        if (test.example && Array.isArray(test.example) && test.example.length > 0) {
           // Initialize examples array if it doesn't exist
           if (!existingTest.examples) {
             existingTest.examples = [];
-            // Add the existing test's example as the first item
-            if (existingTest.example) {
+            // Add the existing test's example as the first item if it has parameters
+            if (existingTest.example && Array.isArray(existingTest.example) && existingTest.example.length > 0) {
               existingTest.examples.push({
                 parameters: existingTest.example,
                 status: existingTest.status,
@@ -345,6 +345,8 @@ class XmlReader {
                 message: existingTest.message,
                 stack: existingTest.stack
               });
+              // Clear the main test's example since it's now in examples array
+              delete existingTest.example;
             }
           }
           
@@ -367,15 +369,6 @@ class XmlReader {
           // Update total run time
           existingTest.run_time = (existingTest.run_time || 0) + (test.run_time || 0);
           
-          // Merge stack traces if they're different
-          if (test.stack && test.stack !== existingTest.stack) {
-            existingTest.stack = existingTest.stack + '\n\n---\n\n' + test.stack;
-          }
-          
-          // Merge messages if they're different
-          if (test.message && test.message !== existingTest.message) {
-            existingTest.message = existingTest.message + '; ' + test.message;
-          }
         } else {
           // Merge test properties for non-parameterized tests, prioritizing Test Explorer structure
           if (test.test_id && !existingTest.test_id) {
@@ -393,11 +386,19 @@ class XmlReader {
         // Prefer Test Explorer structure (longer, more complete suite_title)
         if (test.suite_title && test.suite_title.length > existingTest.suite_title.length) {
           existingTest.suite_title = test.suite_title;
+        }
+        
+        // Always use the source file path if available
+        if (test.file && test.file.endsWith('.cs')) {
+          existingTest.file = test.file;
+        } else if (!existingTest.file || !existingTest.file.endsWith('.cs')) {
           existingTest.file = this.extractCsFileFromPath(test);
         }
       } else {
         // Fix file path to use proper .cs file names from source paths
-        test.file = this.extractCsFileFromPath(test);
+        if (!test.file || !test.file.endsWith('.cs')) {
+          test.file = this.extractCsFileFromPath(test);
+        }
         fqnMap.set(fqn, test);
       }
     });
@@ -706,12 +707,23 @@ function reduceTestCases(prev, item) {
       // Store original test name for parameter extraction
       const originalTestName = testCaseItem.name || testCaseItem.methodname;
       
-      const exampleMatches = originalTestName?.match(/\((.*?)\)$/);
-      if (exampleMatches) {
-        // Extract and store parameters as Examples
-        const parameterValues = exampleMatches[1].split(',').map(v => v.trim().replace(/['"]/g, ''));
-        example = { ...parameterValues };
-        title = title.replace(/\(.*?\)/, '').trim();
+      // Handle NUnit-style arguments from <arguments> element
+      if (testCaseItem.arguments && testCaseItem.arguments.arg) {
+        const args = Array.isArray(testCaseItem.arguments.arg) 
+          ? testCaseItem.arguments.arg 
+          : [testCaseItem.arguments.arg];
+        example = args; // Store as array instead of object
+        // Remove parameters from title for NUnit tests
+        title = (testCaseItem.methodname || title).replace(/\(.*?\)/, '').trim();
+      } else {
+        // Fallback to parsing parameters from test name (SpecFlow, etc.)
+        const exampleMatches = originalTestName?.match(/\((.*?)\)$/);
+        if (exampleMatches) {
+          // Extract and store parameters as Examples
+          const parameterValues = exampleMatches[1].split(',').map(v => v.trim().replace(/['"]/g, ''));
+          example = parameterValues;
+          title = title.replace(/\(.*?\)/, '').trim();
+        }
       }
 
       stack = `${
@@ -778,10 +790,18 @@ function reduceTestCases(prev, item) {
 
 function extractSourceFilePath(testCaseItem, item) {
   // Priority order for file path extraction to match Test Explorer structure:
-  // 1. fullname (contains full project path)
-  // 2. filepath (direct file path)
+  // 1. filepath attribute (direct .cs file path from NUnit)
+  // 2. fullname (contains full project path)
   // 3. file attribute from test case
   // 4. package (fallback)
+  
+  // NUnit provides filepath attribute with actual .cs file path - use this first
+  if (item.filepath) {
+    // Clean up Windows/Unix path separators and ensure proper format
+    return item.filepath.replace(/\\/g, '/');
+  }
+  
+  if (testCaseItem.file) return testCaseItem.file.replace(/\\/g, '/');
   
   if (item.fullname) {
     // Extract actual file path from fullname if it contains path separators
@@ -795,9 +815,7 @@ function extractSourceFilePath(testCaseItem, item) {
     }
   }
   
-  if (item.filepath) return item.filepath;
-  if (testCaseItem.file) return testCaseItem.file;
-  if (item.package) return item.package;
+  if (item.package) return item.package.replace(/\\/g, '/');
   
   // Fallback: construct from classname
   if (testCaseItem.classname) {
