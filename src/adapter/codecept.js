@@ -56,19 +56,20 @@ function CodeceptReporter(config) {
 
   output.debug = function(msg) {
     originalOutput.debug(msg);
-    dataStorage.putData('log', repeat(this.stepShift) + pc.cyan(msg.toString()));
+    dataStorage.putData('log', repeat(this?.stepShift || 0) + pc.cyan(msg.toString()));
   };
 
   output.say = function(message, color = 'cyan') {
     originalOutput.say(message, color);
-    const sayMsg = repeat(this.stepShift) + `  ${pc.bold(pc[color](message))}`;
+    const sayMsg = repeat(this?.stepShift || 0) + `  ${pc.bold(pc[color](message))}`;
     dataStorage.putData('log', sayMsg);
   };
 
   output.log = function(msg) {
     originalOutput.log(msg);
-    dataStorage.putData('log', repeat(this.stepShift) + pc.gray(msg));
+    dataStorage.putData('log', repeat(this?.stepShift || 0) + pc.gray(msg));
   };
+  output.stepShift = 0;
 
   recorder.startUnlessRunning();
 
@@ -162,7 +163,7 @@ function CodeceptReporter(config) {
     const manuallyAttachedArtifacts = services.artifacts.get(test.fullTitle());
     const keyValues = services.keyValues.get(test.fullTitle());
     const stepHierarchy = buildUnifiedStepHierarchy(test.steps, hookSteps);
-    const labels = services.labels.get(test.fullTitle());
+    const links = services.links.get(test.fullTitle());
 
     services.setContext(null);
 
@@ -177,7 +178,7 @@ function CodeceptReporter(config) {
       files,
       steps: stepHierarchy, // Array of step objects per API schema
       logs,
-      labels,
+      links,
       manuallyAttachedArtifacts,
       meta: { ...keyValues, ...test.meta },
     });

@@ -53,7 +53,7 @@ const parseSuite = suiteTitle => {
  */
 const validateSuiteId = suiteId => {
   if (!suiteId) return null;
-  
+
   const match = suiteId.match(SUITE_ID_REGEX);
   return match ? match[0] : null;
 };
@@ -273,7 +273,7 @@ const fileSystem = {
 const foundedTestLog = (app, tests) => {
   const n = tests.length;
 
-  return n === 1 ? console.log(app, `✅ We found one test!`) : console.log(app, `✅ We found ${n} tests!`);
+  return console.log(app, `✅ We found ${n === 1 ? 'one test' : `${n} tests`} in Testomat.io!`);
 };
 
 const humanize = text => {
@@ -354,12 +354,14 @@ function storeRunId(runId) {
 }
 
 /**
- * 
+ *
  * @returns {String|null} latest run ID
  */
 function readLatestRunId() {
   try {
     const filePath = path.join(os.tmpdir(), `testomatio.latest.run`);
+    if (!fs.existsSync(filePath)) return null;
+    
     const stats = fs.statSync(filePath);
     const diff = +new Date() - +stats.mtime;
     const diffHours = diff / 1000 / 60 / 60;

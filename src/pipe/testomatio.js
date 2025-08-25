@@ -118,7 +118,7 @@ class TestomatioPipe {
       const resp = await this.client.request({
         method: 'GET',
         url: '/api/test_grep',
-        params: q
+        ...q,
       });
 
       if (Array.isArray(resp.data?.tests) && resp.data?.tests?.length > 0) {

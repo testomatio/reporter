@@ -69,9 +69,13 @@ function parseFilterParams(opts) {
  *                            Returns undefined if the type is not valid.
  */
 function updateFilterType(type) {
-  const typeLowerCase = type.toLowerCase();
+  let typeLowerCase = type.toLowerCase();
 
-  const filterTypes = ['tag-name', 'plan-id', 'label', 'jira-ticket'];
+  const filterTypes = ['tag-name', 'plan', 'label', 'jira-ticket'];
+
+  if (typeLowerCase === 'plan-id') {
+    typeLowerCase = 'plan';
+  }
 
   const filterApi = [
     'tag',
