@@ -53,9 +53,7 @@ class WebdriverReporter extends WDIOReporter {
   onTestEnd(test) {
     test.suite = test.parent;
     const logs = getTestLogs(test.fullTitle);
-    // TODO: FIX: artifacts for some reason leads to empty report on Testomat.io
-    // ^ not reproduced anymore (Jul 2025)
-    // but still be under investigation
+    // still be under investigation
     const artifacts = services.artifacts.get(test.fullTitle);
     const keyValues = services.keyValues.get(test.fullTitle);
     test.logs = logs;
