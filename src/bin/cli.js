@@ -15,6 +15,12 @@ import { filesize as prettyBytes } from 'filesize';
 import dotenv from 'dotenv';
 import Replay from '../replay.js';
 
+// coverage option imports
+import fs from 'fs';
+import path from 'path';
+import { execSync } from 'child_process';
+import yaml from 'js-yaml';
+
 const debug = createDebugMessages('@testomatio/reporter:xml-cli');
 const version = getPackageVersion();
 console.log(pc.cyan(pc.bold(` 🤩 Testomat.io Reporter v${version}`)));
@@ -69,6 +75,188 @@ program
       process.exit(0);
     });
   });
+
+program
+  .command('run')
+  .alias('coverage')
+  .description('Run tests by the specified coverage file')
+  .argument('<command>', 'Test runner command')
+  .option('--coverage <filename>', 'Test Coverage Execution based on the relates GIT changes')
+  .action(async (command, opts) => {
+    const { coverage } = opts;
+
+    const apiKey = process.env['INPUT_TESTOMATIO-KEY'] || config.TESTOMATIO;
+    const formattedDate = new Date().toISOString().replace(/T/, '-').replace(/:/g, '-').split('.')[0];
+    const title = process.env.TESTOMATIO_TITLE || `Test Coverage Execution - ${formattedDate}`;
+
+    if (!command || !command.split) {
+      console.log(APP_PREFIX, `No command provided. Use -c option to launch a test runner.`);
+      return process.exit(255);
+    }
+
+    const client = new TestomatClient({ apiKey, title, parallel: true });
+
+    // TODO: Think about a separate pipe for coverage
+    if (coverage) {
+      // Check if the coverage file path actually exists on the filesystem
+      // TODO: All operation to coverage file -> to separate coverage-pipe.js
+      if (!fs.existsSync(coverage)) {
+        console.log('❌ Coverage file not found:', coverage);
+        return;
+      }
+
+      // Ensure the given path is a file (not a directory or other type)
+      const stat = fs.statSync(coverage);
+      if (!stat.isFile()) {
+        console.log('❌ Provided coverage path is not a file:', coverage);
+        return;
+      }
+
+      // Validate the file extension to be ".yml" to ensure it's a YAML file
+      if (path.extname(coverage) !== ".yml") {
+        console.log('❌ Coverage file must have a .yml extension:', coverage);
+        return;
+      }
+
+      let parsedCoverage, changedFiles;
+
+      try {
+        // Read the contents of the YAML file and attempt to parse the YAML into a JavaScript object
+        const rawYml = fs.readFileSync(coverage, 'utf8');
+        parsedCoverage = yaml.load(rawYml);
+      } 
+      catch (e) {
+        console.error('❌ Failed to parse YAML:', e.message);
+        return;
+      }
+
+      // Step 1: Get Git changed files
+      // TODO: Next step: in future we can switch to get diff between master (or any stable branch) with current branch
+      try {
+        changedFiles = execSync('git diff --name-only', { encoding: 'utf-8' })
+          .split('\n')
+          .filter(Boolean);
+      } 
+      catch (err) {
+        console.error('❌ Failed to get git changed files:', err.message);
+        return;
+      }
+
+      // Step 2: Prepare coverage file test IDs
+      const tests = new Set();
+      const suiteIds = new Set();
+      const tagLabels = new Set();
+      // TODO: for future updates: by label, plan...
+      // const labels = new Set();
+
+      const coverageEntries = parsedCoverage.files || {};
+      const matchedLines = new Set(); //TODO: need to check by changed file folder like "app/db" NOT be file "app/db/user.db"
+
+      changedFiles.forEach(changedFile => {
+        for (const [pattern, ids] of Object.entries(coverageEntries)) {
+          const normalizedPattern = pattern.replace('*', ''); //TODO:: sweatch to get all subfolder/subfile list???
+          if (changedFile.startsWith(normalizedPattern)) {
+            matchedLines.add(changedFile);
+            ids.forEach(id => {
+              // Example: "@Tt74099t1"
+              if (id.startsWith('@T')) {
+                tests.add(id.slice(2));
+              } 
+              // Example: "@Sd74099c1"
+              else if (id.startsWith('@S')) {
+                suiteIds.add(id.slice(2));
+              }
+              // Example: "tag:@TestSmoke"
+              else if (id.startsWith('tag')) {
+                tagLabels.add(id.split(':')[1].slice(1));
+              }
+            });
+          }
+        }
+      });
+
+      if (matchedLines.size === 0) {
+        console.log('ℹ️ Your config does not have corresponding lines for current Git changes.');
+        return;
+      }
+
+      // Step 3.1: Resolve tag test IDs via server
+      try { //TODO: move to a separate function to avoid duplication for each type of pipeOptions
+        const tagPromises = [...tagLabels].map(tag =>
+          client.prepareRun({ pipe: "testomatio", pipeOptions: `tag-name=${tag}` }) // OR use as in filter: tag-name=smoke
+            .then(tagTests => {
+              if (Array.isArray(tagTests) && tagTests.length > 0) {
+                tagTests.forEach(testId => tests.add(testId));
+              }
+              else {
+                console.log(APP_PREFIX, `🔍 No test by tag-name=${tag} were found on the server side`);
+              }
+            })
+        );
+      
+        await Promise.all(tagPromises);
+      } 
+      catch (err) {
+        console.log(APP_PREFIX, `❌ Failed to retrieve the list of TAGGED tests: ${err}`);
+      }
+
+      // // Step 3.2: Resolve suite test IDs via server
+      // // TODO: need to double-check on the server side!!! by server code
+      // I found this list of types = ['tag-name', 'plan', 'label', 'jira-ticket'];
+      // try {
+      //   const suitePromises = [...suiteIds].map(suiteId =>
+      //     client.prepareRun({ pipe: "testomatio", pipeOptions: `suite=${suiteId}` }) //TODO: if suite= can be parsed by server???
+      //       .then(suiteTests => {
+      //         if (Array.isArray(suiteTests) && suiteTests.length > 0) {
+      //           suiteTests.forEach(testId => tests.add(testId));
+      //         }
+      //         else {
+      //           console.log(APP_PREFIX, `🔍 No tests by suite=${suiteId} were found on the server side`);
+      //         }
+      //       })
+      //   );
+      
+      //   await Promise.all(suitePromises);
+      // } 
+      // catch (err) {
+      //   console.log(APP_PREFIX, `❌ Failed to retrieve the list of SUITE's tests: ${err}`);
+      // }
+
+      if (tests.size > 0) {
+        command += ` --grep (${[...tests].join('|')})`;
+      }
+      else {
+        console.log(APP_PREFIX, pc.green('Sorry: 🔍 No tests were found to execute by your git/coverage request!'));
+        return;
+      }
+    }
+
+    console.log(APP_PREFIX, `🚀 Running`, pc.green(command)); // TODO: in this case need to test "command" variable
+    console.log("Debug command text:", command.split(' ')); // TODO: in this case need to test "command" variable
+
+    // TODO: uncomment after first phase testing!!!
+    // const runTests = async () => { //TODO: move to a separate function to avoid code duplication vs --filter case???
+    //   const testCmds = command.split(' ');
+    //   const cmd = spawn(testCmds[0], testCmds.slice(1), { stdio: 'inherit' });
+
+    //   cmd.on('close', async code => {
+    //     const emoji = code === 0 ? '🟢' : '🔴';
+    //     console.log(APP_PREFIX, emoji, `Runner exited with ${pc.bold(code)}`);
+    //     if (apiKey) {
+    //       const status = code === 0 ? 'passed' : 'failed';
+    //       await client.updateRunStatus(status, true);
+    //     }
+    //     process.exit(code);
+    //   });
+    // };
+
+    // if (apiKey) {
+    //   await client.createRun().then(runTests);
+    // } else {
+    //   await runTests(); //TODO: why we use this code???
+    // }
+  }
+);
 
 program
   .command('run')
