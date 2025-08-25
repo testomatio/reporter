@@ -89,7 +89,6 @@ describe('HTML report tests', () => {
       htmlPipe.buildReport({
         runParams: {
           status: 'failed',
-          parallel: 'false',
         },
         tests: DATA.tests,
         outputPath: filepath,

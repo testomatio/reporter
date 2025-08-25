@@ -85,7 +85,7 @@ program
       return process.exit(255);
     }
 
-    const client = new TestomatClient({ apiKey, title, parallel: true });
+    const client = new TestomatClient({ apiKey, title });
 
     if (opts.filter) {
       const [pipe, ...optsArray] = opts.filter.split(':');
@@ -105,14 +105,17 @@ program
 
     const runTests = async () => {
       const testCmds = command.split(' ');
-      const cmd = spawn(testCmds[0], testCmds.slice(1), { stdio: 'inherit' });
+      const cmd = spawn(testCmds[0], testCmds.slice(1), {
+        stdio: 'inherit',
+        env: { ...process.env, TESTOMATIO_PROCEED: 'true', runId: client.runId },
+      });
 
       cmd.on('close', async code => {
         const emoji = code === 0 ? '🟢' : '🔴';
         console.log(APP_PREFIX, emoji, `Runner exited with ${pc.bold(code)}`);
         if (apiKey) {
           const status = code === 0 ? 'passed' : 'failed';
-          await client.updateRunStatus(status, true);
+          await client.updateRunStatus(status);
         }
         process.exit(code);
       });
@@ -310,13 +313,13 @@ program
       const replayService = new Replay({
         apiKey: config.TESTOMATIO,
         dryRun: opts.dryRun,
-        onLog: (message) => console.log(APP_PREFIX, message),
-        onError: (message) => console.error(APP_PREFIX, '⚠️ ', message),
+        onLog: message => console.log(APP_PREFIX, message),
+        onError: message => console.error(APP_PREFIX, '⚠️ ', message),
         onProgress: ({ current, total }) => {
           if (current % 10 === 0 || current === total) {
             console.log(APP_PREFIX, `📊 Progress: ${current}/${total} tests processed`);
           }
-        }
+        },
       });
 
       const result = await replayService.replay(debugFile);
