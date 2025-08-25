@@ -66,7 +66,7 @@ program
       return;
     }
 
-    const client = new TestomatClient({ apiKey, title, parallel: true });
+    const client = new TestomatClient({ apiKey, title });
 
     if (filter) {
       const [pipe, ...optsArray] = filter.split(':');
@@ -90,7 +90,10 @@ program
     console.log(APP_PREFIX, `🚀 Running`, pc.green(command));
 
     if (!apiKey) {
-      const cmd = spawn(testCmds[0], testCmds.slice(1), { stdio: 'inherit' });
+      const cmd = spawn(testCmds[0], testCmds.slice(1), {
+        stdio: 'inherit',
+        env: { ...process.env, TESTOMATIO_PROCEED: 'true', runId: client.runId },
+      });
 
       cmd.on('close', code => {
         console.log(APP_PREFIX, '⚠️ ', `Runner exited with ${pc.bold(code)}, report is ignored`);
@@ -103,13 +106,16 @@ program
     }
 
     client.createRun().then(() => {
-      const cmd = spawn(testCmds[0], testCmds.slice(1), { stdio: 'inherit' });
+      const cmd = spawn(testCmds[0], testCmds.slice(1), {
+        stdio: 'inherit',
+        env: { ...process.env, TESTOMATIO_PROCEED: 'true', runId: client.runId },
+      });
 
       cmd.on('close', code => {
         const emoji = code === 0 ? '🟢' : '🔴';
         console.log(APP_PREFIX, emoji, `Runner exited with ${pc.bold(code)}`);
         const status = code === 0 ? 'passed' : 'failed';
-        client.updateRunStatus(status, true);
+        client.updateRunStatus(status);
 
         if (code > exitCode) exitCode = code;
         process.exitCode = exitCode;

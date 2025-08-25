@@ -240,7 +240,7 @@ export class Replay {
       }
     }
 
-    await client.updateRunStatus(finishParams.status || STATUS.FINISHED, finishParams.parallel || false);
+    await client.updateRunStatus(finishParams.status || STATUS.FINISHED);
 
     const result = {
       success: true,

@@ -43,7 +43,6 @@ class TestomatioPipe {
     const proxyUrl = process.env.HTTP_PROXY || process.env.HTTPS_PROXY;
     const proxy = proxyUrl ? new URL(proxyUrl) : null;
 
-    this.parallel = params.parallel;
     this.store = store || {};
     this.title = params.title || process.env.TESTOMATIO_TITLE;
     this.sharedRun = !!process.env.TESTOMATIO_SHARED_RUN;
@@ -167,7 +166,6 @@ class TestomatioPipe {
     const runParams = Object.fromEntries(
       Object.entries({
         ci_build_url: buildUrl,
-        parallel: this.parallel,
         api_key: this.apiKey.trim(),
         group_title: this.groupTitle,
         access_event: accessEvent,
@@ -419,14 +417,13 @@ class TestomatioPipe {
       console.warn(`${APP_PREFIX} ${errorMessage}`);
     }
 
-    const { status, parallel } = params;
+    const { status } = params;
 
     let status_event;
 
     if (status === STATUS.FINISHED) status_event = 'finish';
     if (status === STATUS.PASSED) status_event = 'pass';
     if (status === STATUS.FAILED) status_event = 'fail';
-    if (parallel) status_event += '_parallel';
 
     try {
       if (this.runId && !this.proceed) {
