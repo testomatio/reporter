@@ -77,7 +77,7 @@ program
   });
 
 program
-  .command('run')
+  .command('run-coverage')
   .alias('coverage')
   .description('Run tests by the specified coverage file')
   .argument('<command>', 'Test runner command')
@@ -97,59 +97,87 @@ program
     const client = new TestomatClient({ apiKey, title, parallel: true });
 
     // TODO: Think about a separate pipe for coverage
+    // TODO: All operation to coverage file -> to separate coverage-pipe.js
     if (coverage) {
-      // Check if the coverage file path actually exists on the filesystem
-      // TODO: All operation to coverage file -> to separate coverage-pipe.js
-      if (!fs.existsSync(coverage)) {
-        console.log('❌ Coverage file not found:', coverage);
-        return;
-      }
+      // Example: 'filepath:coverage.yml,branch:master'
+      const options = Object.fromEntries(
+        coverage
+          .split(',')                          // example: [ 'filepath:coverage.yml', 'branch:master' ]
+          .map(option => option.split(':'))    // example: [key, value]
+      );
 
-      // Ensure the given path is a file (not a directory or other type)
-      const stat = fs.statSync(coverage);
-      if (!stat.isFile()) {
-        console.log('❌ Provided coverage path is not a file:', coverage);
-        return;
-      }
-
-      // Validate the file extension to be ".yml" to ensure it's a YAML file
-      if (path.extname(coverage) !== ".yml") {
-        console.log('❌ Coverage file must have a .yml extension:', coverage);
-        return;
-      }
-
-      let parsedCoverage, changedFiles;
-
-      try {
-        // Read the contents of the YAML file and attempt to parse the YAML into a JavaScript object
-        const rawYml = fs.readFileSync(coverage, 'utf8');
-        parsedCoverage = yaml.load(rawYml);
-      } 
-      catch (e) {
-        console.error('❌ Failed to parse YAML:', e.message);
-        return;
-      }
+      const { filepath: coverageFilePath } = options
+      let parsedCoverage, changedFiles;      
 
       // Step 1: Get Git changed files
       // TODO: Next step: in future we can switch to get diff between master (or any stable branch) with current branch
+      // => if changedFiles = empty list -> log(current brunch don't have any changed files) - for now!
       try {
-        changedFiles = execSync('git diff --name-only', { encoding: 'utf-8' })
+        changedFiles = execSync('git diff --name-only', { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'ignore'] })
           .split('\n')
           .filter(Boolean);
       } 
       catch (err) {
-        console.error('❌ Failed to get git changed files:', err.message);
+        const errorMessage = err.message || '';
+        // Git edge case-1: Not a git repository or other error
+        if (errorMessage.includes('Not a git repository')) {
+          console.error(APP_PREFIX, '❌ Error: This folder is not a Git repository.');
+        }
+        else {
+          console.error(APP_PREFIX, '❌ Failed to get Git changed files:', errorMessage);
+        }
+
         return;
       }
 
-      // Step 2: Prepare coverage file test IDs
+      // Git edge case-2: No git diff changed files
+      if (changedFiles.length === 0) {
+        console.log(APP_PREFIX, 'ℹ️ No Git changed files detected. Skipping coverage processing.');
+        return;
+      }
+
+      console.log(APP_PREFIX, `📑 GIT changed files:\n  - ${changedFiles.join('\n  - ')}`);
+
+      // Step 2: Check if the coverage file path actually exists on the filesystem
+      // Validate the presence of the coverage filepath
+      if (!coverageFilePath || !fs.existsSync(coverageFilePath)) {
+        console.log(APP_PREFIX, '❌ Coverage file not found:', coverageFilePath);
+        return;
+      }
+
+      // Ensure the given path is a file (not a directory or other type)
+      const stat = fs.statSync(coverageFilePath);
+      if (!stat.isFile()) {
+        console.log(APP_PREFIX, '❌ Provided coverage path is not a file:', coverageFilePath);
+        return;
+      }
+
+      // Validate the file extension to be ".yml" to ensure it's a YAML file
+      if (path.extname(coverageFilePath) !== ".yml") {
+        console.log(APP_PREFIX, '❌ Coverage file must have a .yml extension:', coverageFilePath);
+        return;
+      }
+
+      try {
+        // Read the contents of the YAML file and attempt to parse the YAML into a JavaScript object
+        const rawYml = fs.readFileSync(coverageFilePath, 'utf8');
+        parsedCoverage = yaml.load(rawYml);
+      } 
+      catch (e) {
+        console.error(APP_PREFIX, '❌ Failed to parse YAML:', e.message);
+        return;
+      }
+
+      console.log(APP_PREFIX, '✅ Coverage file found at:', coverageFilePath);
+
+      // Step 3: Prepare coverage test IDs
       const tests = new Set();
       const suiteIds = new Set();
       const tagLabels = new Set();
-      // TODO: for future updates: by label, plan...
-      // const labels = new Set();
 
-      const coverageEntries = parsedCoverage.files || {};
+      // const coverageEntries = parsedCoverage.files || {}; OLD version???
+      const coverageEntries = parsedCoverage || {};
+
       const matchedLines = new Set(); //TODO: need to check by changed file folder like "app/db" NOT be file "app/db/user.db"
 
       changedFiles.forEach(changedFile => {
@@ -160,11 +188,11 @@ program
             ids.forEach(id => {
               // Example: "@Tt74099t1"
               if (id.startsWith('@T')) {
-                tests.add(id.slice(2));
+                tests.add(id.slice(1));
               } 
               // Example: "@Sd74099c1"
               else if (id.startsWith('@S')) {
-                suiteIds.add(id.slice(2));
+                suiteIds.add(id.slice(2)); //TODO: without "S"???
               }
               // Example: "tag:@TestSmoke"
               else if (id.startsWith('tag')) {
@@ -176,7 +204,7 @@ program
       });
 
       if (matchedLines.size === 0) {
-        console.log('ℹ️ Your config does not have corresponding lines for current Git changes.');
+        console.log(APP_PREFIX, 'ℹ️ Your config does not have corresponding lines for current Git changes.');
         return;
       }
 
@@ -200,27 +228,25 @@ program
         console.log(APP_PREFIX, `❌ Failed to retrieve the list of TAGGED tests: ${err}`);
       }
 
-      // // Step 3.2: Resolve suite test IDs via server
-      // // TODO: need to double-check on the server side!!! by server code
-      // I found this list of types = ['tag-name', 'plan', 'label', 'jira-ticket'];
-      // try {
-      //   const suitePromises = [...suiteIds].map(suiteId =>
-      //     client.prepareRun({ pipe: "testomatio", pipeOptions: `suite=${suiteId}` }) //TODO: if suite= can be parsed by server???
-      //       .then(suiteTests => {
-      //         if (Array.isArray(suiteTests) && suiteTests.length > 0) {
-      //           suiteTests.forEach(testId => tests.add(testId));
-      //         }
-      //         else {
-      //           console.log(APP_PREFIX, `🔍 No tests by suite=${suiteId} were found on the server side`);
-      //         }
-      //       })
-      //   );
+      // Step 3.2: Resolve suite test IDs via server
+      try {
+        const suitePromises = [...suiteIds].map(suiteId =>
+          client.prepareRun({ pipe: "testomatio", pipeOptions: `suite=${suiteId}` }) //TODO: if suite= can be parsed by server???
+            .then(suiteTests => {
+              if (Array.isArray(suiteTests) && suiteTests.length > 0) {
+                suiteTests.forEach(testId => tests.add(testId));
+              }
+              else {
+                console.log(APP_PREFIX, `🔍 No tests by suite=${suiteId} were found on the server side`);
+              }
+            })
+        );
       
-      //   await Promise.all(suitePromises);
-      // } 
-      // catch (err) {
-      //   console.log(APP_PREFIX, `❌ Failed to retrieve the list of SUITE's tests: ${err}`);
-      // }
+        await Promise.all(suitePromises);
+      } 
+      catch (err) {
+        console.log(APP_PREFIX, `❌ Failed to retrieve the list of SUITE's tests: ${err}`);
+      }
 
       if (tests.size > 0) {
         command += ` --grep (${[...tests].join('|')})`;
@@ -232,7 +258,7 @@ program
     }
 
     console.log(APP_PREFIX, `🚀 Running`, pc.green(command)); // TODO: in this case need to test "command" variable
-    console.log("Debug command text:", command.split(' ')); // TODO: in this case need to test "command" variable
+    console.log("Debug command text:", command.split(' ')); // TODO: REMOVE after testingin this case need to test "command" variable
 
     // TODO: uncomment after first phase testing!!!
     // const runTests = async () => { //TODO: move to a separate function to avoid code duplication vs --filter case???
@@ -281,6 +307,7 @@ program
 
       try {
         const tests = await client.prepareRun({ pipe, pipeOptions });
+        // TODO: add case if NO tests found -> return; ???
         if (tests && tests.length > 0) {
           command += ` --grep (${tests.join('|')})`;
         }
@@ -291,26 +318,26 @@ program
 
     console.log(APP_PREFIX, `🚀 Running`, pc.green(command));
 
-    const runTests = async () => {
-      const testCmds = command.split(' ');
-      const cmd = spawn(testCmds[0], testCmds.slice(1), { stdio: 'inherit' });
+    // const runTests = async () => {
+    //   const testCmds = command.split(' ');
+    //   const cmd = spawn(testCmds[0], testCmds.slice(1), { stdio: 'inherit' });
 
-      cmd.on('close', async code => {
-        const emoji = code === 0 ? '🟢' : '🔴';
-        console.log(APP_PREFIX, emoji, `Runner exited with ${pc.bold(code)}`);
-        if (apiKey) {
-          const status = code === 0 ? 'passed' : 'failed';
-          await client.updateRunStatus(status, true);
-        }
-        process.exit(code);
-      });
-    };
+    //   cmd.on('close', async code => {
+    //     const emoji = code === 0 ? '🟢' : '🔴';
+    //     console.log(APP_PREFIX, emoji, `Runner exited with ${pc.bold(code)}`);
+    //     if (apiKey) {
+    //       const status = code === 0 ? 'passed' : 'failed';
+    //       await client.updateRunStatus(status, true);
+    //     }
+    //     process.exit(code);
+    //   });
+    // };
 
-    if (apiKey) {
-      await client.createRun().then(runTests);
-    } else {
-      await runTests();
-    }
+    // if (apiKey) {
+    //   await client.createRun().then(runTests);
+    // } else {
+    //   await runTests();
+    // }
   });
 
 // program
