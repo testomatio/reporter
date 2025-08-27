@@ -15,7 +15,7 @@ module.exports = defineConfig({
   workers: 1,
   /* Reporter to use - only testomatio reporter */
   reporter: [
-    ['../../lib/adapter/playwright.js']
+    ['../../src/adapter/playwright.js']
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {

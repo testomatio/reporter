@@ -268,19 +268,6 @@ function extractTags(test) {
       tagsSet.add(normalizedTag);
     });
   }
-  
-  // Extract tags from suite/describe level (inherited tags)
-  let parent = test.parent;
-  while (parent) {
-    if (parent.tags && Array.isArray(parent.tags)) {
-      parent.tags.forEach(tag => {
-        const normalizedTag = typeof tag === 'string' ? tag.replace('@', '').toLowerCase() : String(tag).toLowerCase();
-        tagsSet.add(normalizedTag);
-      });
-    }
-    parent = parent.parent;
-  }
-  
   return Array.from(tagsSet);
 }
 

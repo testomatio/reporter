@@ -1,41 +1,6 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-
-// Import the extractTags function from the adapter
-// Note: We need to mock the test object structure since it's a private function
-function extractTags(test) {
-  const tagsSet = new Set();
-  
-  // Extract tags from test title (@tag format)
-  const titleTagsMatch = test.title.match(/@\w+/g);
-  if (titleTagsMatch) {
-    titleTagsMatch.forEach(tag => {
-      tagsSet.add(tag.replace('@', '').toLowerCase());
-    });
-  }
-  
-  // Extract tags from test.tags (Playwright built-in tags)
-  if (test.tags && Array.isArray(test.tags)) {
-    test.tags.forEach(tag => {
-      const normalizedTag = typeof tag === 'string' ? tag.replace('@', '').toLowerCase() : String(tag).toLowerCase();
-      tagsSet.add(normalizedTag);
-    });
-  }
-  
-  // Extract tags from suite/describe level (inherited tags)
-  let parent = test.parent;
-  while (parent) {
-    if (parent.tags && Array.isArray(parent.tags)) {
-      parent.tags.forEach(tag => {
-        const normalizedTag = typeof tag === 'string' ? tag.replace('@', '').toLowerCase() : String(tag).toLowerCase();
-        tagsSet.add(normalizedTag);
-      });
-    }
-    parent = parent.parent;
-  }
-  
-  return Array.from(tagsSet);
-}
+import { extractTags } from '../../src/adapter/playwright.js';
 
 describe('Playwright Tags Extraction', () => {
   describe('extractTags function', () => {
