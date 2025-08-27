@@ -461,13 +461,14 @@ function formatCodeceptStep(step) {
 function formatHookStep(step) {
   if (!step) return null;
 
-  // For hook steps, construct title from available properties
+  // For hook steps, construct title from available properties to match regular step format
   let title = step.name;
   if (step.actor && step.name) {
-    title = `${step.actor}.${step.name}`;
+    // Use space notation to match regular CodeceptJS step format (I expectEqual instead of I.expectEqual)
+    title = `${step.actor} ${step.name}`;
     if (step.args && step.args.length > 0) {
       const argsStr = step.args.map(arg => JSON.stringify(arg)).join(', ');
-      title += `(${argsStr})`;
+      title += ` ${argsStr}`;
     }
   }
 

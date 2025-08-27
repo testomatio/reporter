@@ -446,14 +446,14 @@ test.describe('Mixed Case Suite', { tag: ['@CRITICAL', '@smoke'] }, () => {
       const testContent = `
 import { test, expect } from '@playwright/test';
 
-test.describe('critical suite', { tag: ['critical'] }, () => {
+test.describe('critical suite', { tag: ['@critical'] }, () => {
   test('nested @smoke', async ({ page }) => {
     await page.goto('https://example.com');
     await expect(page).toHaveTitle(/Example/);
   });
 });
 
-test('case @ui', { tag: 'regression' }, async ({ page }) => {
+test('case @ui', { tag: '@regression' }, async ({ page }) => {
   await page.goto('https://example.com');
   await expect(page).toHaveTitle(/Example/);
 });`;

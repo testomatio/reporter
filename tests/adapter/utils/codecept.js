@@ -50,8 +50,21 @@ export class CodeceptTestRunner {
       stderr = error.stderr || '';
     }
     await new Promise(resolve => setTimeout(resolve, 1000));
-    if (!fs.existsSync(this.debugFilePath)) throw new Error('Debug file not found');
-    const debugContent = fs.readFileSync(this.debugFilePath, 'utf-8');
+    
+    // Find the most recent debug file instead of relying on symlink
+    const tmpFiles = fs.readdirSync(os.tmpdir())
+      .filter(f => f.startsWith('testomatio.debug.') && f.endsWith('.json') && !f.includes('latest'))
+      .map(f => ({
+        name: f,
+        path: path.join(os.tmpdir(), f),
+        mtime: fs.statSync(path.join(os.tmpdir(), f)).mtime.getTime()
+      }))
+      .sort((a, b) => b.mtime - a.mtime);
+
+    if (tmpFiles.length === 0) throw new Error('Debug file not found');
+    
+    const debugFilePath = tmpFiles[0].path;
+    const debugContent = fs.readFileSync(debugFilePath, 'utf-8');
     const debugData = debugContent.trim().split('\n').filter(line => line.trim()).map(line => JSON.parse(line));
     const testEntries = debugData.filter(entry => entry.action === 'addTest');
     return { stdout, stderr, debugData, testEntries };
