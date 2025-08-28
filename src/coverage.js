@@ -6,8 +6,6 @@ import yaml from 'js-yaml';
 import { minimatch } from 'minimatch';
 
 import { APP_PREFIX } from './constants.js';
-import TestomatClient from './client.js';
-import { config } from './config.js';
 
 const debug = createDebugMessages('@testomatio/reporter:coverage');
 
@@ -15,14 +13,10 @@ export default class Coverage {
     constructor(opts = {}) {
         this.coverageFilePath = opts.filepath || undefined;
         if (!this.coverageFilePath) throw new Error('Coverage file path must be provided.');
-        // this.coverageBranch = opts.branch || ""; for future
+        // this.coverageBranch = opts.branch || ""; TODO: for future
 
-        this.apiKey = opts.apiKey;
-        this.formattedDate = new Date().toISOString().replace(/T/, '-').replace(/:/g, '-').split('.')[0];
-        this.title = opts.title || `Test Coverage Execution - ${this.formattedDate}`;
         this.client = opts.client || undefined;
         if (!this.client) throw new Error('Client must be provided.');
-        // this.client = new TestomatClient({ apiKey: this.apiKey, title: this.title, parallel: true });
 
         this.parsedCoverage = {}
         this.changedFiles = [];
@@ -147,12 +141,15 @@ export default class Coverage {
     }
 
     getGrepCommand() {
-        if (this.tests.size === 0) {
+        //TODO: for Coverage v1 I get list of suiteIds & tests -> maybe I should get list of suite tests from the server in future???
+        const combinedTests = new Set([...this.tests, ...this.suiteIds]);
+
+        if (combinedTests.size === 0) {
           console.log(APP_PREFIX, 'ℹ️  No tests found for execution based on Git changes and coverage.');
           return;
         }
     
-        const grepPattern = [...this.tests].join('|');
+        const grepPattern = [...combinedTests].join('|');
         debug(`Full -grep command: --grep "(${grepPattern})"`);
 
         return ` --grep "(${grepPattern})"`; //TODO: or ` --grep (${grepPattern})` ???
@@ -160,7 +157,7 @@ export default class Coverage {
 
     async resolveTestIdsFromAttributes() {
         await this._resolveAttributeSet(this.tagLabels, 'tag-name');
-        // await this._resolveAttributeSet(this.suiteIds, 'suite'); // for the future
+        // await this._resolveAttributeSet(this.suiteIds, 'suite'); // for the future -> get list of all suite tests
     }    
 
     async _resolveAttributeSet(set, type) {

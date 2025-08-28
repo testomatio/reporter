@@ -72,24 +72,42 @@ program
   });
 
 program
-  .command('run-coverage')
-  .alias('coverage')
-  .description('Run tests by the specified coverage file')
+  .command('run')
+  .alias('test')
+  .description('Run tests with the specified command')
   .argument('<command>', 'Test runner command')
+  .option('--filter <filter>', 'Additional execution filter')
   .option('--coverage <filename>', 'Test Coverage Execution based on the relates GIT changes')
   .action(async (command, opts) => {
-    const { coverage } = opts;
     const apiKey = process.env['INPUT_TESTOMATIO-KEY'] || config.TESTOMATIO;
-    const title = process.env.TESTOMATIO_TITLE;
+    const formattedDate = new Date().toISOString().replace(/T/, '-').replace(/:/g, '-').split('.')[0];
+    const title = process.env.TESTOMATIO_TITLE || `Test Coverage Execution - ${formattedDate}`;
+
+    const { coverage, filter } = opts;
 
     if (!command || !command.split) {
       console.log(APP_PREFIX, `No command provided. Use -c option to launch a test runner.`);
       return process.exit(255);
     }
 
-    // TODO: Think about a separate pipe for coverage
-    // TODO: All operation to coverage file -> to separate coverage-pipe.js
-    if (coverage) {
+    const client = new TestomatClient({ apiKey, title, parallel: true });
+
+    if (filter) {
+      const [pipe, ...optsArray] = filter.split(':');
+      const pipeOptions = optsArray.join(':');
+
+      try {
+        const tests = await client.prepareRun({ pipe, pipeOptions });
+        // TODO: add case if NO tests found -> return; ???
+        if (tests && tests.length > 0) {
+          command += ` --grep (${tests.join('|')})`;
+        }
+      } catch (err) {
+        console.log(APP_PREFIX, err);
+      }
+    }
+
+    if (coverage) {      
       // Example: 'filepath:coverage.yml,branch:master'
       const options = Object.fromEntries(
         coverage
@@ -100,8 +118,7 @@ program
       try {
         const coverage = new Coverage({
           filepath: options.filepath,
-          apiKey,
-          title
+          client
         });
 
         // Step 1: Get Git changed files
@@ -125,88 +142,30 @@ program
       }
     }
 
-    console.log(APP_PREFIX, `🚀 Running`, pc.green(command)); // TODO: in this case need to test "command" variable
-    console.log("Debug command text:", command.split(' ')); // TODO: REMOVE after testing in this case need to test "command" variable
+    console.log(APP_PREFIX, `🚀 Running`, pc.green(command));
+    //TODO: Coverage Task - Step-1: finish in this place -> Next step => double check execute command by suite,tag,test_ids
     debug("Full command text:", command.split(' '));
 
-    // TODO: uncomment after first phase testing!!!
-    // const runTests = async () => { //TODO: move to a separate function to avoid code duplication vs --filter case???
-    //   const testCmds = command.split(' ');
-    //   const cmd = spawn(testCmds[0], testCmds.slice(1), { stdio: 'inherit' });
+    const runTests = async () => {
+      const testCmds = command.split(' ');
+      const cmd = spawn(testCmds[0], testCmds.slice(1), { stdio: 'inherit' });
 
-    //   cmd.on('close', async code => {
-    //     const emoji = code === 0 ? '🟢' : '🔴';
-    //     console.log(APP_PREFIX, emoji, `Runner exited with ${pc.bold(code)}`);
-    //     if (apiKey) {
-    //       const status = code === 0 ? 'passed' : 'failed';
-    //       await client.updateRunStatus(status, true);
-    //     }
-    //     process.exit(code);
-    //   });
-    // };
-
-    // if (apiKey) {
-    //   await client.createRun().then(runTests);
-    // } else {
-    //   await runTests(); //TODO: why we use this code???
-    // }
-  }
-);
-
-program
-  .command('run')
-  .alias('test')
-  .description('Run tests with the specified command')
-  .argument('<command>', 'Test runner command')
-  .option('--filter <filter>', 'Additional execution filter')
-  .action(async (command, opts) => {
-    const apiKey = process.env['INPUT_TESTOMATIO-KEY'] || config.TESTOMATIO;
-    const title = process.env.TESTOMATIO_TITLE;
-
-    if (!command || !command.split) {
-      console.log(APP_PREFIX, `No command provided. Use -c option to launch a test runner.`);
-      return process.exit(255);
-    }
-
-    const client = new TestomatClient({ apiKey, title, parallel: true });
-
-    if (opts.filter) {
-      const [pipe, ...optsArray] = opts.filter.split(':');
-      const pipeOptions = optsArray.join(':');
-
-      try {
-        const tests = await client.prepareRun({ pipe, pipeOptions });
-        // TODO: add case if NO tests found -> return; ???
-        if (tests && tests.length > 0) {
-          command += ` --grep (${tests.join('|')})`;
+      cmd.on('close', async code => {
+        const emoji = code === 0 ? '🟢' : '🔴';
+        console.log(APP_PREFIX, emoji, `Runner exited with ${pc.bold(code)}`);
+        if (apiKey) {
+          const status = code === 0 ? 'passed' : 'failed';
+          await client.updateRunStatus(status, true);
         }
-      } catch (err) {
-        console.log(APP_PREFIX, err);
-      }
+        process.exit(code);
+      });
+    };
+
+    if (apiKey) {
+      await client.createRun().then(runTests);
+    } else {
+      await runTests();
     }
-
-    console.log(APP_PREFIX, `🚀 Running`, pc.green(command));
-
-    // const runTests = async () => {
-    //   const testCmds = command.split(' ');
-    //   const cmd = spawn(testCmds[0], testCmds.slice(1), { stdio: 'inherit' });
-
-    //   cmd.on('close', async code => {
-    //     const emoji = code === 0 ? '🟢' : '🔴';
-    //     console.log(APP_PREFIX, emoji, `Runner exited with ${pc.bold(code)}`);
-    //     if (apiKey) {
-    //       const status = code === 0 ? 'passed' : 'failed';
-    //       await client.updateRunStatus(status, true);
-    //     }
-    //     process.exit(code);
-    //   });
-    // };
-
-    // if (apiKey) {
-    //   await client.createRun().then(runTests);
-    // } else {
-    //   await runTests();
-    // }
   });
 
 // program
