@@ -464,10 +464,10 @@ function formatHookStep(step) {
   // For hook steps, construct title from available properties
   let title = step.name;
   if (step.actor && step.name) {
-    title = `${step.actor}.${step.name}`;
+    title = `${step.actor} ${step.name}`;
     if (step.args && step.args.length > 0) {
       const argsStr = step.args.map(arg => JSON.stringify(arg)).join(', ');
-      title += `(${argsStr})`;
+      title += ` ${argsStr}`;
     }
   }
 
