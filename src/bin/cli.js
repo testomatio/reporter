@@ -81,7 +81,7 @@ program
   .action(async (command, opts) => {
     const apiKey = process.env['INPUT_TESTOMATIO-KEY'] || config.TESTOMATIO;
     const formattedDate = new Date().toISOString().replace(/T/, '-').replace(/:/g, '-').split('.')[0];
-    const title = process.env.TESTOMATIO_TITLE || `Test Coverage Execution - ${formattedDate}`;
+    const title = process.env.TESTOMATIO_TITLE || `Testomatio Test Execution - ${formattedDate}`;
 
     const { coverage, filter } = opts;
 
