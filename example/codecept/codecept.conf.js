@@ -28,6 +28,7 @@ exports.config = {
     testomat: {
       enabled: true,
       require: '../../lib/adapter/codecept',
+      apiKey: process.env.TESTOMATIO,
     },
   },
   // Multiple test execution configurations

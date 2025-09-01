@@ -184,6 +184,7 @@ class Client {
       links,
       manuallyAttachedArtifacts,
       overwrite,
+      tags,
     } = testData;
     let { message = '', meta = {} } = testData;
 
@@ -254,6 +255,7 @@ class Client {
       meta,
       links,
       overwrite,
+      tags,
       ...(rootSuiteId && { root_suite_id: rootSuiteId }),
     };
 
@@ -282,10 +284,9 @@ class Client {
    * Updates the status of the current test run and finishes the run.
    * @param {'passed' | 'failed' | 'skipped' | 'finished'} status - The status of the current test run.
    * Must be one of "passed", "failed", or "finished"
-   * @param {boolean} [isParallel] - Whether the current test run was executed in parallel with other tests.
    * @returns {Promise<any>} - A Promise that resolves when finishes the run.
    */
-  async updateRunStatus(status, isParallel = false) {
+  async updateRunStatus(status) {
     this.pipes ||= await pipesFactory(this.paramsForPipesFactory || {}, this.pipeStore);
     this.runId ||= readLatestRunId();
 
@@ -293,7 +294,7 @@ class Client {
     // all pipes disabled, skipping
     if (!this.pipes?.filter(p => p.isEnabled).length) return Promise.resolve();
 
-    const runParams = { status, parallel: isParallel };
+    const runParams = { status };
 
     this.queue = this.queue
       .then(() => Promise.all(this.pipes.map(p => p.finishRun(runParams))))

@@ -51,6 +51,9 @@ class PlaywrightReporter {
       }
     }
 
+    // Extract and normalize tags
+    const tags = extractTags(test);
+
     const fullTestTitle = getTestContextName(test);
     let logs = '';
     if (result.stderr.length || result.stdout.length) {
@@ -90,9 +93,10 @@ class PlaywrightReporter {
     const reportTestPromise = this.client.addTestRun(checkStatus(status), {
       rid: `${rid}-${project.name}`,
       error,
-      test_id: getTestomatIdFromTestTitle(`${title} ${test.tags?.join(' ')}`),
+      test_id: getTestomatIdFromTestTitle(`${title} ${tags.join(' ')}`),
       suite_title,
       title,
+      tags,
       steps: steps.length ? steps : undefined,
       time: duration,
       logs,
@@ -241,6 +245,32 @@ function generateTmpFilepath(filename = '') {
   filename = filename || `tmp.${crypto.randomBytes(16).toString('hex')}`;
   const tmpdir = os.tmpdir();
   return path.join(tmpdir, filename);
+}
+
+/**
+ * Extracts and normalizes tags from test title, test options, and suite level
+ * @param {*} test - testInfo object from Playwright
+ * @returns {string[]} - array of normalized tags
+ */
+function extractTags(test) {
+  const tagsSet = new Set();
+  
+  // Extract tags from test title (@tag format)
+  const titleTagsMatch = test.title.match(/@\w+/g);
+  if (titleTagsMatch) {
+    titleTagsMatch.forEach(tag => {
+      tagsSet.add(tag.replace('@', '').toLowerCase());
+    });
+  }
+  
+  // Extract tags from test.tags (Playwright built-in tags)
+  if (test.tags && Array.isArray(test.tags)) {
+    test.tags.forEach(tag => {
+      const normalizedTag = typeof tag === 'string' ? tag.replace('@', '').toLowerCase() : String(tag).toLowerCase();
+      tagsSet.add(normalizedTag);
+    });
+  }
+  return Array.from(tagsSet);
 }
 
 /**

@@ -8,7 +8,7 @@ By using external storage Testomat.io allows getting full control over how the s
 
 ## Set Up S3 Bucket
 
-To have test artifacts uploaded you need to create S3 Object Storage bucket on AWS, DigitalOcean, Azure, or Google Cloud Storage in interoperability mode.
+To have test artifacts uploaded you need to create S3 Object Storage bucket on AWS, DigitalOcean, or Google Cloud Storage in interoperability mode.
 
 > **⚠️ Important**
 >

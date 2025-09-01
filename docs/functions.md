@@ -132,7 +132,7 @@ test('Your test @T12345678', async () => {
 
 ## Label
 
-Adds a label to the reported test. Unlike `meta` label will be persisted to the test case itself, not just to reported run. Label should exist in Testomat.io to be added. You can pass also label value, if label was created as a custom field
+Adds a label to the reported test. Unlike `meta` label will be persisted to the test case itself, not just to reported run. If the label does not exist in Testomat.io, it will be automatically created and linked to the test case during the test run, or you can use existing labels in Testomat.io. You can pass also a label value, if the label was created as a custom field.
 
 ```javascript
 import { label } from '@testomatio/reporter';

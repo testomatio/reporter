@@ -99,13 +99,13 @@ describe('ReplayService', () => {
     it('should parse valid debug file with all data types', () => {
       const debugData = [
         { data: 'variables', testomatioEnvVars: { TESTOMATIO: 'test-key', TESTOMATIO_TITLE: 'Test Run' } },
-        { action: 'createRun', params: { title: 'Test Run', parallel: true } },
+        { action: 'createRun', params: { title: 'Test Run' } },
         { action: 'addTestsBatch', tests: [
           { id: 'test1', status: 'passed', title: 'Test 1' },
           { id: 'test2', status: 'failed', title: 'Test 2' }
         ]},
         { action: 'addTest', testId: { id: 'test3', status: 'passed', title: 'Test 3' } },
-        { actions: 'finishRun', params: { status: 'finished', parallel: true } }
+        { actions: 'finishRun', params: { status: 'finished' } }
       ];
 
       const fileContent = debugData.map(line => JSON.stringify(line)).join('\n');
@@ -114,8 +114,8 @@ describe('ReplayService', () => {
       const result = replayService.parseDebugFile(debugFile);
 
       expect(result.envVars).to.deep.equal({ TESTOMATIO: 'test-key', TESTOMATIO_TITLE: 'Test Run' });
-      expect(result.runParams).to.deep.equal({ title: 'Test Run', parallel: true });
-      expect(result.finishParams).to.deep.equal({ status: 'finished', parallel: true });
+      expect(result.runParams).to.deep.equal({ title: 'Test Run' });
+      expect(result.finishParams).to.deep.equal({ status: 'finished' });
       expect(result.tests).to.have.length(3);
       expect(result.tests[0]).to.deep.equal({ id: 'test1', status: 'passed', title: 'Test 1' });
       expect(result.tests[2]).to.deep.equal({ id: 'test3', status: 'passed', title: 'Test 3' });
@@ -221,8 +221,8 @@ describe('ReplayService', () => {
         return Promise.resolve();
       };
 
-      TestomatClient.prototype.updateRunStatus = function(status, parallel) {
-        mockClient.updateRunStatusCalls.push({ status, parallel });
+      TestomatClient.prototype.updateRunStatus = function(status) {
+        mockClient.updateRunStatusCalls.push({ status });
         return Promise.resolve();
       };
     });
@@ -302,7 +302,7 @@ describe('ReplayService', () => {
           { id: 'test1', status: 'passed', title: 'Test 1' },
           { id: 'test2', status: 'failed', title: 'Test 2' }
         ]},
-        { actions: 'finishRun', params: { status: 'finished', parallel: true } }
+        { actions: 'finishRun', params: { status: 'finished' } }
       ];
 
       fs.writeFileSync(debugFile, debugData.map(line => JSON.stringify(line)).join('\n'));
@@ -318,7 +318,7 @@ describe('ReplayService', () => {
       expect(mockClient.createRunCalled).to.be.true;
       expect(mockClient.addTestRunCalls).to.have.length(2);
       expect(mockClient.updateRunStatusCalls).to.have.length(1);
-      expect(mockClient.updateRunStatusCalls[0]).to.deep.equal({ status: 'finished', parallel: true });
+      expect(mockClient.updateRunStatusCalls[0]).to.deep.equal({ status: 'finished' });
     });
 
     it('should handle test upload failures gracefully', async () => {
@@ -388,7 +388,6 @@ describe('ReplayService', () => {
 
       expect(mockClient.updateRunStatusCalls[0]).to.deep.equal({ 
         status: STATUS.FINISHED, 
-        parallel: false 
       });
     });
 
@@ -562,8 +561,8 @@ describe('ReplayService', () => {
         return Promise.resolve();
       };
 
-      TestomatClient.prototype.updateRunStatus = function(status, parallel) {
-        mockClient.updateRunStatusCalls.push({ status, parallel });
+      TestomatClient.prototype.updateRunStatus = function(status) {
+        mockClient.updateRunStatusCalls.push({ status });
         return Promise.resolve();
       };
     });
@@ -608,7 +607,6 @@ describe('ReplayService', () => {
         { t: '+15ms', action: 'createRun', params: { 
           title: 'Real Test Run',
           env: 'staging',
-          parallel: true 
         }},
         { t: '+2000ms', action: 'addTestsBatch', tests: [
           {
@@ -634,7 +632,7 @@ describe('ReplayService', () => {
             ]
           }
         ]},
-        { t: '+3000ms', actions: 'finishRun', params: { status: 'finished', parallel: true } }
+        { t: '+3000ms', actions: 'finishRun', params: { status: 'finished' } }
       ];
 
       fs.writeFileSync(debugFile, debugData.map(line => JSON.stringify(line)).join('\n'));
