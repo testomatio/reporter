@@ -39,6 +39,12 @@ declare module '@testomatio/reporter' {
   export function linkTest(...testIds: string[]): void;
 
   /**
+   * Add JIRA issue link(s) to the test report
+   * @param jiraIds - JIRA issue IDs to link
+   */
+  export function linkJira(...jiraIds: string[]): void;
+
+  /**
    * Logger service for intercepting and managing logs
    */
   export const logger: Logger;
@@ -117,6 +123,7 @@ declare module '@testomatio/reporter' {
     step: typeof step;
     label: typeof label;
     linkTest: typeof linkTest;
+    linkJira: typeof linkJira;
   };
 
   export default _default;

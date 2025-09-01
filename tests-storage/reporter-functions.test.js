@@ -6,7 +6,6 @@ import { TESTOMAT_TMP_STORAGE_DIR } from '../lib/constants.js';
 import { fileSystem, removeColorCodes } from '../lib/utils/utils.js';
 import testomat from '../lib/reporter.js';
 import { keyValueStorage } from '../lib/services/key-values.js';
-import { labelStorage } from '../lib/services/labels.js';
 import { linkStorage } from '../lib/services/links.js';
 import { dataStorage, stringToMD5Hash } from '../lib/data-storage.js';
 
@@ -90,7 +89,7 @@ describe('Testomat reporter functions', () => {
 
   it('set multiple labels using testomat functions @T00000023', () => {
     dataStorage.setContext('@T00000023');
-    testomat.label('smoke');    
+    testomat.label('smoke');
     testomat.label('feature', 'login');
     const retrievedLinks = linkStorage.get('@T00000023');
     expect(retrievedLinks).to.deep.equal([{label: 'smoke'}, {label: 'feature:login'}]);
@@ -111,8 +110,8 @@ describe('Testomat reporter functions', () => {
     testomat.linkTest('TEST-123', 'TEST-456', 'TEST-789');
     const retrievedLinks = linkStorage.get('@T00000025');
     expect(retrievedLinks).to.deep.equal([
-      {test: 'TEST-123'}, 
-      {test: 'TEST-456'}, 
+      {test: 'TEST-123'},
+      {test: 'TEST-456'},
       {test: 'TEST-789'}
     ]);
   });

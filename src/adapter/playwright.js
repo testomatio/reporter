@@ -61,6 +61,7 @@ class PlaywrightReporter {
     }
     const manuallyAttachedArtifacts = services.artifacts.get(fullTestTitle);
     const testMeta = services.keyValues.get(fullTestTitle);
+    const links = services.links.get(fullTestTitle);
     const rid = test.id || test.testId || uuidv4();
 
     /**
@@ -99,6 +100,7 @@ class PlaywrightReporter {
       steps: steps.length ? steps : undefined,
       time: duration,
       logs,
+      links,
       manuallyAttachedArtifacts,
       meta: {
         browser: project.browser,

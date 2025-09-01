@@ -113,6 +113,7 @@ class CucumberReporter extends Formatter {
     const logs = services.logger.getLogs(testTitle).join('\n');
     const artifacts = services.artifacts.get(testTitle);
     const keyValues = services.keyValues.get(testTitle);
+    const links = services.links.get(testTitle);
 
     this.client.addTestRun(status, {
       // error: testCaseAttempt.worstTestStepResult.message,
@@ -123,6 +124,7 @@ class CucumberReporter extends Formatter {
         .trim(),
       example: { ...example },
       logs,
+      links,
       manuallyAttachedArtifacts: artifacts,
       meta: keyValues,
       title: scenario,

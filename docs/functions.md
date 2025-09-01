@@ -33,6 +33,8 @@ After you import and invoke `testomat`, autocompletion will help you to find the
 - [step](#step)
 - [meta (key:value)](#meta)
 - [label](#label)
+- [linkTest](#linktest)
+- [linkJira](#linkjira)
 
 ### Artifact
 
@@ -142,6 +144,44 @@ describe('Your suite', () => {
     label('Browser')
     await page.login();
   });
+});
+```
+
+## LinkTest
+
+Links test IDs to the current test in the report. This allows you to associate multiple test cases with the current test execution.
+
+```javascript
+import { linkTest } from '@testomatio/reporter';
+
+test('my test', async () => {
+  // Link single test ID
+  linkTest('f2916e65');
+  
+  // Link multiple test IDs
+  linkTest('@T888ef960', '@Tf2916e65');
+  
+  await page.login();
+  assert(something);
+});
+```
+
+## LinkJira
+
+Links JIRA issue IDs to the test report. This creates a connection between your test execution and JIRA issues.
+
+```javascript
+import { linkJira } from '@testomatio/reporter';
+
+test('my test', async () => {
+  // Link single JIRA issue
+  linkJira('PROJ-123');
+  
+  // Link multiple JIRA issues
+  linkJira('PROJ-456', 'PROJ-789');
+  
+  await page.login();
+  assert(something);
 });
 ```
 
