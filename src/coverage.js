@@ -13,7 +13,7 @@ export default class Coverage {
     #GIT_COMMANDS = {
         committed: 'git show --name-only --pretty="" HEAD', //TODO: by number of commits like HEAD~3 ???
         uncommitted: 'git diff --name-only'
-    }
+    };
     #GIT_DEFAULT_MARKER = 'uncommitted';
 
     constructor(opts = {}) {
@@ -25,7 +25,7 @@ export default class Coverage {
         this.client = opts.client || undefined;
         if (!this.client) throw new Error('Client must be provided.');
 
-        this.parsedCoverage = {}
+        this.parsedCoverage = {};
         this.changedFiles = [];
         this.tests = new Set();
         this.suiteIds = new Set();
@@ -67,14 +67,15 @@ export default class Coverage {
     /**
      * Retrieves a list of changed Git files based on the selected `changesOption`.
      * 
-     * - If `changesOption` is `"committed"` -> 'git show --name-only --pretty="" HEAD': it gets files from the latest commit (`HEAD`).
-     * - If `changesOption` is `"uncommitted"` (default) -> 'git diff --name-only' cmd: it gets staged/unstaged changes in the working directory.
-     * Logs a message if no changes are detected.
+     * - If `changesOption` is `"committed"` -> 'git show --name-only --pretty="" HEAD':
+     * it gets files from the latest commit (`HEAD`)
+     * - If `changesOption` is `"uncommitted"` (default) -> 'git diff --name-only' cmd:
+     * it gets staged/unstaged changes in the working directory
      * 
      * @returns {this|undefined} The current instance if success, or `undefined` if no changes are found.
      */
     getGitChangedFiles() {
-        const cmd = this.#GIT_COMMANDS[this.changesOption] || this.#GIT_COMMANDS.uncommitted; //TODO: move to constructor???
+        const cmd = this.#GIT_COMMANDS[this.changesOption] || this.#GIT_COMMANDS.uncommitted;
         
         console.error(APP_PREFIX, `ℹ️  We will use '${cmd}' Git command.`);
 
@@ -210,7 +211,8 @@ export default class Coverage {
      * - Converts the `this.tests` Set into a pipe-separated string pattern (e.g., `id1|id2|id3`).
      * - Formats it as a Mocha, Codecept, Playwright-compatible `--grep` flag.
      *
-     * @returns {string} A formatted grep command string (e.g., ` --grep "(id1|id2|id3)"`). Returns an empty pattern if `this.tests` is empty.
+     * @returns {string} A formatted grep command string (e.g., ` --grep "(id1|id2|id3)"`). 
+     * Returns an empty pattern if `this.tests` is empty.
      */
     getGrepCommand() {
         const grepPattern = [...this.tests].join('|');
@@ -221,7 +223,7 @@ export default class Coverage {
 
     async #resolveTestomatioAttributeTests(set, type) {
         const promises = [...set].map(async val =>
-            this.client.prepareRun({ pipe: "testomatio", pipeOptions: `${type}=${val}` }) // OR use as in filter: tag-name=smoke
+            this.client.prepareRun({ pipe: "testomatio", pipeOptions: `${type}=${val}` })
                 .then(tests => {
                     if (Array.isArray(tests) && tests.length > 0) {
                         tests.forEach(testId => this.tests.add(testId));
