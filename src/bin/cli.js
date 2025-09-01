@@ -97,6 +97,7 @@ program
       const pipeOptions = optsArray.join(':');
 
       try {
+        // TODO: move to separate class Filter???
         const tests = await client.prepareRun({ pipe, pipeOptions });
         // TODO: add case if NO tests found -> return; ???
         if (tests && tests.length > 0) {
@@ -108,42 +109,35 @@ program
     }
 
     if (coverage) {      
-      // Example: 'filepath:coverage.yml,branch:master'
+      // Example: 'filepath:coverage.yml,changes:committed' - [changes options: "committed" or "uncommitted"]
       const options = Object.fromEntries(
         coverage
-          .split(',')                          // example: [ 'filepath:coverage.yml', 'branch:master' ]
-          .map(option => option.split(':'))    // example: [key, value]
+          .split(',')                          // example: [ 'filepath:coverage.yml', 'changes:commited' ]
+          .map(option => option.split(':').map(part => part.trim()))    // as [key, value]
+          .filter(([key, val]) => key && val) // => { filepath: 'coverage.yml', changes: 'committed' }
       );
 
       try {
         const coverage = new Coverage({
-          filepath: options.filepath,
+          filepath: options?.filepath,
+          changes: options?.changes,
           client
         });
 
-        // Step 1: Get Git changed files
-        if (!coverage.getChangedFiles()) return;
-        // Step 2: Validate coverage file path
-        if (!coverage.validateCoverageFile()) return;
-        // Step 3: Parse coverage file
-        if (!coverage.parseCoverageFile()) return;
-        // Step 4: Prepare coverage test IDs
-        if (!coverage.extractRelevantTestIds()) return;
-
-        await coverage.resolveTestIdsFromAttributes(); //TODO: const {test, tag, label } = await coverage.resolveTestIdsFromAttributes(); ???
+        // Step 1: Get Git changed files & Validate coverage file path & Parse coverage file
+        if (!coverage.getGitChangedFiles()?.validateCoverageFile()?.parseCoverageFile()) return;
+        // Step 2: Extract relevant tests from selected Git changes
+        if (!await coverage.extractRelevantTestsFromChanges()) return;             
+        // Step 3: Get grep command by list of provided tests
         const grep = coverage.getGrepCommand();
-
-        if (!grep) return;
-
         command += grep;
       }
       catch (err) {
-        console.error(APP_PREFIX, '❌ Coverage execution failed:', err.message);
+        console.error(APP_PREFIX, '❌ Error during coverage processing:', err.message);
       }
     }
 
     console.log(APP_PREFIX, `🚀 Running`, pc.green(command));
-    //TODO: Coverage Task - Step-1: finish in this place -> Next step => double check execute command by suite,tag,test_ids
     debug("Full command text:", command.split(' '));
 
     const runTests = async () => {
