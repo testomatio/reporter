@@ -9,9 +9,20 @@ import { APP_PREFIX } from './constants.js';
 
 const debug = createDebugMessages('@testomatio/reporter:coverage');
 
+// Example of use 'changes:uncommitted' & 'changes:committed-1' part:
+// | Option | Git command |
+// | --- | --- |
+// | uncommitted | ✅ git diff --name-only |
+// | committed | ✅ git show --name-only --pretty="" HEAD |
+// | committed-2 | ✅ git show --name-only --pretty="" HEAD~2 |
+// | committed-0 | ❌ Error: N must be between 1 and 10 |
+// | committed-11 | ❌ Error: N must be between 1 and 10 |
+// | committed-abc | ❌ Error: Invalid format |
+// | committed-@ | ❌ Error: Invalid format |
+// | random | ❌ Error: Invalid changes option |
+
 export default class Coverage {
     #GIT_COMMANDS = {
-        committed: 'git show --name-only --pretty="" HEAD', //TODO: by number of commits like HEAD~3 ???
         uncommitted: 'git diff --name-only'
     };
     #GIT_DEFAULT_MARKER = 'uncommitted';
@@ -56,8 +67,9 @@ export default class Coverage {
             // Git edge: Not a git repository or other error
             if (errorMessage.includes('Not a git repository')) {
                 console.error(APP_PREFIX, '❌ Error: This folder is not a Git repository.');
-            } else {
-                console.error(APP_PREFIX, `❌ Git command failed ("${cmd}"):\n`, errorMessage);
+            } 
+            else {
+                throw new Error(`❌ Git command failed ("${cmd}"):\n`, errorMessage);
             }
     
             return [];
@@ -65,28 +77,82 @@ export default class Coverage {
     }
 
     /**
+     * Dynamically guild the Git command based on `this.changesOption`
+     * 
+     * Supports:
+     * - "uncommitted" => git diff --name-only
+     * - "committed" => git show --name-only --pretty="" HEAD
+     * - "committed-N" (N = 1..10) => git show --name-only --pretty="" HEAD~N
+     * 
+     * Throws an error for:
+     * - Invalid formats like "committed-@", "committed-abc", "committed-11", "committed-0",
+     * - Any `committed-N` where N > 10
+     */
+    #buildGitCommand() {
+        if (this.changesOption === 'uncommitted') {
+            return this.#GIT_COMMANDS.uncommitted;
+        }
+
+        const committedMatch = this.changesOption.match(/^committed(?:-(\d+))?$/);
+        if (committedMatch) {
+            const commitsBack = committedMatch[1]; // May be undefined or a string representing a number
+
+            if (commitsBack !== undefined) {
+                const commitsBackNum = parseInt(commitsBack, 10);
+
+                if (isNaN(commitsBackNum) || commitsBackNum < 1 || commitsBackNum > 10) {
+                    throw new Error(`❌ Invalid 'committed-N' value: '${this.changesOption}'. N must be between 1 and 10.`);
+                }
+
+                return `git show --name-only --pretty="" HEAD~${commitsBackNum}`;
+            }
+
+            return `git show --name-only --pretty="" HEAD`;
+        }
+
+        throw new Error(`❌ Invalid changes option: '${this.changesOption}'. Expected 'uncommitted', 'committed', or 'committed-N' where N is 1 - 10.`);
+    }
+
+    /**
      * Retrieves a list of changed Git files based on the selected `changesOption`.
      * 
      * - If `changesOption` is `"committed"` -> 'git show --name-only --pretty="" HEAD':
      * it gets files from the latest commit (`HEAD`)
+     * - If `changesOption` is `"committed-1"` -> 'git show --name-only --pretty="" HEAD~1':
+     * it gets files from the needed commit
      * - If `changesOption` is `"uncommitted"` (default) -> 'git diff --name-only' cmd:
      * it gets staged/unstaged changes in the working directory
      * 
      * @returns {this|undefined} The current instance if success, or `undefined` if no changes are found.
      */
     getGitChangedFiles() {
-        const cmd = this.#GIT_COMMANDS[this.changesOption] || this.#GIT_COMMANDS.uncommitted;
+        // const cmd = this.#GIT_COMMANDS[this.changesOption] || this.#GIT_COMMANDS.uncommitted;
+        let cmd;
+        try {
+            cmd = this.#buildGitCommand();
+        } 
+        catch (err) {
+            console.error(APP_PREFIX, err.message);
+            return undefined;
+        }
         
         console.error(APP_PREFIX, `ℹ️  We will use '${cmd}' Git command.`);
 
         if (cmd.includes("diff")) console.log(APP_PREFIX, `['git diff --name-only' command is a default]`);
 
-        this.changedFiles =  this.#getChangedFilesFromGit(cmd);
+        try {
+            this.changedFiles =  this.#getChangedFilesFromGit(cmd);
 
-        if (this.changedFiles.length === 0) {
-            console.log(APP_PREFIX, 'ℹ️  No files changed in the latest Git commit. Skipping coverage processing.');
-            return undefined;
+            if (this.changedFiles.length === 0) {
+                console.log(APP_PREFIX, 'ℹ️  No files changed in the latest Git commit. Skipping coverage processing.');
+                return undefined;
+            }
         }
+        catch (err) {
+            console.error(APP_PREFIX, err.message);
+            console.error(APP_PREFIX, "🔍 Pls, check this Git command manually to understand the original problem.");
+            return undefined;
+        }        
 
         console.log(APP_PREFIX, `📑  GIT changed files:\n  - ${this.changedFiles.join('\n  - ')}`);        
         return this;
