@@ -101,7 +101,9 @@ export default class Coverage {
                 const commitsBackNum = parseInt(commitsBack, 10);
 
                 if (isNaN(commitsBackNum) || commitsBackNum < 1 || commitsBackNum > 10) {
-                    throw new Error(`❌ Invalid 'committed-N' value: '${this.changesOption}'. N must be between 1 and 10.`);
+                    throw new Error(
+                        `❌ Invalid 'committed-N' value: '${this.changesOption}'. ` +
+                        `N must be between 1 and 10.`);
                 }
 
                 return `git show --name-only --pretty="" HEAD~${commitsBackNum}`;
@@ -110,7 +112,9 @@ export default class Coverage {
             return `git show --name-only --pretty="" HEAD`;
         }
 
-        throw new Error(`❌ Invalid changes option: '${this.changesOption}'. Expected 'uncommitted', 'committed', or 'committed-N' where N is 1 - 10.`);
+        throw new Error(
+            `❌ Invalid changes option: '${this.changesOption}'. ` + 
+            `Expected 'uncommitted', 'committed', or 'committed-N' where N is 1 - 10.`);
     }
 
     /**
