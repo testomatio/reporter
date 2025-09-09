@@ -13,10 +13,9 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.279.0",
     "@aws-sdk/lib-storage": "^3.279.0",
-    "@cucumber/cucumber": "^10.9.0",
+    "@cucumber/cucumber": "12.2.0",
     "@octokit/rest": "^21.1.1",
     "aws-sdk": "^2.1072.0",
-    "gaxios": ">=6.0 || >=7.0.0-rc.4 || <8",
     "callsite-record": "^4.1.4",
     "commander": "^12",
     "cross-spawn": "^7.0.3",
@@ -26,6 +25,7 @@
     "fast-xml-parser": "^4.4.1",
     "file-url": "3.0.0",
     "filesize": "^10.1.6",
+    "gaxios": ">=6.0 || >=7.0.0-rc.4 || <8",
     "glob": "^10.3",
     "handlebars": "^4.7.8",
     "has-flag": "^5.0.1",
@@ -85,7 +85,7 @@
     "@types/mocha": "^10.0.7",
     "@wdio/reporter": "^7.16.13",
     "chai": "^4.3.6",
-    "codeceptjs": "^3.6.5",
+    "codeceptjs": "^3.7.4",
     "cucumber": "^6.0.7",
     "eslint": "^9.24.0",
     "eslint-config-prettier": "^8.3.0",
@@ -93,13 +93,13 @@
     "jasmine": "^5.2.0",
     "jest": "^27.4.7",
     "jsdom": "^22.1.0",
-    "mocha": "^9.2.0",
+    "mocha": "^11.7.2",
     "mock-http-server": "^1.4.5",
     "pino": "^8.15.0",
     "prettier": "^3.2.5",
     "puppeteer": "^22.15.0",
     "typescript": "^5.5.4",
-    "vitest": "^1.6.0"
+    "vitest": "^3.2.4"
   },
   "bin": {
     "@testomatio/reporter": "./lib/bin/cli.js",
@@ -113,27 +113,34 @@
       "require": "./lib/reporter.js",
       "types": "./types/types.d.ts"
     },
-    "./lib/adapter/codecept/codecept.js": "./lib/adapter/codecept.js",
-    "./lib/adapter/codecept": "./lib/adapter/codecept.js",
-    "./codecept": "./lib/adapter/codecept.js",
-    "./lib/adapter/cucumber/cucumber.js": "./lib/adapter/cucumber/current.js",
-    "./cucumber": "./lib/adapter/cucumber/current.js",
-    "./lib/adapter/cypress-plugin": "./lib/adapter/cypress-plugin/index.js",
-    "./cypress-plugin": "./lib/adapter/cypress-plugin/index.js",
-    "./cypress": "./lib/adapter/cypress-plugin/index.js",
-    "./lib/adapter/jasmine.js": "./lib/adapter/jasmine.js",
-    "./jasmine": "./lib/adapter/jasmine.js",
-    "./lib/adapter/jest.js": "./lib/adapter/jest.js",
-    "./jest": "./lib/adapter/jest.js",
-    "./lib/adapter/mocha/mocha.js": "./lib/adapter/mocha.js",
-    "./mocha": "./lib/adapter/mocha.js",
-    "./lib/adapter/playwright.js": "./lib/adapter/playwright.js",
-    "./nightwatch": "./lib/adapter/nightwatch.js",
-    "./playwright": "./lib/adapter/playwright.js",
-    "./vitest": "./lib/adapter/vitest.js",
-    "./lib/adapter/webdriver.js": "./lib/adapter/webdriver.js",
-    "./lib/adapter/webdriver": "./lib/adapter/webdriver.js",
-    "./webdriver": "./lib/adapter/webdriver.js",
-    "./wdio": "./lib/adapter/webdriver.js"
+    "overrides": {
+      "tmp": "0.2.4",
+      "external-editor": {
+        "tmp": "0.2.4"
+      }
+    },
+    "exports": {
+      ".": {
+        "import": "./src/reporter.js",
+        "require": "./lib/reporter.js",
+        "types": "./types/types.d.ts"
+      },
+      "./cypress-plugin": "./lib/adapter/cypress-plugin/index.js",
+      "./cypress": "./lib/adapter/cypress-plugin/index.js",
+      "./lib/adapter/jasmine.js": "./lib/adapter/jasmine.js",
+      "./jasmine": "./lib/adapter/jasmine.js",
+      "./lib/adapter/jest.js": "./lib/adapter/jest.js",
+      "./jest": "./lib/adapter/jest.js",
+      "./lib/adapter/mocha/mocha.js": "./lib/adapter/mocha.js",
+      "./mocha": "./lib/adapter/mocha.js",
+      "./lib/adapter/playwright.js": "./lib/adapter/playwright.js",
+      "./nightwatch": "./lib/adapter/nightwatch.js",
+      "./playwright": "./lib/adapter/playwright.js",
+      "./vitest": "./lib/adapter/vitest.js",
+      "./lib/adapter/webdriver.js": "./lib/adapter/webdriver.js",
+      "./lib/adapter/webdriver": "./lib/adapter/webdriver.js",
+      "./webdriver": "./lib/adapter/webdriver.js",
+      "./wdio": "./lib/adapter/webdriver.js"
+    }
   }
 }
