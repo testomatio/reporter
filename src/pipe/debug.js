@@ -15,7 +15,7 @@ export class DebugPipe {
     this.isEnabled = !!process.env.TESTOMATIO_DEBUG || !!process.env.DEBUG;
     if (this.isEnabled) {
       this.batch = {
-        isEnabled: this.params.isBatchEnabled ?? !process.env.TESTOMATIO_DISABLE_BATCH_UPLOAD ?? true,
+        isEnabled: this.params.isBatchEnabled ?? !process.env.TESTOMATIO_DISABLE_BATCH_UPLOAD,
         intervalFunction: null,
         intervalTime: 5000,
         tests: [],
@@ -93,8 +93,7 @@ export class DebugPipe {
       const logData = { action: 'addTest', testId: data };
       if (this.store.runId) logData.runId = this.store.runId;
       this.logToFile(logData);
-    }
-    else this.batch.tests.push(data);
+    } else this.batch.tests.push(data);
 
     if (!this.batch.intervalFunction) await this.batchUpload();
   }
