@@ -161,9 +161,26 @@ class XmlReader {
 
     reduceOptions.preferClassname = this.stats.language === 'python';
     const resultTests = processTestSuite(jsonSuite['test-suite']);
-    
+
+    debug('Raw tests extracted from NUnit XML:', resultTests.length);
+    debug(
+      'Raw tests:',
+      resultTests.map(t => ({ title: t.title, example: t.example, file: t.file })),
+    );
+
     // Deduplicate tests based on FQN (Assembly + Namespace + Class + Method)
     const deduplicatedTests = this.deduplicateTestsByFQN(resultTests);
+
+    debug('Tests after deduplication:', deduplicatedTests.length);
+    debug(
+      'Deduplicated tests:',
+      deduplicatedTests.map(t => ({
+        title: t.title,
+        examples: t.examples,
+        example: t.example,
+        file: t.file,
+      })),
+    );
 
     this.tests = this.tests.concat(deduplicatedTests);
 
@@ -324,13 +341,13 @@ class XmlReader {
 
   deduplicateTestsByFQN(tests) {
     const fqnMap = new Map();
-    
+
     tests.forEach(test => {
       const fqn = this.generateNormalizedFQN(test);
-      
+
       if (fqnMap.has(fqn)) {
         const existingTest = fqnMap.get(fqn);
-        
+
         // For parameterized tests, merge as Examples
         if (test.example && Array.isArray(test.example) && test.example.length > 0) {
           // Initialize examples array if it doesn't exist
@@ -343,32 +360,31 @@ class XmlReader {
                 status: existingTest.status,
                 run_time: existingTest.run_time,
                 message: existingTest.message,
-                stack: existingTest.stack
+                stack: existingTest.stack,
               });
               // Clear the main test's example since it's now in examples array
               delete existingTest.example;
             }
           }
-          
+
           // Add this test's execution as an example
           existingTest.examples.push({
             parameters: test.example,
             status: test.status,
             run_time: test.run_time,
             message: test.message,
-            stack: test.stack
+            stack: test.stack,
           });
-          
+
           // Update the main test status to reflect the worst status
           if (test.status === 'failed' || existingTest.status === 'failed') {
             existingTest.status = 'failed';
           } else if (test.status === 'skipped' && existingTest.status !== 'failed') {
             existingTest.status = 'skipped';
           }
-          
+
           // Update total run time
           existingTest.run_time = (existingTest.run_time || 0) + (test.run_time || 0);
-          
         } else {
           // Merge test properties for non-parameterized tests, prioritizing Test Explorer structure
           if (test.test_id && !existingTest.test_id) {
@@ -382,12 +398,12 @@ class XmlReader {
             existingTest.message = test.message;
           }
         }
-        
+
         // Prefer Test Explorer structure (longer, more complete suite_title)
         if (test.suite_title && test.suite_title.length > existingTest.suite_title.length) {
           existingTest.suite_title = test.suite_title;
         }
-        
+
         // Always use the source file path if available
         if (test.file && test.file.endsWith('.cs')) {
           existingTest.file = test.file;
@@ -402,7 +418,7 @@ class XmlReader {
         fqnMap.set(fqn, test);
       }
     });
-    
+
     return Array.from(fqnMap.values());
   }
 
@@ -412,38 +428,38 @@ class XmlReader {
     const namespace = this.extractNamespace(test);
     const className = this.extractClassName(test);
     const methodName = test.title;
-    
+
     // Use the most complete namespace.class structure available
     if (test.suite_title && test.suite_title.includes('.')) {
       return `${test.suite_title}.${methodName}`;
     }
-    
+
     return `${namespace}.${className}.${methodName}`;
   }
 
   generateNormalizedFQN(test) {
     // Generate normalized FQN for deduplication by extracting the core namespace.class.method
     // For parameterized tests, we want the SAME FQN so they merge into one test with multiple Examples
-    
+
     const fullClassName = test.suite_title || '';
     const methodName = test.title;
-    
+
     // Extract the most specific namespace.class pattern
     if (fullClassName.includes('.')) {
       const parts = fullClassName.split('.');
-      
+
       if (parts.length >= 2) {
         const className = parts[parts.length - 1];
-        
+
         // Look for common .NET namespace patterns and normalize them:
         // TestProject.Tests.MyClass -> Tests.MyClass
         // Tests.MyClass -> Tests.MyClass
         // MyProject.SubNamespace.Tests.MyClass -> Tests.MyClass
-        
+
         let normalizedNamespace = '';
         for (let i = parts.length - 2; i >= 0; i--) {
           const part = parts[i];
-          
+
           // Build namespace from right to left, excluding project names
           if (part === 'Tests' || part.endsWith('Tests') || part.includes('Test')) {
             // Found a test namespace, use it as the normalized namespace
@@ -454,11 +470,11 @@ class XmlReader {
             normalizedNamespace = part;
           }
         }
-        
+
         return `${normalizedNamespace}.${className}.${methodName}`;
       }
     }
-    
+
     // Fallback for simple class names
     return `${fullClassName}.${methodName}`;
   }
@@ -498,14 +514,14 @@ class XmlReader {
       if (csFileMatch) {
         return test.file;
       }
-      
+
       // If no .cs extension, assume it's a namespace path and convert to likely file name
       const className = this.extractClassName(test);
       const pathParts = test.file.split(/[/\\]/);
       pathParts[pathParts.length - 1] = `${className}.cs`;
       return pathParts.join('/');
     }
-    
+
     // Fallback to class name
     const className = this.extractClassName(test);
     return `${className}.cs`;
@@ -549,12 +565,18 @@ class XmlReader {
         }
 
         if (!fs.existsSync(file)) {
-          debug('Failed to open file with the source code', file);
+          debug('Failed to open file with the source code: %s', file);
           return;
         }
+
         const contents = fs.readFileSync(file).toString();
-        t.code = fetchSourceCode(contents, { ...t, lang: this.stats.language });
+
+        // Use original test name for source code lookup, not humanized title
+        const originalTitle = t.originalTestName ? t.originalTestName.replace(/\(.*?\)/, '').trim() : t.title;
+
+        t.code = fetchSourceCode(contents, { ...t, title: originalTitle, lang: this.stats.language });
         if (t.code) debug('Fetched code for test %s', t.title);
+
         t.test_id = fetchIdFromCode(t.code, { lang: this.stats.language });
         if (t.test_id) debug('Fetched test id %s for test %s', t.test_id, t.title);
       } catch (err) {
@@ -697,7 +719,7 @@ function reduceTestCases(prev, item) {
       // SpecFlow config
       let { title, tags, testId } = fetchProperties(isParametrized ? item : testCaseItem);
       let example = null;
-      
+
       // Use consistent Test Explorer structure for suite title
       const suiteTitle = extractTestExplorerSuiteTitle(testCaseItem, item);
 
@@ -706,11 +728,11 @@ function reduceTestCases(prev, item) {
 
       // Store original test name for parameter extraction
       const originalTestName = testCaseItem.name || testCaseItem.methodname;
-      
+
       // Handle NUnit-style arguments from <arguments> element
       if (testCaseItem.arguments && testCaseItem.arguments.arg) {
-        const args = Array.isArray(testCaseItem.arguments.arg) 
-          ? testCaseItem.arguments.arg 
+        const args = Array.isArray(testCaseItem.arguments.arg)
+          ? testCaseItem.arguments.arg
           : [testCaseItem.arguments.arg];
         example = args; // Store as array instead of object
         // Remove parameters from title for NUnit tests
@@ -794,29 +816,79 @@ function extractSourceFilePath(testCaseItem, item) {
   // 2. fullname (contains full project path)
   // 3. file attribute from test case
   // 4. package (fallback)
-  
+
   // NUnit provides filepath attribute with actual .cs file path - use this first
   if (item.filepath) {
     // Clean up Windows/Unix path separators and ensure proper format
-    return item.filepath.replace(/\\/g, '/');
+    let filePath = item.filepath.replace(/\\/g, '/');
+
+    // Make relative to current working directory if absolute
+    if (path.isAbsolute(item.filepath)) {
+      const cwd = process.cwd().replace(/\\/g, '/');
+      if (filePath.startsWith(cwd)) {
+        filePath = path.relative(cwd, item.filepath).replace(/\\/g, '/');
+      } else {
+        // Try to extract relative path from common patterns
+        const commonPatterns = ['/Tests/', '/test/', '/src/', '/Test/'];
+        for (const pattern of commonPatterns) {
+          const index = filePath.lastIndexOf(pattern);
+          if (index !== -1) {
+            filePath = filePath.substring(index + 1);
+            break;
+          }
+        }
+      }
+    }
+    return filePath;
   }
-  
-  if (testCaseItem.file) return testCaseItem.file.replace(/\\/g, '/');
-  
+
+  if (testCaseItem.file) {
+    let filePath = testCaseItem.file.replace(/\\/g, '/');
+
+    // Make relative to current working directory if absolute
+    if (path.isAbsolute(testCaseItem.file)) {
+      const cwd = process.cwd().replace(/\\/g, '/');
+      if (filePath.startsWith(cwd)) {
+        filePath = path.relative(cwd, testCaseItem.file).replace(/\\/g, '/');
+      } else {
+        // Try to extract relative path from common patterns
+        const commonPatterns = ['/Tests/', '/test/', '/src/', '/Test/'];
+        for (const pattern of commonPatterns) {
+          const index = filePath.lastIndexOf(pattern);
+          if (index !== -1) {
+            filePath = filePath.substring(index + 1);
+            break;
+          }
+        }
+      }
+    }
+    return filePath;
+  }
+
   if (item.fullname) {
     // Extract actual file path from fullname if it contains path separators
     const fullnameParts = item.fullname.split('.');
     if (fullnameParts.length > 2) {
-      // Reconstruct path from project.namespace.class structure
-      const projectName = fullnameParts[0];
-      const namespaceParts = fullnameParts.slice(1, -1);
-      const className = fullnameParts[fullnameParts.length - 1];
-      return `${projectName}/${namespaceParts.join('/')}/${className}.cs`;
+      // For ParameterizedMethod, get the class name (not method name)
+      // Example: "NUnit_sample_test.Tests.SampleTests.TestBooleanValue" -> "Tests/SampleTests.cs"
+      let namespaceParts, className;
+
+      if (item.type === 'ParameterizedMethod') {
+        // For parameterized methods, the last part is the method name, second-to-last is class
+        namespaceParts = fullnameParts.slice(1, -2); // Skip project name and method name
+        className = fullnameParts[fullnameParts.length - 2]; // Get class name
+      } else {
+        // For regular classes/fixtures
+        namespaceParts = fullnameParts.slice(1, -1); // Skip project name
+        className = fullnameParts[fullnameParts.length - 1];
+      }
+
+      return `${namespaceParts.join('/')}/${className}.cs`;
     }
   }
-  
+
   if (item.package) return item.package.replace(/\\/g, '/');
-  
+
   // Fallback: construct from classname
   if (testCaseItem.classname) {
     const parts = testCaseItem.classname.split('.');
@@ -824,23 +896,23 @@ function extractSourceFilePath(testCaseItem, item) {
     const namespacePath = parts.slice(0, -1).join('/');
     return `${namespacePath}/${className}.cs`;
   }
-  
+
   return '';
 }
 
 function extractTestExplorerSuiteTitle(testCaseItem, item) {
   // Extract suite title to match Test Explorer structure (Project/Namespace hierarchy)
   // Priority: fullname > classname > name
-  
+
   if (item.fullname) {
     // Use fullname to maintain Test Explorer structure
     return item.fullname;
   }
-  
+
   if (testCaseItem.classname) {
     return testCaseItem.classname;
   }
-  
+
   // Fallback to item name but prefer classname structure
   return item.name || testCaseItem.classname || 'UnknownClass';
 }
@@ -855,17 +927,23 @@ function processTestSuite(testsuite) {
     suites = [testsuite];
   }
 
-  // Only process suites that have test cases OR child suites, but avoid double processing
-  const subSuites = suites.filter(s => s['test-suite'] && !s['test-case']);
-  const leafSuites = suites.filter(s => s['test-case'] || s.testcase);
+  let allResults = [];
 
-  // Process child suites recursively
-  const childResults = subSuites.map(s => processTestSuite(s['test-suite'])).flat();
-  
-  // Process leaf suites with actual test cases
-  const leafResults = leafSuites.reduce(reduceTestCases, []);
+  for (const suite of suites) {
+    // Process child test suites recursively (TestFixture, ParameterizedMethod, etc.)
+    if (suite['test-suite']) {
+      const childResults = processTestSuite(suite['test-suite']);
+      allResults = allResults.concat(childResults);
+    }
 
-  return [...childResults, ...leafResults];
+    // Process direct test cases in this suite
+    if (suite['test-case'] || suite.testcase) {
+      const leafResults = reduceTestCases([], suite);
+      allResults = allResults.concat(leafResults);
+    }
+  }
+
+  return allResults;
 }
 
 function fetchProperties(item) {

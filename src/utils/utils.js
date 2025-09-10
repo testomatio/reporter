@@ -139,6 +139,8 @@ export const TEST_ID_REGEX = /@T([\w\d]{8})/;
 export const SUITE_ID_REGEX = /@S([\w\d]{8})/;
 
 const fetchIdFromCode = (code, opts = {}) => {
+  if (!code) return null;
+
   const comments = code
     .split('\n')
     .map(l => l.trim())
@@ -180,8 +182,32 @@ const fetchSourceCode = (contents, opts = {}) => {
       if (lineIndex === -1) lineIndex = lines.findIndex(l => l.includes(`public void ${title}`));
       if (lineIndex === -1) lineIndex = lines.findIndex(l => l.includes(`${title}(`));
     } else if (opts.lang === 'csharp') {
-      if (lineIndex === -1) lineIndex = lines.findIndex(l => l.includes(`public void ${title}`));
-      if (lineIndex === -1) lineIndex = lines.findIndex(l => l.includes(`${title}(`));
+      // Enhanced C# method detection for NUnit tests
+      lineIndex = lines.findIndex(l => l.includes(`public void ${title}(`));
+
+      if (lineIndex === -1) {
+        lineIndex = lines.findIndex(l => l.includes(`public async Task ${title}(`));
+      }
+
+      if (lineIndex === -1) {
+        lineIndex = lines.findIndex(l => l.includes(`${title}(`));
+      }
+
+      // Look for TestCase or Test attributes above the method
+      if (lineIndex === -1) {
+        const testAttributeIndex = lines.findIndex((l, index) => {
+          if (l.includes('[TestCase') || l.includes('[Test')) {
+            // Check next few lines for the method
+            const nextLines = lines.slice(index, Math.min(lines.length, index + 5));
+            const hasMethod = nextLines.some(nextLine => nextLine.includes(`${title}(`));
+            return hasMethod;
+          }
+          return false;
+        });
+        if (testAttributeIndex !== -1) {
+          lineIndex = testAttributeIndex;
+        }
+      }
     } else {
       lineIndex = lines.findIndex(l => l.includes(title));
     }
@@ -191,7 +217,7 @@ const fetchSourceCode = (contents, opts = {}) => {
     lineIndex -= opts.prepend;
   }
 
-  if (lineIndex) {
+  if (lineIndex !== -1 && lineIndex !== undefined) {
     const result = [];
     for (let i = lineIndex; i < lineIndex + limit; i++) {
       if (lines[i] === undefined) continue;
@@ -216,6 +242,10 @@ const fetchSourceCode = (contents, opts = {}) => {
         if (opts.lang === 'java' && lines[i].trim().match(/^@\w+/)) break;
         if (opts.lang === 'java' && lines[i].includes(' public void ')) break;
         if (opts.lang === 'java' && lines[i].includes(' class ')) break;
+        if (opts.lang === 'csharp' && lines[i].trim().match(/^\[Test/)) break;
+        if (opts.lang === 'csharp' && lines[i].includes(' public void ')) break;
+        if (opts.lang === 'csharp' && lines[i].includes(' public async Task ')) break;
+        if (opts.lang === 'csharp' && lines[i].includes(' class ') && lines[i].includes('public')) break;
       }
       result.push(lines[i]);
     }
@@ -361,7 +391,7 @@ function readLatestRunId() {
   try {
     const filePath = path.join(os.tmpdir(), `testomatio.latest.run`);
     if (!fs.existsSync(filePath)) return null;
-    
+
     const stats = fs.statSync(filePath);
     const diff = +new Date() - +stats.mtime;
     const diffHours = diff / 1000 / 60 / 60;

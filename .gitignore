@@ -162,3 +162,7 @@ output/**/*.har
 
 # build dir
 lib/
+
+
+NUnit_sample_test/
+NUnit_sample_test-master/
