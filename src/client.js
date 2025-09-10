@@ -11,7 +11,6 @@ import path, { sep } from 'path';
 import { fileURLToPath } from 'node:url';
 import { S3Uploader } from './uploader.js';
 import { formatStep, readLatestRunId, storeRunId, validateSuiteId } from './utils/utils.js';
-import { linkStorage } from './services/links.js';
 import { filesize as prettyBytes } from 'filesize';
 
 const debug = createDebugMessages('@testomatio/reporter:client');
@@ -182,43 +181,16 @@ class Client {
       suite_id,
       test_id,
       timestamp,
+      links,
       manuallyAttachedArtifacts,
       overwrite,
+      tags,
     } = testData;
     let { message = '', meta = {} } = testData;
 
     // stringify meta values and limit keys and values length to 255
     meta = Object.entries(meta)
       .filter(([, value]) => value !== null && value !== undefined)
-      .map(([key, value]) => {
-        try {
-          if (typeof value === 'object') {
-            value = JSON.stringify(value);
-          } else if (typeof value !== 'string') {
-            try {
-              value = value.toString();
-            } catch (err) {
-              console.warn(APP_PREFIX, `Can't convert meta value to string`, err);
-            }
-          }
-
-          if (value?.length > 255) {
-            value = value.substring(0, 255);
-            debug(APP_PREFIX, `Meta info value "${value}" is too long, trimmed to 255 characters`);
-          }
-
-          if (key?.length > 255) {
-            const newKey = key.substring(0, 255);
-            debug(APP_PREFIX, `Meta info key "${key}" is too long, trimmed to 255 characters`);
-            return [newKey, value];
-          }
-
-          return [key, value];
-        } catch (err) {
-          debug(APP_PREFIX, `Error while processing meta info key ${key}`, err);
-          return [null, null];
-        }
-      })
       .reduce((acc, [key, value]) => {
         if (key) acc[key] = value;
         return acc;
@@ -226,7 +198,6 @@ class Client {
 
     // Get links from storage using the test context
     const testContext = suite_title ? `${suite_title} ${title}` : title;
-    const links = linkStorage.get(testContext) || [];
 
     let errorFormatted = '';
     if (error) {
@@ -284,6 +255,7 @@ class Client {
       meta,
       links,
       overwrite,
+      tags,
       ...(rootSuiteId && { root_suite_id: rootSuiteId }),
     };
 
@@ -312,10 +284,9 @@ class Client {
    * Updates the status of the current test run and finishes the run.
    * @param {'passed' | 'failed' | 'skipped' | 'finished'} status - The status of the current test run.
    * Must be one of "passed", "failed", or "finished"
-   * @param {boolean} [isParallel] - Whether the current test run was executed in parallel with other tests.
    * @returns {Promise<any>} - A Promise that resolves when finishes the run.
    */
-  async updateRunStatus(status, isParallel = false) {
+  async updateRunStatus(status) {
     this.pipes ||= await pipesFactory(this.paramsForPipesFactory || {}, this.pipeStore);
     this.runId ||= readLatestRunId();
 
@@ -323,7 +294,7 @@ class Client {
     // all pipes disabled, skipping
     if (!this.pipes?.filter(p => p.isEnabled).length) return Promise.resolve();
 
-    const runParams = { status, parallel: isParallel };
+    const runParams = { status };
 
     this.queue = this.queue
       .then(() => Promise.all(this.pipes.map(p => p.finishRun(runParams))))

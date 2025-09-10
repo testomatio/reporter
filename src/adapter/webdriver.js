@@ -3,6 +3,7 @@ import TestomatClient from '../client.js';
 import { getTestomatIdFromTestTitle, fileSystem } from '../utils/utils.js';
 import { services } from '../services/index.js';
 import { TESTOMAT_TMP_STORAGE_DIR } from '../constants.js';
+import { stringToMD5Hash } from '../data-storage.js';
 
 class WebdriverReporter extends WDIOReporter {
   constructor(options) {
@@ -52,14 +53,11 @@ class WebdriverReporter extends WDIOReporter {
   onTestEnd(test) {
     test.suite = test.parent;
     const logs = getTestLogs(test.fullTitle);
-    // TODO: FIX: artifacts for some reason leads to empty report on Testomat.io
-    // ^ not reproduced anymore (Jul 2025)
-    // but still be under investigation
-    const artifacts = services.artifacts.get(test.fullTitle);
-    const keyValues = services.keyValues.get(test.fullTitle);
+
+    test.artifacts = services.artifacts.get(test.fullTitle);
+    test.meta = services.keyValues.get(test.fullTitle);
+    test.links = services.links.get(test.fullTitle);
     test.logs = logs;
-    test.artifacts = artifacts;
-    test.meta = keyValues;
 
     this._addTestPromises.push(this.addTest(test));
   }
@@ -74,7 +72,7 @@ class WebdriverReporter extends WDIOReporter {
   async addTest(test) {
     if (!this.client) return;
 
-    const { title, _duration: duration, state, error, output } = test;
+    const { title, _duration: duration, state, error, output, links, artifacts, meta, logs } = test;
 
     const testId = getTestomatIdFromTestTitle(title);
 
@@ -83,12 +81,15 @@ class WebdriverReporter extends WDIOReporter {
       .filter(el => el.endpoint === screenshotEndpoint && el.result && el.result.value)
       .map(el => Buffer.from(el.result.value, 'base64'));
 
+    const rid = stringToMD5Hash(test.fullTitle);
+
     await this.client.addTestRun(state, {
-      rid: test.uid || '',
+      rid,
       manuallyAttachedArtifacts: test.artifacts,
       error,
-      logs: test.logs,
-      meta: test.meta,
+      logs,
+      meta,
+      links,
       title,
       test_id: testId,
       time: duration,

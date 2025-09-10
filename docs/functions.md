@@ -33,6 +33,8 @@ After you import and invoke `testomat`, autocompletion will help you to find the
 - [step](#step)
 - [meta (key:value)](#meta)
 - [label](#label)
+- [linkTest](#linktest)
+- [linkJira](#linkjira)
 
 ### Artifact
 
@@ -130,7 +132,7 @@ test('Your test @T12345678', async () => {
 
 ## Label
 
-Adds a label to the reported test. Unlike `meta` label will be persisted to the test case itself, not just to reported run. Label should exist in Testomat.io to be added. You can pass also label value, if label was created as a custom field
+Adds a label to the reported test. Unlike `meta` label will be persisted to the test case itself, not just to reported run. If the label does not exist in Testomat.io, it will be automatically created and linked to the test case during the test run, or you can use existing labels in Testomat.io. You can pass also a label value, if the label was created as a custom field.
 
 ```javascript
 import { label } from '@testomatio/reporter';
@@ -142,6 +144,44 @@ describe('Your suite', () => {
     label('Browser')
     await page.login();
   });
+});
+```
+
+## LinkTest
+
+Links test IDs to the current test in the report. This allows you to associate multiple test cases with the current test execution.
+
+```javascript
+import { linkTest } from '@testomatio/reporter';
+
+test('my test', async () => {
+  // Link single test ID
+  linkTest('f2916e65');
+  
+  // Link multiple test IDs
+  linkTest('@T888ef960', '@Tf2916e65');
+  
+  await page.login();
+  assert(something);
+});
+```
+
+## LinkJira
+
+Links JIRA issue IDs to the test report. This creates a connection between your test execution and JIRA issues.
+
+```javascript
+import { linkJira } from '@testomatio/reporter';
+
+test('my test', async () => {
+  // Link single JIRA issue
+  linkJira('PROJ-123');
+  
+  // Link multiple JIRA issues
+  linkJira('PROJ-456', 'PROJ-789');
+  
+  await page.login();
+  assert(something);
 });
 ```
 

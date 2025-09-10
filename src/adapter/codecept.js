@@ -25,6 +25,9 @@ const HOOK_EXECUTION_ORDER = {
   POST_TEST: ['AfterHook', 'AfterSuiteHook']
 };
 
+// codeceptjs workers are self-contained
+dataStorage.isFileStorage = false;
+
 const DATA_REGEXP = /[|\s]+?(\{".*\}|\[.*\])/;
 
 if (MAJOR_VERSION < 3) {
@@ -464,10 +467,10 @@ function formatHookStep(step) {
   // For hook steps, construct title from available properties
   let title = step.name;
   if (step.actor && step.name) {
-    title = `${step.actor}.${step.name}`;
+    title = `${step.actor} ${step.name}`;
     if (step.args && step.args.length > 0) {
       const argsStr = step.args.map(arg => JSON.stringify(arg)).join(', ');
-      title += `(${argsStr})`;
+      title += ` ${argsStr}`;
     }
   }
 
