@@ -361,7 +361,7 @@ function readLatestRunId() {
   try {
     const filePath = path.join(os.tmpdir(), `testomatio.latest.run`);
     if (!fs.existsSync(filePath)) return null;
-    
+
     const stats = fs.statSync(filePath);
     const diff = +new Date() - +stats.mtime;
     const diffHours = diff / 1000 / 60 / 60;
@@ -369,7 +369,7 @@ function readLatestRunId() {
 
     return fs.readFileSync(filePath)?.toString()?.trim() ?? null;
   } catch (e) {
-    console.warn('Could not read latest run ID from file: ', e);
+    debug('Could not read latest run ID from file: ', e);
     return null;
   }
 }
