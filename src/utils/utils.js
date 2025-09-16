@@ -416,6 +416,18 @@ export function getPackageVersion() {
   return packageJson.version;
 }
 
+function transformEnvVarToBoolean(value) {
+  if (value === undefined || value === null || value === 'undefined') return false;
+  if (typeof value === 'boolean') return value;
+  if (typeof value !== 'string') value = String(value);
+  value = value.trim();
+
+  if (['1', 'true', 'yes', 'on'].includes(value.toLowerCase())) return true;
+  if (['0', 'false', 'no', 'off'].includes(value.toLowerCase())) return false;
+  // if not recognized, return truthy if any value is set
+  return Boolean(value);
+}
+
 export {
   ansiRegExp,
   cleanLatestRunId,
@@ -438,5 +450,6 @@ export {
   specificTestInfo,
   storeRunId,
   testRunnerHelper,
+  transformEnvVarToBoolean,
   validateSuiteId,
 };
