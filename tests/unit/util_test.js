@@ -25,6 +25,7 @@ import {
   specificTestInfo,
   storeRunId,
   testRunnerHelper,
+  transformEnvVarToBoolean,
   validateSuiteId,
 } from '../../src/utils/utils.js';
 
@@ -612,6 +613,63 @@ ${process.cwd()}/tests/unit/data/cli/RunCest.php:24
         const filePath = path.join(os.tmpdir(), 'testomatio.latest.run');
         expect(fs.existsSync(filePath)).to.be.false;
         expect(() => cleanLatestRunId()).to.not.throw();
+      });
+    });
+
+    describe('#transformEnvVarToBoolean', () => {
+      it('should return false for undefined values', () => {
+        expect(transformEnvVarToBoolean(undefined)).to.be.false;
+        expect(transformEnvVarToBoolean(null)).to.be.false;
+        expect(transformEnvVarToBoolean('undefined')).to.be.false;
+      });
+
+      it('should return true for truthy string values', () => {
+        expect(transformEnvVarToBoolean('1')).to.be.true;
+        expect(transformEnvVarToBoolean('true')).to.be.true;
+        expect(transformEnvVarToBoolean('TRUE')).to.be.true;
+        expect(transformEnvVarToBoolean('True')).to.be.true;
+        expect(transformEnvVarToBoolean('yes')).to.be.true;
+        expect(transformEnvVarToBoolean('YES')).to.be.true;
+        expect(transformEnvVarToBoolean('Yes')).to.be.true;
+        expect(transformEnvVarToBoolean('on')).to.be.true;
+        expect(transformEnvVarToBoolean('ON')).to.be.true;
+        expect(transformEnvVarToBoolean('On')).to.be.true;
+      });
+
+      it('should return false for falsy string values', () => {
+        expect(transformEnvVarToBoolean('0')).to.be.false;
+        expect(transformEnvVarToBoolean('false')).to.be.false;
+        expect(transformEnvVarToBoolean('FALSE')).to.be.false;
+        expect(transformEnvVarToBoolean('False')).to.be.false;
+        expect(transformEnvVarToBoolean('no')).to.be.false;
+        expect(transformEnvVarToBoolean('NO')).to.be.false;
+        expect(transformEnvVarToBoolean('No')).to.be.false;
+        expect(transformEnvVarToBoolean('off')).to.be.false;
+        expect(transformEnvVarToBoolean('OFF')).to.be.false;
+        expect(transformEnvVarToBoolean('Off')).to.be.false;
+      });
+
+      it('should return true for any other non-empty string values', () => {
+        expect(transformEnvVarToBoolean('some-value')).to.be.true;
+        expect(transformEnvVarToBoolean('random')).to.be.true;
+        expect(transformEnvVarToBoolean('2')).to.be.true;
+        expect(transformEnvVarToBoolean('enabled')).to.be.true;
+        expect(transformEnvVarToBoolean('disabled')).to.be.true;
+      });
+
+      it('should return false for empty string and whitespace-only strings', () => {
+        expect(transformEnvVarToBoolean('')).to.be.false;
+        expect(transformEnvVarToBoolean(' ')).to.be.false; // whitespace only, becomes empty after trim
+        expect(transformEnvVarToBoolean('   ')).to.be.false; // multiple spaces, becomes empty after trim
+      });
+
+      it('should handle edge cases', () => {
+        expect(transformEnvVarToBoolean('  true  ')).to.be.true; // with spaces, trimmed and recognized as true
+        expect(transformEnvVarToBoolean('True ')).to.be.true; // trailing space, trimmed and recognized as true
+        expect(transformEnvVarToBoolean(' true')).to.be.true; // leading space, trimmed and recognized as true
+        expect(transformEnvVarToBoolean(' false ')).to.be.false; // spaces around false, trimmed and recognized as false
+        expect(transformEnvVarToBoolean('no ')).to.be.false; // trailing space, trimmed and recognized as false
+        expect(transformEnvVarToBoolean(' off')).to.be.false; // leading space, trimmed and recognized as false
       });
     });
   });
