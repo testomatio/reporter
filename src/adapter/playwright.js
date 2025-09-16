@@ -283,3 +283,4 @@ function getTestContextName(test) {
 }
 
 export default PlaywrightReporter;
+export { extractTags };

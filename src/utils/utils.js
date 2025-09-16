@@ -350,7 +350,12 @@ const testRunnerHelper = {
 function storeRunId(runId) {
   if (!runId || runId === 'undefined') return;
   const filePath = path.join(os.tmpdir(), `testomatio.latest.run`);
-  fs.writeFileSync(filePath, runId);
+  try {
+    fs.writeFileSync(filePath, runId);
+  } catch (e) {
+    if (e.code === 'ENOENT') return null;
+    debug('Could not store latest run ID file: ', e.message);
+  }
 }
 
 /**
@@ -369,7 +374,6 @@ function readLatestRunId() {
 
     return fs.readFileSync(filePath)?.toString()?.trim() ?? null;
   } catch (e) {
-    debug('Could not read latest run ID from file: ', e);
     return null;
   }
 }
@@ -383,6 +387,7 @@ function cleanLatestRunId() {
     }
     debug(`Cleaned latest run ID (${runId}) file`, filePath);
   } catch (e) {
+    if (e.code === 'ENOENT') return null;
     console.warn('Could not clean latest run ID file: ', e);
   }
 }
