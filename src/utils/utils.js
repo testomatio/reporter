@@ -418,7 +418,9 @@ export function getPackageVersion() {
 
 function transformEnvVarToBoolean(value) {
   if (value === undefined || value === null || value === 'undefined') return false;
-  if (value.startsWith(' ') || value.endsWith(' ')) value = value.trim();
+  if (typeof value === 'boolean') return value;
+  if (typeof value !== 'string') value = String(value);
+  value = value.trim();
 
   if (['1', 'true', 'yes', 'on'].includes(value.toLowerCase())) return true;
   if (['0', 'false', 'no', 'off'].includes(value.toLowerCase())) return false;

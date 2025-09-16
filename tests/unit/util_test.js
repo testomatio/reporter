@@ -671,6 +671,20 @@ ${process.cwd()}/tests/unit/data/cli/RunCest.php:24
         expect(transformEnvVarToBoolean('no ')).to.be.false; // trailing space, trimmed and recognized as false
         expect(transformEnvVarToBoolean(' off')).to.be.false; // leading space, trimmed and recognized as false
       });
+
+      it('should handle boolean input types directly', () => {
+        expect(transformEnvVarToBoolean(true)).to.be.true;
+        expect(transformEnvVarToBoolean(false)).to.be.false;
+      });
+
+      it('should handle non-string input types by converting to string', () => {
+        expect(transformEnvVarToBoolean(1)).to.be.true; // number 1 -> "1" -> true
+        expect(transformEnvVarToBoolean(0)).to.be.false; // number 0 -> "0" -> false
+        expect(transformEnvVarToBoolean(123)).to.be.true; // other number -> "123" -> true (not recognized, so Boolean("123"))
+        expect(transformEnvVarToBoolean({})).to.be.true; // object -> "[object Object]" -> true (not recognized, so Boolean("[object Object]"))
+        expect(transformEnvVarToBoolean([])).to.be.false; // empty array -> "" -> false (empty string after trim)
+        expect(transformEnvVarToBoolean([1, 2])).to.be.true; // array -> "1,2" -> true (not recognized, so Boolean("1,2"))
+      });
     });
   });
 });
