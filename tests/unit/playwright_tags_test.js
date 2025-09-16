@@ -84,7 +84,7 @@ describe('Playwright Tags Extraction', () => {
       expect(tags).to.have.length(3); // Should deduplicate ui and critical
     });
 
-    it('should inherit tags from parent suite', () => {
+    it('should extract tags from test title and test tags only', () => {
       const parentMock = {
         tags: ['suite-tag', 'integration'],
         parent: null
@@ -99,12 +99,10 @@ describe('Playwright Tags Extraction', () => {
       const tags = extractTags(testMock);
       expect(tags).to.include('ui');
       expect(tags).to.include('critical');
-      expect(tags).to.include('suite-tag');
-      expect(tags).to.include('integration');
-      expect(tags).to.have.length(4);
+      expect(tags).to.have.length(2); // Only test-level tags, not parent tags
     });
 
-    it('should inherit tags from multiple parent levels', () => {
+    it('should extract tags without inheritance from parent levels', () => {
       const grandParentMock = {
         tags: ['root-tag'],
         parent: null
@@ -124,9 +122,7 @@ describe('Playwright Tags Extraction', () => {
       const tags = extractTags(testMock);
       expect(tags).to.include('ui');
       expect(tags).to.include('critical');
-      expect(tags).to.include('suite-tag');
-      expect(tags).to.include('root-tag');
-      expect(tags).to.have.length(4);
+      expect(tags).to.have.length(2); // Only test-level tags
     });
 
     it('should handle empty tags gracefully', () => {
@@ -186,7 +182,7 @@ describe('Playwright Tags Extraction', () => {
       expect(tags).to.have.length(3);
     });
 
-    it('should normalize mixed case tags from all sources', () => {
+    it('should normalize mixed case tags from test sources only', () => {
       const parentMock = {
         tags: ['SUITE-TAG'],
         parent: null
@@ -203,11 +199,10 @@ describe('Playwright Tags Extraction', () => {
       expect(tags).to.include('smoke');
       expect(tags).to.include('critical');
       expect(tags).to.include('api');
-      expect(tags).to.include('suite-tag');
-      expect(tags).to.have.length(5);
+      expect(tags).to.have.length(4); // Only test-level tags, not parent tags
     });
 
-    it('should handle complex inheritance scenario like in task example', () => {
+    it('should handle test with only title tags', () => {
       // Simulate: describe('critical suite', { tag: ['critical'] }, () => { test('nested @smoke', ...) })
       const suiteMock = {
         title: 'critical suite',
@@ -222,9 +217,8 @@ describe('Playwright Tags Extraction', () => {
       };
 
       const tags = extractTags(testMock);
-      expect(tags).to.include('critical'); // from suite
-      expect(tags).to.include('smoke'); // from title
-      expect(tags).to.have.length(2);
+      expect(tags).to.include('smoke'); // from title only
+      expect(tags).to.have.length(1); // Only test-level tags
     });
 
     it('should handle test with both title tags and options tags like in task example', () => {
