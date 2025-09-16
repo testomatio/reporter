@@ -3,7 +3,7 @@ import pc from 'picocolors';
 import { Gaxios } from 'gaxios';
 import JsonCycle from 'json-cycle';
 import { APP_PREFIX, STATUS, AXIOS_TIMEOUT, REPORTER_REQUEST_RETRIES } from '../constants.js';
-import { isValidUrl, foundedTestLog, readLatestRunId } from '../utils/utils.js';
+import { isValidUrl, foundedTestLog, readLatestRunId, transformEnvVarToBoolean } from '../utils/utils.js';
 import { parseFilterParams, generateFilterRequestParams, setS3Credentials } from '../utils/pipe_utils.js';
 import { config } from '../config.js';
 
@@ -79,7 +79,7 @@ class TestomatioPipe {
 
     this.isEnabled = true;
     // do not finish this run (for parallel testing)
-    this.proceed = process.env.TESTOMATIO_PROCEED;
+    this.proceed = transformEnvVarToBoolean(process.env.TESTOMATIO_PROCEED);
     this.jiraId = process.env.TESTOMATIO_JIRA_ID;
     this.runId = params.runId || process.env.TESTOMATIO_RUN;
     this.createNewTests = params.createNewTests ?? !!process.env.TESTOMATIO_CREATE;
