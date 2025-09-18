@@ -212,6 +212,26 @@ Example:
 TESTOMATIO={API_KEY} TESTOMATIO_STACK_PASSED=1 <actual run command>
 ```
 
+#### `TESTOMATIO_STEPS_PASSED`
+
+Enable detailed steps for passed tests (disabled by default). When disabled, only failed and skipped tests will include step details to reduce noise.
+
+Example:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_STEPS_PASSED=1 <actual run command>
+```
+
+#### `TESTOMATIO_NO_STEPS`
+
+Disable reporting of all steps completely. When enabled, no steps will be included in the test report regardless of test status.
+
+Example:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_NO_STEPS=1 <actual run command>
+```
+
 #### `TESTOMATIO_TITLE`
 
 Set the report title.
