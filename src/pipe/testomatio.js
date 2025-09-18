@@ -259,6 +259,14 @@ class TestomatioPipe {
       data.stack = null;
     }
 
+    if (!process.env.TESTOMATIO_STEPS_PASSED && data.status === STATUS.PASSED) {
+      data.steps = null;
+    }
+
+    if (process.env.TESTOMATIO_NO_STEPS) {
+      data.steps = null;
+    }
+
     const json = JsonCycle.stringify(data);
 
     debug('Adding test', json);
