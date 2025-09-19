@@ -355,4 +355,384 @@ describe('TestomatioPipe', () => {
       expect(pipe.url).to.equal('https://param.testomat.io');
     });
   });
+
+  describe('data formatting with environment variables', () => {
+    let pipe;
+
+    beforeEach(() => {
+      pipe = new TestomatioPipe({
+        apiKey: TESTOMATIO,
+        testomatioUrl: TESTOMATIO_URL,
+        isBatchEnabled: false
+      });
+      
+      // Set a run ID to enable test reporting
+      pipe.runId = 'test-run-id';
+    });
+
+    afterEach(() => {
+      // Clean up environment variables
+      delete process.env.TESTOMATIO_NO_STEPS;
+      delete process.env.TESTOMATIO_STACK_PASSED;
+      delete process.env.TESTOMATIO_STEPS_PASSED;
+    });
+
+    describe('TESTOMATIO_NO_STEPS', () => {
+      it('should remove steps from all tests when enabled (single upload)', () => {
+        process.env.TESTOMATIO_NO_STEPS = '1';
+        
+        const testData = {
+          title: 'Test with steps',
+          status: 'passed',
+          steps: [{ step: 'Step 1' }, { step: 'Step 2' }],
+          stack: 'Error stack trace'
+        };
+
+        pipe.addTest(testData);
+        
+        // The steps should be nullified in the formatted data
+        expect(testData.steps).to.be.null;
+      });
+
+      it('should remove steps from failed tests when enabled (single upload)', () => {
+        process.env.TESTOMATIO_NO_STEPS = '1';
+        
+        const testData = {
+          title: 'Failed test with steps',
+          status: 'failed',
+          steps: [{ step: 'Step 1' }, { step: 'Failed step' }],
+          stack: 'Error stack trace'
+        };
+
+        pipe.addTest(testData);
+        
+        expect(testData.steps).to.be.null;
+      });
+
+      it('should remove steps in batch upload when enabled', (done) => {
+        process.env.TESTOMATIO_NO_STEPS = '1';
+        
+        const batchPipe = new TestomatioPipe({
+          apiKey: TESTOMATIO,
+          testomatioUrl: TESTOMATIO_URL,
+          isBatchEnabled: true
+        });
+        
+        // Set a run ID to enable test reporting
+        batchPipe.runId = 'test-run-id';
+
+        const testData1 = {
+          title: 'Passed test with steps',
+          status: 'passed',
+          steps: [{ step: 'Step 1' }],
+          stack: 'Stack trace'
+        };
+
+        const testData2 = {
+          title: 'Failed test with steps',
+          status: 'failed',
+          steps: [{ step: 'Step 1' }, { step: 'Failed step' }],
+          stack: 'Error stack trace'
+        };
+
+        // Mock the server to capture the batch upload
+        server.on({
+          method: 'POST',
+          path: `/api/reporter/${batchPipe.runId}/testrun`,
+          reply: {
+            status: 200,
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ success: true })
+          }
+        });
+
+        // Add tests to batch - they should be formatted immediately
+        batchPipe.addTest(testData1);
+        batchPipe.addTest(testData2);
+        
+        // Wait a bit for the batch to process
+        setTimeout(() => {
+          // Steps should be nullified for both tests due to formatting
+          expect(testData1.steps).to.be.null;
+          expect(testData2.steps).to.be.null;
+          done();
+        }, 100);
+      });
+
+      it('should remove steps from passed tests when TESTOMATIO_NO_STEPS is not set (default behavior)', () => {
+        const testData = {
+          title: 'Test with steps',
+          status: 'passed',
+          steps: [{ step: 'Step 1' }, { step: 'Step 2' }],
+          stack: 'Error stack trace'
+        };
+
+        pipe.addTest(testData);
+        
+        // By default, TESTOMATIO_STEPS_PASSED is not set, so steps should be removed for passed tests
+        expect(testData.steps).to.be.null;
+      });
+
+      it('should preserve steps for failed tests when TESTOMATIO_NO_STEPS is not set', () => {
+        const testData = {
+          title: 'Failed test with steps',
+          status: 'failed',
+          steps: [{ step: 'Step 1' }, { step: 'Failed step' }],
+          stack: 'Error stack trace'
+        };
+
+        pipe.addTest(testData);
+        
+        // Steps should be preserved for failed tests even when TESTOMATIO_NO_STEPS is not set
+        expect(testData.steps).to.deep.equal([{ step: 'Step 1' }, { step: 'Failed step' }]);
+      });
+    });
+
+    describe('TESTOMATIO_STACK_PASSED', () => {
+      it('should remove stack from passed tests when not enabled', () => {
+        // By default, TESTOMATIO_STACK_PASSED is not set
+        const testData = {
+          title: 'Passed test with stack',
+          status: 'passed',
+          steps: [{ step: 'Step 1' }],
+          stack: 'Stack trace for passed test'
+        };
+
+        pipe.addTest(testData);
+        
+        expect(testData.stack).to.be.null;
+      });
+
+      it('should preserve stack from passed tests when enabled', () => {
+        process.env.TESTOMATIO_STACK_PASSED = '1';
+        
+        const testData = {
+          title: 'Passed test with stack',
+          status: 'passed',
+          steps: [{ step: 'Step 1' }],
+          stack: 'Stack trace for passed test'
+        };
+
+        pipe.addTest(testData);
+        
+        expect(testData.stack).to.equal('Stack trace for passed test');
+      });
+
+      it('should always preserve stack for failed tests', () => {
+        // Test with TESTOMATIO_STACK_PASSED not set
+        const testDataFailed = {
+          title: 'Failed test with stack',
+          status: 'failed',
+          steps: [{ step: 'Step 1' }],
+          stack: 'Error stack trace'
+        };
+
+        pipe.addTest(testDataFailed);
+        expect(testDataFailed.stack).to.equal('Error stack trace');
+
+        // Test with TESTOMATIO_STACK_PASSED enabled
+        process.env.TESTOMATIO_STACK_PASSED = '1';
+        const testDataFailed2 = {
+          title: 'Failed test with stack 2',
+          status: 'failed',
+          steps: [{ step: 'Step 2' }],
+          stack: 'Error stack trace 2'
+        };
+
+        pipe.addTest(testDataFailed2);
+        expect(testDataFailed2.stack).to.equal('Error stack trace 2');
+      });
+
+      it('should handle stack in batch upload correctly', (done) => {
+        const batchPipe = new TestomatioPipe({
+          apiKey: TESTOMATIO,
+          testomatioUrl: TESTOMATIO_URL,
+          isBatchEnabled: true
+        });
+        
+        // Set a run ID to enable test reporting
+        batchPipe.runId = 'test-run-id';
+
+        const testDataPassed = {
+          title: 'Passed test with stack',
+          status: 'passed',
+          steps: [{ step: 'Step 1' }],
+          stack: 'Stack trace for passed test'
+        };
+
+        const testDataFailed = {
+          title: 'Failed test with stack',
+          status: 'failed',
+          steps: [{ step: 'Step 2' }],
+          stack: 'Error stack trace'
+        };
+
+        // Mock the server to capture the batch upload
+        server.on({
+          method: 'POST',
+          path: `/api/reporter/${batchPipe.runId}/testrun`,
+          reply: {
+            status: 200,
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ success: true })
+          }
+        });
+
+        batchPipe.addTest(testDataPassed);
+        batchPipe.addTest(testDataFailed);
+        
+        // Wait a bit for the batch to process
+        setTimeout(() => {
+          // Stack should be null for passed test, preserved for failed test
+          expect(testDataPassed.stack).to.be.null;
+          expect(testDataFailed.stack).to.equal('Error stack trace');
+          done();
+        }, 100);
+      });
+    });
+
+    describe('TESTOMATIO_STEPS_PASSED', () => {
+      it('should remove steps from passed tests when not enabled', () => {
+        // By default, TESTOMATIO_STEPS_PASSED is not set
+        const testData = {
+          title: 'Passed test with steps',
+          status: 'passed',
+          steps: [{ step: 'Step 1' }, { step: 'Step 2' }],
+          stack: 'Stack trace'
+        };
+
+        pipe.addTest(testData);
+        
+        expect(testData.steps).to.be.null;
+      });
+
+      it('should preserve steps from passed tests when enabled', () => {
+        process.env.TESTOMATIO_STEPS_PASSED = '1';
+        
+        const testData = {
+          title: 'Passed test with steps',
+          status: 'passed',
+          steps: [{ step: 'Step 1' }, { step: 'Step 2' }],
+          stack: 'Stack trace'
+        };
+
+        pipe.addTest(testData);
+        
+        expect(testData.steps).to.deep.equal([{ step: 'Step 1' }, { step: 'Step 2' }]);
+      });
+
+      it('should always preserve steps for failed tests', () => {
+        // Test with TESTOMATIO_STEPS_PASSED not set
+        const testDataFailed = {
+          title: 'Failed test with steps',
+          status: 'failed',
+          steps: [{ step: 'Step 1' }, { step: 'Failed step' }],
+          stack: 'Error stack trace'
+        };
+
+        pipe.addTest(testDataFailed);
+        expect(testDataFailed.steps).to.deep.equal([{ step: 'Step 1' }, { step: 'Failed step' }]);
+
+        // Test with TESTOMATIO_STEPS_PASSED enabled
+        process.env.TESTOMATIO_STEPS_PASSED = '1';
+        const testDataFailed2 = {
+          title: 'Failed test with steps 2',
+          status: 'failed',
+          steps: [{ step: 'Step 2' }, { step: 'Failed step 2' }],
+          stack: 'Error stack trace 2'
+        };
+
+        pipe.addTest(testDataFailed2);
+        expect(testDataFailed2.steps).to.deep.equal([{ step: 'Step 2' }, { step: 'Failed step 2' }]);
+      });
+
+      it('should handle steps in batch upload correctly', (done) => {
+        const batchPipe = new TestomatioPipe({
+          apiKey: TESTOMATIO,
+          testomatioUrl: TESTOMATIO_URL,
+          isBatchEnabled: true
+        });
+        
+        // Set a run ID to enable test reporting
+        batchPipe.runId = 'test-run-id';
+
+        const testDataPassed = {
+          title: 'Passed test with steps',
+          status: 'passed',
+          steps: [{ step: 'Step 1' }, { step: 'Step 2' }],
+          stack: 'Stack trace'
+        };
+
+        const testDataFailed = {
+          title: 'Failed test with steps',
+          status: 'failed',
+          steps: [{ step: 'Step 1' }, { step: 'Failed step' }],
+          stack: 'Error stack trace'
+        };
+
+        // Mock the server to capture the batch upload
+        server.on({
+          method: 'POST',
+          path: `/api/reporter/${batchPipe.runId}/testrun`,
+          reply: {
+            status: 200,
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ success: true })
+          }
+        });
+
+        batchPipe.addTest(testDataPassed);
+        batchPipe.addTest(testDataFailed);
+        
+        // Wait a bit for the batch to process
+        setTimeout(() => {
+          // Steps should be null for passed test, preserved for failed test
+          expect(testDataPassed.steps).to.be.null;
+          expect(testDataFailed.steps).to.deep.equal([{ step: 'Step 1' }, { step: 'Failed step' }]);
+          done();
+        }, 100);
+      });
+    });
+
+    describe('Combined environment variables', () => {
+      it('should respect TESTOMATIO_NO_STEPS over other settings', () => {
+        process.env.TESTOMATIO_NO_STEPS = '1';
+        process.env.TESTOMATIO_STEPS_PASSED = '1';
+        process.env.TESTOMATIO_STACK_PASSED = '1';
+        
+        const testData = {
+          title: 'Test with all data',
+          status: 'passed',
+          steps: [{ step: 'Step 1' }],
+          stack: 'Stack trace'
+        };
+
+        pipe.addTest(testData);
+        
+        // TESTOMATIO_NO_STEPS should override other settings
+        expect(testData.steps).to.be.null;
+        // Stack should be preserved due to TESTOMATIO_STACK_PASSED
+        expect(testData.stack).to.equal('Stack trace');
+      });
+
+      it('should apply all filters correctly for failed tests', () => {
+        process.env.TESTOMATIO_NO_STEPS = '1';
+        process.env.TESTOMATIO_STACK_PASSED = '1';
+        
+        const testData = {
+          title: 'Failed test with all data',
+          status: 'failed',
+          steps: [{ step: 'Step 1' }, { step: 'Failed step' }],
+          stack: 'Error stack trace'
+        };
+
+        pipe.addTest(testData);
+        
+        // TESTOMATIO_NO_STEPS should remove steps even for failed tests
+        expect(testData.steps).to.be.null;
+        // Stack should be preserved due to TESTOMATIO_STACK_PASSED
+        expect(testData.stack).to.equal('Error stack trace');
+      });
+    });
+  });
 });
