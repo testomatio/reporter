@@ -281,7 +281,7 @@ class TestomatioPipe {
     if (!this.runId) return;
     if (this.#cancelTestReportingInCaseOfTooManyReqFailures()) return;
 
-    this.#formatData(data)
+    this.#formatData(data);
 
     const json = JsonCycle.stringify(data);
 
@@ -401,7 +401,7 @@ class TestomatioPipe {
       return;
     }
 
-    this.#formatData(data)
+    this.#formatData(data);
 
     let uploading = null;
     if (!this.batch.isEnabled) uploading = this.#uploadSingleTest(data);
