@@ -93,6 +93,35 @@ class TestomatioPipe {
   }
 
   /**
+   * Prepares data for sending to Testomat.io.
+   * @param {*} data - The data to be formatted.
+   * @returns
+   */
+  #formatData(data) {
+    data.api_key = this.apiKey;
+    data.create = this.createNewTests;
+
+    // add test ID + run ID
+    if (data.rid) data.rid = `${this.runId}-${data.rid}`;
+
+
+    if (!process.env.TESTOMATIO_STACK_PASSED && data.status === STATUS.PASSED) {
+      data.stack = null;
+    }
+
+    if (!process.env.TESTOMATIO_STEPS_PASSED && data.status === STATUS.PASSED) {
+      data.steps = null;
+    }
+
+    if (process.env.TESTOMATIO_NO_STEPS) {
+      data.steps = null;
+    }
+
+    return data;
+  }
+
+
+  /**
    * Asynchronously prepares and retrieves the Testomat.io test grepList based on the provided options.
    * @param {Object} opts - The options for preparing the test grepList.
    * @returns {Promise<string[]>} - An array containing the retrieved
@@ -252,20 +281,7 @@ class TestomatioPipe {
     if (!this.runId) return;
     if (this.#cancelTestReportingInCaseOfTooManyReqFailures()) return;
 
-    data.api_key = this.apiKey;
-    data.create = this.createNewTests;
-
-    if (!process.env.TESTOMATIO_STACK_PASSED && data.status === STATUS.PASSED) {
-      data.stack = null;
-    }
-
-    if (!process.env.TESTOMATIO_STEPS_PASSED && data.status === STATUS.PASSED) {
-      data.steps = null;
-    }
-
-    if (process.env.TESTOMATIO_NO_STEPS) {
-      data.steps = null;
-    }
+    this.#formatData(data);
 
     const json = JsonCycle.stringify(data);
 
@@ -307,6 +323,8 @@ class TestomatioPipe {
     });
   };
 
+
+
   /**
    * Uploads tests as a batch (multiple tests at once). Intended to be used with a setInterval
    */
@@ -334,10 +352,10 @@ class TestomatioPipe {
     return this.client.request({
       method: 'POST',
       url: `/api/reporter/${this.runId}/testrun`,
-      data: { 
-        api_key: this.apiKey, 
-        tests: testsToSend, 
-        batch_index: this.batch.batchIndex 
+      data: {
+        api_key: this.apiKey,
+        tests: testsToSend,
+        batch_index: this.batch.batchIndex
       },
       headers: {
         'Content-Type': 'application/json',
@@ -383,10 +401,7 @@ class TestomatioPipe {
       return;
     }
 
-    // add test ID + run ID
-    if (data.rid) data.rid = `${this.runId}-${data.rid}`;
-    data.api_key = this.apiKey;
-    data.create = this.createNewTests;
+    this.#formatData(data);
 
     let uploading = null;
     if (!this.batch.isEnabled) uploading = this.#uploadSingleTest(data);
@@ -512,6 +527,9 @@ function printCreateIssue(err) {
     console.log({ body: body?.replace(/"(tstmt_[^"]+)"/g, 'tstmt_*'), url, baseURL, method, time });
     console.log('```');
   });
+
 }
+
+
 
 export default TestomatioPipe;
