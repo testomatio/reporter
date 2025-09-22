@@ -35,6 +35,7 @@ const {
   TESTOMATIO_ENV,
   TESTOMATIO_RUN,
   TESTOMATIO_MARK_DETACHED,
+  TESTOMATIO_DISABLE_SOURCE_CODE,
 } = process.env;
 
 const options = {
@@ -66,6 +67,10 @@ class XmlReader {
     if (!this.adapter) throw new Error('XML adapter for this format not found');
 
     this.opts = opts || {};
+    // Check if source code fetching should be disabled
+    this.disableSourceCodeFetching = opts.disableSourceCodeFetching || TESTOMATIO_DISABLE_SOURCE_CODE;
+    // Control suite organization strategy: 'classname' (default) or 'fullpath'
+    this.suiteOrganization = opts.suiteOrganization || process.env.TESTOMATIO_SUITE_ORGANIZATION || 'classname';
     this.store = {};
     this.pipesPromise = pipesFactory(opts, this.store);
 
@@ -79,6 +84,16 @@ class XmlReader {
     const packageJsonPath = path.resolve(__dirname, '..', 'package.json');
     this.version = JSON.parse(fs.readFileSync(packageJsonPath).toString()).version;
     console.log(APP_PREFIX, `Testomatio Reporter v${this.version}`);
+
+    if (this.disableSourceCodeFetching) {
+      console.log(APP_PREFIX, '🚫 Source code fetching is disabled');
+    }
+
+    if (this.suiteOrganization === 'fullpath') {
+      console.log(APP_PREFIX, '📁 Using fullpath suite organization (may create nested structure)');
+    } else {
+      console.log(APP_PREFIX, '📋 Using classname suite organization (avoids duplicates)');
+    }
   }
 
   connectAdapter() {
@@ -160,6 +175,7 @@ class XmlReader {
     const { result, total, passed, failed, inconclusive, skipped } = jsonSuite;
 
     reduceOptions.preferClassname = this.stats.language === 'python';
+    reduceOptions.suiteOrganization = this.suiteOrganization;
     const resultTests = processTestSuite(jsonSuite['test-suite']);
 
     debug('Raw tests extracted from NUnit XML:', resultTests.length);
@@ -551,6 +567,12 @@ class XmlReader {
   }
 
   fetchSourceCode() {
+    // Skip source code fetching if disabled
+    if (this.disableSourceCodeFetching) {
+      debug('Source code fetching is disabled');
+      return;
+    }
+
     this.tests.forEach(t => {
       try {
         const file = this.adapter.getFilePath(t);
@@ -728,11 +750,8 @@ function reduceTestCases(prev, item) {
       let { title, tags, testId } = fetchProperties(isParametrized ? item : testCaseItem);
       let example = null;
 
-      // Simple suite title extraction (version 2.1.1 approach) with fallback to enhanced
-      let suiteTitle = preferClassname ? testCaseItem.classname : item.name || testCaseItem.classname;
-      if (!suiteTitle && item.fullname) {
-        suiteTitle = extractTestExplorerSuiteTitle(testCaseItem, item);
-      }
+      // Smart suite title extraction to avoid duplicates
+      const suiteTitle = getSuiteTitle(testCaseItem, item, isParametrized, reduceOptions.suiteOrganization);
 
       title ||= testCaseItem.name || testCaseItem.methodname || testCaseItem.classname;
       tags ||= [];
@@ -940,6 +959,36 @@ function processTestSuite(testsuite) {
   const subSuites = suites.filter(s => s['test-suite'] && !s['test-case']);
 
   return [...subSuites.map(s => processTestSuite(s['test-suite'])), ...suites.reduce(reduceTestCases, [])].flat();
+}
+
+function getSuiteTitle(testCaseItem, item, isParametrized, suiteOrganization = 'classname') {
+  let suiteTitle;
+
+  if (suiteOrganization === 'fullpath') {
+    // Use full namespace path (old behavior that creates detailed structure)
+    if (item.fullname) {
+      return item.fullname;
+    }
+    suiteTitle = testCaseItem.classname || item.name;
+  } else {
+    // Use classname approach (default - avoids duplicates)
+    if (isParametrized) {
+      // For parameterized tests, use the class name to group them
+      suiteTitle = item.name || testCaseItem.classname;
+    } else {
+      // For regular tests, prefer classname over fullname to avoid long paths
+      suiteTitle = testCaseItem.classname || item.name;
+    }
+
+    // If still no suite title and we have fullname, extract just the class name
+    if (!suiteTitle && item.fullname) {
+      const fullnameParts = item.fullname.split('.');
+      suiteTitle = fullnameParts[fullnameParts.length - 1]; // Just the class name
+    }
+  }
+
+  // Fallback
+  return suiteTitle || 'UnknownClass';
 }
 
 function fetchProperties(item) {
