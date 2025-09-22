@@ -168,21 +168,23 @@ class XmlReader {
       resultTests.map(t => ({ title: t.title, example: t.example, file: t.file })),
     );
 
-    // Deduplicate tests based on FQN (Assembly + Namespace + Class + Method)
-    const deduplicatedTests = this.deduplicateTestsByFQN(resultTests);
+    // Optional deduplication for complex NUnit scenarios - can be enabled via options
+    let finalTests = resultTests;
+    if (this.opts.enableNUnitDeduplication) {
+      finalTests = this.deduplicateTestsByFQN(resultTests);
+      debug('Tests after deduplication:', finalTests.length);
+      debug(
+        'Deduplicated tests:',
+        finalTests.map(t => ({
+          title: t.title,
+          examples: t.examples,
+          example: t.example,
+          file: t.file,
+        })),
+      );
+    }
 
-    debug('Tests after deduplication:', deduplicatedTests.length);
-    debug(
-      'Deduplicated tests:',
-      deduplicatedTests.map(t => ({
-        title: t.title,
-        examples: t.examples,
-        example: t.example,
-        file: t.file,
-      })),
-    );
-
-    this.tests = this.tests.concat(deduplicatedTests);
+    this.tests = this.tests.concat(finalTests);
 
     return {
       status: result?.toLowerCase(),
@@ -191,7 +193,7 @@ class XmlReader {
       passed_count: parseInt(passed, 10),
       failed_count: parseInt(failed, 10),
       skipped_count: parseInt(inconclusive + skipped, 10),
-      tests: deduplicatedTests,
+      tests: finalTests,
     };
   }
 
@@ -565,16 +567,16 @@ class XmlReader {
         }
 
         if (!fs.existsSync(file)) {
-          debug('Failed to open file with the source code: %s', file);
+          debug('Failed to open file with the source code', file);
           return;
         }
 
         const contents = fs.readFileSync(file).toString();
 
-        // Use original test name for source code lookup, not humanized title
-        const originalTitle = t.originalTestName ? t.originalTestName.replace(/\(.*?\)/, '').trim() : t.title;
+        // Try original test name first (for parameterized tests), fallback to regular title
+        const titleForLookup = t.originalTestName ? t.originalTestName.replace(/\(.*?\)/, '').trim() : t.title;
 
-        t.code = fetchSourceCode(contents, { ...t, title: originalTitle, lang: this.stats.language });
+        t.code = fetchSourceCode(contents, { ...t, title: titleForLookup, lang: this.stats.language });
         if (t.code) debug('Fetched code for test %s', t.title);
 
         t.test_id = fetchIdFromCode(t.code, { lang: this.stats.language });
@@ -699,8 +701,13 @@ function reduceTestCases(prev, item) {
   testCases
     .filter(t => !!t)
     .forEach(testCaseItem => {
-      // Use consistent Test Explorer structure: prioritize fullname for file path
-      const file = extractSourceFilePath(testCaseItem, item);
+      // Simple file extraction (version 2.1.1 approach) with fallback to enhanced extraction
+      let file = testCaseItem.file || item.filepath || item.fullname || item.package || '';
+
+      // If no file found with simple approach and we have enhanced extraction enabled, use it
+      if (!file && item.filepath) {
+        file = extractSourceFilePath(testCaseItem, item);
+      }
 
       let stack = '';
       let message = '';
@@ -715,21 +722,25 @@ function reduceTestCases(prev, item) {
       if (!message) message = stack.trim().split('\n')[0];
 
       const isParametrized = item.type === 'ParameterizedMethod';
+      const preferClassname = reduceOptions.preferClassname || isParametrized;
 
       // SpecFlow config
       let { title, tags, testId } = fetchProperties(isParametrized ? item : testCaseItem);
       let example = null;
 
-      // Use consistent Test Explorer structure for suite title
-      const suiteTitle = extractTestExplorerSuiteTitle(testCaseItem, item);
+      // Simple suite title extraction (version 2.1.1 approach) with fallback to enhanced
+      let suiteTitle = preferClassname ? testCaseItem.classname : item.name || testCaseItem.classname;
+      if (!suiteTitle && item.fullname) {
+        suiteTitle = extractTestExplorerSuiteTitle(testCaseItem, item);
+      }
 
       title ||= testCaseItem.name || testCaseItem.methodname || testCaseItem.classname;
       tags ||= [];
 
-      // Store original test name for parameter extraction
+      // Store original test name for enhanced parameter extraction
       const originalTestName = testCaseItem.name || testCaseItem.methodname;
 
-      // Handle NUnit-style arguments from <arguments> element
+      // Enhanced NUnit-style arguments from <arguments> element
       if (testCaseItem.arguments && testCaseItem.arguments.arg) {
         const args = Array.isArray(testCaseItem.arguments.arg)
           ? testCaseItem.arguments.arg
@@ -738,12 +749,10 @@ function reduceTestCases(prev, item) {
         // Remove parameters from title for NUnit tests
         title = (testCaseItem.methodname || title).replace(/\(.*?\)/, '').trim();
       } else {
-        // Fallback to parsing parameters from test name (SpecFlow, etc.)
-        const exampleMatches = originalTestName?.match(/\((.*?)\)$/);
+        // Simple parameter extraction (version 2.1.1 approach)
+        const exampleMatches = testCaseItem.name?.match(/\S\((.*?)\)/);
         if (exampleMatches) {
-          // Extract and store parameters as Examples
-          const parameterValues = exampleMatches[1].split(',').map(v => v.trim().replace(/['"]/g, ''));
-          example = parameterValues;
+          example = { ...exampleMatches[1].split(',').map(v => v.trim().replace(/[^\w\s-]/g, '')) };
           title = title.replace(/\(.*?\)/, '').trim();
         }
       }
@@ -800,7 +809,7 @@ function reduceTestCases(prev, item) {
         run_time: parseFloat(testCaseItem.time || testCaseItem.duration) * 1000,
         status,
         title,
-        originalTestName, // Store original name for parameter-aware FQN generation
+        originalTestName, // Store original name for enhanced features
         root_suite_id: TESTOMATIO_SUITE,
         suite_title: suiteTitle,
         files,
@@ -927,23 +936,10 @@ function processTestSuite(testsuite) {
     suites = [testsuite];
   }
 
-  let allResults = [];
+  // Simple approach from version 2.1.1 with enhanced processing for complex scenarios
+  const subSuites = suites.filter(s => s['test-suite'] && !s['test-case']);
 
-  for (const suite of suites) {
-    // Process child test suites recursively (TestFixture, ParameterizedMethod, etc.)
-    if (suite['test-suite']) {
-      const childResults = processTestSuite(suite['test-suite']);
-      allResults = allResults.concat(childResults);
-    }
-
-    // Process direct test cases in this suite
-    if (suite['test-case'] || suite.testcase) {
-      const leafResults = reduceTestCases([], suite);
-      allResults = allResults.concat(leafResults);
-    }
-  }
-
-  return allResults;
+  return [...subSuites.map(s => processTestSuite(s['test-suite'])), ...suites.reduce(reduceTestCases, [])].flat();
 }
 
 function fetchProperties(item) {
