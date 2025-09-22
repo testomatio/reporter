@@ -380,7 +380,12 @@ const testRunnerHelper = {
 function storeRunId(runId) {
   if (!runId || runId === 'undefined') return;
   const filePath = path.join(os.tmpdir(), `testomatio.latest.run`);
-  fs.writeFileSync(filePath, runId);
+  try {
+    fs.writeFileSync(filePath, runId);
+  } catch (e) {
+    if (e.code === 'ENOENT') return null;
+    debug('Could not store latest run ID file: ', e.message);
+  }
 }
 
 /**
@@ -399,7 +404,6 @@ function readLatestRunId() {
 
     return fs.readFileSync(filePath)?.toString()?.trim() ?? null;
   } catch (e) {
-    console.warn('Could not read latest run ID from file: ', e);
     return null;
   }
 }
@@ -413,6 +417,7 @@ function cleanLatestRunId() {
     }
     debug(`Cleaned latest run ID (${runId}) file`, filePath);
   } catch (e) {
+    if (e.code === 'ENOENT') return null;
     console.warn('Could not clean latest run ID file: ', e);
   }
 }
@@ -441,6 +446,18 @@ export function getPackageVersion() {
   return packageJson.version;
 }
 
+function transformEnvVarToBoolean(value) {
+  if (value === undefined || value === null || value === 'undefined') return false;
+  if (typeof value === 'boolean') return value;
+  if (typeof value !== 'string') value = String(value);
+  value = value.trim();
+
+  if (['1', 'true', 'yes', 'on'].includes(value.toLowerCase())) return true;
+  if (['0', 'false', 'no', 'off'].includes(value.toLowerCase())) return false;
+  // if not recognized, return truthy if any value is set
+  return Boolean(value);
+}
+
 export {
   ansiRegExp,
   cleanLatestRunId,
@@ -463,5 +480,6 @@ export {
   specificTestInfo,
   storeRunId,
   testRunnerHelper,
+  transformEnvVarToBoolean,
   validateSuiteId,
 };

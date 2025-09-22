@@ -3,7 +3,7 @@ import pc from 'picocolors';
 import { Gaxios } from 'gaxios';
 import JsonCycle from 'json-cycle';
 import { APP_PREFIX, STATUS, AXIOS_TIMEOUT, REPORTER_REQUEST_RETRIES } from '../constants.js';
-import { isValidUrl, foundedTestLog, readLatestRunId } from '../utils/utils.js';
+import { isValidUrl, foundedTestLog, readLatestRunId, transformEnvVarToBoolean } from '../utils/utils.js';
 import { parseFilterParams, generateFilterRequestParams, setS3Credentials } from '../utils/pipe_utils.js';
 import { config } from '../config.js';
 
@@ -79,7 +79,7 @@ class TestomatioPipe {
 
     this.isEnabled = true;
     // do not finish this run (for parallel testing)
-    this.proceed = process.env.TESTOMATIO_PROCEED;
+    this.proceed = transformEnvVarToBoolean(process.env.TESTOMATIO_PROCEED);
     this.jiraId = process.env.TESTOMATIO_JIRA_ID;
     this.runId = params.runId || process.env.TESTOMATIO_RUN;
     this.createNewTests = params.createNewTests ?? !!process.env.TESTOMATIO_CREATE;
@@ -91,6 +91,35 @@ class TestomatioPipe {
       console.error(APP_PREFIX, pc.red(`Error creating report on Testomat.io, report url '${this.url}' is invalid`));
     }
   }
+
+  /**
+   * Prepares data for sending to Testomat.io.
+   * @param {*} data - The data to be formatted.
+   * @returns
+   */
+  #formatData(data) {
+    data.api_key = this.apiKey;
+    data.create = this.createNewTests;
+
+    // add test ID + run ID
+    if (data.rid) data.rid = `${this.runId}-${data.rid}`;
+
+
+    if (!process.env.TESTOMATIO_STACK_PASSED && data.status === STATUS.PASSED) {
+      data.stack = null;
+    }
+
+    if (!process.env.TESTOMATIO_STEPS_PASSED && data.status === STATUS.PASSED) {
+      data.steps = null;
+    }
+
+    if (process.env.TESTOMATIO_NO_STEPS) {
+      data.steps = null;
+    }
+
+    return data;
+  }
+
 
   /**
    * Asynchronously prepares and retrieves the Testomat.io test grepList based on the provided options.
@@ -252,12 +281,7 @@ class TestomatioPipe {
     if (!this.runId) return;
     if (this.#cancelTestReportingInCaseOfTooManyReqFailures()) return;
 
-    data.api_key = this.apiKey;
-    data.create = this.createNewTests;
-
-    if (!process.env.TESTOMATIO_STACK_PASSED && data.status === STATUS.PASSED) {
-      data.stack = null;
-    }
+    this.#formatData(data);
 
     const json = JsonCycle.stringify(data);
 
@@ -299,6 +323,8 @@ class TestomatioPipe {
     });
   };
 
+
+
   /**
    * Uploads tests as a batch (multiple tests at once). Intended to be used with a setInterval
    */
@@ -326,10 +352,10 @@ class TestomatioPipe {
     return this.client.request({
       method: 'POST',
       url: `/api/reporter/${this.runId}/testrun`,
-      data: { 
-        api_key: this.apiKey, 
-        tests: testsToSend, 
-        batch_index: this.batch.batchIndex 
+      data: {
+        api_key: this.apiKey,
+        tests: testsToSend,
+        batch_index: this.batch.batchIndex
       },
       headers: {
         'Content-Type': 'application/json',
@@ -375,10 +401,7 @@ class TestomatioPipe {
       return;
     }
 
-    // add test ID + run ID
-    if (data.rid) data.rid = `${this.runId}-${data.rid}`;
-    data.api_key = this.apiKey;
-    data.create = this.createNewTests;
+    this.#formatData(data);
 
     let uploading = null;
     if (!this.batch.isEnabled) uploading = this.#uploadSingleTest(data);
@@ -438,6 +461,9 @@ class TestomatioPipe {
             tests: params.tests,
           }
         });
+
+        console.log(APP_PREFIX, '✅ Testrun finished');
+
         if (this.runUrl) {
           console.log(APP_PREFIX, '📊 Report Saved. Report URL:', pc.magenta(this.runUrl));
         }
@@ -501,6 +527,9 @@ function printCreateIssue(err) {
     console.log({ body: body?.replace(/"(tstmt_[^"]+)"/g, 'tstmt_*'), url, baseURL, method, time });
     console.log('```');
   });
+
 }
+
+
 
 export default TestomatioPipe;

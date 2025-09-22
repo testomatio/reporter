@@ -1,6 +1,6 @@
 {
   "name": "@testomatio/reporter",
-  "version": "2.3.0",
+  "version": "2.3.5",
   "description": "Testomatio Reporter Client",
   "engines": {
     "node": ">=18"
@@ -54,7 +54,7 @@
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "format": "npm run lint:fix && npm run pretty:fix",
-    "test": "mocha tests/unit/**/*_test.js",
+    "test": "mocha 'tests/unit/**/*_test.js'",
     "test:playwright": "mocha tests/adapter/playwright.test.js",
     "test:codecept": "mocha tests/adapter/codecept.test.js tests/adapter/codecept_comprehensive.test.js tests/adapter/codecept_steps_sections.test.js",
     "test:frameworks": "npm run test:playwright && npm run test:codecept",

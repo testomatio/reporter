@@ -173,12 +173,12 @@ function TestomatioNewmanReporter(
     steps += newmanItemStore.authType ? `\n\n${pc.bold('auth: ')}${newmanItemStore.authType}` : '';
 
     // add request headers
-    if (process.env.TESTOMATIO_STACK_PASSED || status !== 'passed') {
+    if (process.env.TESTOMATIO_STEPS_PASSED || status !== 'passed') {
       steps += `\n\n${pc.bold('headers:')}\n${newmanItemStore.requestHeaders}`;
     }
 
     // request body
-    if (process.env.TESTOMATIO_STACK_PASSED || status !== 'passed') {
+    if (process.env.TESTOMATIO_STEPS_PASSED || status !== 'passed') {
       steps += newmanItemStore.requestBody ? `\n${pc.bold('request body:')}\n${newmanItemStore.requestBody}` : '';
     }
 
@@ -193,7 +193,7 @@ function TestomatioNewmanReporter(
     steps += newmanItemStore.responseSize ? `\tSize: ${filesize(newmanItemStore.responseSize)}` : '';
 
     // add response body
-    if (process.env.TESTOMATIO_STACK_PASSED || status !== 'passed') {
+    if (process.env.TESTOMATIO_STEPS_PASSED || status !== 'passed') {
       steps += newmanItemStore.responseBody ? `\n\n${pc.bold('response body')}:\n${newmanItemStore.responseBody}` : '';
     }
 
