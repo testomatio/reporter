@@ -35,7 +35,9 @@ const {
   TESTOMATIO_ENV,
   TESTOMATIO_RUN,
   TESTOMATIO_MARK_DETACHED,
-  TESTOMATIO_DISABLE_SOURCE_CODE,
+  // New environment variables for performance and organization control
+  TESTOMATIO_DISABLE_SOURCE_CODE, // Set to '1' to skip source code fetching for faster imports
+  TESTOMATIO_SUITE_ORGANIZATION, // 'classname' (default) or 'fullpath' to control suite structure
 } = process.env;
 
 const options = {
@@ -67,10 +69,6 @@ class XmlReader {
     if (!this.adapter) throw new Error('XML adapter for this format not found');
 
     this.opts = opts || {};
-    // Check if source code fetching should be disabled
-    this.disableSourceCodeFetching = opts.disableSourceCodeFetching || TESTOMATIO_DISABLE_SOURCE_CODE;
-    // Control suite organization strategy: 'classname' (default) or 'fullpath'
-    this.suiteOrganization = opts.suiteOrganization || process.env.TESTOMATIO_SUITE_ORGANIZATION || 'classname';
     this.store = {};
     this.pipesPromise = pipesFactory(opts, this.store);
 
@@ -84,16 +82,6 @@ class XmlReader {
     const packageJsonPath = path.resolve(__dirname, '..', 'package.json');
     this.version = JSON.parse(fs.readFileSync(packageJsonPath).toString()).version;
     console.log(APP_PREFIX, `Testomatio Reporter v${this.version}`);
-
-    if (this.disableSourceCodeFetching) {
-      console.log(APP_PREFIX, '🚫 Source code fetching is disabled');
-    }
-
-    if (this.suiteOrganization === 'fullpath') {
-      console.log(APP_PREFIX, '📁 Using fullpath suite organization (may create nested structure)');
-    } else {
-      console.log(APP_PREFIX, '📋 Using classname suite organization (avoids duplicates)');
-    }
   }
 
   connectAdapter() {
@@ -144,7 +132,14 @@ class XmlReader {
     const { testsuite, name, tests, failures, errors } = jsonSuite;
 
     reduceOptions.preferClassname = this.stats.language === 'python';
-    const resultTests = processTestSuite(testsuite);
+    let resultTests = processTestSuite(testsuite);
+
+    // Apply deduplication for safety (should not be needed for JUnit but adds protection)
+    const originalLength = resultTests.length;
+    resultTests = this.deduplicateTests(resultTests);
+    if (originalLength !== resultTests.length) {
+      debug(`JUnit deduplication: ${originalLength} -> ${resultTests.length} tests`);
+    }
 
     const hasFailures = resultTests.filter(t => t.status === 'failed').length > 0;
     const status = failures > 0 || errors > 0 || hasFailures ? 'failed' : 'passed';
@@ -175,32 +170,13 @@ class XmlReader {
     const { result, total, passed, failed, inconclusive, skipped } = jsonSuite;
 
     reduceOptions.preferClassname = this.stats.language === 'python';
-    reduceOptions.suiteOrganization = this.suiteOrganization;
-    const resultTests = processTestSuite(jsonSuite['test-suite']);
+    let resultTests = processTestSuite(jsonSuite['test-suite']);
 
-    debug('Raw tests extracted from NUnit XML:', resultTests.length);
-    debug(
-      'Raw tests:',
-      resultTests.map(t => ({ title: t.title, example: t.example, file: t.file })),
-    );
+    // Apply deduplication as safety net
+    resultTests = this.deduplicateTests(resultTests);
+    debug(`After deduplication: ${resultTests.length} tests remaining`);
 
-    // Optional deduplication for complex NUnit scenarios - can be enabled via options
-    let finalTests = resultTests;
-    if (this.opts.enableNUnitDeduplication) {
-      finalTests = this.deduplicateTestsByFQN(resultTests);
-      debug('Tests after deduplication:', finalTests.length);
-      debug(
-        'Deduplicated tests:',
-        finalTests.map(t => ({
-          title: t.title,
-          examples: t.examples,
-          example: t.example,
-          file: t.file,
-        })),
-      );
-    }
-
-    this.tests = this.tests.concat(finalTests);
+    this.tests = this.tests.concat(resultTests);
 
     return {
       status: result?.toLowerCase(),
@@ -209,7 +185,7 @@ class XmlReader {
       passed_count: parseInt(passed, 10),
       failed_count: parseInt(failed, 10),
       skipped_count: parseInt(inconclusive + skipped, 10),
-      tests: finalTests,
+      tests: resultTests,
     };
   }
 
@@ -271,7 +247,16 @@ class XmlReader {
     let status = STATUS.PASSED.toString();
     if (failed_count > 0) status = STATUS.FAILED;
 
-    this.tests = results.filter(t => !!t.title);
+    let finalResults = results.filter(t => !!t.title);
+
+    // Apply deduplication for safety
+    const originalLength = finalResults.length;
+    finalResults = this.deduplicateTests(finalResults);
+    if (originalLength !== finalResults.length) {
+      debug(`TRX deduplication: ${originalLength} -> ${finalResults.length} tests`);
+    }
+
+    this.tests = finalResults;
 
     return {
       status,
@@ -280,7 +265,7 @@ class XmlReader {
       passed_count: parseInt(counters.passed, 10),
       skipped_count: parseInt(counters.notExecuted, 10),
       failed_count,
-      tests: results,
+      tests: finalResults,
     };
   }
 
@@ -338,211 +323,86 @@ class XmlReader {
       });
     });
 
-    const hasFailures = tests.filter(t => t.status === STATUS.FAILED).length > 0;
+    // Apply deduplication for safety
+    const originalLength = tests.length;
+    const deduplicatedTests = this.deduplicateTests(tests);
+    if (originalLength !== deduplicatedTests.length) {
+      debug(`XUnit deduplication: ${originalLength} -> ${deduplicatedTests.length} tests`);
+    }
+
+    const hasFailures = deduplicatedTests.filter(t => t.status === STATUS.FAILED).length > 0;
     const status = hasFailures ? STATUS.FAILED : STATUS.PASSED;
 
-    this.tests = tests;
+    this.tests = deduplicatedTests;
 
-    debug(tests);
+    debug(deduplicatedTests);
 
     return {
       status,
       create_tests: true,
       name: 'xUnit',
-      tests_count: tests.length,
-      passed_count: tests.filter(t => t.status === STATUS.PASSED).length,
-      failed_count: tests.filter(t => t.status === STATUS.FAILED).length,
-      skipped_count: tests.filter(t => t.status === STATUS.SKIPPED).length,
-      tests,
+      tests_count: deduplicatedTests.length,
+      passed_count: deduplicatedTests.filter(t => t.status === STATUS.PASSED).length,
+      failed_count: deduplicatedTests.filter(t => t.status === STATUS.FAILED).length,
+      skipped_count: deduplicatedTests.filter(t => t.status === STATUS.SKIPPED).length,
+      tests: deduplicatedTests,
     };
   }
 
-  deduplicateTestsByFQN(tests) {
-    const fqnMap = new Map();
+  /**
+   * Removes duplicate tests based on suite_title + title combination
+   * Prioritizes tests with test_id from code and better file paths
+   * @param {Array} tests - Array of test objects
+   * @returns {Array} Deduplicated array of tests
+   */
+  deduplicateTests(tests) {
+    const uniqueTests = new Map();
 
     tests.forEach(test => {
-      const fqn = this.generateNormalizedFQN(test);
+      // Create unique key based on suite_title and test title
+      const key = `${test.suite_title || 'undefined'}.${test.title || 'undefined'}`;
 
-      if (fqnMap.has(fqn)) {
-        const existingTest = fqnMap.get(fqn);
-
-        // For parameterized tests, merge as Examples
-        if (test.example && Array.isArray(test.example) && test.example.length > 0) {
-          // Initialize examples array if it doesn't exist
-          if (!existingTest.examples) {
-            existingTest.examples = [];
-            // Add the existing test's example as the first item if it has parameters
-            if (existingTest.example && Array.isArray(existingTest.example) && existingTest.example.length > 0) {
-              existingTest.examples.push({
-                parameters: existingTest.example,
-                status: existingTest.status,
-                run_time: existingTest.run_time,
-                message: existingTest.message,
-                stack: existingTest.stack,
-              });
-              // Clear the main test's example since it's now in examples array
-              delete existingTest.example;
-            }
-          }
-
-          // Add this test's execution as an example
-          existingTest.examples.push({
-            parameters: test.example,
-            status: test.status,
-            run_time: test.run_time,
-            message: test.message,
-            stack: test.stack,
-          });
-
-          // Update the main test status to reflect the worst status
-          if (test.status === 'failed' || existingTest.status === 'failed') {
-            existingTest.status = 'failed';
-          } else if (test.status === 'skipped' && existingTest.status !== 'failed') {
-            existingTest.status = 'skipped';
-          }
-
-          // Update total run time
-          existingTest.run_time = (existingTest.run_time || 0) + (test.run_time || 0);
-        } else {
-          // Merge test properties for non-parameterized tests, prioritizing Test Explorer structure
-          if (test.test_id && !existingTest.test_id) {
-            existingTest.test_id = test.test_id;
-          }
-          // Keep the most complete test data
-          if (test.stack && !existingTest.stack) {
-            existingTest.stack = test.stack;
-          }
-          if (test.message && !existingTest.message) {
-            existingTest.message = test.message;
-          }
-        }
-
-        // Prefer Test Explorer structure (longer, more complete suite_title)
-        if (test.suite_title && test.suite_title.length > existingTest.suite_title.length) {
-          existingTest.suite_title = test.suite_title;
-        }
-
-        // Always use the source file path if available
-        if (test.file && test.file.endsWith('.cs')) {
-          existingTest.file = test.file;
-        } else if (!existingTest.file || !existingTest.file.endsWith('.cs')) {
-          existingTest.file = this.extractCsFileFromPath(test);
-        }
+      if (!uniqueTests.has(key)) {
+        uniqueTests.set(key, test);
+        debug(`Added test: ${key}`);
       } else {
-        // Fix file path to use proper .cs file names from source paths
-        if (!test.file || !test.file.endsWith('.cs')) {
-          test.file = this.extractCsFileFromPath(test);
+        const existing = uniqueTests.get(key);
+
+        // Merge data, prioritizing certain fields
+        // Prioritize test with test_id from code
+        if (test.test_id && !existing.test_id) {
+          existing.test_id = test.test_id;
+          debug(`Updated test_id for: ${key}`);
         }
-        fqnMap.set(fqn, test);
+
+        // Prioritize more detailed file path
+        if (test.file && test.file.length > (existing.file || '').length) {
+          existing.file = test.file;
+          debug(`Updated file path for: ${key}`);
+        }
+
+        // Prioritize test with more detailed stack trace
+        if (test.stack && test.stack.length > (existing.stack || '').length) {
+          existing.stack = test.stack;
+          existing.message = test.message || existing.message;
+        }
+
+        // Keep artifacts from both tests
+        if (test.files && test.files.length > 0) {
+          existing.files = [...new Set([...(existing.files || []), ...test.files])];
+        }
+
+        debug(`Merged duplicate test: ${key}`);
       }
     });
 
-    return Array.from(fqnMap.values());
-  }
-
-  generateFQN(test) {
-    // Generate Fully Qualified Name: Namespace + Class + Method (standard .NET FQN)
-    // Don't include assembly as it can vary between different test structures
-    const namespace = this.extractNamespace(test);
-    const className = this.extractClassName(test);
-    const methodName = test.title;
-
-    // Use the most complete namespace.class structure available
-    if (test.suite_title && test.suite_title.includes('.')) {
-      return `${test.suite_title}.${methodName}`;
+    const result = Array.from(uniqueTests.values());
+    if (tests.length !== result.length) {
+      const removed = tests.length - result.length;
+      debug(`Deduplication: ${tests.length} -> ${result.length} tests (removed ${removed} duplicates)`);
     }
 
-    return `${namespace}.${className}.${methodName}`;
-  }
-
-  generateNormalizedFQN(test) {
-    // Generate normalized FQN for deduplication by extracting the core namespace.class.method
-    // For parameterized tests, we want the SAME FQN so they merge into one test with multiple Examples
-
-    const fullClassName = test.suite_title || '';
-    const methodName = test.title;
-
-    // Extract the most specific namespace.class pattern
-    if (fullClassName.includes('.')) {
-      const parts = fullClassName.split('.');
-
-      if (parts.length >= 2) {
-        const className = parts[parts.length - 1];
-
-        // Look for common .NET namespace patterns and normalize them:
-        // TestProject.Tests.MyClass -> Tests.MyClass
-        // Tests.MyClass -> Tests.MyClass
-        // MyProject.SubNamespace.Tests.MyClass -> Tests.MyClass
-
-        let normalizedNamespace = '';
-        for (let i = parts.length - 2; i >= 0; i--) {
-          const part = parts[i];
-
-          // Build namespace from right to left, excluding project names
-          if (part === 'Tests' || part.endsWith('Tests') || part.includes('Test')) {
-            // Found a test namespace, use it as the normalized namespace
-            normalizedNamespace = part;
-            break;
-          } else if (i === parts.length - 2) {
-            // If no test namespace found, use the immediate parent as namespace
-            normalizedNamespace = part;
-          }
-        }
-
-        return `${normalizedNamespace}.${className}.${methodName}`;
-      }
-    }
-
-    // Fallback for simple class names
-    return `${fullClassName}.${methodName}`;
-  }
-
-  extractAssemblyName(test) {
-    // Extract assembly name from file path or use default
-    if (test.file) {
-      const parts = test.file.split(/[/\\]/);
-      return parts[0] || 'DefaultAssembly';
-    }
-    return 'DefaultAssembly';
-  }
-
-  extractNamespace(test) {
-    // Extract namespace from suite_title or classname
-    if (test.suite_title && test.suite_title.includes('.')) {
-      const parts = test.suite_title.split('.');
-      return parts.slice(0, -1).join('.');
-    }
-    return test.suite_title || 'DefaultNamespace';
-  }
-
-  extractClassName(test) {
-    // Extract class name from suite_title
-    if (test.suite_title && test.suite_title.includes('.')) {
-      const parts = test.suite_title.split('.');
-      return parts[parts.length - 1];
-    }
-    return test.suite_title || 'DefaultClass';
-  }
-
-  extractCsFileFromPath(test) {
-    // Extract .cs file name from source file path, not namespace
-    if (test.file) {
-      // Look for actual .cs file path patterns
-      const csFileMatch = test.file.match(/([^/\\]+\.cs)$/);
-      if (csFileMatch) {
-        return test.file;
-      }
-
-      // If no .cs extension, assume it's a namespace path and convert to likely file name
-      const className = this.extractClassName(test);
-      const pathParts = test.file.split(/[/\\]/);
-      pathParts[pathParts.length - 1] = `${className}.cs`;
-      return pathParts.join('/');
-    }
-
-    // Fallback to class name
-    const className = this.extractClassName(test);
-    return `${className}.cs`;
+    return result;
   }
 
   calculateStats() {
@@ -567,9 +427,9 @@ class XmlReader {
   }
 
   fetchSourceCode() {
-    // Skip source code fetching if disabled
-    if (this.disableSourceCodeFetching) {
-      debug('Source code fetching is disabled');
+    // Skip source code fetching if disabled for faster imports
+    if (TESTOMATIO_DISABLE_SOURCE_CODE === '1') {
+      debug('Source code fetching disabled by TESTOMATIO_DISABLE_SOURCE_CODE');
       return;
     }
 
@@ -592,15 +452,9 @@ class XmlReader {
           debug('Failed to open file with the source code', file);
           return;
         }
-
         const contents = fs.readFileSync(file).toString();
-
-        // Try original test name first (for parameterized tests), fallback to regular title
-        const titleForLookup = t.originalTestName ? t.originalTestName.replace(/\(.*?\)/, '').trim() : t.title;
-
-        t.code = fetchSourceCode(contents, { ...t, title: titleForLookup, lang: this.stats.language });
+        t.code = fetchSourceCode(contents, { ...t, lang: this.stats.language });
         if (t.code) debug('Fetched code for test %s', t.title);
-
         t.test_id = fetchIdFromCode(t.code, { lang: this.stats.language });
         if (t.test_id) debug('Fetched test id %s for test %s', t.test_id, t.title);
       } catch (err) {
@@ -704,6 +558,46 @@ class XmlReader {
 
 export default XmlReader;
 
+/**
+ * Determines suite title based on TESTOMATIO_SUITE_ORGANIZATION setting
+ * @param {Object} item - Parent test suite item
+ * @param {Object} testCaseItem - Individual test case item
+ * @returns {string} Suite title
+ */
+function determineSuiteTitle(item, testCaseItem) {
+  const suiteOrganization = TESTOMATIO_SUITE_ORGANIZATION || 'classname';
+
+  if (suiteOrganization === 'fullpath') {
+    // Use full namespace path for organization
+    if (testCaseItem.classname) {
+      // Convert namespace to path: "Tests.NUnit_Tests.FinTech.Multicurrency.BillingScreenTests"
+      // -> "Tests/NUnit_Tests/FinTech/Multicurrency/BillingScreenTests"
+      return testCaseItem.classname.replace(/\./g, '/');
+    }
+    if (item.name) {
+      return item.name.replace(/\./g, '/');
+    }
+    // Fallback to file path structure
+    if (testCaseItem.file || item.filepath || item.fullname) {
+      const filePath = testCaseItem.file || item.filepath || item.fullname || '';
+      return filePath.replace(/\\/g, '/').replace(/\.[^/.]+$/, ''); // Remove file extension
+    }
+  }
+
+  // Default 'classname' behavior - use just the class name (last part)
+  if (testCaseItem.classname) {
+    const parts = testCaseItem.classname.split('.');
+    return parts[parts.length - 1]; // Return just the class name
+  }
+
+  if (item.name) {
+    const parts = item.name.split('.');
+    return parts[parts.length - 1];
+  }
+
+  return testCaseItem.classname || item.name || 'Unknown';
+}
+
 function reduceTestCases(prev, item) {
   let testCases = item.testcase;
   if (!testCases) testCases = item['test-case'];
@@ -711,25 +605,15 @@ function reduceTestCases(prev, item) {
     testCases = [testCases];
   }
 
-  // suite inside test case
-  const testCase = item['test-suite']?.['test-case'];
-  if (testCase) {
-    const nestedCases = Array.isArray(testCase) ? testCase : [testCase];
-    testCases.push(...nestedCases);
-  }
+  // Note: Removed problematic logic that was adding nested test-suite cases
+  // This was causing duplicate test processing
 
   const suiteOutput = item['system-out'] || item.output || item.log || '';
   const suiteErr = item['system-err'] || item.output || item.log || '';
   testCases
     .filter(t => !!t)
     .forEach(testCaseItem => {
-      // Simple file extraction (version 2.1.1 approach) with fallback to enhanced extraction
-      let file = testCaseItem.file || item.filepath || item.fullname || item.package || '';
-
-      // If no file found with simple approach and we have enhanced extraction enabled, use it
-      if (!file && item.filepath) {
-        file = extractSourceFilePath(testCaseItem, item);
-      }
+      const file = testCaseItem.file || item.filepath || item.fullname || item.package || '';
 
       let stack = '';
       let message = '';
@@ -744,36 +628,21 @@ function reduceTestCases(prev, item) {
       if (!message) message = stack.trim().split('\n')[0];
 
       const isParametrized = item.type === 'ParameterizedMethod';
-      const preferClassname = reduceOptions.preferClassname || isParametrized;
 
       // SpecFlow config
       let { title, tags, testId } = fetchProperties(isParametrized ? item : testCaseItem);
       let example = null;
 
-      // Smart suite title extraction to avoid duplicates
-      const suiteTitle = getSuiteTitle(testCaseItem, item, isParametrized, reduceOptions.suiteOrganization);
+      // Use new deterministic suite title logic
+      const suiteTitle = determineSuiteTitle(item, testCaseItem);
 
       title ||= testCaseItem.name || testCaseItem.methodname || testCaseItem.classname;
       tags ||= [];
 
-      // Store original test name for enhanced parameter extraction
-      const originalTestName = testCaseItem.name || testCaseItem.methodname;
-
-      // Enhanced NUnit-style arguments from <arguments> element
-      if (testCaseItem.arguments && testCaseItem.arguments.arg) {
-        const args = Array.isArray(testCaseItem.arguments.arg)
-          ? testCaseItem.arguments.arg
-          : [testCaseItem.arguments.arg];
-        example = args; // Store as array instead of object
-        // Remove parameters from title for NUnit tests
-        title = (testCaseItem.methodname || title).replace(/\(.*?\)/, '').trim();
-      } else {
-        // Simple parameter extraction (version 2.1.1 approach)
-        const exampleMatches = testCaseItem.name?.match(/\S\((.*?)\)/);
-        if (exampleMatches) {
-          example = { ...exampleMatches[1].split(',').map(v => v.trim().replace(/[^\w\s-]/g, '')) };
-          title = title.replace(/\(.*?\)/, '').trim();
-        }
+      const exampleMatches = testCaseItem.name?.match(/\S\((.*?)\)/);
+      if (exampleMatches) {
+        example = { ...exampleMatches[1].split(',').map(v => v.trim().replace(/[^\w\s-]/g, '')) };
+        title = title.replace(/\(.*?\)/, '').trim();
       }
 
       stack = `${
@@ -828,7 +697,6 @@ function reduceTestCases(prev, item) {
         run_time: parseFloat(testCaseItem.time || testCaseItem.duration) * 1000,
         status,
         title,
-        originalTestName, // Store original name for enhanced features
         root_suite_id: TESTOMATIO_SUITE,
         suite_title: suiteTitle,
         files,
@@ -838,115 +706,10 @@ function reduceTestCases(prev, item) {
   return prev;
 }
 
-function extractSourceFilePath(testCaseItem, item) {
-  // Priority order for file path extraction to match Test Explorer structure:
-  // 1. filepath attribute (direct .cs file path from NUnit)
-  // 2. fullname (contains full project path)
-  // 3. file attribute from test case
-  // 4. package (fallback)
-
-  // NUnit provides filepath attribute with actual .cs file path - use this first
-  if (item.filepath) {
-    // Clean up Windows/Unix path separators and ensure proper format
-    let filePath = item.filepath.replace(/\\/g, '/');
-
-    // Make relative to current working directory if absolute
-    if (path.isAbsolute(item.filepath)) {
-      const cwd = process.cwd().replace(/\\/g, '/');
-      if (filePath.startsWith(cwd)) {
-        filePath = path.relative(cwd, item.filepath).replace(/\\/g, '/');
-      } else {
-        // Try to extract relative path from common patterns
-        const commonPatterns = ['/Tests/', '/test/', '/src/', '/Test/'];
-        for (const pattern of commonPatterns) {
-          const index = filePath.lastIndexOf(pattern);
-          if (index !== -1) {
-            filePath = filePath.substring(index + 1);
-            break;
-          }
-        }
-      }
-    }
-    return filePath;
-  }
-
-  if (testCaseItem.file) {
-    let filePath = testCaseItem.file.replace(/\\/g, '/');
-
-    // Make relative to current working directory if absolute
-    if (path.isAbsolute(testCaseItem.file)) {
-      const cwd = process.cwd().replace(/\\/g, '/');
-      if (filePath.startsWith(cwd)) {
-        filePath = path.relative(cwd, testCaseItem.file).replace(/\\/g, '/');
-      } else {
-        // Try to extract relative path from common patterns
-        const commonPatterns = ['/Tests/', '/test/', '/src/', '/Test/'];
-        for (const pattern of commonPatterns) {
-          const index = filePath.lastIndexOf(pattern);
-          if (index !== -1) {
-            filePath = filePath.substring(index + 1);
-            break;
-          }
-        }
-      }
-    }
-    return filePath;
-  }
-
-  if (item.fullname) {
-    // Extract actual file path from fullname if it contains path separators
-    const fullnameParts = item.fullname.split('.');
-    if (fullnameParts.length > 2) {
-      // For ParameterizedMethod, get the class name (not method name)
-      // Example: "NUnit_sample_test.Tests.SampleTests.TestBooleanValue" -> "Tests/SampleTests.cs"
-      let namespaceParts, className;
-
-      if (item.type === 'ParameterizedMethod') {
-        // For parameterized methods, the last part is the method name, second-to-last is class
-        namespaceParts = fullnameParts.slice(1, -2); // Skip project name and method name
-        className = fullnameParts[fullnameParts.length - 2]; // Get class name
-      } else {
-        // For regular classes/fixtures
-        namespaceParts = fullnameParts.slice(1, -1); // Skip project name
-        className = fullnameParts[fullnameParts.length - 1];
-      }
-
-      return `${namespaceParts.join('/')}/${className}.cs`;
-    }
-  }
-
-  if (item.package) return item.package.replace(/\\/g, '/');
-
-  // Fallback: construct from classname
-  if (testCaseItem.classname) {
-    const parts = testCaseItem.classname.split('.');
-    const className = parts[parts.length - 1];
-    const namespacePath = parts.slice(0, -1).join('/');
-    return `${namespacePath}/${className}.cs`;
-  }
-
-  return '';
-}
-
-function extractTestExplorerSuiteTitle(testCaseItem, item) {
-  // Extract suite title to match Test Explorer structure (Project/Namespace hierarchy)
-  // Priority: fullname > classname > name
-
-  if (item.fullname) {
-    // Use fullname to maintain Test Explorer structure
-    return item.fullname;
-  }
-
-  if (testCaseItem.classname) {
-    return testCaseItem.classname;
-  }
-
-  // Fallback to item name but prefer classname structure
-  return item.name || testCaseItem.classname || 'UnknownClass';
-}
-
 function processTestSuite(testsuite) {
   if (!testsuite) return [];
+
+  // Handle single nested testsuite
   if (testsuite.testsuite) return processTestSuite(testsuite.testsuite);
   if (testsuite['test-suite'] && !testsuite['test-case']) return processTestSuite(testsuite['test-suite']);
 
@@ -955,40 +718,29 @@ function processTestSuite(testsuite) {
     suites = [testsuite];
   }
 
-  // Simple approach from version 2.1.1 with enhanced processing for complex scenarios
-  const subSuites = suites.filter(s => s['test-suite'] && !s['test-case']);
+  const results = [];
 
-  return [...subSuites.map(s => processTestSuite(s['test-suite'])), ...suites.reduce(reduceTestCases, [])].flat();
-}
+  suites.forEach(suite => {
+    // First check if this suite has direct test cases
+    const hasDirectTestCases = suite.testcase || suite['test-case'];
 
-function getSuiteTitle(testCaseItem, item, isParametrized, suiteOrganization = 'classname') {
-  let suiteTitle;
-
-  if (suiteOrganization === 'fullpath') {
-    // Use full namespace path (old behavior that creates detailed structure)
-    if (item.fullname) {
-      return item.fullname;
-    }
-    suiteTitle = testCaseItem.classname || item.name;
-  } else {
-    // Use classname approach (default - avoids duplicates)
-    if (isParametrized) {
-      // For parameterized tests, use the class name to group them
-      suiteTitle = item.name || testCaseItem.classname;
+    if (hasDirectTestCases) {
+      // Process direct test cases using reduceTestCases
+      const testResults = reduceTestCases([], suite);
+      results.push(...testResults);
+      debug(`Processed ${testResults.length} tests from suite with direct test cases: ${suite.name || 'unnamed'}`);
     } else {
-      // For regular tests, prefer classname over fullname to avoid long paths
-      suiteTitle = testCaseItem.classname || item.name;
+      // Only if no direct test cases, process nested test-suites recursively
+      const nestedSuites = suite.testsuite || suite['test-suite'];
+      if (nestedSuites) {
+        const nestedResults = processTestSuite(nestedSuites);
+        results.push(...nestedResults);
+        debug(`Processed ${nestedResults.length} tests from nested suites in: ${suite.name || 'unnamed'}`);
+      }
     }
+  });
 
-    // If still no suite title and we have fullname, extract just the class name
-    if (!suiteTitle && item.fullname) {
-      const fullnameParts = item.fullname.split('.');
-      suiteTitle = fullnameParts[fullnameParts.length - 1]; // Just the class name
-    }
-  }
-
-  // Fallback
-  return suiteTitle || 'UnknownClass';
+  return results;
 }
 
 function fetchProperties(item) {
