@@ -96,7 +96,7 @@ Alias for this command – `test`, e.g. `npx @testomatio/reporter test [options]
 
 ```bash
 npx @testomatio/reporter run "npm test"
-npx @testomatio/reporter run "npx jest" --filter "testomatio:tag=frontend"
+npx @testomatio/reporter run "npx jest" --filter "testomatio:tag-name=frontend"
 npx @testomatio/reporter run "npx jest" --filter "testomatio:label=Smoke"
 npx @testomatio/reporter run "npx jest" --filter "testomatio:jira=TC-123"
 npx @testomatio/reporter run "npx jest" --filter "testomatio:plan=a123fb12"
