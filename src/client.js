@@ -65,6 +65,7 @@ class Client {
    * array containing the prepared execution list,
    * or resolves to undefined if no valid results are found or if all pipes are disabled.
    */
+  //TODO: need to find where we use client.prepareRun() method???
   async prepareRun(params) {
     this.pipes = await pipesFactory(params || this.paramsForPipesFactory || {}, this.pipeStore);
     const { pipe, pipeOptions } = params;
@@ -74,22 +75,19 @@ class Client {
     }
 
     try {
-      const filterPipe = this.pipes.find(p => p.constructor.name.toLowerCase() === `${pipe.toLowerCase()}pipe`);
+      const p = this.pipes.find(p => p.constructor.name.toLowerCase() === `${pipe.toLowerCase()}pipe`);
+      // const p = this.pipes.find(p => p.id === `${pipe.toLowerCase()}`); TODO: as future updates
 
-      if (!filterPipe?.isEnabled) {
-        // TODO:for the future for the another pipes
+      if (!p?.isEnabled) {
         console.warn(
           APP_PREFIX,
-          `At the moment processing is available only for the "testomatio" key. Example: "testomatio:tag-name=xxx"`,
+          "🚫 No active pipes were found in the system. Execution aborted!"
         );
         return;
       }
 
-      const results = await Promise.all(
-        this.pipes.map(async p => ({ pipe: p.toString(), result: await p.prepareRun(pipeOptions) })),
-      );
-
-      const result = results.filter(p => p.pipe.includes('Testomatio'))[0]?.result;
+      // Run only the selected pipe
+      const result = await p.prepareRun(pipeOptions);
 
       if (!result || result.length === 0) {
         return;

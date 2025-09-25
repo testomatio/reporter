@@ -53,7 +53,9 @@ function generateFilterRequestParams(params) {
  *                   The object has properties "type" and "id".
  */
 function parseFilterParams(opts) {
-  const [type, id] = opts.split('=');
+  const [type, ...idParts] = opts.split('=');
+  const id = idParts.join('=');
+  
   const validType = updateFilterType(type);
 
   return {
