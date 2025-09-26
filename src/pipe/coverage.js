@@ -134,14 +134,19 @@ class CoveragePipe { // or Changes for the future???
                 tests.forEach(testId => this.tests.add(testId));
             }
         }
+        // TODO: switch log 'entry' to what??? - because we can have suite + tests: Safaa0ab4|Tc85d62e4
+        console.log(
+            APP_PREFIX, 
+            `✅ We found ${this.tests.size === 1 ? 'one entry' : `${this.tests.size} (test/suite) entries`}` +
+            ' in Testomat.io service side.'
+        );
 
-        console.log(APP_PREFIX, `✅ We found ${this.tests.size === 1 ? 'one test' : `${this.tests.size} tests`} in Testomat.io side.`);
         console.log(pc.green(`📝 Retrieving a list of all modified tests from files is complete! Start running tests...`));        
         
         return this.tests;
     }
 
-    addTest(test) {} // WIP*???
+    addTest(data) {} // WIP* - no need for now???
 
     async createRun() {}
 
