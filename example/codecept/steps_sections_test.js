@@ -118,32 +118,37 @@ Scenario('Test with complex data operations', ({ I }) => {
 });
 
 Scenario('Test truncation of large arguments @truncation', ({ I }) => {
-  // Generate large JSON data (> 10K)
-  const largeObject = {
-    data: 'x'.repeat(5000),
-    items: Array(200).fill({ value: 'y'.repeat(50) }),
+  // Create a large JSON object (> 20K)
+  const largeJson = {
+    data: 'x'.repeat(10000),
+    items: Array(500).fill({ 
+      value: 'y'.repeat(50),
+      meta: { info: 'z'.repeat(20) }
+    }),
     nested: {
       level1: {
         level2: {
-          data: Array(100).fill('z'.repeat(30))
+          array: Array(200).fill('deeply nested data that makes JSON very large'),
+          object: {
+            a: 'a'.repeat(100),
+            b: 'b'.repeat(100),
+            c: 'c'.repeat(100)
+          }
         }
       }
     }
   };
   
-  const largeArray = Array(300).fill('large string value '.repeat(40));
-  const longString = 'a'.repeat(15000);
+  // Use large JSON in steps - these should be truncated
+  I.say(`Processing large JSON: ${JSON.stringify(largeJson)}`);
+  I.expectEqual(typeof largeJson, 'object');
+  I.expectTrue(JSON.stringify(largeJson).length > 20000);
   
-  // Create steps with large arguments that should be truncated
-  I.say(`Processing large object: ${JSON.stringify(largeObject)}`);
-  I.say(`Processing large array: ${JSON.stringify(largeArray)}`);
-  I.say(`Processing long string: ${longString}`);
-  
-  I.expectTrue(largeObject.data.length === 5000);
-  I.expectTrue(largeArray.length === 300);
-  I.expectTrue(longString.length === 15000);
-  
-  // Use large arguments in assertions
-  I.expectEqual(JSON.stringify(largeObject).length > 10000, true);
-  I.expectEqual(JSON.stringify(largeArray).length > 10000, true);
+  // Force an error to generate stack trace with large data
+  try {
+    I.expectEqual(largeJson, 'small value');
+  } catch (e) {
+    // Stack will contain large JSON data
+    I.expectTrue(true);
+  }
 });

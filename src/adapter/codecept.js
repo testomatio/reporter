@@ -127,6 +127,28 @@ function CodeceptReporter(config) {
   });
 
 
+  // mark as failed all tests inside the failed hook
+  event.dispatcher.on(event.hook.failed, hook => {
+    if (hook.name !== 'BeforeSuiteHook') return;
+    const suite = hook.runnable.parent;
+
+    if (!suite) return;
+
+    const error = hook?.ctx?.currentTest?.err;
+
+    for (const test of suite.tests) {
+      client.addTestRun('failed', {
+        ...stripExampleFromTitle(test.title),
+        rid: test.uid,
+        test_id: getTestomatIdFromTestTitle(test.title),
+        suite_title: stripTagsFromTitle(suite.title),
+        error,
+        time: hook?.runnable?.duration,
+      });
+    }
+  });
+
+
   event.dispatcher.on(event.suite.before, suite => {
     dataStorage.setContext(suite.fullTitle());
   });
