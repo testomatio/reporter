@@ -2,7 +2,7 @@ import createDebugMessages from 'debug';
 import pc from 'picocolors';
 import TestomatClient from '../client.js';
 import { STATUS, APP_PREFIX, TESTOMAT_TMP_STORAGE_DIR } from '../constants.js';
-import { getTestomatIdFromTestTitle, fileSystem } from '../utils/utils.js';
+import { getTestomatIdFromTestTitle, truncate, fileSystem } from '../utils/utils.js';
 import { services } from '../services/index.js';
 import { dataStorage } from '../data-storage.js';
 import codeceptjs from 'codeceptjs';
@@ -441,7 +441,7 @@ function formatCodeceptStep(step) {
   if (!step) return null;
 
   const category = step.constructor.name === 'HelperStep' ? 'framework' : 'user';
-  const title = step.toString(); // Use built-in toString
+  const title = truncate(step); // Use built-in toString
   const duration = step.duration || 0; // Use built-in duration
 
   const formattedStep = {
@@ -469,10 +469,11 @@ function formatHookStep(step) {
   if (step.actor && step.name) {
     title = `${step.actor} ${step.name}`;
     if (step.args && step.args.length > 0) {
-      const argsStr = step.args.map(arg => JSON.stringify(arg)).join(', ');
+      const argsStr = step.args.map(arg => truncate(JSON.stringify(arg))).join(', ');
       title += ` ${argsStr}`;
     }
   }
+  title = truncate(title);
 
   return {
     category: 'hook',
@@ -480,6 +481,7 @@ function formatHookStep(step) {
     duration: step.duration || 0
   };
 }
+
 
 export { CodeceptReporter };
 export default CodeceptReporter;

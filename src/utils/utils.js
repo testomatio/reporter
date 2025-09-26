@@ -428,8 +428,16 @@ function transformEnvVarToBoolean(value) {
   return Boolean(value);
 }
 
+function truncate(s, size = 255) {
+  if (s.toString().trim().length < size) {
+    return s.toString();
+  }
+  return `${s.toString().substring(0, size)}...`;
+}
+
 export {
   ansiRegExp,
+  truncate,
   cleanLatestRunId,
   isSameTest,
   fetchSourceCode,

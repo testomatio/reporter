@@ -116,3 +116,34 @@ Scenario('Test with complex data operations', ({ I }) => {
   
   console.log('Complex data operations completed');
 });
+
+Scenario('Test truncation of large arguments @truncation', ({ I }) => {
+  // Generate large JSON data (> 10K)
+  const largeObject = {
+    data: 'x'.repeat(5000),
+    items: Array(200).fill({ value: 'y'.repeat(50) }),
+    nested: {
+      level1: {
+        level2: {
+          data: Array(100).fill('z'.repeat(30))
+        }
+      }
+    }
+  };
+  
+  const largeArray = Array(300).fill('large string value '.repeat(40));
+  const longString = 'a'.repeat(15000);
+  
+  // Create steps with large arguments that should be truncated
+  I.say(`Processing large object: ${JSON.stringify(largeObject)}`);
+  I.say(`Processing large array: ${JSON.stringify(largeArray)}`);
+  I.say(`Processing long string: ${longString}`);
+  
+  I.expectTrue(largeObject.data.length === 5000);
+  I.expectTrue(largeArray.length === 300);
+  I.expectTrue(longString.length === 15000);
+  
+  // Use large arguments in assertions
+  I.expectEqual(JSON.stringify(largeObject).length > 10000, true);
+  I.expectEqual(JSON.stringify(largeArray).length > 10000, true);
+});
