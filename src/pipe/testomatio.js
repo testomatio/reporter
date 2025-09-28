@@ -462,7 +462,7 @@ class TestomatioPipe {
           }
         });
 
-        console.log(APP_PREFIX, '✅ Testrun finished');
+        debug(APP_PREFIX, '✅ Testrun finished');
 
         if (this.runUrl) {
           console.log(APP_PREFIX, '📊 Report Saved. Report URL:', pc.magenta(this.runUrl));
