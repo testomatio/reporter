@@ -116,3 +116,39 @@ Scenario('Test with complex data operations', ({ I }) => {
   
   console.log('Complex data operations completed');
 });
+
+Scenario('Test truncation of large arguments @truncation', ({ I }) => {
+  // Create a large JSON object (> 20K)
+  const largeJson = {
+    data: 'x'.repeat(10000),
+    items: Array(500).fill({ 
+      value: 'y'.repeat(50),
+      meta: { info: 'z'.repeat(20) }
+    }),
+    nested: {
+      level1: {
+        level2: {
+          array: Array(200).fill('deeply nested data that makes JSON very large'),
+          object: {
+            a: 'a'.repeat(100),
+            b: 'b'.repeat(100),
+            c: 'c'.repeat(100)
+          }
+        }
+      }
+    }
+  };
+  
+  // Use large JSON in steps - these should be truncated
+  I.say(`Processing large JSON: ${JSON.stringify(largeJson)}`);
+  I.expectEqual(typeof largeJson, 'object');
+  I.expectTrue(JSON.stringify(largeJson).length > 20000);
+  
+  // Force an error to generate stack trace with large data
+  try {
+    I.expectEqual(largeJson, 'small value');
+  } catch (e) {
+    // Stack will contain large JSON data
+    I.expectTrue(true);
+  }
+});

@@ -10,7 +10,7 @@ import { glob } from 'glob';
 import path, { sep } from 'path';
 import { fileURLToPath } from 'node:url';
 import { S3Uploader } from './uploader.js';
-import { formatStep, readLatestRunId, storeRunId, validateSuiteId } from './utils/utils.js';
+import { formatStep, truncate, readLatestRunId, storeRunId, validateSuiteId } from './utils/utils.js';
 import { filesize as prettyBytes } from 'filesize';
 
 const debug = createDebugMessages('@testomatio/reporter:client');
@@ -387,7 +387,7 @@ class Client {
    */
   formatLogs({ error, steps, logs }) {
     error = error?.trim();
-    logs = logs?.trim();
+    logs = logs?.trim().split('\n').map(l => truncate(l)).join('\n');
 
     if (Array.isArray(steps)) {
       steps = steps
