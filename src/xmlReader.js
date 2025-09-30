@@ -6,6 +6,7 @@ import { XMLParser } from 'fast-xml-parser';
 import { APP_PREFIX, STATUS } from './constants.js';
 import { randomUUID } from 'crypto';
 import { fileURLToPath } from 'url';
+import { NUnitXmlParser } from './junit-adapter/nunit-parser.js';
 import {
   fetchFilesFromStackTrace,
   fetchIdFromOutput,
@@ -35,9 +36,6 @@ const {
   TESTOMATIO_ENV,
   TESTOMATIO_RUN,
   TESTOMATIO_MARK_DETACHED,
-  // New environment variables for performance and organization control
-  TESTOMATIO_DISABLE_SOURCE_CODE, // Set to '1' to skip source code fetching for faster imports
-  TESTOMATIO_SUITE_ORGANIZATION, // 'classname' (default) or 'fullpath' to control suite structure
 } = process.env;
 
 const options = {
@@ -77,6 +75,10 @@ class XmlReader {
     this.stats = {};
     this.stats.language = opts.lang?.toLowerCase();
     this.uploader = new S3Uploader();
+
+    // Enhanced NUnit parsing - enabled by default for NUnit XML
+    this.enhancedNunit = opts.enhancedNunit !== false; // Default true, can be disabled
+    this.groupParameterized = opts.groupParameterized !== false; // Default true, can be disabled
 
     // @ts-ignore
     const packageJsonPath = path.resolve(__dirname, '..', 'package.json');
@@ -129,17 +131,11 @@ class XmlReader {
   }
 
   processJUnit(jsonSuite) {
-    const { testsuite, name, tests, failures, errors } = jsonSuite;
+    const { testsuite, name, failures, errors } = jsonSuite;
+    const tests = testsuite?.tests || jsonSuite.tests;
 
     reduceOptions.preferClassname = this.stats.language === 'python';
-    let resultTests = processTestSuite(testsuite);
-
-    // Apply deduplication for safety (should not be needed for JUnit but adds protection)
-    const originalLength = resultTests.length;
-    resultTests = this.deduplicateTests(resultTests);
-    if (originalLength !== resultTests.length) {
-      debug(`JUnit deduplication: ${originalLength} -> ${resultTests.length} tests`);
-    }
+    const resultTests = processTestSuite(testsuite);
 
     const hasFailures = resultTests.filter(t => t.status === 'failed').length > 0;
     const status = failures > 0 || errors > 0 || hasFailures ? 'failed' : 'passed';
@@ -167,14 +163,18 @@ class XmlReader {
   }
 
   processNUnit(jsonSuite) {
+    // Use enhanced NUnit parser if enabled and this is actually NUnit XML
+    if (this.enhancedNunit && this.isNUnitXml(jsonSuite)) {
+      debug('Using enhanced NUnit parser');
+      return this.processNUnitEnhanced(jsonSuite);
+    }
+
+    // Fallback to legacy parser for backward compatibility
+    debug('Using legacy NUnit parser');
     const { result, total, passed, failed, inconclusive, skipped } = jsonSuite;
 
     reduceOptions.preferClassname = this.stats.language === 'python';
-    let resultTests = processTestSuite(jsonSuite['test-suite']);
-
-    // Apply deduplication as safety net
-    resultTests = this.deduplicateTests(resultTests);
-    debug(`After deduplication: ${resultTests.length} tests remaining`);
+    const resultTests = processTestSuite(jsonSuite['test-suite']);
 
     this.tests = this.tests.concat(resultTests);
 
@@ -187,6 +187,53 @@ class XmlReader {
       skipped_count: parseInt(inconclusive + skipped, 10),
       tests: resultTests,
     };
+  }
+
+  /**
+   * Check if the XML is actually NUnit format (has test-suite hierarchy)
+   * @param {Object} jsonSuite - Parsed XML suite object
+   * @returns {boolean} - True if this is NUnit XML format
+   */
+  isNUnitXml(jsonSuite) {
+    // NUnit XML has test-suite elements with type attributes
+    if (jsonSuite['test-suite']) {
+      const testSuite = Array.isArray(jsonSuite['test-suite']) ? jsonSuite['test-suite'][0] : jsonSuite['test-suite'];
+
+      // Check for NUnit-specific test-suite types
+      return (
+        testSuite &&
+        testSuite.type &&
+        ['Assembly', 'TestSuite', 'TestFixture', 'ParameterizedMethod'].includes(testSuite.type)
+      );
+    }
+    return false;
+  }
+
+  processNUnitEnhanced(jsonSuite) {
+    debug('Processing NUnit XML with enhanced parser');
+
+    try {
+      const nunitParser = new NUnitXmlParser({
+        groupParameterized: this.groupParameterized,
+        ...this.opts,
+      });
+
+      const result = nunitParser.parseTestRun(jsonSuite);
+
+      // Add parsed tests to our collection
+      this.tests = this.tests.concat(result.tests);
+
+      debug(`Enhanced NUnit parser processed ${result.tests.length} tests`);
+
+      return result;
+    } catch (error) {
+      debug('Enhanced NUnit parser failed, falling back to legacy parser:', error.message);
+      console.warn(`${APP_PREFIX} Enhanced NUnit parsing failed, using legacy parser: ${error.message}`);
+
+      // Fallback to legacy parser
+      this.enhancedNunit = false;
+      return this.processNUnit(jsonSuite);
+    }
   }
 
   processTRX(jsonSuite) {
@@ -247,16 +294,7 @@ class XmlReader {
     let status = STATUS.PASSED.toString();
     if (failed_count > 0) status = STATUS.FAILED;
 
-    let finalResults = results.filter(t => !!t.title);
-
-    // Apply deduplication for safety
-    const originalLength = finalResults.length;
-    finalResults = this.deduplicateTests(finalResults);
-    if (originalLength !== finalResults.length) {
-      debug(`TRX deduplication: ${originalLength} -> ${finalResults.length} tests`);
-    }
-
-    this.tests = finalResults;
+    this.tests = results.filter(t => !!t.title);
 
     return {
       status,
@@ -265,7 +303,7 @@ class XmlReader {
       passed_count: parseInt(counters.passed, 10),
       skipped_count: parseInt(counters.notExecuted, 10),
       failed_count,
-      tests: finalResults,
+      tests: results,
     };
   }
 
@@ -323,86 +361,23 @@ class XmlReader {
       });
     });
 
-    // Apply deduplication for safety
-    const originalLength = tests.length;
-    const deduplicatedTests = this.deduplicateTests(tests);
-    if (originalLength !== deduplicatedTests.length) {
-      debug(`XUnit deduplication: ${originalLength} -> ${deduplicatedTests.length} tests`);
-    }
-
-    const hasFailures = deduplicatedTests.filter(t => t.status === STATUS.FAILED).length > 0;
+    const hasFailures = tests.filter(t => t.status === STATUS.FAILED).length > 0;
     const status = hasFailures ? STATUS.FAILED : STATUS.PASSED;
 
-    this.tests = deduplicatedTests;
+    this.tests = tests;
 
-    debug(deduplicatedTests);
+    debug(tests);
 
     return {
       status,
       create_tests: true,
       name: 'xUnit',
-      tests_count: deduplicatedTests.length,
-      passed_count: deduplicatedTests.filter(t => t.status === STATUS.PASSED).length,
-      failed_count: deduplicatedTests.filter(t => t.status === STATUS.FAILED).length,
-      skipped_count: deduplicatedTests.filter(t => t.status === STATUS.SKIPPED).length,
-      tests: deduplicatedTests,
+      tests_count: tests.length,
+      passed_count: tests.filter(t => t.status === STATUS.PASSED).length,
+      failed_count: tests.filter(t => t.status === STATUS.FAILED).length,
+      skipped_count: tests.filter(t => t.status === STATUS.SKIPPED).length,
+      tests,
     };
-  }
-
-  /**
-   * Removes duplicate tests based on suite_title + title combination
-   * Prioritizes tests with test_id from code and better file paths
-   * @param {Array} tests - Array of test objects
-   * @returns {Array} Deduplicated array of tests
-   */
-  deduplicateTests(tests) {
-    const uniqueTests = new Map();
-
-    tests.forEach(test => {
-      // Create unique key based on suite_title and test title
-      const key = `${test.suite_title || 'undefined'}.${test.title || 'undefined'}`;
-
-      if (!uniqueTests.has(key)) {
-        uniqueTests.set(key, test);
-        debug(`Added test: ${key}`);
-      } else {
-        const existing = uniqueTests.get(key);
-
-        // Merge data, prioritizing certain fields
-        // Prioritize test with test_id from code
-        if (test.test_id && !existing.test_id) {
-          existing.test_id = test.test_id;
-          debug(`Updated test_id for: ${key}`);
-        }
-
-        // Prioritize more detailed file path
-        if (test.file && test.file.length > (existing.file || '').length) {
-          existing.file = test.file;
-          debug(`Updated file path for: ${key}`);
-        }
-
-        // Prioritize test with more detailed stack trace
-        if (test.stack && test.stack.length > (existing.stack || '').length) {
-          existing.stack = test.stack;
-          existing.message = test.message || existing.message;
-        }
-
-        // Keep artifacts from both tests
-        if (test.files && test.files.length > 0) {
-          existing.files = [...new Set([...(existing.files || []), ...test.files])];
-        }
-
-        debug(`Merged duplicate test: ${key}`);
-      }
-    });
-
-    const result = Array.from(uniqueTests.values());
-    if (tests.length !== result.length) {
-      const removed = tests.length - result.length;
-      debug(`Deduplication: ${tests.length} -> ${result.length} tests (removed ${removed} duplicates)`);
-    }
-
-    return result;
   }
 
   calculateStats() {
@@ -427,12 +402,6 @@ class XmlReader {
   }
 
   fetchSourceCode() {
-    // Skip source code fetching if disabled for faster imports
-    if (TESTOMATIO_DISABLE_SOURCE_CODE === '1') {
-      debug('Source code fetching disabled by TESTOMATIO_DISABLE_SOURCE_CODE');
-      return;
-    }
-
     this.tests.forEach(t => {
       try {
         const file = this.adapter.getFilePath(t);
@@ -558,46 +527,6 @@ class XmlReader {
 
 export default XmlReader;
 
-/**
- * Determines suite title based on TESTOMATIO_SUITE_ORGANIZATION setting
- * @param {Object} item - Parent test suite item
- * @param {Object} testCaseItem - Individual test case item
- * @returns {string} Suite title
- */
-function determineSuiteTitle(item, testCaseItem) {
-  const suiteOrganization = TESTOMATIO_SUITE_ORGANIZATION || 'classname';
-
-  if (suiteOrganization === 'fullpath') {
-    // Use full namespace path for organization
-    if (testCaseItem.classname) {
-      // Convert namespace to path: "Tests.NUnit_Tests.FinTech.Multicurrency.BillingScreenTests"
-      // -> "Tests/NUnit_Tests/FinTech/Multicurrency/BillingScreenTests"
-      return testCaseItem.classname.replace(/\./g, '/');
-    }
-    if (item.name) {
-      return item.name.replace(/\./g, '/');
-    }
-    // Fallback to file path structure
-    if (testCaseItem.file || item.filepath || item.fullname) {
-      const filePath = testCaseItem.file || item.filepath || item.fullname || '';
-      return filePath.replace(/\\/g, '/').replace(/\.[^/.]+$/, ''); // Remove file extension
-    }
-  }
-
-  // Default 'classname' behavior - use just the class name (last part)
-  if (testCaseItem.classname) {
-    const parts = testCaseItem.classname.split('.');
-    return parts[parts.length - 1]; // Return just the class name
-  }
-
-  if (item.name) {
-    const parts = item.name.split('.');
-    return parts[parts.length - 1];
-  }
-
-  return testCaseItem.classname || item.name || 'Unknown';
-}
-
 function reduceTestCases(prev, item) {
   let testCases = item.testcase;
   if (!testCases) testCases = item['test-case'];
@@ -605,8 +534,12 @@ function reduceTestCases(prev, item) {
     testCases = [testCases];
   }
 
-  // Note: Removed problematic logic that was adding nested test-suite cases
-  // This was causing duplicate test processing
+  // suite inside test case
+  const testCase = item['test-suite']?.['test-case'];
+  if (testCase) {
+    const nestedCases = Array.isArray(testCase) ? testCase : [testCase];
+    testCases.push(...nestedCases);
+  }
 
   const suiteOutput = item['system-out'] || item.output || item.log || '';
   const suiteErr = item['system-err'] || item.output || item.log || '';
@@ -628,13 +561,12 @@ function reduceTestCases(prev, item) {
       if (!message) message = stack.trim().split('\n')[0];
 
       const isParametrized = item.type === 'ParameterizedMethod';
+      const preferClassname = reduceOptions.preferClassname || isParametrized;
 
       // SpecFlow config
       let { title, tags, testId } = fetchProperties(isParametrized ? item : testCaseItem);
       let example = null;
-
-      // Use new deterministic suite title logic
-      const suiteTitle = determineSuiteTitle(item, testCaseItem);
+      const suiteTitle = preferClassname ? testCaseItem.classname : item.name || testCaseItem.classname;
 
       title ||= testCaseItem.name || testCaseItem.methodname || testCaseItem.classname;
       tags ||= [];
@@ -708,8 +640,6 @@ function reduceTestCases(prev, item) {
 
 function processTestSuite(testsuite) {
   if (!testsuite) return [];
-
-  // Handle single nested testsuite
   if (testsuite.testsuite) return processTestSuite(testsuite.testsuite);
   if (testsuite['test-suite'] && !testsuite['test-case']) return processTestSuite(testsuite['test-suite']);
 
@@ -718,29 +648,9 @@ function processTestSuite(testsuite) {
     suites = [testsuite];
   }
 
-  const results = [];
+  const subSuites = suites.filter(s => s['test-suite'] && !testsuite['test-case']);
 
-  suites.forEach(suite => {
-    // First check if this suite has direct test cases
-    const hasDirectTestCases = suite.testcase || suite['test-case'];
-
-    if (hasDirectTestCases) {
-      // Process direct test cases using reduceTestCases
-      const testResults = reduceTestCases([], suite);
-      results.push(...testResults);
-      debug(`Processed ${testResults.length} tests from suite with direct test cases: ${suite.name || 'unnamed'}`);
-    } else {
-      // Only if no direct test cases, process nested test-suites recursively
-      const nestedSuites = suite.testsuite || suite['test-suite'];
-      if (nestedSuites) {
-        const nestedResults = processTestSuite(nestedSuites);
-        results.push(...nestedResults);
-        debug(`Processed ${nestedResults.length} tests from nested suites in: ${suite.name || 'unnamed'}`);
-      }
-    }
-  });
-
-  return results;
+  return [...subSuites.map(s => processTestSuite(s['test-suite'])), ...suites.reduce(reduceTestCases, [])].flat();
 }
 
 function fetchProperties(item) {

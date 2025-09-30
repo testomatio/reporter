@@ -83,12 +83,8 @@ const fetchFilesFromStackTrace = (stack = '', checkExists = true) => {
     .map(f => f[1].trim())
     .map(f => f.replace(/^\/+/, '/').replace(/^\/([A-Za-z]:)/, '$1')) // Remove extra slashes, handle Windows paths
     .map(f => {
-      // Convert Windows paths to Linux paths for testing purposes
-      if (f.match(/^[A-Za-z]:[\\\/]/)) {
-        // Convert Windows path to Linux equivalent for test scenarios
-        return f.replace(/^[A-Za-z]:[\\\/]/, '/').replace(/\\/g, '/');
-      }
-      return f;
+      // Normalize path separators for cross-platform compatibility
+      return f.replace(/\\/g, '/');
     });
 
   debug('Found files in stack trace: ', files);

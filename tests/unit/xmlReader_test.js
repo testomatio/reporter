@@ -4,6 +4,11 @@ import ServerMock from 'mock-http-server';
 import { config } from '../adapter/config/index.js';
 import { registerHandlers } from '../adapter/utils/index.js';
 import XmlReader from '../../src/xmlReader.js';
+
+// Helper function to normalize paths for cross-platform testing
+function normalizePath(filePath) {
+  return filePath ? filePath.replace(/\\/g, '/') : filePath;
+}
 import { fileURLToPath } from 'url';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -129,7 +134,7 @@ describe('XML Reader', () => {
     reader.formatTests();
 
     const test = jsonData.tests[0];
-    expect(test.file).to.eql('tests/LoginTest.java');
+    expect(normalizePath(test.file)).to.eql('tests/LoginTest.java');
     expect(test.title).to.eql('Login');
     expect(test.test_id).to.eql('8acca9eb');
   });
@@ -288,7 +293,7 @@ describe('XML Reader', () => {
     expect(tests[0].title).to.eql('Verify Service Started');
     expect(tests[1].title).to.eql('Verify Changes In Service Saved');
 
-    expect(tests[0].file).to.eql('E2E/Tests/Payment/UserScenarios.cs');
+    expect(normalizePath(tests[0].file)).to.eql('E2E/Tests/Payment/UserScenarios.cs');
     // Verify suite titles
     expect(tests[0].suite_title).to.eql('UserScenarios');
     expect(tests[1].suite_title).to.eql('UserScenarios');
@@ -412,41 +417,79 @@ describe('XML Reader', () => {
     expect(tests[0].suite_title).to.include('ApiFeature');
   });
 
-  it('should parse NUnit parameterized tests correctly', () => {
-    const reader = new XmlReader({ lang: 'c#' });
+  it('should parse NUnit parameterized tests correctly (legacy parser)', () => {
+    const reader = new XmlReader({
+      lang: 'c#',
+      enhancedNunit: false, // Explicitly disable enhanced parser
+    });
     const jsonData = reader.parse(path.join(dirname, 'data/nunit_parameterized.xml'));
 
     expect(jsonData.status).to.eql('failed');
-    expect(jsonData.tests_count).to.eql(1); // Should be 1 test with 2 examples
-    expect(jsonData.tests.length).to.eql(1);
+    expect(jsonData.tests_count).to.eql(2); // Legacy parser creates 2 separate tests
+    expect(jsonData.tests.length).to.eql(2);
 
-    const test = jsonData.tests[0];
-    
-    // Should have examples array with 2 executions
-    expect(test.examples).to.be.an('array');
-    expect(test.examples.length).to.eql(2);
-    
-    // Verify test properties
-    expect(test.title).to.eql('PostCashTransactionOnCashierPageNew');
-    expect(test.suite_title).to.eql('Tests.NUnit_Tests.Billing.Cashier.CashierShiftScenariosNew');
-    expect(test.file).to.include('CashierShiftScenariosNew.cs');
-    expect(test.test_id).to.eql('566a9209');
-    
-    // Verify examples have correct parameters and statuses
-    const example1 = test.examples[0];
-    const example2 = test.examples[1];
-    
-    expect(example1.parameters[0]).to.eql('True');
-    expect(example1.status).to.eql('passed');
-    
-    expect(example2.parameters[0]).to.eql('False');
-    expect(example2.status).to.eql('failed');
-    
-    // Main test should have failed status (worst case)
-    expect(test.status).to.eql('failed');
-    
-    // Run time should be sum of both executions
-    expect(test.run_time).to.be.above(3000); // 1.432391 + 1.598833 seconds * 1000
+    // Legacy parser creates separate tests for each parameterized variation
+    const tests = jsonData.tests;
+
+    // Both tests should have the same base method name but different parameters
+    expect(tests[0].title).to.eql('PostCashTransactionOnCashierPageNew');
+    expect(tests[1].title).to.eql('PostCashTransactionOnCashierPageNew');
+
+    // Both should have the same suite (legacy parser uses short name)
+    expect(tests[0].suite_title).to.eql('CashierShiftScenariosNew');
+    expect(tests[1].suite_title).to.eql('CashierShiftScenariosNew');
+
+    // Both should have the same test ID
+    expect(tests[0].test_id).to.eql('566a9209');
+    expect(tests[1].test_id).to.eql('566a9209');
+
+    // One should be passed, one should be failed
+    const passedTest = tests.find(t => t.status === 'passed');
+    const failedTest = tests.find(t => t.status === 'failed');
+
+    expect(passedTest).to.exist;
+    expect(failedTest).to.exist;
+
+    // Verify they have example parameters
+    expect(passedTest.example).to.exist;
+    expect(failedTest.example).to.exist;
+  });
+
+  it('should parse NUnit parameterized tests correctly (enhanced parser)', () => {
+    const reader = new XmlReader({
+      lang: 'c#',
+      // Enhanced parser is now enabled by default
+    });
+    const jsonData = reader.parse(path.join(dirname, 'data/nunit_parameterized.xml'));
+
+    expect(jsonData.status).to.eql('failed');
+    expect(jsonData.tests_count).to.eql(2); // Should be 2 separate test instances
+    expect(jsonData.tests.length).to.eql(2);
+
+    // Find the two parameterized test variations
+    const test1 = jsonData.tests.find(t => t.title === 'PostCashTransactionOnCashierPageNew(True)');
+    const test2 = jsonData.tests.find(t => t.title === 'PostCashTransactionOnCashierPageNew(False)');
+
+    expect(test1).to.exist;
+    expect(test2).to.exist;
+
+    // Verify first test variation
+    expect(test1.baseMethodName).to.eql('PostCashTransactionOnCashierPageNew');
+    expect(test1.parameters).to.deep.eql(['True']);
+    expect(test1.status).to.eql('passed');
+    expect(test1.isParameterized).to.be.true;
+    expect(test1.test_id).to.eql('566a9209');
+
+    // Verify second test variation
+    expect(test2.baseMethodName).to.eql('PostCashTransactionOnCashierPageNew');
+    expect(test2.parameters).to.deep.eql(['False']);
+    expect(test2.status).to.eql('failed');
+    expect(test2.isParameterized).to.be.true;
+    expect(test2.test_id).to.eql('566a9209');
+
+    // Both should have the same suite structure
+    expect(test1.suite_title).to.eql('Tests.NUnit_Tests.Billing.Cashier.CashierShiftScenariosNew');
+    expect(test2.suite_title).to.eql('Tests.NUnit_Tests.Billing.Cashier.CashierShiftScenariosNew');
   });
 
   describe('#request', () => {

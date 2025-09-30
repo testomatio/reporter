@@ -194,6 +194,11 @@ export class S3Uploader {
       filePath = path.join(process.cwd(), filePath);
     }
 
+    // Normalize path separators for cross-platform compatibility
+    if (typeof filePath === 'string') {
+      filePath = filePath.replace(/\\/g, '/');
+    }
+
     const data = { rid, file: filePath, uploaded };
     const jsonLine = `${JSON.stringify(data)}\n`;
     fs.appendFileSync(tempFilePath, jsonLine);
