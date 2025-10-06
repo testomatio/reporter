@@ -93,7 +93,7 @@
     "jasmine": "^5.2.0",
     "jest": "^27.4.7",
     "jsdom": "^22.1.0",
-    "mocha": "^9.2.0",
+    "mocha": "^11.7.4",
     "mock-http-server": "^1.4.5",
     "pino": "^8.15.0",
     "prettier": "^3.2.5",
