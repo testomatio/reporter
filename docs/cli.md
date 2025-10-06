@@ -70,6 +70,8 @@ Creates a run, and runs tests with the specified command, then finishes the run.
 npx @testomatio/reporter run [options]
 ```
 
+Alias for this command – `test`, e.g. `npx @testomatio/reporter test [options]`
+
 **Environment Variables:**
 
 - `TESTOMATIO`: Your Testomat.io API key in format: `tstmt_*` (required).
@@ -191,14 +193,17 @@ The `replay` command allows you to re-send test data from debug files to Testoma
 **Important:** To make replay work, tests should be executed with `DEBUG=1` variable set, to ensure they are running in debug mode and save data into a file.
 
 **Usage:**
+
 ```bash
 npx @testomatio/reporter replay [debug-file] [options]
 ```
 
 **Arguments:**
+
 - `debug-file` (optional) - Path to debug file. Defaults to latest created debug file, i.e. `/tmp/testomatio.debug.latest.json`
 
 **Options:**
+
 - `--dry-run` - Preview the data without sending to Testomat.io
 - `--env-file <envfile>` - Load environment variables from env file
 
