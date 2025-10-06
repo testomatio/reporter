@@ -63,13 +63,15 @@ describe('CodeceptJS Adapter Tests', function () {
     });
 
     it('should handle TESTOMATIO environment variable', async () => {
+      // Set a very short timeout to avoid hanging
       const { stdout } = await runTests({}, {
         TESTOMATIO: 'custom-test-key',
+        TESTOMATIO_URL: 'http://localhost:12345', // Non-existent URL to fail fast
       });
 
       // Test should still run (regardless of whether reporting works)
       expect(stdout).to.include('Simple Tests');
-    });
+    }).timeout(5000);
   });
 
   describe('File Structure', () => {
