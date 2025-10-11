@@ -48,17 +48,15 @@ TESTOMATIO={API_KEY} npx codeceptjs run
 
 #### CodeceptJS Parallel Run
 
-If tests run parallel, like workers in CodeceptJS use `start-test-run` command to get proper reports:
+If tests run parallel, like workers in CodeceptJS use testomatio `run` command to get proper reports:
 
 ```bash
-TESTOMATIO={API_KEY} npx start-test-run -c 'npx codeceptjs run-workers 2'
+TESTOMATIO={API_KEY} npx @testomatio/reporter run 'npx codeceptjs run-workers 2'
 ```
-
-> Specify a command to run with `-c` option in `start-test-run`
 
 Use `--env-file <envfile>` option to load environment variables from .env file. Inside env file TESTOMATIO credentials like `TESTOMATIO` api key or [S3 config for artifacts](./artifacts.md).
 
-Command `start-test-run` is used to initiate a single run report before all workers are started. Each worker will report to the same Run, and after all workers and codeceptjs finishes, this will finish the run report.
+Command `start` is used to initiate a single run report before all workers are started. Each worker will report to the same Run, and after all workers and codeceptjs finishes, this will finish the run report.
 
 > 📑 [Example Project](https://github.com/testomatio/examples/tree/master/codeceptJS) | 🗄 [CodeceptJS API Example](https://github.com/testomatio/examples/tree/master/codeceptJSApi) | 🥒 [CodeceptJS Cucumber Example](https://github.com/testomatio/examples/tree/master/codeceptjs-cucumber)
 
@@ -273,7 +271,7 @@ afterTest: function (test, context, { error }) {
 Run the following command from you project folder:
 
 ```bash
-TESTOMATIO={API_KEY} npx start-test-run -c 'npx wdio wdio.conf.js'
+TESTOMATIO={API_KEY} npx @testomatio/reporter run 'npx wdio wdio.conf.js'
 ```
 
 > 📑 [Example Project](https://github.com/testomatio/examples/tree/master/webdriverio-mocha)
@@ -376,7 +374,7 @@ exports.config = {
 Run the following command from you project folder:
 
 ```bash
-TESTOMATIO={API_KEY} npx start-test-run -c 'npx protractor conf.js'
+TESTOMATIO={API_KEY} npx @testomatio/reporter run 'npx protractor conf.js'
 ```
 
 > 📑 [Example Project](https://github.com/testomatio/examples/tree/master/protractor)

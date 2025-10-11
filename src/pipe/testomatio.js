@@ -472,7 +472,7 @@ class TestomatioPipe {
       if (this.runUrl && this.proceed) {
         const notFinishedMessage = pc.yellow(pc.bold('Run was not finished because of $TESTOMATIO_PROCEED'));
         console.log(APP_PREFIX, `📊 ${notFinishedMessage}. Report URL: ${pc.magenta(this.runUrl)}`);
-        console.log(APP_PREFIX, `🛬 Run to finish it: TESTOMATIO_RUN=${this.runId} npx start-test-run --finish`);
+        console.log(APP_PREFIX, `🛬 Run to finish it: TESTOMATIO_RUN=${this.runId} npx @testomatio/reporter finish`);
       }
 
       if (this.hasUnmatchedTests) {

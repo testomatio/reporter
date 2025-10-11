@@ -33,7 +33,7 @@ jobs:
         with:
           node-version: 16.x
       - run: npm i
-      - run: npx start-test-run -c 'npx codeceptjs run-workers 2 --grep "${{ github.event.inputs.grep }}"'
+      - run: npx @testomatio/reporter run 'npx codeceptjs run-workers 2 --grep "${{ github.event.inputs.grep }}"'
         env:
           TESTOMATIO: '${{ github.event.inputs.testomatio }}'
           TESTOMATIO_RUN: '${{ github.event.inputs.run }}'
