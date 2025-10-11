@@ -11,16 +11,6 @@ const cliPath = join(__dirname, 'cli.js');
 const version = getPackageVersion();
 console.log(pc.cyan(pc.bold(` 🤩 Testomat.io Reporter v${version}`)));
 
-// Deprecation warning
-console.log('⚠️', pc.yellow('The "start-test-run" command is deprecated.'));
-console.log(
-  pc.yellow('Please use'),
-  pc.cyan(pc.bold('"npx @testomatio/reporter run"')),
-  'or',
-  pc.cyan(pc.bold('"npx @testomatio/reporter test"')),
-  'instead.',
-);
-
 // Parse command line arguments to map start-test-run options to @testomatio/reporter run format
 const args = process.argv.slice(2);
 const newArgs = ['run'];
