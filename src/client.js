@@ -37,9 +37,8 @@ class Client {
     this.runId = '';
     this.queue = Promise.resolve();
 
-    // @ts-ignore this line will be removed in compiled code, because __dirname is defined in commonjs
-    const __dirname = path.dirname(fileURLToPath(import.meta.url));
-    const pathToPackageJSON = path.join(__dirname, '../package.json');
+    // Get package.json path - use a simple approach that works in both environments
+    const pathToPackageJSON = path.join(process.cwd(), 'package.json');
     try {
       this.version = JSON.parse(fs.readFileSync(pathToPackageJSON).toString()).version;
       console.log(APP_PREFIX, `Testomatio Reporter v${this.version}`);
@@ -387,7 +386,11 @@ class Client {
    */
   formatLogs({ error, steps, logs }) {
     error = error?.trim();
-    logs = logs?.trim().split('\n').map(l => truncate(l)).join('\n');
+    logs = logs
+      ?.trim()
+      .split('\n')
+      .map(l => truncate(l))
+      .join('\n');
 
     if (Array.isArray(steps)) {
       steps = steps

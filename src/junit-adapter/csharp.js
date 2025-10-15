@@ -3,17 +3,22 @@ import Adapter from './adapter.js';
 
 class CSharpAdapter extends Adapter {
   formatTest(t) {
-    // Don't override example if it already exists from NUnit XML processing
-    // The xmlReader.js already extracts parameters correctly from <arguments>
+    // Extract example from title if not already present
     if (!t.example) {
-      const title = t.title.replace(/\(.*?\)/, '').trim();
       const exampleMatch = t.title.match(/\((.*?)\)/);
       if (exampleMatch) {
-        // Keep as array for consistency with NUnit XML processing
-        t.example = exampleMatch[1].split(',').map(param => param.trim());
+        // Extract parameters as object with numeric keys for API
+        const params = exampleMatch[1].split(',').map(param => param.trim());
+        t.example = {};
+        params.forEach((param, index) => {
+          t.example[index] = param;
+        });
       }
-      t.title = title.trim();
     }
+
+    // For runs: keep full title with parameters for display
+    // The example field will be used for grouping on import
+    // Do NOT remove parameters from title
 
     const suite = t.suite_title.split('.');
     t.suite_title = suite.pop();

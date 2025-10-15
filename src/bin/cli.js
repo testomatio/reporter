@@ -158,7 +158,7 @@ program
   .option('--lang <lang>', 'Language used (python, ruby, java)')
   .option('--timelimit <time>', 'default time limit in seconds to kill a stuck process')
   .action(async (pattern, opts) => {
-    if (!pattern.endsWith('.xml')) {
+    if (!pattern.endsWith('.xml') && !pattern.includes('*')) {
       pattern += '.xml';
     }
     let { javaTests, lang } = opts;

@@ -220,8 +220,20 @@ export class NUnitXmlParser {
     // Build file path from suite path and class name
     const filePath = this.buildFilePath(suitePath, className, parentSuite);
 
+    // For parameterized tests, format example as expected by Testomatio API
+    // Convert array of parameters to object with numeric keys
+    let example = null;
+    if (isParameterized && parameters.length > 0) {
+      example = {};
+      parameters.forEach((param, index) => {
+        example[index] = param;
+      });
+    }
+
     return {
-      title: isParameterized ? testName : methodName || testName,
+      // For runs: use full test name with parameters (TestBooleanValue(true))
+      // For import: API will group by base name using the example field
+      title: testName, // Full name with parameters for run display
       methodName: baseMethodName || methodName || testName,
       fullName: fullName,
       suitePath: suitePath,
@@ -235,8 +247,9 @@ export class NUnitXmlParser {
       create: true,
       retry: false,
       // Parameterized test metadata
+      example: example, // Parameters as object for API grouping
       isParameterized: isParameterized,
-      parameters: parameters,
+      parameters: parameters, // Keep original array for reference
       baseMethodName: baseMethodName,
     };
   }

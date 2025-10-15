@@ -23,7 +23,7 @@ program
   .option('--timelimit <time>', 'default time limit in seconds to kill a stuck process')
   .option('--env-file <envfile>', 'Load environment variables from env file')
   .action(async (pattern, opts) => {
-    if (!pattern.endsWith('.xml')) {
+    if (!pattern.endsWith('.xml') && !pattern.includes('*')) {
       pattern += '.xml';
     }
     let { javaTests, lang } = opts;

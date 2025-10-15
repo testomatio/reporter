@@ -178,30 +178,63 @@ const fetchSourceCode = (contents, opts = {}) => {
       if (lineIndex === -1) lineIndex = lines.findIndex(l => l.includes(`public void ${title}`));
       if (lineIndex === -1) lineIndex = lines.findIndex(l => l.includes(`${title}(`));
     } else if (opts.lang === 'csharp') {
-      // Enhanced C# method detection for NUnit tests
-      lineIndex = lines.findIndex(l => l.includes(`public void ${title}(`));
+      // Find the method declaration line
+      let methodLineIndex = lines.findIndex(l => l.includes(`public void ${title}(`));
 
-      if (lineIndex === -1) {
-        lineIndex = lines.findIndex(l => l.includes(`public async Task ${title}(`));
+      if (methodLineIndex === -1) {
+        methodLineIndex = lines.findIndex(l => l.includes(`public async Task ${title}(`));
       }
 
-      if (lineIndex === -1) {
-        lineIndex = lines.findIndex(l => l.includes(`${title}(`));
+      if (methodLineIndex === -1) {
+        methodLineIndex = lines.findIndex(l => l.includes(`${title}(`));
       }
 
-      // Look for TestCase or Test attributes above the method
-      if (lineIndex === -1) {
-        const testAttributeIndex = lines.findIndex((l, index) => {
-          if (l.includes('[TestCase') || l.includes('[Test')) {
-            // Check next few lines for the method
-            const nextLines = lines.slice(index, Math.min(lines.length, index + 5));
-            const hasMethod = nextLines.some(nextLine => nextLine.includes(`${title}(`));
-            return hasMethod;
+      // If found, scan upwards to find [TestCase], [Test] attributes and XML comments
+      if (methodLineIndex !== -1) {
+        lineIndex = methodLineIndex;
+
+        // Scan upwards to find the start of attributes and comments
+        for (let i = methodLineIndex - 1; i >= 0; i--) {
+          const trimmedLine = lines[i].trim();
+
+          // Include [TestCase], [Test], and other attributes
+          if (trimmedLine.startsWith('[')) {
+            lineIndex = i;
+            continue;
           }
-          return false;
-        });
-        if (testAttributeIndex !== -1) {
-          lineIndex = testAttributeIndex;
+
+          // Include XML documentation comments
+          if (trimmedLine.startsWith('///')) {
+            lineIndex = i;
+            continue;
+          }
+
+          // Stop at empty lines (with some tolerance)
+          if (trimmedLine === '') {
+            // Check if next non-empty line is an attribute or comment
+            let hasMoreAttributes = false;
+            for (let j = i - 1; j >= 0; j--) {
+              const nextTrimmed = lines[j].trim();
+              if (nextTrimmed === '') continue;
+              if (nextTrimmed.startsWith('[') || nextTrimmed.startsWith('///')) {
+                hasMoreAttributes = true;
+                lineIndex = j;
+              }
+              break;
+            }
+            if (!hasMoreAttributes) break;
+            continue;
+          }
+
+          // Stop at other method declarations or class-level elements
+          if (
+            trimmedLine.includes('public ') ||
+            trimmedLine.includes('private ') ||
+            trimmedLine.includes('protected ') ||
+            trimmedLine.includes('internal ')
+          ) {
+            if (!trimmedLine.startsWith('[')) break;
+          }
         }
       }
     } else {
@@ -215,8 +248,28 @@ const fetchSourceCode = (contents, opts = {}) => {
 
   if (lineIndex !== -1 && lineIndex !== undefined) {
     const result = [];
+    let braceDepth = 0; // Track brace depth for C# methods
+    let methodStartFound = false; // Flag to indicate we've found the method opening brace
+
     for (let i = lineIndex; i < lineIndex + limit; i++) {
       if (lines[i] === undefined) continue;
+
+      // Track brace depth for C# to stop after method closes
+      if (opts.lang === 'csharp') {
+        const line = lines[i];
+        // Count opening and closing braces
+        const openBraces = (line.match(/\{/g) || []).length;
+        const closeBraces = (line.match(/\}/g) || []).length;
+
+        if (openBraces > 0) methodStartFound = true;
+        braceDepth += openBraces - closeBraces;
+
+        // If we've started the method and depth returns to 0, method is complete
+        if (methodStartFound && braceDepth === 0 && closeBraces > 0) {
+          result.push(lines[i]);
+          break;
+        }
+      }
 
       if (i > lineIndex + 2 && !opts.prepend) {
         // annotation
@@ -238,10 +291,18 @@ const fetchSourceCode = (contents, opts = {}) => {
         if (opts.lang === 'java' && lines[i].trim().match(/^@\w+/)) break;
         if (opts.lang === 'java' && lines[i].includes(' public void ')) break;
         if (opts.lang === 'java' && lines[i].includes(' class ')) break;
-        if (opts.lang === 'csharp' && lines[i].trim().match(/^\[Test/)) break;
-        if (opts.lang === 'csharp' && lines[i].includes(' public void ')) break;
-        if (opts.lang === 'csharp' && lines[i].includes(' public async Task ')) break;
-        if (opts.lang === 'csharp' && lines[i].includes(' class ') && lines[i].includes('public')) break;
+        // For C#, additional checks if brace tracking didn't stop us
+        if (opts.lang === 'csharp') {
+          const trimmed = lines[i].trim();
+          // Stop at attribute that marks beginning of next test
+          if (trimmed.match(/^\[(Test|TestCase|Theory|Fact)/)) break;
+          // Stop at XML documentation comments that belong to next method
+          if (trimmed.startsWith('///')) break;
+          // Stop at another method declaration
+          if (trimmed.match(/^\s*(public|private|protected|internal)\s+(\w+|async\s+\w+)\s+\w+\s*\(/)) break;
+          // Stop at class declaration
+          if (trimmed.includes(' class ') && trimmed.includes('public')) break;
+        }
       }
       result.push(lines[i]);
     }

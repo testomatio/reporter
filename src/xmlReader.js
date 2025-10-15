@@ -240,59 +240,20 @@ class XmlReader {
     let defs = jsonSuite?.TestRun?.TestDefinitions?.UnitTest;
     if (!Array.isArray(defs)) defs = [defs].filter(d => !!d);
 
-    const tests =
-      defs.map(td => {
-        const title = td.name.replace(/\(.*?\)/, '').trim();
-        let example = td.name.match(/\((.*?)\)/);
-        if (example) example = { ...example[1].split(',') };
-        const suite = td.TestMethod.className.split(', ')[0].split('.');
-        const suite_title = suite.pop();
-        return {
-          title,
-          example,
-          file: suite.join('/'),
-          description: td.Description,
-          suite_title,
-          id: td.Execution.id,
-        };
-      }) || [];
+    // Parse test definitions
+    const tests = defs.map(td => this._parseTRXTestDefinition(td));
 
+    // Parse test results
     let result = jsonSuite?.TestRun?.Results?.UnitTestResult;
     if (!Array.isArray(result)) result = [result].filter(d => !!d);
 
-    const results = result.map(td => ({
-      id: td.executionId,
-      // seconds are used in junit reports, but ms are used by testomatio
-      run_time: parseFloat(td.duration) * 1000,
-      status: td.outcome,
-      stack: td.Output.StdOut,
-      files: td?.ResultFiles?.ResultFile?.map(rf => rf.path),
-    }));
-
-    results.forEach(r => {
-      const test = tests.find(t => t.id === r.id) || {};
-      r.suite_title = test.suite_title;
-      r.title = test.title?.trim();
-      if (test.code) r.code = test.code;
-      if (test.description) r.description = test.description;
-      if (test.example) r.example = test.example;
-      if (test.file) r.file = test.file;
-      r.create = true;
-      r.overwrite = true;
-      if (r.status === 'Passed') r.status = STATUS.PASSED;
-      if (r.status === 'Failed') r.status = STATUS.FAILED;
-      if (r.status === 'Skipped') r.status = STATUS.SKIPPED;
-      delete r.id;
-    });
+    const results = result.map(td => this._parseTRXTestResult(td, tests));
 
     debug(results);
 
     const counters = jsonSuite?.TestRun?.ResultSummary?.Counters || {};
-
     const failed_count = parseInt(counters.failed, 10) + parseInt(counters.error, 10);
-
-    let status = STATUS.PASSED.toString();
-    if (failed_count > 0) status = STATUS.FAILED;
+    const status = failed_count > 0 ? STATUS.FAILED : STATUS.PASSED.toString();
 
     this.tests = results.filter(t => !!t.title);
 
@@ -305,6 +266,67 @@ class XmlReader {
       failed_count,
       tests: results,
     };
+  }
+
+  _parseTRXTestDefinition(td) {
+    const title = td.name.replace(/\(.*?\)/, '').trim();
+    const exampleMatch = td.name.match(/\((.*?)\)/);
+    const example = exampleMatch ? { ...exampleMatch[1].split(',') } : null;
+
+    const suite = td.TestMethod.className.split(', ')[0].split('.');
+    const suite_title = suite.pop();
+
+    // Convert namespace to file path for C#
+    const file = `${suite.join('/')}.cs`;
+
+    return {
+      title, // Base name without parameters for test import
+      example, // Parameters object for parameterized tests
+      file, // File path with .cs extension
+      description: td.Description,
+      suite_title,
+      id: td.Execution.id,
+    };
+  }
+
+  _parseTRXTestResult(td, tests) {
+    const test = tests.find(t => t.id === td.executionId) || {};
+
+    const result = {
+      suite_title: test.suite_title,
+      title: test.title?.trim(),
+      file: test.file,
+      description: test.description,
+      code: test.code,
+      run_time: parseFloat(td.duration) * 1000,
+      stack: td.Output?.StdOut || '',
+      files: td?.ResultFiles?.ResultFile?.map(rf => rf.path),
+      create: true,
+      overwrite: true,
+    };
+
+    // Add example for parameterized tests
+    if (test.example) {
+      result.example = test.example;
+    }
+
+    // Map TRX status to Testomat.io status
+    result.status = this._mapTRXStatus(td.outcome);
+
+    return result;
+  }
+
+  _mapTRXStatus(outcome) {
+    switch (outcome) {
+      case 'Passed':
+        return STATUS.PASSED;
+      case 'Failed':
+        return STATUS.FAILED;
+      case 'Skipped':
+        return STATUS.SKIPPED;
+      default:
+        return STATUS.PASSED;
+    }
   }
 
   processXUnit(assemblies) {
