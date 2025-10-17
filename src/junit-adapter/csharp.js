@@ -16,9 +16,9 @@ class CSharpAdapter extends Adapter {
       }
     }
 
-    // For runs: keep full title with parameters for display
+    // Remove parameters from title to avoid duplicates in Test Suite
     // The example field will be used for grouping on import
-    // Do NOT remove parameters from title
+    t.title = t.title.replace(/\(.*?\)/, '').trim();
 
     const suite = t.suite_title.split('.');
     t.suite_title = suite.pop();
