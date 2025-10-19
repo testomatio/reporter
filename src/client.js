@@ -7,7 +7,7 @@ import { glob } from 'glob';
 import path from 'path';
 import { fileURLToPath } from 'node:url';
 import { S3Uploader } from './uploader.js';
-import { readLatestRunId, storeRunId, validateSuiteId, transformEnvVarToBoolean } from './utils/utils.js';
+import { transformEnvVarToBoolean, readLatestRunId, storeRunId, validateSuiteId, parsePipeOptions } from './utils/utils.js';
 import { filesize as prettyBytes } from 'filesize';
 import { formatLogs, formatError, stripColors } from './utils/log-formatter.js';
 
@@ -65,10 +65,28 @@ class Client {
    * array containing the prepared execution list,
    * or resolves to undefined if no valid results are found or if all pipes are disabled.
    */
-  //TODO: need to find where we use client.prepareRun() method???
+
   async prepareRun(params) {
-    this.pipes = await pipesFactory(params || this.paramsForPipesFactory || {}, this.pipeStore);
     const { pipe, pipeOptions } = params;
+    const parsedOptions = parsePipeOptions(pipeOptions);
+
+    // Handle Coverage pipe-specific setup
+    if (pipe === 'coverage') {
+      if (!parsedOptions.file) {
+        console.warn(APP_PREFIX,
+          '🚫 Missing required parameter: "file".\n' +
+          '👉 Usage: --filter="coverage:file=coverage.yml"'
+        );
+
+        return;
+      }
+  
+      process.env.COVERAGE_FILEPATH = parsedOptions.file;
+      process.env.COVERAGE_BRANCH = parsedOptions.diff || 'master';
+    }
+
+    this.pipes = await pipesFactory(params || this.paramsForPipesFactory || {}, this.pipeStore);
+    
     // all pipes disabled, skipping
     if (!this.pipes.some(p => p.isEnabled)) {
       return Promise.resolve();

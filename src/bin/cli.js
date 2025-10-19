@@ -93,79 +93,30 @@ program
 
     const client = new TestomatClient({ apiKey, title });
 
+    // Example of use: npx @testomatio/reporter run "npx jest" --filter "testomatio:tag-name=frontend"
+    // Example of use: npx @testomatio/reporter run "npx jest" --filter="coverage:file=coverage.yml"
     if (opts.filter) {
       const [pipe, ...optsArray] = opts.filter.split(':');
       const pipeOptions = optsArray.join(':');
 
-      if (pipe === 'coverage') { //TODO: change by switch/case format instead of if...else if???
-        // Example of use: npx @testomatio/reporter run "npx jest" --filter "coverage:file=coverage/coverage.yml,diff=master"
-        const options = pipeOptions.split(',');
-        const coverageParams = {};
+      try {
+        const tests = await client.prepareRun({ pipe, pipeOptions });
 
-        for (const option of options) {
-          const [key, value] = option.split('=');
-          if (key && value) {
-            coverageParams[key.trim()] = value.trim();
-          }
-        }
+        if (!tests || tests.length === 0) return;
 
-        try {
-          if (!coverageParams?.file) {
-            console.log(APP_PREFIX,
-              '🚫 Missing required parameter: "file".\n' +
-              '👉 When using Coverage task: you must provide a file path like: "coverage:file=coverage.yml"'
-            );
-            return;
-          }
-
-          process.env.COVERAGE_FILEPATH = coverageParams.file;
-
-          if (coverageParams?.diff) {
-            process.env.COVERAGE_BRANCH = coverageParams.diff; // in case if no "diff" set - "master " branch used as default
-          }
-
-          const tests = await client.prepareRun({ pipe, pipeOptions });
-          
-          if (!tests) return;
-          
-          const grepPattern = [...tests].join('|');
-          debug(`Full "grep" command: --grep "(${grepPattern})"`);
-
-          command += ` --grep "(${grepPattern})"`;
-        }
-        catch (err) {
-          console.log(APP_PREFIX, err);
-          return;
-        }
-      }
-      else if (pipe === 'testomatio') {
-        // Example of use: npx @testomatio/reporter run "npx jest" --filter "testomatio:tag-name=frontend"
-        try {
-          const tests = await client.prepareRun({ pipe, pipeOptions });
-          if (tests && tests.length > 0) {
-            command += ` --grep (${tests.join('|')})`;
-          }
-        } 
-        catch (err) {
-          console.log(APP_PREFIX, err);
-          return;
-        }
-      }
-      else {
-        console.log(APP_PREFIX,
-          `🚫 Unsupported --filter mode: "${pipe}".\n` +
-          '✅ Supported formats:\n' +
-          '   • "coverage:<options>" (e.g., --filter="coverage:file=coverage.yml")\n' +
-          '   • "testomatio:<options>" (e.g., --filter="testomatio:tag-name=smoke")\n\n' +
-          '👉 Please refer to the documentation for supported options and usage examples.\n'
-        );
+        const grepPattern = tests.join('|');
+        debug(`Full "grep" command: --grep "(${grepPattern})"`);
+        
+        command += ` --grep "(${grepPattern})"`;
+      } 
+      catch (err) {
+        console.log(APP_PREFIX, err.message || err);
         return;
       }
     }
 
     console.log(APP_PREFIX, `🚀 Running`, pc.green(command));
-
-    debug("Full command text:", command.split(' '));
+    // console.log("Full command text:", command.split(' ')); //TODO: only for debug!!!! need to remove after testing!!
 
     const runTests = async () => {
       const testCmds = command.split(' ');
