@@ -33,6 +33,7 @@ Pipes Concepts:
 - [CSV](./pipes/csv.md)
 - [Bitbucket](./pipes/bitbucket.md)
 - [Debug](./pipes/debug.md)
+- [Coverage](./pipes/coverage.md)
 
 ## Custom Pipe
 

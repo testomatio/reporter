@@ -100,6 +100,8 @@ npx @testomatio/reporter run "npx jest" --filter "testomatio:tag-name=frontend"
 npx @testomatio/reporter run "npx jest" --filter "testomatio:label=Smoke"
 npx @testomatio/reporter run "npx jest" --filter "testomatio:jira=TC-123"
 npx @testomatio/reporter run "npx jest" --filter "testomatio:plan=a123fb12"
+npx @testomatio/reporter run "npx jest" --filter "coverage:file=coverage.yml,diff=user-branch"
+npx @testomatio/reporter run "npx jest" --filter "coverage:file=coverage/coverage.yml"
 npx @testomatio/reporter run "mocha tests/" --env-file .env.test
 npx @testomatio/reporter run "npm test" --kind manual
 npx @testomatio/reporter run "npx jest" --kind mixed
