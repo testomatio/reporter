@@ -85,7 +85,8 @@ export class NUnitXmlParser {
       case 'TestSuite':
         // Namespace/grouping level - add to path but don't create test
         debug(`Processing TestSuite level - adding '${suiteName}' to path`);
-        const newPath = [...parentPath, suiteName];
+        // Avoid adding duplicate suite names to the path
+        const newPath = parentPath[parentPath.length - 1] === suiteName ? [...parentPath] : [...parentPath, suiteName];
         this.processChildren(testSuite, newPath);
         break;
 

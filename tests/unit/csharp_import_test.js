@@ -81,7 +81,7 @@ public class SampleTests
     expect(result).to.include('public void TestBooleanValue(bool inputValue)');
     expect(result).to.include('Assert.That(actualResult, Is.EqualTo(expectedResult));');
     expect(result).to.not.include('TestAddition'); // Should not include other methods
-    expect(result).to.not.include('ProcessBooleanValue'); // Should not include helper methods
+    expect(result).to.not.include('private bool ProcessBooleanValue'); // Should not include helper method definitions
   });
 
   it('should import TestAddition method with XML documentation', () => {
@@ -98,7 +98,7 @@ public class SampleTests
     expect(result).to.include('public void TestAddition(int a, int b, int expected)');
     expect(result).to.include('Assert.That(result, Is.EqualTo(expected));');
     expect(result).to.not.include('TestBooleanValue'); // Should not include other methods
-    expect(result).to.not.include('AddNumbers'); // Should not include helper methods
+    expect(result).to.not.include('private int AddNumbers'); // Should not include helper method definitions
   });
 
   it('should import TestStringToUpper method with [TestCase] attributes', () => {

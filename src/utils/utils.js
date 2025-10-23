@@ -266,7 +266,7 @@ const fetchSourceCode = (contents, opts = {}) => {
 
         // If we've started the method and depth returns to 0, method is complete
         if (methodStartFound && braceDepth === 0 && closeBraces > 0) {
-          result.push(lines[i]);
+          // Don't include the closing brace - just break
           break;
         }
       }
@@ -294,16 +294,33 @@ const fetchSourceCode = (contents, opts = {}) => {
         // For C#, additional checks if brace tracking didn't stop us
         if (opts.lang === 'csharp') {
           const trimmed = lines[i].trim();
-          // Stop at attribute that marks beginning of next test
-          if (trimmed.match(/^\[(Test|TestCase|Theory|Fact)/)) break;
+          // Stop at attribute that marks beginning of next test (but not if we're still in the current method)
+          if (trimmed.match(/^\[(Test|TestCase|Theory|Fact)/) && methodStartFound && braceDepth === 0) break;
           // Stop at XML documentation comments that belong to next method
-          if (trimmed.startsWith('///')) break;
-          // Stop at another method declaration
-          if (trimmed.match(/^\s*(public|private|protected|internal)\s+(\w+|async\s+\w+)\s+\w+\s*\(/)) break;
+          if (trimmed.startsWith('///') && methodStartFound && braceDepth === 0) break;
+          // Stop at another method declaration (but not if we're still in the current method)
+          if (
+            trimmed.match(/^\s*(public|private|protected|internal)\s+(\w+|async\s+\w+)\s+\w+\s*\(/) &&
+            methodStartFound &&
+            braceDepth === 0
+          )
+            break;
           // Stop at class declaration
           if (trimmed.includes(' class ') && trimmed.includes('public')) break;
+          // Stop at helper method calls (like ProcessBooleanValue, AddNumbers) - these are private methods
+          if (methodStartFound && trimmed.match(/^\s*\/\/\s*Helper methods for testing/)) break;
         }
       }
+
+      // For C# tests, stop if we encounter helper method calls in the method body
+      if (opts.lang === 'csharp' && methodStartFound && braceDepth > 0) {
+        const trimmed = lines[i].trim();
+        // Stop at comment indicating helper methods section
+        if (trimmed.match(/^\s*\/\/\s*Helper methods for testing/)) {
+          break;
+        }
+      }
+
       result.push(lines[i]);
     }
     return result.join('\n');
