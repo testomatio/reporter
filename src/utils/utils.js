@@ -85,6 +85,11 @@ const fetchFilesFromStackTrace = (stack = '', checkExists = true) => {
     .map(f => {
       // Normalize path separators for cross-platform compatibility
       return f.replace(/\\/g, '/');
+    })
+    .map(f => {
+      // Convert Windows paths to Unix-style paths for consistency
+      // C:/Users/... -> /Users/...
+      return f.replace(/^([A-Za-z]):/, '');
     });
 
   debug('Found files in stack trace: ', files);

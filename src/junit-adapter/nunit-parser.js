@@ -157,7 +157,20 @@ export class NUnitXmlParser {
       return null;
     }
 
-    const testName = testCase.name;
+    // Use Description from properties if available (for SpecFlow tests), otherwise use name
+    let testName = testCase.name;
+    if (testCase.properties && testCase.properties.property) {
+      const properties = Array.isArray(testCase.properties.property)
+        ? testCase.properties.property
+        : [testCase.properties.property];
+
+      const descriptionProperty = properties.find(p => p.name === 'Description');
+      if (descriptionProperty && descriptionProperty.value) {
+        // Clean up SpecFlow description format: [C211256] Allow mobile print behavior -> Allow mobile print behavior
+        testName = descriptionProperty.value.replace(/^\[[^\]]+\]\s*/, '');
+      }
+    }
+
     const fullName = testCase.fullname;
     const methodName = testCase.methodname || this.extractMethodName(testName);
     const className = testCase.classname || parentSuite?.name;
@@ -202,8 +215,9 @@ export class NUnitXmlParser {
       stack = `${stack}\n\n${testCase.output['#text']}`.trim();
     }
 
-    // Extract test ID from properties
+    // Extract test ID and tags from properties
     let testId = null;
+    let tags = [];
     if (testCase.properties && testCase.properties.property) {
       const properties = Array.isArray(testCase.properties.property)
         ? testCase.properties.property
@@ -215,6 +229,19 @@ export class NUnitXmlParser {
         // Remove @ and T prefixes if present
         if (testId.startsWith('@')) testId = testId.slice(1);
         if (testId.startsWith('T')) testId = testId.slice(1);
+      }
+
+      // Extract Category properties as tags
+      const categoryProperties = properties.filter(p => p.name === 'Category');
+      tags = categoryProperties.map(p => p.value);
+    }
+
+    // If no test ID found in properties, try to extract from output
+    if (!testId && testCase.output && testCase.output['#text']) {
+      const outputText = testCase.output['#text'];
+      const idMatch = outputText.match(/\[ID\]\s+tid:\/\/@T([a-f0-9]{8})/i);
+      if (idMatch) {
+        testId = idMatch[1];
       }
     }
 
@@ -245,6 +272,7 @@ export class NUnitXmlParser {
       stack: stack,
       run_time: parseFloat(testCase.duration || testCase.time || 0) * 1000,
       test_id: testId,
+      tags: tags, // Array of category tags from properties
       create: true,
       retry: false,
       // Parameterized test metadata
