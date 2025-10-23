@@ -97,6 +97,13 @@ export class NUnitXmlParser {
         this.processChildren(testSuite, testFixturePath);
         break;
 
+      case 'ParameterizedMethod':
+        // Parameterized method level - process test cases directly
+        debug(`Processing ParameterizedMethod level - method '${suiteName}'`);
+        // Don't add to path, just process children directly
+        this.processChildren(testSuite, parentPath);
+        break;
+
       default:
         debug(`Unknown test-suite type: ${suiteType}, treating as TestSuite`);
         const unknownPath = [...parentPath, suiteName];
@@ -111,14 +118,14 @@ export class NUnitXmlParser {
    * @param {Array} currentPath - Current path in hierarchy
    */
   processChildren(testSuite, currentPath) {
+    // Process test-cases first (to maintain order)
+    if (testSuite['test-case']) {
+      this.parseTestCases(testSuite['test-case'], currentPath, testSuite);
+    }
+
     // Process nested test-suites
     if (testSuite['test-suite']) {
       this.parseTestSuite(testSuite['test-suite'], currentPath);
-    }
-
-    // Process test-cases
-    if (testSuite['test-case']) {
-      this.parseTestCases(testSuite['test-case'], currentPath, testSuite);
     }
   }
 
@@ -176,6 +183,7 @@ export class NUnitXmlParser {
     const className = testCase.classname || parentSuite?.name;
 
     debug(`Parsing test case: ${testName}`);
+    debug(`Test case structure:`, JSON.stringify(testCase, null, 2));
 
     // Extract parameters if this is a parameterized test
     const { baseMethodName, parameters, isParameterized } = this.extractParameters(testName);
@@ -211,8 +219,16 @@ export class NUnitXmlParser {
       stack = testCase.failure['stack-trace'] || testCase.failure['#text'] || '';
     }
 
-    if (testCase.output && testCase.output['#text']) {
-      stack = `${stack}\n\n${testCase.output['#text']}`.trim();
+    if (testCase.output) {
+      const outputText = typeof testCase.output === 'string' ? testCase.output : testCase.output['#text'];
+      if (outputText) {
+        debug(`Found output in test case: ${outputText.substring(0, 100)}...`);
+        stack = `${stack}\n\n${outputText}`.trim();
+      } else {
+        debug('No output text found in test case');
+      }
+    } else {
+      debug('No output found in test case');
     }
 
     // Extract test ID and tags from properties
@@ -237,11 +253,17 @@ export class NUnitXmlParser {
     }
 
     // If no test ID found in properties, try to extract from output
-    if (!testId && testCase.output && testCase.output['#text']) {
-      const outputText = testCase.output['#text'];
-      const idMatch = outputText.match(/\[ID\]\s+tid:\/\/@T([a-f0-9]{8})/i);
-      if (idMatch) {
-        testId = idMatch[1];
+    if (!testId && testCase.output) {
+      const outputText = typeof testCase.output === 'string' ? testCase.output : testCase.output['#text'];
+      if (outputText) {
+        debug(`Looking for test ID in output: ${outputText.substring(0, 200)}...`);
+        const idMatch = outputText.match(/\[ID\]\s+tid:\/\/@T([a-f0-9]{8})/i);
+        if (idMatch) {
+          testId = idMatch[1];
+          debug(`Found test ID in output: ${testId}`);
+        } else {
+          debug('No test ID found in output');
+        }
       }
     }
 

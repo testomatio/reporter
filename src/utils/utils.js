@@ -76,21 +76,28 @@ const isValidUrl = s => {
   }
 };
 
-const fileMatchRegex = /file:(\/+(?:[A-Za-z]:[\\/]|\/)?[^\s]*?\.(png|avi|webm|jpg|html|txt))/gi;
+const fileMatchRegex = /file:(\/*)([A-Za-z]:[\\/].*?|\/.*?)\.(png|avi|webm|jpg|html|txt)/gi;
 
 const fetchFilesFromStackTrace = (stack = '', checkExists = true) => {
-  const files = Array.from(stack.matchAll(fileMatchRegex))
-    .map(f => f[1].trim())
+  let files = Array.from(stack.matchAll(fileMatchRegex))
+    .map(match => {
+      // match[0] is full match, match[1] is slashes, match[2] is path, match[3] is extension
+      const slashes = match[1] || '';
+      const path = match[2];
+      const extension = match[3];
+      return `${slashes}${path}.${extension}`;
+    })
+    .map(f => f.trim())
     .map(f => f.replace(/^\/+/, '/').replace(/^\/([A-Za-z]:)/, '$1')) // Remove extra slashes, handle Windows paths
     .map(f => {
       // Normalize path separators for cross-platform compatibility
       return f.replace(/\\/g, '/');
-    })
-    .map(f => {
-      // Convert Windows paths to Unix-style paths for consistency
-      // C:/Users/... -> /Users/...
-      return f.replace(/^([A-Za-z]):/, '');
     });
+
+  // If we're not checking file existence, remove Windows drive letters for consistency
+  if (!checkExists) {
+    files = files.map(f => f.replace(/^([A-Za-z]):/, ''));
+  }
 
   debug('Found files in stack trace: ', files);
 
@@ -106,21 +113,92 @@ const fetchSourceCodeFromStackTrace = (stack = '') => {
   const stackLines = stack
     .split('\n')
     .filter(l => l.includes(':'))
-    // .map(l => l.match(/\[(.*?)\]/)?.[1] || l) // minitest format
-    // .map(l => l.split(':')[0])
     .map(l => l.trim())
-    .map(l => l.split(' ').find(p => p.includes(':')) || '')
-    .filter(l => isValid(l?.split(':')[0]))
+    .map(l => {
+      // Remove 'at ' prefix if present
+      if (l.startsWith('at ')) {
+        return l.substring(3).trim();
+      }
+      // Find the part that looks like a file path with line number
+      const parts = l.split(' ');
+      for (const part of parts) {
+        // Check if this part has a colon
+        if (part.includes(':')) {
+          // For Windows paths, we need to handle drive letters (C:, D:, etc.)
+          // Split by colon but keep drive letter with the path
+          const colonParts = part.split(':');
+          let filePath;
+
+          // Check if first part is a Windows drive letter (single letter)
+          if (colonParts.length >= 2 && colonParts[0].length === 1 && /[A-Za-z]/.test(colonParts[0])) {
+            // Windows path like D:\path\file.php:24
+            // Reconstruct as D:\path\file.php
+            filePath = colonParts[0] + ':' + colonParts[1];
+          } else {
+            // Unix path like /path/file.php:24
+            filePath = colonParts[0];
+          }
+
+          // Only consider it valid if the file exists
+          if (fs.existsSync(filePath)) {
+            return part;
+          }
+        }
+      }
+      // If no valid file path found in parts, return the whole line
+      // It will be filtered out later if it's not a valid file path
+      return parts.find(p => p.includes(':')) || l;
+    })
+    .filter(l => {
+      // Extract file path from line (accounting for Windows drive letters)
+      if (!l) return false;
+      const colonParts = l.split(':');
+      let filePath;
+
+      if (colonParts.length >= 2 && colonParts[0].length === 1 && /[A-Za-z]/.test(colonParts[0])) {
+        // Windows path
+        filePath = colonParts[0] + ':' + colonParts[1];
+      } else {
+        // Unix path
+        filePath = colonParts[0];
+      }
+
+      return filePath && fs.existsSync(filePath);
+    })
 
     // // filter out 3rd party libs
     .filter(l => !l?.includes(`vendor${sep}`))
     .filter(l => !l?.includes(`node_modules${sep}`))
-    .filter(l => fs.existsSync(l.split(':')[0]))
-    .filter(l => fs.lstatSync(l.split(':')[0]).isFile());
+    .filter(l => {
+      // Extract file path for final check (accounting for Windows drive letters)
+      const colonParts = l.split(':');
+      let filePath;
+
+      if (colonParts.length >= 2 && colonParts[0].length === 1 && /[A-Za-z]/.test(colonParts[0])) {
+        filePath = colonParts[0] + ':' + colonParts[1];
+      } else {
+        filePath = colonParts[0];
+      }
+
+      return fs.lstatSync(filePath).isFile();
+    });
 
   if (!stackLines.length) return '';
 
-  const [file, line] = stackLines[0].split(':');
+  // Extract file and line number (accounting for Windows drive letters)
+  const firstLine = stackLines[0];
+  const colonParts = firstLine.split(':');
+  let file, line;
+
+  if (colonParts.length >= 3 && colonParts[0].length === 1 && /[A-Za-z]/.test(colonParts[0])) {
+    // Windows path like D:\path\file.php:24
+    file = colonParts[0] + ':' + colonParts[1];
+    line = colonParts[2];
+  } else {
+    // Unix path like /path/file.php:24
+    file = colonParts[0];
+    line = colonParts[1];
+  }
 
   const prepend = 3;
   const source = fetchSourceCode(fs.readFileSync(file).toString(), { line, prepend, limit: 7 });

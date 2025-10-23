@@ -449,18 +449,24 @@ class Client {
       }
       return stack;
     } catch (e) {
-      console.log(e);
+      console.log('Error in formatError:', e);
+      // Fallback to basic stack trace
+      if (error.stack) {
+        stack += error.stack;
+      }
+      return stack;
     }
   }
 }
 
 function isNotInternalFrame(frame) {
-  return (
-    frame.getFileName() &&
-    frame.getFileName().includes(sep) &&
-    !frame.getFileName().includes('node_modules') &&
-    !frame.getFileName().includes('internal')
-  );
+  const fileName = frame.getFileName();
+  const result =
+    fileName &&
+    (fileName.includes(sep) || fileName.includes('/')) &&
+    !fileName.includes('node_modules') &&
+    !fileName.includes('internal');
+  return result;
 }
 
 /**
