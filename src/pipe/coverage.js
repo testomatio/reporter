@@ -6,21 +6,21 @@ import { Gaxios } from 'gaxios';
 import { minimatch } from 'minimatch';
 import pc from 'picocolors';
 import { APP_PREFIX, AXIOS_TIMEOUT, REPORTER_REQUEST_RETRIES } from '../constants.js';
-import { parseFilterParams, generateFilterRequestParams } from '../utils/pipe_utils.js';
+import { generateFilterRequestParams } from '../utils/pipe_utils.js';
+import { parsePipeOptions } from '../utils/utils.js';
 import { config } from '../config.js';
 import createDebugMessages from 'debug';
 
 const debug = createDebugMessages('@testomatio/reporter:pipe:csv');
 
-// TODO: Add unit tests like for testomatio_pipe_tests !!! after deeper testing
-
 // Example of use 'coverage:file=coverage/coverage.yml,diff=master' cmd:
 // | Option | Git command | Notes |
 // | --- | --- | --- |
 // | --filter "coverage:file=coverage/coverage.yml,diff=new-branch" | ✅ git diff new-branch --name-only | - |
-// | --filter "coverage:file=diff=master,coverage.yml" | ✅ git diff master --name-only | - |
+// | --filter "coverage:diff=master,file=coverage.yml" | ✅ git diff master --name-only | - |
 // | --filter "coverage:file=coverage/coverage.yml" | ✅ git diff master --name-only | default branch = "master" |
 // | --filter "coverage:file=coverage.yml,dif=noexist-branch" | ❌ Git command failed ...| - |
+// | --filter "coverage:file=coverage.yml,diff=noexist-branch" | ❌ Git command failed ...| because no branch found |
 // | --filter "coverage:file=no-exist-coverage.yml" | ❌ Coverage file not found: <>filename>.yml | - |
 // | --filter "coverage:filepath=coverage.yml" | 🚫 Missing required parameter: "file"... | - |
 // | --filter "coverage:diff=my-branch" | 🚫 Missing required parameter: "file"...| - |
@@ -32,20 +32,31 @@ class CoveragePipe { // or Changes for the future???
         diff_command: 'git diff',
         only_file_opt: '--name-only',
         uncommitted_marker: 'uncommitted',
+        test_defaultGitChangedFile: ['todomvc-tests/edit-todos_test.js'], // uses only for unit tests in "coverage_pipe_test.js" file
     };
 
     constructor(params, store) {
-        this.id = 'coverage'; // as future updates -> find by id in clien.js
+        this.id = 'coverage'; // as future updates -> find by id in client.js
         this.store = store || {};
         this.isEnabled = false;
+        this.branch = undefined;
+        this.isDefaultGitChanges = false; // COVERAGE_BY_DEFAULT_GIT_FILE env uses only for unit tests
 
         // Client config section
         this.formattedDate = new Date().toISOString().replace(/T/, '-').replace(/:/g, '-').split('.')[0];
         this.title = process.env.TESTOMATIO_TITLE || `Testomatio Coverage Test Execution - ${this.formattedDate}`;
         this.apiKey = process.env['INPUT_TESTOMATIO-KEY'] || config.TESTOMATIO;
 
+        this.isDefaultGitChanges = process.env.COVERAGE_BY_DEFAULT_GIT_FILE === '1'? true : false; // COVERAGE_BY_DEFAULT_GIT_FILE env uses only for unit tests
         this.coverageFilePath = process.env.COVERAGE_FILEPATH || undefined;
-        // TODO: this.gitCommitOption = params.changes || this.#GIT.uncommitted_marker; // Default = "uncommitted" if not provided
+        
+        if (!this.coverageFilePath) return;
+
+        this.url = params.testomatioUrl || process.env.TESTOMATIO_URL || 'https://app.testomat.io';
+        const proxyUrl = process.env.HTTP_PROXY || process.env.HTTPS_PROXY;
+        const proxy = proxyUrl ? new URL(proxyUrl) : null;
+
+        this.branch = process.env.COVERAGE_BRANCH ? process.env.COVERAGE_BRANCH : this.#GIT.default_branch;
         
         if (!process.env.COVERAGE_BRANCH) {
             console.log(
@@ -54,16 +65,6 @@ class CoveragePipe { // or Changes for the future???
                 '👉 You can set it via --filter "coverage:file=coverage.yml,diff=your-branch"'
             );
         }
-
-        this.branch = process.env.COVERAGE_BRANCH ? process.env.COVERAGE_BRANCH : this.#GIT.default_branch;
-
-        debug('Coverage Pipe: ', 'Git Branch - ', this.branch, ', Coverage filepath - ', this.coverageFilePath);
-        
-        if (!this.coverageFilePath) return;
-        
-        this.url = params.testomatioUrl || process.env.TESTOMATIO_URL || 'https://app.testomat.io';
-        const proxyUrl = process.env.HTTP_PROXY || process.env.HTTPS_PROXY;
-        const proxy = proxyUrl ? new URL(proxyUrl) : null;
 
         // In case if we have all needed data
         this.isEnabled = true;
@@ -93,6 +94,11 @@ class CoveragePipe { // or Changes for the future???
             }
         });
 
+        debug('Coverage Pipe initialized', {
+            branch: this.branch,
+            coverageFilePath: this.coverageFilePath,
+        });
+
         this.parsedCoverage = {};
         this.changedFiles = [];
         this.matchedLines = new Set();        
@@ -105,48 +111,65 @@ class CoveragePipe { // or Changes for the future???
         debug(`Coverage Pipe: is Enabled = ${this.isEnabled}`);
     }
 
-    async prepareRun(params) {
+    async prepareRun(opts) {
+        // Reset internal mutable state for isolation
+        this.tests.clear();
+        this.suiteIds.clear();
+        this.tagLabels.clear();
+        this.results = [];
+
         if (!this.isEnabled) return [];
 
-        // Step 1: Validate coverage file path & Git changes & Coverage parsing
-        if (!this.getGitChangedFiles()?.validateCoverageFile()?.parseCoverageFile()) return;
+        const parsedOptions = parsePipeOptions(opts);
 
-        // Step 2: Extract all available tests and compare with coverage file
-        const lines = await this.extractRelevantTestsFromChanges();
+        const { file } = parsedOptions;
 
-        if (lines.size === 0) {
-            console.log(APP_PREFIX, 'ℹ️  No matching entries in coverage file for provided Git changes.');
-            return;
-        }
+        if (file) {
+            console.log(APP_PREFIX, `📦 Using branch: ${this.branch}`);
+            // Step 1: Validate coverage file path & Git changes & Coverage parsing
+            if (!this.getGitChangedFiles()?.validateCoverageFile()?.parseCoverageFile()) return [];
 
-        if (this.tests.size === 0) {
-            console.log(APP_PREFIX, 'ℹ️  No tests found for execution based on Git changes.');            
-            return;
-        }
+            // Step 2: Extract all available tests and compare with coverage file
+            const lines = await this.extractRelevantTestsFromChanges();
 
-        // Step 2: Handle tag labels tests from the server
-        if (this.tagLabels && this.tagLabels.size > 0) {
-            for (const tag of this.tagLabels) {
-                const tests = await this.#getTestomatioTestsByParam(`tag-name=${tag}`);
-
-                if (!tests) return;
-                
-                tests.forEach(testId => this.tests.add(testId));
+            if (lines.size === 0) {
+                console.log(APP_PREFIX, 'ℹ️  No matching entries in coverage file for provided Git changes.');
+                return [];
             }
-        }
-        // TODO: switch log 'entry' to what??? - because we can have suite + tests: Safaa0ab4|Tc85d62e4
-        console.log(
-            APP_PREFIX, 
-            `✅ We found ${this.tests.size === 1 ? 'one entry' : `${this.tests.size} (test/suite) entries`}` +
-            ' in Testomat.io service side.'
-        );
 
-        console.log(pc.green(`📝 Retrieving a list of all modified tests from files is complete! Start running tests...`));        
+            // Step 3: Handle tag labels tests from the server
+            // if (this.tagLabels && this.tagLabels.size > 0) { //TODO: in case if we add labels in future!!!
+            if (this.tagLabels.size > 0) {
+                for (const tag of this.tagLabels) {
+                    const tagType = 'tag-name';
+                    const tests = await this.#getTestomatioTestsByParam(tagType, tag);
+
+                    if (!tests) return [];
+
+                    console.log(
+                        APP_PREFIX, 
+                        `✅ We found ${tests.length === 1 ? 'one entry' : `${tests.length} (test/suite) entries`}` +
+                        ' in Testomat.io service side.'
+                    );
+                    
+                    tests.forEach(testId => this.tests.add(testId));
+                }  
+            }
+
+            if (this.tests.size === 0) {
+                console.log(APP_PREFIX, 'ℹ️  No tests found for execution based on Git changes.');            
+                return [];
+            }
+
+            console.log(pc.green(`📝 Retrieving a list of all modified tests from files is complete! Start running tests...`));
+        }
+
+        this.results = [...this.tests]
         
-        return this.tests;
+        return this.results;
     }
 
-    addTest(data) {} // WIP* - no need for now???
+    addTest(data) {}
 
     async createRun() {}
 
@@ -168,18 +191,17 @@ class CoveragePipe { // or Changes for the future???
      * it logs relevant information and returns `undefined`.
      *
      * @async function
-     * @param {string} param - The filter string in the format like `tag-name=smoke`.
+     * @param {string} type - The filter string in the format like `tag-name` for tag by.
+     * @param {string} id - The filter string in the format like `smoke`.
      * @returns {Promise<Array<Object>|undefined>} Resolves to an array of test objects if found, otherwise `undefined`.
      */
-    async #getTestomatioTestsByParam(param) {
-        const { type, id } = parseFilterParams(param);
-
-        // Get extra tests from the server
+    async #getTestomatioTestsByParam(type, id) {
+        // Get tests from the server
         try {
             const q = generateFilterRequestParams({
                 type,
                 id,
-                apiKey: this.apiKey.trim(),
+                apiKey: this?.apiKey?.trim(),
             });
 
             if (!q) {
@@ -194,6 +216,7 @@ class CoveragePipe { // or Changes for the future???
 
             if (!Array.isArray(resp.data?.tests) && resp.data?.tests?.length === 0) {
                 console.log(APP_PREFIX, `🔍 No test by ${type}=${id} were found on the Testomat.io server side!`);
+                
                 return undefined;
             }
 
@@ -201,6 +224,7 @@ class CoveragePipe { // or Changes for the future???
         } 
         catch (err) {
             console.error(APP_PREFIX, `🚩 Error getting available tests from the Testomat.io by "test_grep" option: ${err}`);
+            
             return undefined;
         }
     }
@@ -278,11 +302,17 @@ class CoveragePipe { // or Changes for the future???
         console.error(APP_PREFIX, `ℹ️  We will use '${cmd}' Git command.`);
 
         try {
-            this.changedFiles =  this.#getChangedFilesFromGit(cmd);
+            // For clear unit testing process -> Like test_defaultGitChangedFile = todomvc-tests/edit-todos_test.js
+            if (this.isDefaultGitChanges) {
+                this.changedFiles = this.#GIT.test_defaultGitChangedFile;
+            }
+            else {
+                this.changedFiles =  this.#getChangedFilesFromGit(cmd);
 
-            if (this.changedFiles.length === 0) {
-                console.log(APP_PREFIX, 'ℹ️  No files changed in the latest Git commit. Skipping coverage processing.');
-                return undefined;
+                if (this.changedFiles.length === 0) {
+                    console.log(APP_PREFIX, 'ℹ️  No files changed in the latest Git commit. Skipping coverage processing.');
+                    return undefined;
+                }
             }
         }
         catch (err) {
@@ -370,7 +400,7 @@ class CoveragePipe { // or Changes for the future???
      *
      * @returns {Promise <Set<string>>} A set of file paths that matched coverage patterns (`this.matchedLines`).
      */
-    async extractRelevantTestsFromChanges() {         
+    async extractRelevantTestsFromChanges() {
         for (const changedFile of this.changedFiles) {
             for (const [pattern, ids] of Object.entries(this.parsedCoverage)) {
               if (minimatch(changedFile, pattern)) {

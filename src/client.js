@@ -81,12 +81,12 @@ class Client {
         return;
       }
   
-      process.env.COVERAGE_FILEPATH = parsedOptions.file;
-      process.env.COVERAGE_BRANCH = parsedOptions.diff || 'master';
+      process.env.COVERAGE_FILEPATH = parsedOptions?.file;
+      process.env.COVERAGE_BRANCH = parsedOptions?.diff || "master";
     }
 
     this.pipes = await pipesFactory(params || this.paramsForPipesFactory || {}, this.pipeStore);
-    
+
     // all pipes disabled, skipping
     if (!this.pipes.some(p => p.isEnabled)) {
       return Promise.resolve();
@@ -108,7 +108,7 @@ class Client {
       const result = await p.prepareRun(pipeOptions);
 
       if (!result || result.length === 0) {
-        return;
+        return [];
       }
 
       debug('Execution tests list', result);

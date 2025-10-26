@@ -58,6 +58,8 @@ function parseFilterParams(opts) {
   
   const validType = updateFilterType(type);
 
+  if (!validType) return undefined;
+
   return {
     type: validType,
     id,

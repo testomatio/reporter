@@ -93,11 +93,24 @@ program
 
     const client = new TestomatClient({ apiKey, title });
 
-    // Example of use: npx @testomatio/reporter run "npx jest" --filter "testomatio:tag-name=frontend"
-    // Example of use: npx @testomatio/reporter run "npx jest" --filter="coverage:file=coverage.yml"
     if (opts.filter) {
+      // Example of use: npx @testomatio/reporter run "npx jest" --filter "testomatio:tag-name=frontend"
+      // Example of use: npx @testomatio/reporter run "npx jest" --filter "coverage:file=coverage.yml"
       const [pipe, ...optsArray] = opts.filter.split(':');
       const pipeOptions = optsArray.join(':');
+
+      const SUPPORTED_PIPES = ['coverage', 'testomatio'];
+
+      if (!SUPPORTED_PIPES.includes(pipe)) {
+        console.log(APP_PREFIX,
+          `🚫 Unsupported --filter mode: "${pipe}".\n` +
+          '✅ Supported formats:\n' +
+          '   • "coverage:<options>" (e.g., --filter="coverage:file=coverage.yml")\n' +
+          '   • "testomatio:<options>" (e.g., --filter="testomatio:tag-name=smoke")\n\n' +
+          '👉 Please refer to the documentation for supported options and usage examples.\n'
+        );
+        return;
+      }
 
       try {
         const tests = await client.prepareRun({ pipe, pipeOptions });
@@ -116,7 +129,6 @@ program
     }
 
     console.log(APP_PREFIX, `🚀 Running`, pc.green(command));
-    // console.log("Full command text:", command.split(' ')); //TODO: only for debug!!!! need to remove after testing!!
 
     const runTests = async () => {
       const testCmds = command.split(' ');
