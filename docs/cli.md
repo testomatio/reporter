@@ -107,6 +107,29 @@ npx @testomatio/reporter run "npm test" --kind manual
 npx @testomatio/reporter run "npx jest" --kind mixed
 ```
 
+#### 3.1 run by "--filter" option
+
+⚠️ Note on unsupported --filter modes
+
+If you provide a --filter value that does not start with either `testomatio:` or `coverage:` ,
+the reporter will stop execution and print a clear error message.
+
+Example of wrong command:
+```bash
+npx @testomatio/reporter run "npx jest" --filter "tcoverage:file=coverage.yml"
+```
+
+Output:
+
+```bash
+[TESTOMATIO] 🚫 Unsupported --filter mode: "tcoverage".
+✅ Supported formats:
+   • "coverage:<options>" (e.g., --filter="coverage:file=coverage.yml")
+   • "testomatio:<options>" (e.g., --filter="testomatio:tag-name=smoke")
+
+👉 Please refer to the documentation for supported options and usage examples.
+```
+
 > Previously known as: `npx start-test-run -c "command"` _(before 1.6.0)_
 
 ### 4. xml
