@@ -143,7 +143,7 @@ class CoveragePipe { // or Changes for the future???
             // if (this.tagLabels && this.tagLabels.size > 0) { //TODO: in case if we add labels in future!!!
             if (this.tagLabels.size > 0) {
                 for (const tag of this.tagLabels) {
-                    const tagType = 'tag-name';
+                    const tagType = 'tag';
                     const tests = await this.#getTestomatioTestsByParam(tagType, tag);
 
                     if (!tests) return [];
@@ -210,7 +210,7 @@ class CoveragePipe { // or Changes for the future???
 
             if (!q) {
                 return;
-              }
+            }
 
             const resp = await this.client.request({
                 method: 'GET',
