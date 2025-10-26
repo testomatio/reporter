@@ -32,7 +32,8 @@ class CoveragePipe { // or Changes for the future???
         diff_command: 'git diff',
         only_file_opt: '--name-only',
         uncommitted_marker: 'uncommitted',
-        test_defaultGitChangedFile: ['todomvc-tests/edit-todos_test.js'], // uses only for unit tests in "coverage_pipe_test.js" file
+        // test_defaultGitChangedFile - uses only for unit tests in "coverage_pipe_test.js" file
+        test_defaultGitChangedFile: ['todomvc-tests/edit-todos_test.js'],
     };
 
     constructor(params, store) {
@@ -47,7 +48,8 @@ class CoveragePipe { // or Changes for the future???
         this.title = process.env.TESTOMATIO_TITLE || `Testomatio Coverage Test Execution - ${this.formattedDate}`;
         this.apiKey = process.env['INPUT_TESTOMATIO-KEY'] || config.TESTOMATIO;
 
-        this.isDefaultGitChanges = process.env.COVERAGE_BY_DEFAULT_GIT_FILE === '1'? true : false; // COVERAGE_BY_DEFAULT_GIT_FILE env uses only for unit tests
+        // this.isDefaultGitChanges - COVERAGE_BY_DEFAULT_GIT_FILE env uses only for unit tests
+        this.isDefaultGitChanges = process.env.COVERAGE_BY_DEFAULT_GIT_FILE === '1'? true : false;
         this.coverageFilePath = process.env.COVERAGE_FILEPATH || undefined;
         
         if (!this.coverageFilePath) return;
@@ -161,10 +163,12 @@ class CoveragePipe { // or Changes for the future???
                 return [];
             }
 
-            console.log(pc.green(`📝 Retrieving a list of all modified tests from files is complete! Start running tests...`));
+            console.log(
+                pc.green(`📝 Retrieving a list of all modified tests from files is complete! Start running tests...`)
+            );
         }
 
-        this.results = [...this.tests]
+        this.results = [...this.tests];
         
         return this.results;
     }
@@ -223,7 +227,10 @@ class CoveragePipe { // or Changes for the future???
             return resp.data.tests;
         } 
         catch (err) {
-            console.error(APP_PREFIX, `🚩 Error getting available tests from the Testomat.io by "test_grep" option: ${err}`);
+            console.error(
+                APP_PREFIX,
+                `🚩 Error getting available tests from the Testomat.io by "test_grep" option: ${err}`
+            );
             
             return undefined;
         }
@@ -286,7 +293,8 @@ class CoveragePipe { // or Changes for the future???
      * If no changed files are found, or an error occurs at any stage, the method logs 
      * the issue and returns `undefined`.
      *
-     * @returns {this | undefined} Returns the current instance (`this`) if changed files are found; otherwise, returns `undefined`.
+     * @returns {this | undefined} Returns the current instance (`this`) if changed files are found;
+     * otherwise, returns `undefined`.
      */
     getGitChangedFiles() {
         let cmd;
@@ -310,7 +318,11 @@ class CoveragePipe { // or Changes for the future???
                 this.changedFiles =  this.#getChangedFilesFromGit(cmd);
 
                 if (this.changedFiles.length === 0) {
-                    console.log(APP_PREFIX, 'ℹ️  No files changed in the latest Git commit. Skipping coverage processing.');
+                    console.log(
+                        APP_PREFIX,
+                        'ℹ️  No files changed in the latest Git commit. Skipping coverage processing.'
+                    );
+
                     return undefined;
                 }
             }
@@ -335,7 +347,8 @@ class CoveragePipe { // or Changes for the future???
      *
      * Logs descriptive error messages for any failures.
      *
-     * @returns {this | undefined} "true" in case if coverage file is valid and we can keep going; otherwise, `undefined`.
+     * @returns {this | undefined} "true" in case if coverage file is valid and we can keep going;
+     * otherwise, `undefined`.
      */
     validateCoverageFile() {
         // Validate the presence of the coverage filepath
