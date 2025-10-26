@@ -25,6 +25,12 @@ function setS3Credentials(artifacts) {
  * @returns {Object|null} - An object containing the generated request parameters, or null if the type is invalid.
  */
 function generateFilterRequestParams(params) {
+  // Defensive check: ensure params is an object
+  if (!params || typeof params !== 'object') {
+    console.error(APP_PREFIX, `Invalid parameters provided. Expected an object, got: ${typeof params}`);
+    return;
+  }
+
   const { type, id, apiKey } = params;
 
   if (!type) {
@@ -73,6 +79,8 @@ function parseFilterParams(opts) {
  *                            Returns undefined if the type is not valid.
  */
 function updateFilterType(type) {
+  if (!type || typeof type !== 'string') return;
+
   let typeLowerCase = type.toLowerCase();
 
   const filterTypes = ['tag-name', 'plan', 'label', 'jira-ticket'];
@@ -90,7 +98,7 @@ function updateFilterType(type) {
   ];
 
   if (!filterTypes.includes(typeLowerCase)) {
-    console.log(APP_PREFIX, `❗❗❗ Invalid "filter=${type}" start settings! Available option list: ${filterTypes}`);
+    console.log(APP_PREFIX, `❗❗❗ Invalid filter: "${type}" start settings! Available option list: ${filterTypes}`);
     return;
   }
 
