@@ -615,20 +615,6 @@ function truncate(s, size = 255) {
   return `${str.substring(0, size)}...`;
 }
 
-function parsePipeOptions(optionsStr) {
-  const options = {};
-  if (!optionsStr) return options;
-
-  const pairs = optionsStr.split(',');
-  for (const pair of pairs) {
-    const [key, value] = pair.split('=');
-    if (key && value) {
-      options[key.trim()] = value.trim();
-    }
-  }
-  return options;
-}
-
 export {
   ansiRegExp,
   truncate,
@@ -653,6 +639,5 @@ export {
   storeRunId,
   testRunnerHelper,
   transformEnvVarToBoolean,
-  validateSuiteId,
-  parsePipeOptions
+  validateSuiteId
 };

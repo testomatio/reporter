@@ -132,4 +132,40 @@ function fullName(t) {
   return line;
 }
 
-export { updateFilterType, parseFilterParams, generateFilterRequestParams, setS3Credentials, statusEmoji, fullName };
+/**
+ * Parses a comma-separated list of key-value pairs into an options object.
+ *
+ * The input string should be formatted as `"key1=value1,key2=value2,..."`.
+ * Whitespace around keys and values is trimmed. If the input is empty or undefined,
+ * an empty object is returned.
+ *
+ * @param {string} [optionsStr] - A comma-separated string of key=value pairs.
+ * @returns {Object} An object mapping option keys to their string values.
+ *
+ * @example
+ * parsePipeOptions('foo=bar,baz=qux');
+ * => Returns: { foo: 'bar', baz: 'qux' }
+ */
+function parsePipeOptions(optionsStr) {
+  const options = {};
+  if (!optionsStr) return options;
+
+  const pairs = optionsStr.split(',');
+  for (const pair of pairs) {
+    const [key, value] = pair.split('=');
+    if (key && value) {
+      options[key.trim()] = value.trim();
+    }
+  }
+  return options;
+}
+
+export { 
+  updateFilterType, 
+  parseFilterParams, 
+  generateFilterRequestParams, 
+  setS3Credentials, 
+  statusEmoji, 
+  fullName,
+  parsePipeOptions
+};

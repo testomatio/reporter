@@ -7,7 +7,8 @@ import { glob } from 'glob';
 import path from 'path';
 import { fileURLToPath } from 'node:url';
 import { S3Uploader } from './uploader.js';
-import { transformEnvVarToBoolean, readLatestRunId, storeRunId, validateSuiteId, parsePipeOptions } from './utils/utils.js';
+import { formatStep, truncate, readLatestRunId, storeRunId, validateSuiteId } from './utils/utils.js';
+import { parsePipeOptions } from './utils/pipe_utils.js';
 import { filesize as prettyBytes } from 'filesize';
 import { formatLogs, formatError, stripColors } from './utils/log-formatter.js';
 

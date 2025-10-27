@@ -7,7 +7,7 @@ import { minimatch } from 'minimatch';
 import pc from 'picocolors';
 import { APP_PREFIX, AXIOS_TIMEOUT, REPORTER_REQUEST_RETRIES } from '../constants.js';
 import { generateFilterRequestParams } from '../utils/pipe_utils.js';
-import { parsePipeOptions } from '../utils/utils.js';
+import { parsePipeOptions } from '../utils/pipe_utils.js';
 import { config } from '../config.js';
 import createDebugMessages from 'debug';
 
