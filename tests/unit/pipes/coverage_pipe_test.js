@@ -189,32 +189,9 @@ describe('CoveragePipe: general positive cases.', () => {
     });
 });
 
-describe('CoveragePipe general setup cases.', () => {
+describe('CoveragePipe general class cases.', () => {
     let coveragePipe;
     let originalEnv;
-
-    before(done => {
-        // Ensure clean temp directory
-        if (!fs.existsSync(TEMP_COVER_DIR)) {
-            fs.mkdirSync(TEMP_COVER_DIR);
-            console.log(`[mock-tmp-folder]: tmp folder was created - ${TEMP_COVER_DIR}`);
-        }
-
-        done();
-    });
-
-    after(done => {
-        // Cleanup temp directory
-        if (fs.existsSync(TEMP_COVER_DIR)) {
-            fs.readdirSync(TEMP_COVER_DIR).forEach(file => {
-                fs.unlinkSync(path.join(TEMP_COVER_DIR, file));
-            });
-            fs.rmdirSync(TEMP_COVER_DIR);
-            console.log(`[mock-tmp-folder]: tmp folder was removed - ${TEMP_COVER_DIR}`);
-        }
-
-        done();
-    });
 
     beforeEach(() => {
         originalEnv = { ...process.env };
@@ -228,10 +205,6 @@ describe('CoveragePipe general setup cases.', () => {
         delete process.env.COVERAGE_BY_DEFAULT_GIT_FILE;
 
         coveragePipe = undefined;
-
-        fs.readdirSync(TEMP_COVER_DIR).forEach(file => {
-            fs.unlinkSync(path.join(TEMP_COVER_DIR, file));
-        });
     });
 
     describe('Coverage class - diff branch tests', () => {
