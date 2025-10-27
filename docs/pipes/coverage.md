@@ -42,6 +42,8 @@ todomvc-tests/pages/**/*.js:
   - "@Safa7"
 ```
 
+_(For now we cover only cases where suiteid/testid/tag can be used as coverage values)_
+
 ### 🧠 How It Works
 
 * Each key is a glob pattern or file path that matches changed files.
