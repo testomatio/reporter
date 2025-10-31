@@ -241,6 +241,7 @@ Many commands rely on environment variables. You can set these in a command line
 - `TESTOMATIO`: Your Testomat.io API key.
 - `TESTOMATIO_RUN`: The current run ID (usually set automatically by the `start` command).
 - `TESTOMATIO_TITLE`: Title for the test run (optional).
+- `TESTOMATIO_STACK_ARTIFACTS`: Save large stack traces and steps as artifacts to avoid API size limits.
 - [more..](./configuration.md)
 
 ## Tips

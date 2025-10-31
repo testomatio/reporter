@@ -10,7 +10,14 @@ import { glob } from 'glob';
 import path, { sep } from 'path';
 import { fileURLToPath } from 'node:url';
 import { S3Uploader } from './uploader.js';
-import { formatStep, truncate, readLatestRunId, storeRunId, validateSuiteId } from './utils/utils.js';
+import {
+  formatStep,
+  truncate,
+  readLatestRunId,
+  storeRunId,
+  validateSuiteId,
+  transformEnvVarToBoolean
+} from './utils/utils.js';
 import { filesize as prettyBytes } from 'filesize';
 
 const debug = createDebugMessages('@testomatio/reporter:client');
@@ -139,19 +146,6 @@ class Client {
    * @returns {Promise<PipeResult[]>}
    */
   async addTestRun(status, testData) {
-    if (!this.pipes || !this.pipes.length)
-      this.pipes = await pipesFactory(this.paramsForPipesFactory || {}, this.pipeStore);
-
-    // all pipes disabled, skipping
-    if (!this.pipes?.filter(p => p.isEnabled).length) return [];
-
-    if (isTestShouldBeExculedFromReport(testData)) return [];
-
-    if (status === STATUS.SKIPPED && process.env.TESTOMATIO_EXCLUDE_SKIPPED) {
-      debug('Skipping test from report', testData?.title);
-      return []; // do not log skipped tests
-    }
-
     if (!testData)
       testData = {
         title: 'Unknown test',
@@ -169,15 +163,61 @@ class Client {
     const {
       rid,
       error = null,
+      steps: originalSteps,
+      title,
+      suite_title,
+    } = testData;
+    let steps = originalSteps;
+
+    const uploadedFiles = [];
+    const stackArtifactsEnabled = transformEnvVarToBoolean(process.env.TESTOMATIO_STACK_ARTIFACTS);
+
+    let formattedSteps;
+    if (stackArtifactsEnabled) {
+      const timestamp = +new Date;
+      formattedSteps = Array.isArray(steps) ? steps.map(step => formatStep(step)).flat().join('\n') : '';
+
+      if (error?.stack?.length > 5000) {
+        uploadedFiles.push(
+          this.uploader.uploadFileAsBuffer(
+            Buffer.from(error.stack, 'utf8'),
+            [this.runId, rid, `stack_${timestamp}.log`]
+          )
+        );
+      }
+      if (formattedSteps?.length > 10000) {
+        uploadedFiles.push(
+          this.uploader.uploadFileAsBuffer(
+            Buffer.from(JSON.stringify(steps, null, 2), 'utf8'),
+            [this.runId, rid, `steps_${timestamp}.json`]
+          )
+        );
+      }
+    }
+    if (!this.pipes || !this.pipes.length)
+      this.pipes = await pipesFactory(this.paramsForPipesFactory || {}, this.pipeStore);
+
+    if (!this.pipes?.filter(p => p.isEnabled).length) {
+      if (uploadedFiles.length > 0) {
+        await Promise.all(uploadedFiles);
+      }
+      return [];
+    }
+
+    if (isTestShouldBeExculedFromReport(testData)) return [];
+
+    if (status === STATUS.SKIPPED && process.env.TESTOMATIO_EXCLUDE_SKIPPED) {
+      debug('Skipping test from report', testData?.title);
+      return [];
+    }
+
+    const {
       time = 0,
       example = null,
       files = [],
       filesBuffers = [],
-      steps,
       code = null,
-      title,
       file,
-      suite_title,
       suite_id,
       test_id,
       timestamp,
@@ -188,7 +228,6 @@ class Client {
     } = testData;
     let { message = '', meta = {} } = testData;
 
-    // stringify meta values and limit keys and values length to 255
     meta = Object.entries(meta)
       .filter(([, value]) => value !== null && value !== undefined)
       .reduce((acc, [key, value]) => {
@@ -196,7 +235,6 @@ class Client {
         return acc;
       }, {});
 
-    // Get links from storage using the test context
     const testContext = suite_title ? `${suite_title} ${title}` : title;
 
     let errorFormatted = '';
@@ -205,13 +243,27 @@ class Client {
       message = error?.message;
     }
 
-    // Attach logs
-    const fullLogs = this.formatLogs({ error: errorFormatted, steps, logs: testData.logs });
+    if (stackArtifactsEnabled) {
+      if (error?.stack?.length > 5000) errorFormatted = `[Large stack saved as artifact]`;
+      if (formattedSteps?.length > 10000) steps = null;
+    } else {
+      formattedSteps = Array.isArray(steps) ? steps.map(step => formatStep(step)).flat().join('\n') : '';
+    }
 
-    // add artifacts
+    let fullLogs = this.formatLogs({ error: errorFormatted, steps, logs: testData.logs });
+
+    if (stackArtifactsEnabled && fullLogs.length > 5000) {
+      const timestamp = +new Date;
+      uploadedFiles.push(
+        this.uploader.uploadFileAsBuffer(
+          Buffer.from(fullLogs, 'utf8'),
+          [this.runId, rid, `logs_${timestamp}.log`]
+        )
+      );
+      fullLogs = fullLogs.slice(0, 5000) + '\n\n[Full logs saved as artifact]';
+    }
+
     if (manuallyAttachedArtifacts?.length) files.push(...manuallyAttachedArtifacts);
-
-    const uploadedFiles = [];
 
     for (let f of files) {
       if (!f) continue; // f === null
