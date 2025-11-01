@@ -19,8 +19,11 @@ import {
   transformEnvVarToBoolean
 } from './utils/utils.js';
 import { filesize as prettyBytes } from 'filesize';
+import { stripVTControlCharacters } from 'util';
 
 const debug = createDebugMessages('@testomatio/reporter:client');
+
+const stripColors = stripVTControlCharacters || ((str) => str?.replace(/\x1b\[[0-9;]*m/g, '') || '');
 
 // removed __dirname usage, because:
 // 1. replaced with ESM syntax (import.meta.url), but it throws an error on tsc compilation;
@@ -167,50 +170,12 @@ class Client {
       title,
       suite_title,
     } = testData;
-    let steps = originalSteps;
+    const steps = originalSteps;
 
     const uploadedFiles = [];
     const stackArtifactsEnabled = transformEnvVarToBoolean(process.env.TESTOMATIO_STACK_ARTIFACTS);
 
-    let formattedSteps;
-    if (stackArtifactsEnabled) {
-      const timestamp = +new Date;
-      formattedSteps = Array.isArray(steps) ? steps.map(step => formatStep(step)).flat().join('\n') : '';
-
-      if (error?.stack?.length > 5000) {
-        uploadedFiles.push(
-          this.uploader.uploadFileAsBuffer(
-            Buffer.from(error.stack, 'utf8'),
-            [this.runId, rid, `stack_${timestamp}.log`]
-          )
-        );
-      }
-      if (formattedSteps?.length > 10000) {
-        uploadedFiles.push(
-          this.uploader.uploadFileAsBuffer(
-            Buffer.from(JSON.stringify(steps, null, 2), 'utf8'),
-            [this.runId, rid, `steps_${timestamp}.json`]
-          )
-        );
-      }
-    }
-    if (!this.pipes || !this.pipes.length)
-      this.pipes = await pipesFactory(this.paramsForPipesFactory || {}, this.pipeStore);
-
-    if (!this.pipes?.filter(p => p.isEnabled).length) {
-      if (uploadedFiles.length > 0) {
-        await Promise.all(uploadedFiles);
-      }
-      return [];
-    }
-
-    if (isTestShouldBeExculedFromReport(testData)) return [];
-
-    if (status === STATUS.SKIPPED && process.env.TESTOMATIO_EXCLUDE_SKIPPED) {
-      debug('Skipping test from report', testData?.title);
-      return [];
-    }
-
+    
     const {
       time = 0,
       example = null,
@@ -245,22 +210,37 @@ class Client {
 
     if (stackArtifactsEnabled) {
       if (error?.stack?.length > 5000) errorFormatted = `[Large stack saved as artifact]`;
-      if (formattedSteps?.length > 10000) steps = null;
-    } else {
-      formattedSteps = Array.isArray(steps) ? steps.map(step => formatStep(step)).flat().join('\n') : '';
     }
 
     let fullLogs = this.formatLogs({ error: errorFormatted, steps, logs: testData.logs });
 
-    if (stackArtifactsEnabled && fullLogs.length > 5000) {
+    if (stackArtifactsEnabled && fullLogs.length > 500) {
       const timestamp = +new Date;
       uploadedFiles.push(
         this.uploader.uploadFileAsBuffer(
-          Buffer.from(fullLogs, 'utf8'),
+          Buffer.from(stripColors(fullLogs), 'utf8'),
           [this.runId, rid, `logs_${timestamp}.log`]
         )
       );
-      fullLogs = fullLogs.slice(0, 5000) + '\n\n[Full logs saved as artifact]';
+      fullLogs = fullLogs.slice(0, 500) + '\n\n[Full logs saved as artifact]';
+    }
+
+    
+    if (!this.pipes || !this.pipes.length)
+      this.pipes = await pipesFactory(this.paramsForPipesFactory || {}, this.pipeStore);
+
+    if (!this.pipes?.filter(p => p.isEnabled).length) {
+      if (uploadedFiles.length > 0) {
+        await Promise.all(uploadedFiles);
+      }
+      return [];
+    }
+
+    if (isTestShouldBeExculedFromReport(testData)) return [];
+
+    if (status === STATUS.SKIPPED && process.env.TESTOMATIO_EXCLUDE_SKIPPED) {
+      debug('Skipping test from report', testData?.title);
+      return [];
     }
 
     if (manuallyAttachedArtifacts?.length) files.push(...manuallyAttachedArtifacts);
