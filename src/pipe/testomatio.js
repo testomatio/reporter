@@ -170,7 +170,7 @@ class TestomatioPipe {
     this.batch.isEnabled = params.isBatchEnabled ?? this.batch.isEnabled;
     if (!this.isEnabled) return;
     if (this.batch.isEnabled && this.isEnabled)
-      this.batch.intervalFunction = setInterval(this.#batchUpload, this.batch.intervalTime);
+      this.batch.intervalFunction = setInterval(() => this.#batchUpload(), this.batch.intervalTime);
 
     let buildUrl = process.env.BUILD_URL || process.env.CI_JOB_URL || process.env.CIRCLE_BUILD_URL;
 
