@@ -163,3 +163,6 @@ output/**/*.har
 lib/
 
 .claude/
+
+# Temporary test directory for development
+test-vite/
