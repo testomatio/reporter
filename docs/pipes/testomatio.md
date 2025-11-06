@@ -57,7 +57,7 @@ TESTOMATIO={API_KEY} TESTOMATIO_PROCEED=1 TESTOMATIO_RUN={RUN_ID} <actual run co
 After all reports were attached and run can be execute the following command:
 
 ```
-TESTOMATIO={API_KEY} TESTOMATIO_RUN={RUN_ID} npx start-test-run --finish
+TESTOMATIO={API_KEY} TESTOMATIO_RUN={RUN_ID} npx @testomatio/reporter finish
 ```
 
 ### Setting Report Title
@@ -105,7 +105,7 @@ TESTOMATIO={API_KEY} TESTOMATIO_ENV="Windows, Chrome" <actual run command>
 If you want to create a run and obtain its `{RUN_ID}` from [testomat.io](https://testomat.io) you can use `--launch` option:
 
 ```bash
-TESTOMATIO={API_KEY} npx start-test-run --launch
+TESTOMATIO={API_KEY} npx @testomatio/reporter start
 ```
 
 This command will return `{RUN_ID}` which you can pass to other jobs in a workflow.
@@ -117,7 +117,7 @@ This command will return `{RUN_ID}` which you can pass to other jobs in a workfl
 If you want to finish a run started by `--launch` use `--finish` option. `TESTOMATIO_RUN` environment variable is required:
 
 ```bash
-TESTOMATIO={API_KEY} TESTOMATIO_RUN={RUN_ID} npx start-test-run --finish
+TESTOMATIO={API_KEY} TESTOMATIO_RUN={RUN_ID} npx @testomatio/reporter finish
 ```
 
 ### Setting Build URL
