@@ -429,10 +429,14 @@ function transformEnvVarToBoolean(value) {
 }
 
 function truncate(s, size = 255) {
-  if (s.toString().trim().length < size) {
-    return s.toString();
+  if (s === undefined || s === null) {
+    return '';
   }
-  return `${s.toString().substring(0, size)}...`;
+  const str = s.toString();
+  if (str.trim().length < size) {
+    return str;
+  }
+  return `${str.substring(0, size)}...`;
 }
 
 export {
