@@ -124,7 +124,7 @@ describe('Client Stack Artifacts', () => {
       expect(uploadedContent).to.include('AAA'); // truncated content should still have some A's
     });
 
-    it('should not upload artifacts when content is small', async () => {
+    it('should upload artifacts even when content is small', async () => {
       const testData = {
         title: 'Test Title',
         suite_title: 'Test Suite',
@@ -136,7 +136,51 @@ describe('Client Stack Artifacts', () => {
 
       await client.addTestRun('failed', testData);
 
-      expect(uploadCalls).to.have.length(0);
+      expect(uploadCalls).to.have.length(1);
+      expect(uploadCalls[0].path[0]).to.equal('test-run-123');
+      expect(uploadCalls[0].path[1]).to.equal('test-123');
+      expect(uploadCalls[0].path[2]).to.match(/^logs_\d+\.log$/);
+
+      // Check that the uploaded file contains the logs
+      const uploadedBuffer = uploadCalls[0].buffer;
+      const uploadedContent = uploadedBuffer.toString('utf8');
+      expect(uploadedContent).to.include('Step 1');
+      expect(uploadedContent).to.include('Small logs');
+    });
+
+    it('should upload logs artifacts for passed tests when enabled', async () => {
+      // Create large logs for a passed test
+      const largeLogs = [
+        '\x1b[33mPassed test log line 1: ' + 'A'.repeat(300) + '\x1b[0m',
+        '\x1b[32mPassed test log line 2: ' + 'B'.repeat(300) + '\x1b[0m',
+        '\x1b[36mPassed test log line 3: ' + 'C'.repeat(300) + '\x1b[0m',
+      ].join('\n');
+
+      const testData = {
+        title: 'Passed Test Title',
+        suite_title: 'Test Suite',
+        error: null, // No error for passed test
+        steps: [{ title: 'Successful step', duration: 100 }],
+        logs: largeLogs,
+        rid: 'test-123'
+      };
+
+      await client.addTestRun('passed', testData);
+
+      expect(uploadCalls).to.have.length(1);
+      expect(uploadCalls[0].path[2]).to.match(/^logs_\d+\.log$/);
+
+      // Check that the uploaded file contains no ANSI escape sequences
+      const uploadedBuffer = uploadCalls[0].buffer;
+      const uploadedContent = uploadedBuffer.toString('utf8');
+
+      // Should not contain ANSI escape sequences
+      expect(uploadedContent).to.not.match(/\x1b\[[0-9;]*m/);
+
+      // Should contain the actual content (without ANSI codes)
+      expect(uploadedContent).to.include('Passed test log line 1:');
+      expect(uploadedContent).to.include('Passed test log line 2:');
+      expect(uploadedContent).to.include('Passed test log line 3:');
     });
   });
 });

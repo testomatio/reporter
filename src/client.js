@@ -170,12 +170,12 @@ class Client {
       title,
       suite_title,
     } = testData;
-    const steps = originalSteps;
+    let steps = originalSteps;
 
     const uploadedFiles = [];
     const stackArtifactsEnabled = transformEnvVarToBoolean(process.env.TESTOMATIO_STACK_ARTIFACTS);
 
-    
+
     const {
       time = 0,
       example = null,
@@ -208,24 +208,20 @@ class Client {
       message = error?.message;
     }
 
-    if (stackArtifactsEnabled) {
-      if (error?.stack?.length > 5000) errorFormatted = `[Large stack saved as artifact]`;
-    }
-
     let fullLogs = this.formatLogs({ error: errorFormatted, steps, logs: testData.logs });
 
-    if (stackArtifactsEnabled && fullLogs.length > 500) {
-      const timestamp = +new Date;
+    if (stackArtifactsEnabled && fullLogs?.trim()?.length > 0) {
       uploadedFiles.push(
         this.uploader.uploadFileAsBuffer(
           Buffer.from(stripColors(fullLogs), 'utf8'),
-          [this.runId, rid, `logs_${timestamp}.log`]
+          [this.runId, rid, `logs_${+new Date}.log`]
         )
       );
-      fullLogs = fullLogs.slice(0, 500) + '\n\n[Full logs saved as artifact]';
+      fullLogs = '';
+      steps = null;
     }
 
-    
+
     if (!this.pipes || !this.pipes.length)
       this.pipes = await pipesFactory(this.paramsForPipesFactory || {}, this.pipeStore);
 
@@ -340,7 +336,7 @@ class Client {
           const uploadedArtifacts = this.uploader.successfulUploads.map(file => ({
             relativePath: file.path.replace(process.cwd(), ''),
             link: file.link,
-            sizePretty: prettyBytes(file.size, { round: 0 }).toString(),
+            sizePretty: file.size == null ? 'unknown' : prettyBytes(file.size, { round: 0 }).toString(),
           }));
 
           uploadedArtifacts.forEach(upload => {
@@ -362,7 +358,7 @@ class Client {
           );
           const failedUploads = this.uploader.failedUploads.map(file => ({
             relativePath: file.path.replace(process.cwd(), ''),
-            sizePretty: prettyBytes(file.size, { round: 0 }).toString(),
+            sizePretty: file.size == null ? 'unknown' : prettyBytes(file.size, { round: 0 }).toString(),
           }));
 
           const pathPadding = Math.max(...failedUploads.map(upload => upload.relativePath.length)) + 1;
