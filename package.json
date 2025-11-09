@@ -6,7 +6,7 @@
     "node": ">=18"
   },
   "main": "lib/reporter.js",
-  "module": "lib/reporter.js",
+  "module": "src/reporter.js",
   "types": "types/types.d.ts",
   "repository": "git@github.com:testomatio/reporter.git",
   "author": "Michael Bodnarchuk <davert@testomat.io>,Koushik Mohan <koushikmohan1996@gmail.com>",
@@ -111,7 +111,7 @@
   },
   "exports": {
     ".": {
-      "import": "./lib/reporter.js",
+      "import": "./src/reporter.js",
       "require": "./lib/reporter.js",
       "types": "./types/types.d.ts"
     },
