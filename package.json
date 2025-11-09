@@ -47,7 +47,8 @@
     "bin",
     "lib",
     "src",
-    "testcafe"
+    "testcafe",
+    "types"
   ],
   "scripts": {
     "clear-exportdir": "rm -rf export/",
