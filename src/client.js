@@ -1,29 +1,17 @@
 import createDebugMessages from 'debug';
-import createCallsiteRecord from 'callsite-record';
-import { minimatch } from 'minimatch';
 import fs from 'fs';
 import pc from 'picocolors';
-import { randomUUID } from 'crypto';
 import { APP_PREFIX, STATUS } from './constants.js';
 import { pipesFactory } from './pipe/index.js';
 import { glob } from 'glob';
-import path, { sep } from 'path';
+import path from 'path';
 import { fileURLToPath } from 'node:url';
 import { S3Uploader } from './uploader.js';
-import {
-  formatStep,
-  truncate,
-  readLatestRunId,
-  storeRunId,
-  validateSuiteId,
-  transformEnvVarToBoolean
-} from './utils/utils.js';
+import { readLatestRunId, storeRunId, validateSuiteId, transformEnvVarToBoolean } from './utils/utils.js';
 import { filesize as prettyBytes } from 'filesize';
-import { stripVTControlCharacters } from 'util';
+import { formatLogs, formatError, stripColors } from './utils/log-formater.js';
 
 const debug = createDebugMessages('@testomatio/reporter:client');
-
-const stripColors = stripVTControlCharacters || ((str) => str?.replace(/\x1b\[[0-9;]*m/g, '') || '');
 
 // removed __dirname usage, because:
 // 1. replaced with ESM syntax (import.meta.url), but it throws an error on tsc compilation;
@@ -163,18 +151,11 @@ class Client {
     /**
      * @type {TestData}
      */
-    const {
-      rid,
-      error = null,
-      steps: originalSteps,
-      title,
-      suite_title,
-    } = testData;
+    const { rid, error = null, steps: originalSteps, title, suite_title } = testData;
     let steps = originalSteps;
 
     const uploadedFiles = [];
     const stackArtifactsEnabled = transformEnvVarToBoolean(process.env.TESTOMATIO_STACK_ARTIFACTS);
-
 
     const {
       time = 0,
@@ -204,23 +185,23 @@ class Client {
 
     let errorFormatted = '';
     if (error) {
-      errorFormatted += this.formatError(error) || '';
+      errorFormatted += formatError(error) || '';
       message = error?.message;
     }
 
-    let fullLogs = this.formatLogs({ error: errorFormatted, steps, logs: testData.logs });
+    let fullLogs = formatLogs({ error: errorFormatted, steps, logs: testData.logs });
 
     if (stackArtifactsEnabled && fullLogs?.trim()?.length > 0) {
       uploadedFiles.push(
-        this.uploader.uploadFileAsBuffer(
-          Buffer.from(stripColors(fullLogs), 'utf8'),
-          [this.runId, rid, `logs_${+new Date}.log`]
-        )
+        this.uploader.uploadFileAsBuffer(Buffer.from(stripColors(fullLogs), 'utf8'), [
+          this.runId,
+          rid,
+          `logs_${+new Date()}.log`,
+        ]),
       );
       fullLogs = '';
       steps = null;
     }
-
 
     if (!this.pipes || !this.pipes.length)
       this.pipes = await pipesFactory(this.paramsForPipesFactory || {}, this.pipeStore);
@@ -232,7 +213,7 @@ class Client {
       return [];
     }
 
-    if (isTestShouldBeExculedFromReport(testData)) return [];
+    if (isTestShouldBeExcludedFromReport(testData)) return [];
 
     if (status === STATUS.SKIPPED && process.env.TESTOMATIO_EXCLUDE_SKIPPED) {
       debug('Skipping test from report', testData?.title);
@@ -408,84 +389,6 @@ class Client {
 
     return this.queue;
   }
-
-  /**
-   * Returns the formatted stack including the stack trace, steps, and logs.
-   * @returns {string}
-   */
-  formatLogs({ error, steps, logs }) {
-    error = error?.trim();
-    logs = logs?.trim().split('\n').map(l => truncate(l)).join('\n');
-
-    if (Array.isArray(steps)) {
-      steps = steps
-        .map(step => formatStep(step))
-        .flat()
-        .join('\n');
-    }
-
-    let testLogs = '';
-    if (steps) testLogs += `${pc.bold(pc.blue('################[ Steps ]################'))}\n${steps}\n\n`;
-    if (logs) testLogs += `${pc.bold(pc.gray('################[ Logs ]################'))}\n${logs}\n\n`;
-    if (error) testLogs += `${pc.bold(pc.red('################[ Failure ]################'))}\n${error}`;
-    return testLogs;
-  }
-
-  formatError(error, message) {
-    if (!message) message = error.message;
-    if (error.inspect) message = error.inspect() || '';
-
-    let stack = '';
-    if (error.name) stack += `${pc.red(error.name)}`;
-    if (error.operator) stack += ` (${pc.red(error.operator)})`;
-    // add new line if something was added to stack
-    if (stack) stack += ': ';
-
-    stack += `${message}\n`;
-
-    if (error.diff) {
-      // diff for vitest
-      stack += error.diff;
-      stack += '\n\n';
-    } else if (error.actual && error.expected && error.actual !== error.expected) {
-      // diffs for mocha, cypress, codeceptjs style
-      stack += `\n\n${pc.bold(pc.green('+ expected'))} ${pc.bold(pc.red('- actual'))}`;
-      stack += `\n${pc.green(`+ ${error.expected.toString().split('\n').join('\n+ ')}`)}`;
-      stack += `\n${pc.red(`- ${error.actual.toString().split('\n').join('\n- ')}`)}`;
-      stack += '\n\n';
-    }
-
-    const customFilter = process.env.TESTOMATIO_STACK_IGNORE;
-
-    try {
-      let hasFrame = false;
-      const record = createCallsiteRecord({
-        forError: error,
-        isCallsiteFrame: frame => {
-          if (customFilter && minimatch(frame.fileName, customFilter)) return false;
-          if (hasFrame) return false;
-          if (isNotInternalFrame(frame)) hasFrame = true;
-          return hasFrame;
-        },
-      });
-      // @ts-ignore
-      if (record && !record.filename.startsWith('http')) {
-        stack += record.renderSync({ stackFilter: isNotInternalFrame });
-      }
-      return stack;
-    } catch (e) {
-      console.log(e);
-    }
-  }
-}
-
-function isNotInternalFrame(frame) {
-  return (
-    frame.getFileName() &&
-    frame.getFileName().includes(sep) &&
-    !frame.getFileName().includes('node_modules') &&
-    !frame.getFileName().includes('internal')
-  );
 }
 
 /**
@@ -493,7 +396,7 @@ function isNotInternalFrame(frame) {
  * @param {TestData} testData
  * @returns boolean
  */
-function isTestShouldBeExculedFromReport(testData) {
+function isTestShouldBeExcludedFromReport(testData) {
   // const fileName = path.basename(test.location?.file || '');
   const globExcludeFilesPattern = process.env.TESTOMATIO_EXCLUDE_FILES_FROM_REPORT_GLOB_PATTERN;
   if (!globExcludeFilesPattern) return false;
@@ -503,12 +406,12 @@ function isTestShouldBeExculedFromReport(testData) {
     return false;
   }
 
-  const excludeParretnsList = globExcludeFilesPattern.split(';');
+  const excludePatternsList = globExcludeFilesPattern.split(';');
 
   // as scanning files is time consuming operation, just save the result in variable to avoid multiple scans
   if (!listOfTestFilesToExcludeFromReport) {
     // list of files with relative paths
-    listOfTestFilesToExcludeFromReport = glob.sync(excludeParretnsList, { ignore: '**/node_modules/**' });
+    listOfTestFilesToExcludeFromReport = glob.sync(excludePatternsList, { ignore: '**/node_modules/**' });
     debug('Tests from next files will not be reported:', listOfTestFilesToExcludeFromReport);
   }
 
