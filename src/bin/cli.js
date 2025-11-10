@@ -81,6 +81,7 @@ program
   .description('Run tests with the specified command')
   .argument('<command>', 'Test runner command')
   .option('--filter <filter>', 'Additional execution filter')
+  .option('--kind <type>', 'Specify run type: automated, manual, or mixed')
   .action(async (command, opts) => {
     const apiKey = process.env['INPUT_TESTOMATIO-KEY'] || config.TESTOMATIO;
     const title = process.env.TESTOMATIO_TITLE;
@@ -126,8 +127,13 @@ program
       });
     };
 
+    const createRunParams = {};
+    if (opts.kind) {
+      createRunParams.kind = opts.kind;
+    }
+
     if (apiKey) {
-      await client.createRun().then(runTests);
+      await client.createRun(createRunParams).then(runTests);
     } else {
       await runTests();
     }
