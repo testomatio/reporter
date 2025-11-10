@@ -215,7 +215,7 @@ export class NUnitXmlParser {
     let message = '';
     let stack = '';
 
-    let files = [];
+    const files = [];
 
     if (testCase.failure) {
       message = testCase.failure.message || '';
@@ -225,7 +225,7 @@ export class NUnitXmlParser {
     if (testCase.output) {
       const outputText = typeof testCase.output === 'string' ? testCase.output : testCase.output['#text'];
       const stackFiles = fetchFilesFromStackTrace(outputText);
-      files.push(...stackFiles)
+      files.push(...stackFiles);
 
       if (outputText) {
         debug(`Found output in test case: ${outputText.substring(0, 100)}...`);
