@@ -1,5 +1,6 @@
 import createDebugMessages from 'debug';
 import { STATUS } from '../constants.js';
+import { fetchFilesFromStackTrace } from '../utils/utils.js';
 
 const debug = createDebugMessages('@testomatio/reporter:nunit-parser');
 
@@ -214,6 +215,8 @@ export class NUnitXmlParser {
     let message = '';
     let stack = '';
 
+    let files = [];
+
     if (testCase.failure) {
       message = testCase.failure.message || '';
       stack = testCase.failure['stack-trace'] || testCase.failure['#text'] || '';
@@ -221,6 +224,9 @@ export class NUnitXmlParser {
 
     if (testCase.output) {
       const outputText = typeof testCase.output === 'string' ? testCase.output : testCase.output['#text'];
+      const stackFiles = fetchFilesFromStackTrace(outputText);
+      files.push(...stackFiles)
+
       if (outputText) {
         debug(`Found output in test case: ${outputText.substring(0, 100)}...`);
         stack = `${stack}\n\n${outputText}`.trim();
@@ -289,6 +295,7 @@ export class NUnitXmlParser {
       suitePath: suitePath,
       suite_title: className || suitePath[suitePath.length - 1] || 'Unknown',
       file: filePath,
+      files: files, // Array of files that will be attached
       status: status,
       message: message,
       stack: stack,

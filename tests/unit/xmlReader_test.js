@@ -3,6 +3,7 @@ import { expect, assert } from 'chai';
 import ServerMock from 'mock-http-server';
 import { config } from '../adapter/config/index.js';
 import { registerHandlers } from '../adapter/utils/index.js';
+import { fetchFilesFromStackTrace } from '../../src/utils/utils.js';
 import XmlReader from '../../src/xmlReader.js';
 
 // Helper function to normalize paths for cross-platform testing
@@ -490,6 +491,38 @@ describe('XML Reader', () => {
     // Both should have the same suite structure
     expect(test1.suite_title).to.eql('Tests.NUnit_Tests.Billing.Cashier.CashierShiftScenariosNew');
     expect(test2.suite_title).to.eql('Tests.NUnit_Tests.Billing.Cashier.CashierShiftScenariosNew');
+  });
+
+  it('should parse NUnit tests with files and tags correctly', () => {
+    const reader = new XmlReader({
+      lang: 'c#',
+      // Enhanced parser is now enabled by default
+    });
+    const jsonData = reader.parse(path.join(dirname, 'data/nunit_with_file_output_and_tag.xml'));
+
+    expect(jsonData.status).to.eql('passed');
+    expect(jsonData.tests_count).to.eql(1);
+    expect(jsonData.tests.length).to.eql(1);
+
+    // Find test
+    const test = jsonData.tests.find(t => t.title === 'VerifyChangesInServiceOrderActionLog');
+
+    expect(test).to.exist;
+
+    // Verify first test
+    expect(test.baseMethodName).to.eql('VerifyChangesInServiceOrderActionLog');
+    expect(test.status).to.eql('passed');
+    expect(test.test_id).to.eql('dd2bac58');
+    expect(test.tags.length).to.eql(2)
+    expect(test.tags).to.include('Billing')
+    expect(test.tags).to.include('Action')
+    expect(test.stack).to.exist
+    expect(test.stack.length).to.above(0)
+
+    const stackFiles = fetchFilesFromStackTrace(test.stack, false)
+    expect(stackFiles).to.exist
+    expect(stackFiles).to.include('/folder/new.txt')
+
   });
 
   describe('#request', () => {
