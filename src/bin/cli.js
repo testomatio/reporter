@@ -35,14 +35,20 @@ program
 program
   .command('start')
   .description('Start a new run and return its ID')
-  .action(async () => {
+  .option('--kind <type>', 'Specify run type: automated, manual, or mixed')
+  .action(async (opts) => {
     cleanLatestRunId();
 
     console.log('Starting a new Run on Testomat.io...');
     const apiKey = process.env['INPUT_TESTOMATIO-KEY'] || config.TESTOMATIO;
     const client = new TestomatClient({ apiKey });
 
-    client.createRun().then(() => {
+    const createRunParams = {};
+    if (opts.kind) {
+      createRunParams.kind = opts.kind;
+    }
+
+    client.createRun(createRunParams).then(() => {
       console.log(process.env.runId);
       process.exit(0);
     });

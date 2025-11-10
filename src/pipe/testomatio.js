@@ -163,7 +163,7 @@ class TestomatioPipe {
 
   /**
    * Creates a new run on Testomat.io
-   * @param {{isBatchEnabled?: boolean}} params
+   * @param {{isBatchEnabled?: boolean, kind?: string}} params
    * @returns Promise<void>
    */
   async createRun(params = {}) {
@@ -204,6 +204,7 @@ class TestomatioPipe {
         label: this.label,
         shared_run: this.sharedRun,
         shared_run_timeout: this.sharedRunTimeout,
+        kind: params.kind,
       }).filter(([, value]) => !!value),
     );
     debug(' >>>>>> Run params', JSON.stringify(runParams, null, 2));
