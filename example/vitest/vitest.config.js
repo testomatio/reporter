@@ -24,5 +24,12 @@ export default defineConfig({
 
     // Environment
     environment: 'node',
+
+    // Coverage configuration
+    coverage: {
+      provider: 'v8',
+      reporter: ['lcov', 'json', 'html', 'text'],
+      reportsDirectory: './coverage',
+    },
   },
 });

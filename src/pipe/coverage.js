@@ -235,9 +235,20 @@ class CoveragePipe {
 
     if (coverageSummary) {
       console.log(APP_PREFIX, pc.green('Coverage summary:'));
-      console.log(APP_PREFIX, `  Lines: ${coverageSummary.lines.percent}% (${coverageSummary.lines.covered}/${coverageSummary.lines.total})`);
-      console.log(APP_PREFIX, `  Branches: ${coverageSummary.branches.percent}% (${coverageSummary.branches.covered}/${coverageSummary.branches.total})`);
-      console.log(APP_PREFIX, `  Functions: ${coverageSummary.functions.percent}% (${coverageSummary.functions.covered}/${coverageSummary.functions.total})`);
+      console.log(
+        APP_PREFIX,
+        `  Lines: ${coverageSummary.lines.percent}% (${coverageSummary.lines.covered}/${coverageSummary.lines.total})`
+      );
+      console.log(
+        APP_PREFIX,
+        `  Branches: ${coverageSummary.branches.percent}% ` +
+        `(${coverageSummary.branches.covered}/${coverageSummary.branches.total})`
+      );
+      console.log(
+        APP_PREFIX,
+        `  Functions: ${coverageSummary.functions.percent}% ` +
+        `(${coverageSummary.functions.covered}/${coverageSummary.functions.total})`
+      );
       console.log(APP_PREFIX, `  Files: ${coverageSummary.files}`);
     }
 
