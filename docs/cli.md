@@ -28,6 +28,14 @@ Starts a new test run and returns its ID. This requires an API key to be set in 
 npx @testomatio/reporter start [options]
 ```
 
+**Examples:**
+
+```bash
+npx @testomatio/reporter start
+npx @testomatio/reporter start --kind manual
+npx @testomatio/reporter start --kind mixed
+```
+
 **Environment Variables:**
 
 - `TESTOMATIO`: Your Testomat.io API project key in format: `tstmt_*` (required).
@@ -35,6 +43,7 @@ npx @testomatio/reporter start [options]
 **Options:**
 
 - `--env-file <envfile>`: Load environment variables from a specific env file. If none specified, it will look for `.env` file.
+- `--kind <type>`: Specify run type: `automated`, `manual`, or `mixed`. Determines how the test run is categorized in Testomat.io.
 
 > Previously known as: `npx start-test-run --launch` _(before 1.6.0)_
 
@@ -81,6 +90,7 @@ Alias for this command – `test`, e.g. `npx @testomatio/reporter test [options]
 - `-c, --command <cmd>`: Test runner command (required).
 - `--filter <filter>`: [Filter executed tests](./pipes/testomatio.md#filter-tests) by tag, label, jira, plan.
 - `--env-file <envfile>`: Load environment variables from a specific env file.
+- `--kind <type>`: Specify run type: `automated`, `manual`, or `mixed`. Determines how the test run is categorized in Testomat.io.
 
 **Examples:**
 
@@ -91,6 +101,8 @@ npx @testomatio/reporter run "npx jest" --filter "testomatio:label=Smoke"
 npx @testomatio/reporter run "npx jest" --filter "testomatio:jira=TC-123"
 npx @testomatio/reporter run "npx jest" --filter "testomatio:plan=a123fb12"
 npx @testomatio/reporter run "mocha tests/" --env-file .env.test
+npx @testomatio/reporter run "npm test" --kind manual
+npx @testomatio/reporter run "npx jest" --kind mixed
 ```
 
 > Previously known as: `npx start-test-run -c "command"` _(before 1.6.0)_
