@@ -32,6 +32,15 @@ const HTML_REPORT = {
   TEMPLATE_NAME: 'testomatio.hbs',
 };
 
+// coverage pipe var
+const COVERAGE_REPORT = {
+  DEFAULT_FOLDER: 'coverage',
+  LCOV_REPORT_FILE: 'lcov.info',
+  HTML_REPORT_FOLDER: 'lcov-report',
+  JSON_REPORT_FILE: 'coverage-final.json',
+  COBERTURA_REPORT_FILE: 'cobertura-coverage.xml',
+};
+
 const testomatLogoURL = 'https://avatars.githubusercontent.com/u/59105116?s=36&v=4';
 
 const REPORTER_REQUEST_RETRIES = {
@@ -47,6 +56,7 @@ export {
   CSV_HEADERS,
   STATUS,
   HTML_REPORT,
+  COVERAGE_REPORT,
   AXIOS_TIMEOUT,
   testomatLogoURL,
   REPORTER_REQUEST_RETRIES,

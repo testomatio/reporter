@@ -10,6 +10,7 @@ Testomat.io Reporter (this npm package) supports:
 
 - 🏄 Integarion with all popular [JavaScript/TypeScript frameworks](./docs/frameworks.md)
 - 🗄️ Screenshots, videos, traces [uploaded into S3 bucket](./docs/artifacts.md)
+- 📊 [Code coverage reporting](./docs/coverage.md) with lcov, JSON, and HTML reports
 - 🔎 [Stack traces](./docs/stacktrace.md) and error messages
 - 🐙 [GitHub](./docs/pipes/github.md), [GitLab](./docs/pipes/gitlab.md) & [Bitbucket](./docs/pipes/bitbucket.md) integration
 - 🚅 Realtime reports
@@ -132,6 +133,7 @@ Bring this reporter on CI and never lose test results again!
 - 🔗 [Linking Tests](./docs/linking-tests.md)
 - 📓 [JUnit](./docs/junit.md)
 - 🗄️ [Artifacts](./docs/artifacts.md)
+- 📊 [Code Coverage](./docs/coverage.md)
 - 🔂 [Workflows](./docs/workflows.md)
 - 🖊️ [Logger](./docs/logger.md)
 - 🪲 [Debug File Format](./docs/debug-file-format.md)

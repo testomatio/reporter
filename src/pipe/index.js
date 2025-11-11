@@ -9,6 +9,7 @@ import CsvPipe from './csv.js';
 import HtmlPipe from './html.js';
 import { BitbucketPipe } from './bitbucket.js';
 import { DebugPipe } from './debug.js';
+import CoveragePipe from './coverage.js';
 
 export async function pipesFactory(params, opts) {
   const extraPipes = [];
@@ -49,6 +50,7 @@ export async function pipesFactory(params, opts) {
     new HtmlPipe(params, opts),
     new BitbucketPipe(params, opts),
     new DebugPipe(params, opts),
+    new CoveragePipe(params, opts),
     ...extraPipes,
   ];
 

@@ -404,9 +404,70 @@ class Client {
           );
         }
       })
+      .then(async () => {
+        // Upload coverage files if available
+        if (this.pipeStore?.coverage && this.uploader.checkEnabled()) {
+          await this.uploadCoverageFiles(this.pipeStore.coverage);
+        }
+      })
       .catch(err => console.log(APP_PREFIX, err));
 
     return this.queue;
+  }
+
+  /**
+   * Upload coverage files to S3
+   * @param {Object} coverageData - Coverage data from CoveragePipe
+   */
+  async uploadCoverageFiles(coverageData) {
+    if (!coverageData || !coverageData.files) return;
+
+    console.log(APP_PREFIX, pc.cyan('Uploading coverage files...'));
+
+    const uploadPromises = [];
+    const { files } = coverageData;
+
+    // Upload lcov file
+    if (files.lcov) {
+      uploadPromises.push(
+        this.uploader.uploadFileByPath(files.lcov, [this.runId, 'coverage', path.basename(files.lcov)])
+      );
+    }
+
+    // Upload JSON coverage file
+    if (files.json) {
+      uploadPromises.push(
+        this.uploader.uploadFileByPath(files.json, [this.runId, 'coverage', path.basename(files.json)])
+      );
+    }
+
+    // Upload HTML coverage reports (limit to index.html and a few key files)
+    if (files.html && files.html.length > 0) {
+      // Find and upload the main index.html file
+      const indexFile = files.html.find(f => path.basename(f) === 'index.html');
+      if (indexFile) {
+        const htmlFolder = path.dirname(indexFile);
+        // Upload index and all HTML files
+        for (const htmlFile of files.html) {
+          const relativePath = path.relative(htmlFolder, htmlFile);
+          uploadPromises.push(
+            this.uploader.uploadFileByPath(htmlFile, [this.runId, 'coverage', 'html', relativePath])
+          );
+        }
+      }
+    }
+
+    const uploadedCoverageFiles = (await Promise.all(uploadPromises)).filter(n => !!n);
+    
+    if (uploadedCoverageFiles.length > 0) {
+      console.log(APP_PREFIX, pc.green(`✓ ${uploadedCoverageFiles.length} coverage files uploaded`));
+      
+      // Log the main coverage report link
+      const indexLink = uploadedCoverageFiles.find(f => f.includes('index.html'));
+      if (indexLink) {
+        console.log(APP_PREFIX, pc.cyan(`Coverage report: ${indexLink}`));
+      }
+    }
   }
 
   /**
