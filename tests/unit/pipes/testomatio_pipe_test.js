@@ -326,6 +326,103 @@ describe('TestomatioPipe', () => {
     });
   });
 
+  describe('createRun', () => {
+    it('should pass kind parameter to API when creating a run', async () => {
+      let receivedRequestBody = null;
+
+      // Mock the server to capture the createRun request
+      server.on({
+        method: 'POST',
+        path: '/api/reporter',
+        reply: {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            url: '/projects/1/testruns/123',
+            uid: 'test-run-123',
+            public_url: 'https://test.testomat.io/public/123'
+          })
+        }
+      });
+
+      // Spy on the HTTP client to capture the request body
+      const originalRequest = testomatioPipe.client.request;
+      testomatioPipe.client.request = async function(config) {
+        receivedRequestBody = config;
+        return originalRequest.call(this, config);
+      };
+
+      // Test with manual kind
+      await testomatioPipe.createRun({ kind: 'manual' });
+
+      expect(receivedRequestBody).to.not.be.null;
+      expect(receivedRequestBody.data).to.be.an('object');
+      expect(receivedRequestBody.data).to.have.property('kind', 'manual');
+    });
+
+    it('should pass different kind values correctly', async () => {
+      let receivedRequestBody = null;
+
+      server.on({
+        method: 'POST',
+        path: '/api/reporter',
+        reply: {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            url: '/projects/1/testruns/124',
+            uid: 'test-run-124',
+            public_url: 'https://test.testomat.io/public/124'
+          })
+        }
+      });
+
+      const originalRequest = testomatioPipe.client.request;
+      testomatioPipe.client.request = async function(config) {
+        receivedRequestBody = config;
+        return originalRequest.call(this, config);
+      };
+
+      // Test with mixed kind
+      await testomatioPipe.createRun({ kind: 'mixed' });
+
+      expect(receivedRequestBody).to.not.be.null;
+      expect(receivedRequestBody.data).to.be.an('object');
+      expect(receivedRequestBody.data).to.have.property('kind', 'mixed');
+    });
+
+    it('should handle automated kind correctly', async () => {
+      let receivedRequestBody = null;
+
+      server.on({
+        method: 'POST',
+        path: '/api/reporter',
+        reply: {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            url: '/projects/1/testruns/126',
+            uid: 'test-run-126',
+            public_url: 'https://test.testomat.io/public/126'
+          })
+        }
+      });
+
+      const originalRequest = testomatioPipe.client.request;
+      testomatioPipe.client.request = async function(config) {
+        receivedRequestBody = config;
+        return originalRequest.call(this, config);
+      };
+
+      // Test with automated kind
+      await testomatioPipe.createRun({ kind: 'automated' });
+
+      expect(receivedRequestBody).to.not.be.null;
+      expect(receivedRequestBody.data).to.be.an('object');
+      expect(receivedRequestBody.data).to.have.property('kind', 'automated');
+    });
+  });
+
   describe('constructor', () => {
     it('should create enabled pipe with valid API key', () => {
       const pipe = new TestomatioPipe({
