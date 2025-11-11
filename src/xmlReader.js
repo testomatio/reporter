@@ -15,6 +15,7 @@ import {
   fetchIdFromCode,
   humanize,
   TEST_ID_REGEX,
+  transformEnvVarToBoolean,
 } from './utils/utils.js';
 import { pipesFactory } from './pipe/index.js';
 import adapterFactory from './junit-adapter/index.js';
@@ -36,6 +37,7 @@ const {
   TESTOMATIO_ENV,
   TESTOMATIO_RUN,
   TESTOMATIO_MARK_DETACHED,
+  TESTOMATIO_LEGACY_NUNIT,
 } = process.env;
 
 const options = {
@@ -77,7 +79,8 @@ class XmlReader {
     this.uploader = new S3Uploader();
 
     // Enhanced NUnit parsing - enabled by default for NUnit XML
-    this.enhancedNunit = opts.enhancedNunit !== false; // Default true, can be disabled
+    // Can be disabled via opts.enhancedNunit = false or TESTOMATIO_LEGACY_NUNIT=1
+    this.enhancedNunit = opts.enhancedNunit !== false && !transformEnvVarToBoolean(TESTOMATIO_LEGACY_NUNIT); // Default true, can be disabled
     this.groupParameterized = opts.groupParameterized !== false; // Default true, can be disabled
 
     // @ts-ignore

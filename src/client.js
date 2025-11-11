@@ -47,8 +47,9 @@ class Client {
     this.runId = '';
     this.queue = Promise.resolve();
 
-    // Get package.json path - use a simple approach that works in both environments
-    const pathToPackageJSON = path.join(process.cwd(), 'package.json');
+    // @ts-ignore this line will be removed in compiled code, because __dirname is defined in commonjs
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
+    const pathToPackageJSON = path.join(__dirname, '../package.json');
     try {
       this.version = JSON.parse(fs.readFileSync(pathToPackageJSON).toString()).version;
       console.log(APP_PREFIX, `Testomatio Reporter v${this.version}`);
@@ -414,11 +415,7 @@ class Client {
    */
   formatLogs({ error, steps, logs }) {
     error = error?.trim();
-    logs = logs
-      ?.trim()
-      .split('\n')
-      .map(l => truncate(l))
-      .join('\n');
+    logs = logs?.trim().split('\n').map(l => truncate(l)).join('\n');
 
     if (Array.isArray(steps)) {
       steps = steps
@@ -477,24 +474,18 @@ class Client {
       }
       return stack;
     } catch (e) {
-      console.log('Error in formatError:', e);
-      // Fallback to basic stack trace
-      if (error.stack) {
-        stack += error.stack;
-      }
-      return stack;
+      console.log(e);
     }
   }
 }
 
 function isNotInternalFrame(frame) {
-  const fileName = frame.getFileName();
-  const result =
-    fileName &&
-    (fileName.includes(sep) || fileName.includes('/')) &&
-    !fileName.includes('node_modules') &&
-    !fileName.includes('internal');
-  return result;
+  return (
+    frame.getFileName() &&
+    frame.getFileName().includes(sep) &&
+    !frame.getFileName().includes('node_modules') &&
+    !frame.getFileName().includes('internal')
+  );
 }
 
 /**
