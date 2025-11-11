@@ -12,20 +12,17 @@ The `--kind` option determines what appears in your test report and affects how 
 
 ### Automated Run (Default Behavior)
 
-By default, Testomatio creates automated runs automatically when you run your tests. This is what most users experience daily - it shows your automated test execution results and includes links to related manual test cases as references. Manual test cases appear as linked items but are not counted as executed tests in the report.
+By default, Testomatio creates automated runs when you run your tests. This is what most users experience daily - it shows your automated test execution results and includes links to related manual test cases as references.
+Manual test cases appear as linked items but are not counted as executed tests in the report.
 
-This behavior is perfect for CI/CD pipelines and development workflows where you want to focus on automated test results while maintaining traceability to manual test requirements. No explicit run creation is needed.
+This behavior keeps automated test as the main focus, and ensures that number of tests in report is the same as number of tests executed by a test framework.
 
 ### Manual Runs
 
 Manual runs are used when you want to report only manual test case execution. The automated test is completely hidden from the report - only linked manual test cases appear.
 
-**Why use manual runs:**
-- Manual QA teams execute test cases separately from automated testing
-- You want a clean view of manual testing progress without automated test noise
-- Different teams work on different aspects of testing and need separate reporting
-
-**Complete Flow:**
+This behavior is useful if automated test verifies status for manual test cases.
+However, you don't want to see the automated test itself in the final report.
 
 **Step 1: Create a manual run**
 ```bash
@@ -48,13 +45,9 @@ TESTOMATIO=tstmt_xxxx npx @testomatio/reporter run "npx playwright test" --kind 
 
 Mixed runs show both automated test execution results AND manual test case results as separate entities in the same report.
 
-**Why use mixed runs:**
-- Stakeholder reporting where you need comprehensive visibility
-- Audit trails that show both automated execution and manual testing coverage
-- Demonstrating complete test coverage across both automated and manual testing efforts
-- When automated tests cover core scenarios while manual testing handles edge cases
 
-**Complete Flow:**
+This behavior is needed when you want to see the most precise report of all automated tests and linked manual tests in one report.
+
 
 **Step 1: Create a mixed run**
 ```bash
