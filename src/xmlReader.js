@@ -80,7 +80,7 @@ class XmlReader {
 
     // Enhanced NUnit parsing - enabled by default for NUnit XML
     // Can be disabled via opts.enhancedNunit = false or TESTOMATIO_LEGACY_NUNIT=1
-    this.enhancedNunit = opts.enhancedNunit !== false && !transformEnvVarToBoolean(TESTOMATIO_LEGACY_NUNIT); // Default true, can be disabled
+    this.enhancedNunit = !transformEnvVarToBoolean(TESTOMATIO_LEGACY_NUNIT);
     this.groupParameterized = opts.groupParameterized !== false; // Default true, can be disabled
 
     // @ts-ignore
@@ -274,7 +274,9 @@ class XmlReader {
   _parseTRXTestDefinition(td) {
     const title = td.name.replace(/\(.*?\)/, '').trim();
     const exampleMatch = td.name.match(/\((.*?)\)/);
-    const example = exampleMatch ? { ...exampleMatch[1].split(',') } : null;
+    const example = exampleMatch ? {
+      ...exampleMatch[1].split(',').map(p => p.trim()).filter(p => p !== '')
+    } : null;
 
     const suite = td.TestMethod.className.split(', ')[0].split('.');
     const suite_title = suite.pop();
@@ -598,7 +600,7 @@ function reduceTestCases(prev, item) {
 
       const exampleMatches = testCaseItem.name?.match(/\S\((.*?)\)/);
       if (exampleMatches) {
-        example = { ...exampleMatches[1].split(',').map(v => v.trim().replace(/[^\w\s-]/g, '')) };
+        example = { ...exampleMatches[1].split(',').map(v => v.trim().replace(/[^\w\s-]/g, '')).filter(v => v !== '') };
         title = title.replace(/\(.*?\)/, '').trim();
       }
 

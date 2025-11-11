@@ -390,17 +390,6 @@ const fetchSourceCode = (contents, opts = {}) => {
             break;
           // Stop at class declaration
           if (trimmed.includes(' class ') && trimmed.includes('public')) break;
-          // Stop at helper method calls (like ProcessBooleanValue, AddNumbers) - these are private methods
-          if (methodStartFound && trimmed.match(/^\s*\/\/\s*Helper methods for testing/)) break;
-        }
-      }
-
-      // For C# tests, stop if we encounter helper method calls in the method body
-      if (opts.lang === 'csharp' && methodStartFound && braceDepth > 0) {
-        const trimmed = lines[i].trim();
-        // Stop at comment indicating helper methods section
-        if (trimmed.match(/^\s*\/\/\s*Helper methods for testing/)) {
-          break;
         }
       }
 

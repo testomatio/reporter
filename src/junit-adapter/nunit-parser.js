@@ -217,6 +217,16 @@ export class NUnitXmlParser {
 
     const files = [];
 
+    // Extract attachments (NUnit format)
+    if (testCase.attachments) {
+      const attachments = Array.isArray(testCase.attachments.attachment)
+        ? testCase.attachments.attachment
+        : [testCase.attachments.attachment];
+
+      const attachmentFiles = attachments.filter(a => a && a.filePath).map(a => a.filePath);
+      files.push(...attachmentFiles);
+    }
+
     if (testCase.failure) {
       message = testCase.failure.message || '';
       stack = testCase.failure['stack-trace'] || testCase.failure['#text'] || '';
@@ -382,14 +392,14 @@ export class NUnitXmlParser {
       parameters.push(current.trim());
     }
 
-    // Clean up parameters - remove quotes if they wrap the entire parameter
+    // Clean up parameters - remove quotes if they wrap the entire parameter and filter empty ones
     return parameters.map(param => {
       param = param.trim();
       if ((param.startsWith('"') && param.endsWith('"')) || (param.startsWith("'") && param.endsWith("'"))) {
         return param.slice(1, -1);
       }
       return param;
-    });
+    }).filter(p => !!p);
   }
 
   /**
