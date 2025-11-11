@@ -3,6 +3,11 @@ import { expect } from 'chai';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+
+// Helper function to normalize paths for cross-platform testing
+function normalizePath(filePath) {
+  return filePath ? filePath.replace(/\\/g, '/') : filePath;
+}
 import {
   fetchFilesFromStackTrace,
   fetchSourceCodeFromStackTrace,
@@ -48,8 +53,8 @@ edge-cases#tried = 12         | # of edge cases tried in current run
 seed = 7004898156813507962    | random seed to reproduce generated values
     `;
     const files = fetchFilesFromStackTrace(stack);
-    expect(files).to.include(file1);
-    expect(files).to.include(file2);
+    expect(files.map(f => normalizePath(f))).to.include(normalizePath(file1));
+    expect(files.map(f => normalizePath(f))).to.include(normalizePath(file2));
   });
 
   it('#fetchFilesFromStackTrace | should match images with one /', () => {
@@ -62,7 +67,7 @@ tries = 1000                  | # of calls to property
   and file:${file1}
     `;
     const files = fetchFilesFromStackTrace(stack);
-    expect(files).to.include(file1);
+    expect(files.map(f => normalizePath(f))).to.include(normalizePath(file1));
   });
 
   it('#fetchFilesFromStackTrace | should match images with file:/// (3 slashes)', () => {
@@ -78,8 +83,8 @@ Stack trace:
 at IntegrationTests.Features.MultipleFiles.TestWithMultipleArtifacts()
     `;
     const files = fetchFilesFromStackTrace(stack);
-    expect(files).to.include(file1);
-    expect(files).to.include(file2);
+    expect(files.map(f => normalizePath(f))).to.include(normalizePath(file1));
+    expect(files.map(f => normalizePath(f))).to.include(normalizePath(file2));
     expect(files.length).to.eql(2);
   });
 
@@ -103,13 +108,13 @@ Stack trace:
 at IntegrationTests.Features.MultipleFiles.TestWithMultipleArtifacts() in C:\\Projects\\Tests\\MultipleFiles.cs:line 42
 at Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter.Execution.TestMethodRunner.RunTestMethod()
     `;
-    
+
     // Test without file existence check to verify regex extraction
     const files = fetchFilesFromStackTrace(stack, false);
-    
+
     expect(files).to.be.an('array');
     expect(files.length).to.eql(5);
-    
+
     // Verify all expected files are extracted
     expect(files).to.include('/workdir/projects/testomatio/reporter/tests/data/artifacts/failed_test.png');
     expect(files).to.include('/workdir/projects/testomatio/reporter/tests/data/artifacts/screenshot1.png');
@@ -299,27 +304,27 @@ ${process.cwd()}/tests/unit/data/cli/RunCest.php:24
       const test1 = {
         title: 'Login Test',
         suite_title: 'Auth Suite',
-        test_id: '@T12345678'
+        test_id: '@T12345678',
       };
       const test2 = {
         title: 'Logout Test',
         suite_title: 'Auth Suite',
-        test_id: '@T87654321'
+        test_id: '@T87654321',
       };
       expect(isSameTest(test1, test2)).to.be.false;
     });
 
     it('should handle non-object inputs', () => {
       expect(isSameTest('test1', 'test2')).to.be.false;
-      expect(isSameTest({title: 'test'}, 'string')).to.be.false;
+      expect(isSameTest({ title: 'test' }, 'string')).to.be.false;
     });
 
     it('should show that function has comparison bugs', () => {
       // The function has bugs: arrays compared with === always fail
       // and null inputs cause errors. We document the actual behavior here
-      const test1 = {title: 'test', suite_title: 'suite', test_id: 'id'};
-      const test2 = {title: 'test', suite_title: 'suite', test_id: 'id'};
-      
+      const test1 = { title: 'test', suite_title: 'suite', test_id: 'id' };
+      const test2 = { title: 'test', suite_title: 'suite', test_id: 'id' };
+
       // This should be true but is false due to Object.values comparison bug
       expect(isSameTest(test1, test2)).to.be.false;
     });
@@ -336,7 +341,7 @@ ${process.cwd()}/tests/unit/data/cli/RunCest.php:24
     it('should generate test info string', () => {
       const test = {
         title: 'Login Test Case',
-        file: '/path/to/test.spec.js'
+        file: '/path/to/test.spec.js',
       };
       const info = specificTestInfo(test);
       expect(info).to.eql('test#spec#js#Login#Test#Case');
@@ -393,7 +398,7 @@ ${process.cwd()}/tests/unit/data/cli/RunCest.php:24
     it('should format simple step', () => {
       const step = {
         title: 'I click login button',
-        duration: 150
+        duration: 150,
       };
       const formatted = formatStep(step);
       expect(formatted).to.be.an('array');
@@ -405,7 +410,7 @@ ${process.cwd()}/tests/unit/data/cli/RunCest.php:24
       const step = {
         title: 'I click login button',
         duration: 150,
-        error: new Error('Button not found')
+        error: new Error('Button not found'),
       };
       const formatted = formatStep(step);
       expect(formatted[0]).to.include('I click login button');
@@ -418,8 +423,8 @@ ${process.cwd()}/tests/unit/data/cli/RunCest.php:24
         steps: [
           { title: 'I enter username', duration: 100 },
           { title: 'I enter password', duration: 100 },
-          { title: 'I click submit', duration: 100 }
-        ]
+          { title: 'I click submit', duration: 100 },
+        ],
       };
       const formatted = formatStep(step);
       expect(formatted).to.have.lengthOf(4);
@@ -434,20 +439,20 @@ ${process.cwd()}/tests/unit/data/cli/RunCest.php:24
       it('should return global testomatio test title if set', () => {
         const originalTitle = global.testomatioTestTitle;
         global.testomatioTestTitle = 'Current Test';
-        
+
         const result = testRunnerHelper.getNameOfCurrentlyRunningTest();
         expect(result).to.eql('Current Test');
-        
+
         global.testomatioTestTitle = originalTitle;
       });
 
       it('should return null when not in Jest environment', () => {
         const originalWorker = process.env.JEST_WORKER_ID;
         delete process.env.JEST_WORKER_ID;
-        
+
         const result = testRunnerHelper.getNameOfCurrentlyRunningTest();
         expect(result).to.be.null;
-        
+
         if (originalWorker) process.env.JEST_WORKER_ID = originalWorker;
       });
     });
@@ -520,7 +525,7 @@ ${process.cwd()}/tests/unit/data/cli/RunCest.php:24
         fs.mkdirSync(testDir, { recursive: true });
         fs.writeFileSync(path.join(testDir, 'test.txt'), 'test content');
         fs.mkdirSync(path.join(testDir, 'subdir'));
-        
+
         expect(fs.existsSync(testDir)).to.be.true;
         fileSystem.clearDir(testDir);
         expect(fs.existsSync(testDir)).to.be.false;
@@ -581,11 +586,11 @@ ${process.cwd()}/tests/unit/data/cli/RunCest.php:24
       it('should return null if file is older than 1 hour', () => {
         const filePath = path.join(os.tmpdir(), 'testomatio.latest.run');
         fs.writeFileSync(filePath, testRunId);
-        
+
         // Modify file time to be older than 1 hour
         const oldTime = new Date(Date.now() - 2 * 60 * 60 * 1000); // 2 hours ago
         fs.utimesSync(filePath, oldTime, oldTime);
-        
+
         const result = readLatestRunId();
         expect(result).to.be.null;
       });
@@ -593,7 +598,7 @@ ${process.cwd()}/tests/unit/data/cli/RunCest.php:24
       it('should handle file read errors gracefully', () => {
         const mockTmpDir = path.join(os.tmpdir(), 'non-existent-dir');
         os.tmpdir = () => mockTmpDir;
-        
+
         const result = readLatestRunId();
         expect(result).to.be.null;
       });
@@ -604,7 +609,7 @@ ${process.cwd()}/tests/unit/data/cli/RunCest.php:24
         storeRunId(testRunId);
         const filePath = path.join(os.tmpdir(), 'testomatio.latest.run');
         expect(fs.existsSync(filePath)).to.be.true;
-        
+
         cleanLatestRunId();
         expect(fs.existsSync(filePath)).to.be.false;
       });

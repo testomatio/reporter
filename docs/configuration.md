@@ -8,6 +8,8 @@ Environment variables can be either passed inline, or from `.env` file or from s
 
 ## Variables List
 
+> 📋 For XML import specific configuration, see [XML Imports Configuration](xml-imports.md)
+
 #### `TESTOMATIO`
 
 Alternatively, `TESTOMATIO_TOKEN` or `TESTOMATIO_API_KEY`
@@ -197,6 +199,16 @@ TESTOMATIO={API_KEY} TESTOMATIO_TITLE="Today's Build"  TESTOMATIO_SHARED_RUN=1 T
 ```
 
 In this case all tests will be added to the same run if it was created less than 120 minutes ago.
+
+#### `TESTOMATIO_STACK_ARTIFACTS`
+
+Save large stack traces and steps as artifacts when they exceed API size limits. When enabled, stack traces larger than 5000 characters and steps data larger than 10000 characters will be saved as artifact files with timestamp-based names (`stack_{timestamp}.log` and `steps_{timestamp}.json`) instead of being included in the API request payload.
+
+Example:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_STACK_ARTIFACTS=1 <actual run command>
+```
 
 #### `TESTOMATIO_STACK_FILTER`
 

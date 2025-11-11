@@ -1,8 +1,10 @@
-// import TestomatClient from './client.js';
-// import * as TRConstants from './constants.js';
+import Client from './client.js';
+import * as TestomatioConstants   from './constants.js';
 import { services } from './services/index.js';
 import reporterFunctions from './reporter-functions.js';
 
+export { Client };
+export const STATUS = TestomatioConstants.STATUS;
 export const artifact = reporterFunctions.artifact;
 export const log = reporterFunctions.log;
 export const logger = services.logger;
@@ -35,6 +37,7 @@ export default {
   linkTest: reporterFunctions.linkTest,
   linkJira: reporterFunctions.linkJira,
 
-  // TestomatClient,
-  // TRConstants,
+  TestomatioClient: Client,
+  STATUS,
+
 };

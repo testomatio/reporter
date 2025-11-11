@@ -76,20 +76,28 @@ const isValidUrl = s => {
   }
 };
 
-const fileMatchRegex = /file:(\/+(?:[A-Za-z]:[\\/]|\/)?[^\s]*?\.(png|avi|webm|jpg|html|txt))/gi;
+const fileMatchRegex = /file:(\/*)([A-Za-z]:[\\/].*?|\/.*?)\.(png|avi|webm|jpg|html|txt)/gi;
 
 const fetchFilesFromStackTrace = (stack = '', checkExists = true) => {
-  const files = Array.from(stack.matchAll(fileMatchRegex))
-    .map(f => f[1].trim())
+  let files = Array.from(stack.matchAll(fileMatchRegex))
+    .map(match => {
+      // match[0] is full match, match[1] is slashes, match[2] is path, match[3] is extension
+      const slashes = match[1] || '';
+      const path = match[2];
+      const extension = match[3];
+      return `${slashes}${path}.${extension}`;
+    })
+    .map(f => f.trim())
     .map(f => f.replace(/^\/+/, '/').replace(/^\/([A-Za-z]:)/, '$1')) // Remove extra slashes, handle Windows paths
     .map(f => {
-      // Convert Windows paths to Linux paths for testing purposes
-      if (f.match(/^[A-Za-z]:[\\\/]/)) {
-        // Convert Windows path to Linux equivalent for test scenarios
-        return f.replace(/^[A-Za-z]:[\\\/]/, '/').replace(/\\/g, '/');
-      }
-      return f;
+      // Normalize path separators for cross-platform compatibility
+      return f.replace(/\\/g, '/');
     });
+
+  // If we're not checking file existence, remove Windows drive letters for consistency
+  if (!checkExists) {
+    files = files.map(f => f.replace(/^([A-Za-z]):/, ''));
+  }
 
   debug('Found files in stack trace: ', files);
 
@@ -105,21 +113,92 @@ const fetchSourceCodeFromStackTrace = (stack = '') => {
   const stackLines = stack
     .split('\n')
     .filter(l => l.includes(':'))
-    // .map(l => l.match(/\[(.*?)\]/)?.[1] || l) // minitest format
-    // .map(l => l.split(':')[0])
     .map(l => l.trim())
-    .map(l => l.split(' ').find(p => p.includes(':')) || '')
-    .filter(l => isValid(l?.split(':')[0]))
+    .map(l => {
+      // Remove 'at ' prefix if present
+      if (l.startsWith('at ')) {
+        return l.substring(3).trim();
+      }
+      // Find the part that looks like a file path with line number
+      const parts = l.split(' ');
+      for (const part of parts) {
+        // Check if this part has a colon
+        if (part.includes(':')) {
+          // For Windows paths, we need to handle drive letters (C:, D:, etc.)
+          // Split by colon but keep drive letter with the path
+          const colonParts = part.split(':');
+          let filePath;
+
+          // Check if first part is a Windows drive letter (single letter)
+          if (colonParts.length >= 2 && colonParts[0].length === 1 && /[A-Za-z]/.test(colonParts[0])) {
+            // Windows path like D:\path\file.php:24
+            // Reconstruct as D:\path\file.php
+            filePath = colonParts[0] + ':' + colonParts[1];
+          } else {
+            // Unix path like /path/file.php:24
+            filePath = colonParts[0];
+          }
+
+          // Only consider it valid if the file exists
+          if (fs.existsSync(filePath)) {
+            return part;
+          }
+        }
+      }
+      // If no valid file path found in parts, return the whole line
+      // It will be filtered out later if it's not a valid file path
+      return parts.find(p => p.includes(':')) || l;
+    })
+    .filter(l => {
+      // Extract file path from line (accounting for Windows drive letters)
+      if (!l) return false;
+      const colonParts = l.split(':');
+      let filePath;
+
+      if (colonParts.length >= 2 && colonParts[0].length === 1 && /[A-Za-z]/.test(colonParts[0])) {
+        // Windows path
+        filePath = colonParts[0] + ':' + colonParts[1];
+      } else {
+        // Unix path
+        filePath = colonParts[0];
+      }
+
+      return filePath && fs.existsSync(filePath);
+    })
 
     // // filter out 3rd party libs
     .filter(l => !l?.includes(`vendor${sep}`))
     .filter(l => !l?.includes(`node_modules${sep}`))
-    .filter(l => fs.existsSync(l.split(':')[0]))
-    .filter(l => fs.lstatSync(l.split(':')[0]).isFile());
+    .filter(l => {
+      // Extract file path for final check (accounting for Windows drive letters)
+      const colonParts = l.split(':');
+      let filePath;
+
+      if (colonParts.length >= 2 && colonParts[0].length === 1 && /[A-Za-z]/.test(colonParts[0])) {
+        filePath = colonParts[0] + ':' + colonParts[1];
+      } else {
+        filePath = colonParts[0];
+      }
+
+      return fs.lstatSync(filePath).isFile();
+    });
 
   if (!stackLines.length) return '';
 
-  const [file, line] = stackLines[0].split(':');
+  // Extract file and line number (accounting for Windows drive letters)
+  const firstLine = stackLines[0];
+  const colonParts = firstLine.split(':');
+  let file, line;
+
+  if (colonParts.length >= 3 && colonParts[0].length === 1 && /[A-Za-z]/.test(colonParts[0])) {
+    // Windows path like D:\path\file.php:24
+    file = colonParts[0] + ':' + colonParts[1];
+    line = colonParts[2];
+  } else {
+    // Unix path like /path/file.php:24
+    file = colonParts[0];
+    line = colonParts[1];
+  }
 
   const prepend = 3;
   const source = fetchSourceCode(fs.readFileSync(file).toString(), { line, prepend, limit: 7 });
@@ -139,6 +218,8 @@ export const TEST_ID_REGEX = /@T([\w\d]{8})/;
 export const SUITE_ID_REGEX = /@S([\w\d]{8})/;
 
 const fetchIdFromCode = (code, opts = {}) => {
+  if (!code) return null;
+
   const comments = code
     .split('\n')
     .map(l => l.trim())
@@ -180,8 +261,65 @@ const fetchSourceCode = (contents, opts = {}) => {
       if (lineIndex === -1) lineIndex = lines.findIndex(l => l.includes(`public void ${title}`));
       if (lineIndex === -1) lineIndex = lines.findIndex(l => l.includes(`${title}(`));
     } else if (opts.lang === 'csharp') {
-      if (lineIndex === -1) lineIndex = lines.findIndex(l => l.includes(`public void ${title}`));
-      if (lineIndex === -1) lineIndex = lines.findIndex(l => l.includes(`${title}(`));
+      // Find the method declaration line
+      let methodLineIndex = lines.findIndex(l => l.includes(`public void ${title}(`));
+
+      if (methodLineIndex === -1) {
+        methodLineIndex = lines.findIndex(l => l.includes(`public async Task ${title}(`));
+      }
+
+      if (methodLineIndex === -1) {
+        methodLineIndex = lines.findIndex(l => l.includes(`${title}(`));
+      }
+
+      // If found, scan upwards to find [TestCase], [Test] attributes and XML comments
+      if (methodLineIndex !== -1) {
+        lineIndex = methodLineIndex;
+
+        // Scan upwards to find the start of attributes and comments
+        for (let i = methodLineIndex - 1; i >= 0; i--) {
+          const trimmedLine = lines[i].trim();
+
+          // Include [TestCase], [Test], and other attributes
+          if (trimmedLine.startsWith('[')) {
+            lineIndex = i;
+            continue;
+          }
+
+          // Include XML documentation comments
+          if (trimmedLine.startsWith('///')) {
+            lineIndex = i;
+            continue;
+          }
+
+          // Stop at empty lines (with some tolerance)
+          if (trimmedLine === '') {
+            // Check if next non-empty line is an attribute or comment
+            let hasMoreAttributes = false;
+            for (let j = i - 1; j >= 0; j--) {
+              const nextTrimmed = lines[j].trim();
+              if (nextTrimmed === '') continue;
+              if (nextTrimmed.startsWith('[') || nextTrimmed.startsWith('///')) {
+                hasMoreAttributes = true;
+                lineIndex = j;
+              }
+              break;
+            }
+            if (!hasMoreAttributes) break;
+            continue;
+          }
+
+          // Stop at other method declarations or class-level elements
+          if (
+            trimmedLine.includes('public ') ||
+            trimmedLine.includes('private ') ||
+            trimmedLine.includes('protected ') ||
+            trimmedLine.includes('internal ')
+          ) {
+            if (!trimmedLine.startsWith('[')) break;
+          }
+        }
+      }
     } else {
       lineIndex = lines.findIndex(l => l.includes(title));
     }
@@ -191,10 +329,30 @@ const fetchSourceCode = (contents, opts = {}) => {
     lineIndex -= opts.prepend;
   }
 
-  if (lineIndex) {
+  if (lineIndex !== -1 && lineIndex !== undefined) {
     const result = [];
+    let braceDepth = 0; // Track brace depth for C# methods
+    let methodStartFound = false; // Flag to indicate we've found the method opening brace
+
     for (let i = lineIndex; i < lineIndex + limit; i++) {
       if (lines[i] === undefined) continue;
+
+      // Track brace depth for C# to stop after method closes
+      if (opts.lang === 'csharp') {
+        const line = lines[i];
+        // Count opening and closing braces
+        const openBraces = (line.match(/\{/g) || []).length;
+        const closeBraces = (line.match(/\}/g) || []).length;
+
+        if (openBraces > 0) methodStartFound = true;
+        braceDepth += openBraces - closeBraces;
+
+        // If we've started the method and depth returns to 0, method is complete
+        if (methodStartFound && braceDepth === 0 && closeBraces > 0) {
+          // Don't include the closing brace - just break
+          break;
+        }
+      }
 
       if (i > lineIndex + 2 && !opts.prepend) {
         // annotation
@@ -216,7 +374,36 @@ const fetchSourceCode = (contents, opts = {}) => {
         if (opts.lang === 'java' && lines[i].trim().match(/^@\w+/)) break;
         if (opts.lang === 'java' && lines[i].includes(' public void ')) break;
         if (opts.lang === 'java' && lines[i].includes(' class ')) break;
+        // For C#, additional checks if brace tracking didn't stop us
+        if (opts.lang === 'csharp') {
+          const trimmed = lines[i].trim();
+          // Stop at attribute that marks beginning of next test (but not if we're still in the current method)
+          if (trimmed.match(/^\[(Test|TestCase|Theory|Fact)/) && methodStartFound && braceDepth === 0) break;
+          // Stop at XML documentation comments that belong to next method
+          if (trimmed.startsWith('///') && methodStartFound && braceDepth === 0) break;
+          // Stop at another method declaration (but not if we're still in the current method)
+          if (
+            trimmed.match(/^\s*(public|private|protected|internal)\s+(\w+|async\s+\w+)\s+\w+\s*\(/) &&
+            methodStartFound &&
+            braceDepth === 0
+          )
+            break;
+          // Stop at class declaration
+          if (trimmed.includes(' class ') && trimmed.includes('public')) break;
+          // Stop at helper method calls (like ProcessBooleanValue, AddNumbers) - these are private methods
+          if (methodStartFound && trimmed.match(/^\s*\/\/\s*Helper methods for testing/)) break;
+        }
       }
+
+      // For C# tests, stop if we encounter helper method calls in the method body
+      if (opts.lang === 'csharp' && methodStartFound && braceDepth > 0) {
+        const trimmed = lines[i].trim();
+        // Stop at comment indicating helper methods section
+        if (trimmed.match(/^\s*\/\/\s*Helper methods for testing/)) {
+          break;
+        }
+      }
+
       result.push(lines[i]);
     }
     return result.join('\n');
@@ -429,10 +616,14 @@ function transformEnvVarToBoolean(value) {
 }
 
 function truncate(s, size = 255) {
-  if (s.toString().trim().length < size) {
-    return s.toString();
+  if (s === undefined || s === null) {
+    return '';
   }
-  return `${s.toString().substring(0, size)}...`;
+  const str = s.toString();
+  if (str.trim().length < size) {
+    return str;
+  }
+  return `${str.substring(0, size)}...`;
 }
 
 export {

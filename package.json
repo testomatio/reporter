@@ -5,7 +5,9 @@
   "engines": {
     "node": ">=18"
   },
-  "typings": "typings/index.d.ts",
+  "main": "lib/reporter.js",
+  "module": "src/reporter.js",
+  "types": "types/types.d.ts",
   "repository": "git@github.com:testomatio/reporter.git",
   "author": "Michael Bodnarchuk <davert@testomat.io>,Koushik Mohan <koushikmohan1996@gmail.com>",
   "license": "MIT",
@@ -45,7 +47,8 @@
     "bin",
     "lib",
     "src",
-    "testcafe"
+    "testcafe",
+    "types"
   ],
   "scripts": {
     "clear-exportdir": "rm -rf export/",

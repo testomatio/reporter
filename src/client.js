@@ -10,10 +10,20 @@ import { glob } from 'glob';
 import path, { sep } from 'path';
 import { fileURLToPath } from 'node:url';
 import { S3Uploader } from './uploader.js';
-import { formatStep, truncate, readLatestRunId, storeRunId, validateSuiteId } from './utils/utils.js';
+import {
+  formatStep,
+  truncate,
+  readLatestRunId,
+  storeRunId,
+  validateSuiteId,
+  transformEnvVarToBoolean
+} from './utils/utils.js';
 import { filesize as prettyBytes } from 'filesize';
+import { stripVTControlCharacters } from 'util';
 
 const debug = createDebugMessages('@testomatio/reporter:client');
+
+const stripColors = stripVTControlCharacters || ((str) => str?.replace(/\x1b\[[0-9;]*m/g, '') || '');
 
 // removed __dirname usage, because:
 // 1. replaced with ESM syntax (import.meta.url), but it throws an error on tsc compilation;
@@ -37,9 +47,8 @@ class Client {
     this.runId = '';
     this.queue = Promise.resolve();
 
-    // @ts-ignore this line will be removed in compiled code, because __dirname is defined in commonjs
-    const __dirname = path.dirname(fileURLToPath(import.meta.url));
-    const pathToPackageJSON = path.join(__dirname, '../package.json');
+    // Get package.json path - use a simple approach that works in both environments
+    const pathToPackageJSON = path.join(process.cwd(), 'package.json');
     try {
       this.version = JSON.parse(fs.readFileSync(pathToPackageJSON).toString()).version;
       console.log(APP_PREFIX, `Testomatio Reporter v${this.version}`);
@@ -139,19 +148,6 @@ class Client {
    * @returns {Promise<PipeResult[]>}
    */
   async addTestRun(status, testData) {
-    if (!this.pipes || !this.pipes.length)
-      this.pipes = await pipesFactory(this.paramsForPipesFactory || {}, this.pipeStore);
-
-    // all pipes disabled, skipping
-    if (!this.pipes?.filter(p => p.isEnabled).length) return [];
-
-    if (isTestShouldBeExculedFromReport(testData)) return [];
-
-    if (status === STATUS.SKIPPED && process.env.TESTOMATIO_EXCLUDE_SKIPPED) {
-      debug('Skipping test from report', testData?.title);
-      return []; // do not log skipped tests
-    }
-
     if (!testData)
       testData = {
         title: 'Unknown test',
@@ -169,15 +165,23 @@ class Client {
     const {
       rid,
       error = null,
+      steps: originalSteps,
+      title,
+      suite_title,
+    } = testData;
+    let steps = originalSteps;
+
+    const uploadedFiles = [];
+    const stackArtifactsEnabled = transformEnvVarToBoolean(process.env.TESTOMATIO_STACK_ARTIFACTS);
+
+
+    const {
       time = 0,
       example = null,
       files = [],
       filesBuffers = [],
-      steps,
       code = null,
-      title,
       file,
-      suite_title,
       suite_id,
       test_id,
       timestamp,
@@ -188,7 +192,6 @@ class Client {
     } = testData;
     let { message = '', meta = {} } = testData;
 
-    // stringify meta values and limit keys and values length to 255
     meta = Object.entries(meta)
       .filter(([, value]) => value !== null && value !== undefined)
       .reduce((acc, [key, value]) => {
@@ -196,7 +199,6 @@ class Client {
         return acc;
       }, {});
 
-    // Get links from storage using the test context
     const testContext = suite_title ? `${suite_title} ${title}` : title;
 
     let errorFormatted = '';
@@ -205,13 +207,38 @@ class Client {
       message = error?.message;
     }
 
-    // Attach logs
-    const fullLogs = this.formatLogs({ error: errorFormatted, steps, logs: testData.logs });
+    let fullLogs = this.formatLogs({ error: errorFormatted, steps, logs: testData.logs });
 
-    // add artifacts
+    if (stackArtifactsEnabled && fullLogs?.trim()?.length > 0) {
+      uploadedFiles.push(
+        this.uploader.uploadFileAsBuffer(
+          Buffer.from(stripColors(fullLogs), 'utf8'),
+          [this.runId, rid, `logs_${+new Date}.log`]
+        )
+      );
+      fullLogs = '';
+      steps = null;
+    }
+
+
+    if (!this.pipes || !this.pipes.length)
+      this.pipes = await pipesFactory(this.paramsForPipesFactory || {}, this.pipeStore);
+
+    if (!this.pipes?.filter(p => p.isEnabled).length) {
+      if (uploadedFiles.length > 0) {
+        await Promise.all(uploadedFiles);
+      }
+      return [];
+    }
+
+    if (isTestShouldBeExculedFromReport(testData)) return [];
+
+    if (status === STATUS.SKIPPED && process.env.TESTOMATIO_EXCLUDE_SKIPPED) {
+      debug('Skipping test from report', testData?.title);
+      return [];
+    }
+
     if (manuallyAttachedArtifacts?.length) files.push(...manuallyAttachedArtifacts);
-
-    const uploadedFiles = [];
 
     for (let f of files) {
       if (!f) continue; // f === null
@@ -308,7 +335,7 @@ class Client {
           const uploadedArtifacts = this.uploader.successfulUploads.map(file => ({
             relativePath: file.path.replace(process.cwd(), ''),
             link: file.link,
-            sizePretty: prettyBytes(file.size, { round: 0 }).toString(),
+            sizePretty: file.size == null ? 'unknown' : prettyBytes(file.size, { round: 0 }).toString(),
           }));
 
           uploadedArtifacts.forEach(upload => {
@@ -330,7 +357,7 @@ class Client {
           );
           const failedUploads = this.uploader.failedUploads.map(file => ({
             relativePath: file.path.replace(process.cwd(), ''),
-            sizePretty: prettyBytes(file.size, { round: 0 }).toString(),
+            sizePretty: file.size == null ? 'unknown' : prettyBytes(file.size, { round: 0 }).toString(),
           }));
 
           const pathPadding = Math.max(...failedUploads.map(upload => upload.relativePath.length)) + 1;
@@ -387,7 +414,11 @@ class Client {
    */
   formatLogs({ error, steps, logs }) {
     error = error?.trim();
-    logs = logs?.trim().split('\n').map(l => truncate(l)).join('\n');
+    logs = logs
+      ?.trim()
+      .split('\n')
+      .map(l => truncate(l))
+      .join('\n');
 
     if (Array.isArray(steps)) {
       steps = steps
@@ -446,18 +477,24 @@ class Client {
       }
       return stack;
     } catch (e) {
-      console.log(e);
+      console.log('Error in formatError:', e);
+      // Fallback to basic stack trace
+      if (error.stack) {
+        stack += error.stack;
+      }
+      return stack;
     }
   }
 }
 
 function isNotInternalFrame(frame) {
-  return (
-    frame.getFileName() &&
-    frame.getFileName().includes(sep) &&
-    !frame.getFileName().includes('node_modules') &&
-    !frame.getFileName().includes('internal')
-  );
+  const fileName = frame.getFileName();
+  const result =
+    fileName &&
+    (fileName.includes(sep) || fileName.includes('/')) &&
+    !fileName.includes('node_modules') &&
+    !fileName.includes('internal');
+  return result;
 }
 
 /**
