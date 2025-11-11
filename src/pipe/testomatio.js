@@ -2,7 +2,6 @@ import createDebugMessages from 'debug';
 import pc from 'picocolors';
 import { Gaxios } from 'gaxios';
 import JsonCycle from 'json-cycle';
-import https from 'https';
 import { APP_PREFIX, STATUS, AXIOS_TIMEOUT, REPORTER_REQUEST_RETRIES } from '../constants.js';
 import { isValidUrl, foundedTestLog, readLatestRunId, transformEnvVarToBoolean } from '../utils/utils.js';
 import { parseFilterParams, generateFilterRequestParams, setS3Credentials } from '../utils/pipe_utils.js';
@@ -52,15 +51,11 @@ class TestomatioPipe {
     this.env = process.env.TESTOMATIO_ENV;
     this.label = process.env.TESTOMATIO_LABEL;
 
-    // Create HTTPS agent with keepAlive disabled to prevent hanging process
-    const httpsAgent = new https.Agent({ keepAlive: false });
-
     // Create a new instance of gaxios with a custom config
     this.client = new Gaxios({
       baseURL: `${this.url.trim()}`,
       timeout: AXIOS_TIMEOUT,
       proxy: proxy ? proxy.toString() : undefined,
-      agent: httpsAgent,
       retry: true,
       retryConfig: {
         retry: REPORTER_REQUEST_RETRIES.retriesPerRequest,
