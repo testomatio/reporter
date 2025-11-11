@@ -108,7 +108,7 @@ class Client {
    *
    * @returns {Promise<any>} - resolves to Run id which should be used to update / add test
    */
-  async createRun(params) {
+  async createRun(params = {}) {
     if (!this.pipes || !this.pipes.length)
       this.pipes = await pipesFactory(params || this.paramsForPipesFactory || {}, this.pipeStore);
     debug('Creating run...');
@@ -116,7 +116,7 @@ class Client {
     if (!this.pipes?.filter(p => p.isEnabled).length) return Promise.resolve();
 
     this.queue = this.queue
-      .then(() => Promise.all(this.pipes.map(p => p.createRun())))
+      .then(() => Promise.all(this.pipes.map(p => p.createRun(params))))
       .catch(err => console.log(APP_PREFIX, err))
       .then(() => {
         const runId = this.pipeStore?.runId;

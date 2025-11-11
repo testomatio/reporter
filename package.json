@@ -1,11 +1,13 @@
 {
   "name": "@testomatio/reporter",
-  "version": "2.3.6",
+  "version": "2.3.8",
   "description": "Testomatio Reporter Client",
   "engines": {
     "node": ">=18"
   },
-  "typings": "typings/index.d.ts",
+  "main": "lib/reporter.js",
+  "module": "src/reporter.js",
+  "types": "types/types.d.ts",
   "repository": "git@github.com:testomatio/reporter.git",
   "author": "Michael Bodnarchuk <davert@testomat.io>,Koushik Mohan <koushikmohan1996@gmail.com>",
   "license": "MIT",
@@ -45,7 +47,8 @@
     "bin",
     "lib",
     "src",
-    "testcafe"
+    "testcafe",
+    "types"
   ],
   "scripts": {
     "clear-exportdir": "rm -rf export/",
@@ -57,7 +60,8 @@
     "test": "mocha 'tests/unit/**/*_test.js'",
     "test:playwright": "mocha tests/adapter/playwright.test.js",
     "test:codecept": "mocha tests/adapter/codecept.test.js tests/adapter/codecept_comprehensive.test.js tests/adapter/codecept_steps_sections.test.js",
-    "test:frameworks": "npm run test:playwright && npm run test:codecept",
+    "test:vitest": "mocha tests/adapter/vitest.test.js",
+    "test:frameworks": "npm run test:playwright && npm run test:codecept && npm run test:vitest",
     "test:all": "npm run test && npm run test:frameworks",
     "test:adapters": "mocha tests/adapter/*.test.js",
     "test:codecept:bug948": "mocha tests/adapter/codecept_aftersuite_failure.test.js",
@@ -102,7 +106,7 @@
     "vitest": "^1.6.0"
   },
   "bin": {
-    "@testomatio/reporter": "./lib/bin/cli.js",
+    "testomatio/reporter": "./lib/bin/cli.js",
     "report-xml": "./lib/bin/reportXml.js",
     "start-test-run": "./lib/bin/startTest.js",
     "upload-artifacts": "./lib/bin/uploadArtifacts.js"

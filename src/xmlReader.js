@@ -6,6 +6,7 @@ import { XMLParser } from 'fast-xml-parser';
 import { APP_PREFIX, STATUS } from './constants.js';
 import { randomUUID } from 'crypto';
 import { fileURLToPath } from 'url';
+import { NUnitXmlParser } from './junit-adapter/nunit-parser.js';
 import {
   fetchFilesFromStackTrace,
   fetchIdFromOutput,
@@ -14,6 +15,7 @@ import {
   fetchIdFromCode,
   humanize,
   TEST_ID_REGEX,
+  transformEnvVarToBoolean,
 } from './utils/utils.js';
 import { pipesFactory } from './pipe/index.js';
 import adapterFactory from './junit-adapter/index.js';
@@ -35,6 +37,7 @@ const {
   TESTOMATIO_ENV,
   TESTOMATIO_RUN,
   TESTOMATIO_MARK_DETACHED,
+  TESTOMATIO_LEGACY_NUNIT,
 } = process.env;
 
 const options = {
@@ -74,6 +77,11 @@ class XmlReader {
     this.stats = {};
     this.stats.language = opts.lang?.toLowerCase();
     this.uploader = new S3Uploader();
+
+    // Enhanced NUnit parsing - enabled by default for NUnit XML
+    // Can be disabled via opts.enhancedNunit = false or TESTOMATIO_LEGACY_NUNIT=1
+    this.enhancedNunit = !transformEnvVarToBoolean(TESTOMATIO_LEGACY_NUNIT);
+    this.groupParameterized = opts.groupParameterized !== false; // Default true, can be disabled
 
     // @ts-ignore
     const packageJsonPath = path.resolve(__dirname, '..', 'package.json');
@@ -126,7 +134,8 @@ class XmlReader {
   }
 
   processJUnit(jsonSuite) {
-    const { testsuite, name, tests, failures, errors } = jsonSuite;
+    const { testsuite, name, failures, errors } = jsonSuite;
+    const tests = testsuite?.tests || jsonSuite.tests;
 
     reduceOptions.preferClassname = this.stats.language === 'python';
     const resultTests = processTestSuite(testsuite);
@@ -157,6 +166,14 @@ class XmlReader {
   }
 
   processNUnit(jsonSuite) {
+    // Use enhanced NUnit parser if enabled and this is actually NUnit XML
+    if (this.enhancedNunit && this.isNUnitXml(jsonSuite)) {
+      debug('Using enhanced NUnit parser');
+      return this.processNUnitEnhanced(jsonSuite);
+    }
+
+    // Fallback to legacy parser for backward compatibility
+    debug('Using legacy NUnit parser');
     const { result, total, passed, failed, inconclusive, skipped } = jsonSuite;
 
     reduceOptions.preferClassname = this.stats.language === 'python';
@@ -175,63 +192,71 @@ class XmlReader {
     };
   }
 
+  /**
+   * Check if the XML is actually NUnit format (has test-suite hierarchy)
+   * @param {Object} jsonSuite - Parsed XML suite object
+   * @returns {boolean} - True if this is NUnit XML format
+   */
+  isNUnitXml(jsonSuite) {
+    // NUnit XML has test-suite elements with type attributes
+    if (jsonSuite['test-suite']) {
+      const testSuite = Array.isArray(jsonSuite['test-suite']) ? jsonSuite['test-suite'][0] : jsonSuite['test-suite'];
+
+      // Check for NUnit-specific test-suite types
+      return (
+        testSuite &&
+        testSuite.type &&
+        ['Assembly', 'TestSuite', 'TestFixture', 'ParameterizedMethod'].includes(testSuite.type)
+      );
+    }
+    return false;
+  }
+
+  processNUnitEnhanced(jsonSuite) {
+    debug('Processing NUnit XML with enhanced parser');
+
+    try {
+      const nunitParser = new NUnitXmlParser({
+        groupParameterized: this.groupParameterized,
+        ...this.opts,
+      });
+
+      const result = nunitParser.parseTestRun(jsonSuite);
+
+      // Add parsed tests to our collection
+      this.tests = this.tests.concat(result.tests);
+
+      debug(`Enhanced NUnit parser processed ${result.tests.length} tests`);
+
+      return result;
+    } catch (error) {
+      debug('Enhanced NUnit parser failed, falling back to legacy parser:', error.message);
+      console.warn(`${APP_PREFIX} Enhanced NUnit parsing failed, using legacy parser: ${error.message}`);
+
+      // Fallback to legacy parser
+      this.enhancedNunit = false;
+      return this.processNUnit(jsonSuite);
+    }
+  }
+
   processTRX(jsonSuite) {
     let defs = jsonSuite?.TestRun?.TestDefinitions?.UnitTest;
     if (!Array.isArray(defs)) defs = [defs].filter(d => !!d);
 
-    const tests =
-      defs.map(td => {
-        const title = td.name.replace(/\(.*?\)/, '').trim();
-        let example = td.name.match(/\((.*?)\)/);
-        if (example) example = { ...example[1].split(',') };
-        const suite = td.TestMethod.className.split(', ')[0].split('.');
-        const suite_title = suite.pop();
-        return {
-          title,
-          example,
-          file: suite.join('/'),
-          description: td.Description,
-          suite_title,
-          id: td.Execution.id,
-        };
-      }) || [];
+    // Parse test definitions
+    const tests = defs.map(td => this._parseTRXTestDefinition(td));
 
+    // Parse test results
     let result = jsonSuite?.TestRun?.Results?.UnitTestResult;
     if (!Array.isArray(result)) result = [result].filter(d => !!d);
 
-    const results = result.map(td => ({
-      id: td.executionId,
-      // seconds are used in junit reports, but ms are used by testomatio
-      run_time: parseFloat(td.duration) * 1000,
-      status: td.outcome,
-      stack: td.Output.StdOut,
-      files: td?.ResultFiles?.ResultFile?.map(rf => rf.path),
-    }));
-
-    results.forEach(r => {
-      const test = tests.find(t => t.id === r.id) || {};
-      r.suite_title = test.suite_title;
-      r.title = test.title?.trim();
-      if (test.code) r.code = test.code;
-      if (test.description) r.description = test.description;
-      if (test.example) r.example = test.example;
-      if (test.file) r.file = test.file;
-      r.create = true;
-      r.overwrite = true;
-      if (r.status === 'Passed') r.status = STATUS.PASSED;
-      if (r.status === 'Failed') r.status = STATUS.FAILED;
-      if (r.status === 'Skipped') r.status = STATUS.SKIPPED;
-      delete r.id;
-    });
+    const results = result.map(td => this._parseTRXTestResult(td, tests));
 
     debug(results);
 
     const counters = jsonSuite?.TestRun?.ResultSummary?.Counters || {};
-
     const failed_count = parseInt(counters.failed, 10) + parseInt(counters.error, 10);
-
-    let status = STATUS.PASSED.toString();
-    if (failed_count > 0) status = STATUS.FAILED;
+    const status = failed_count > 0 ? STATUS.FAILED : STATUS.PASSED.toString();
 
     this.tests = results.filter(t => !!t.title);
 
@@ -244,6 +269,69 @@ class XmlReader {
       failed_count,
       tests: results,
     };
+  }
+
+  _parseTRXTestDefinition(td) {
+    const title = td.name.replace(/\(.*?\)/, '').trim();
+    const exampleMatch = td.name.match(/\((.*?)\)/);
+    const example = exampleMatch ? {
+      ...exampleMatch[1].split(',').map(p => p.trim()).filter(p => p !== '')
+    } : null;
+
+    const suite = td.TestMethod.className.split(', ')[0].split('.');
+    const suite_title = suite.pop();
+
+    // Convert namespace to file path for C#
+    const file = `${suite.join('/')}.cs`;
+
+    return {
+      title, // Base name without parameters for test import
+      example, // Parameters object for parameterized tests
+      file, // File path with .cs extension
+      description: td.Description,
+      suite_title,
+      id: td.Execution.id,
+    };
+  }
+
+  _parseTRXTestResult(td, tests) {
+    const test = tests.find(t => t.id === td.executionId) || {};
+
+    const result = {
+      suite_title: test.suite_title,
+      title: test.title?.trim(),
+      file: test.file,
+      description: test.description,
+      code: test.code,
+      run_time: parseFloat(td.duration) * 1000,
+      stack: td.Output?.StdOut || '',
+      files: td?.ResultFiles?.ResultFile?.map(rf => rf.path),
+      create: true,
+      overwrite: true,
+    };
+
+    // Add example for parameterized tests
+    if (test.example) {
+      result.example = test.example;
+    }
+
+    // Map TRX status to Testomat.io status
+    result.status = this._mapTRXStatus(td.outcome);
+
+    return result;
+  }
+
+  _mapTRXStatus(outcome) {
+    switch (outcome) {
+      case 'Passed':
+        return STATUS.PASSED;
+      case 'Failed':
+        return STATUS.FAILED;
+      case 'Skipped':
+        return STATUS.SKIPPED;
+      default:
+        return STATUS.PASSED;
+    }
   }
 
   processXUnit(assemblies) {
@@ -512,7 +600,7 @@ function reduceTestCases(prev, item) {
 
       const exampleMatches = testCaseItem.name?.match(/\S\((.*?)\)/);
       if (exampleMatches) {
-        example = { ...exampleMatches[1].split(',').map(v => v.trim().replace(/[^\w\s-]/g, '')) };
+        example = { ...exampleMatches[1].split(',').map(v => v.trim().replace(/[^\w\s-]/g, '')).filter(v => v !== '') };
         title = title.replace(/\(.*?\)/, '').trim();
       }
 
