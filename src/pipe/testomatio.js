@@ -167,8 +167,12 @@ class TestomatioPipe {
   async createRun(params = {}) {
     this.batch.isEnabled = params.isBatchEnabled ?? this.batch.isEnabled;
     if (!this.isEnabled) return;
-    if (this.batch.isEnabled && this.isEnabled)
-      this.batch.intervalFunction = setInterval(this.#batchUpload, this.batch.intervalTime);
+    if (this.batch.isEnabled && this.isEnabled) {
+      this.batch.intervalFunction = setInterval(() => this.#batchUpload(), this.batch.intervalTime);
+      // Use unref() to prevent the interval from keeping the process alive
+      // This allows the process to exit gracefully even if the interval hasn't been explicitly cleared
+      this.batch.intervalFunction.unref();
+    }
 
     let buildUrl = process.env.BUILD_URL || process.env.CI_JOB_URL || process.env.CIRCLE_BUILD_URL;
 

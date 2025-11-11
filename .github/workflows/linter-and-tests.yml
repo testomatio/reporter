@@ -69,6 +69,25 @@ jobs:
       # Run CodeceptJS adapter tests
       - run: npm run test:codecept
 
+  vitest-tests:
+    runs-on: ubuntu-latest
+    name: Vitest Adapter Tests
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+      - run: node -v
+      - run: npm ci
+      - run: npm run build
+
+      # Install Vitest dependencies for example
+      - name: Install Vitest example dependencies
+        run: cd tests/adapter/examples/vitest && npm install
+
+      # Run Vitest adapter tests
+      - run: npm run test:vitest
+
   tests:
     runs-on: ubuntu-latest
     needs: linter-and-tests-on-latest-node
