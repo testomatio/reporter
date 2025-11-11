@@ -4,6 +4,11 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 
+// Helper function to normalize paths for cross-platform testing
+function normalizePath(filePath) {
+  return filePath ? filePath.replace(/\\/g, '/') : filePath;
+}
+
 function getFilePathWithUploadsList(runId) {
   const tempFilePath = path.join(os.tmpdir(), `testomatio.run.${runId}.json`);
   if (!fs.existsSync(tempFilePath)) {
@@ -115,7 +120,7 @@ describe('storeUploadedFile', () => {
     uploader.storeUploadedFile('file/path/1', runId, rid);
     fileContent = fs.readFileSync(filePathWithUploadsList, 'utf8');
     const absoluteArtifactPath = path.resolve('file/path/1');
-    expect(fileContent).to.equal(`{"rid":"${rid}","file":"${absoluteArtifactPath}","uploaded":false}\n`);
+    expect(fileContent).to.equal(`{"rid":"${rid}","file":"${normalizePath(absoluteArtifactPath)}","uploaded":false}\n`);
   });
 
   it('should store multiple uploaded files', () => {
@@ -126,7 +131,7 @@ describe('storeUploadedFile', () => {
     const absoluteArtifact1Path = path.resolve('file/path/1');
     const absoluteArtifact2Path = path.resolve('file/path/2');
     expect(fileContent).to.equal(
-      `{"rid":"${rid}","file":"${absoluteArtifact1Path}","uploaded":false}\n{"rid":"${rid}","file":"${absoluteArtifact2Path}","uploaded":false}\n`,
+      `{"rid":"${rid}","file":"${normalizePath(absoluteArtifact1Path)}","uploaded":false}\n{"rid":"${rid}","file":"${normalizePath(absoluteArtifact2Path)}","uploaded":false}\n`,
     );
   });
 
@@ -146,7 +151,7 @@ describe('storeUploadedFile', () => {
     uploader.storeUploadedFile('file/path/3', runId, rid, true);
     fileContent = fs.readFileSync(filePathWithUploadsList, 'utf8');
     const absoluteArtifactPath = path.resolve('file/path/3');
-    expect(fileContent).to.equal(`{"rid":"${rid}","file":"${absoluteArtifactPath}","uploaded":true}\n`);
+    expect(fileContent).to.equal(`{"rid":"${rid}","file":"${normalizePath(absoluteArtifactPath)}","uploaded":true}\n`);
   });
 
   it('should store uploaded file with uploaded=false', () => {
@@ -154,7 +159,7 @@ describe('storeUploadedFile', () => {
     uploader.storeUploadedFile('file/path/4', runId, rid, false);
     fileContent = fs.readFileSync(filePathWithUploadsList, 'utf8');
     const absoluteArtifactPath = path.resolve('file/path/4');
-    expect(fileContent).to.equal(`{"rid":"${rid}","file":"${absoluteArtifactPath}","uploaded":false}\n`);
+    expect(fileContent).to.equal(`{"rid":"${rid}","file":"${normalizePath(absoluteArtifactPath)}","uploaded":false}\n`);
   });
 
   it('should not store uploaded file if storage is disabled', () => {
@@ -190,7 +195,7 @@ describe('readUploadedFiles', () => {
     uploader.storeUploadedFile('some/file/path.txt', runId, 'testRid1');
     const files = uploader.readUploadedFiles(runId);
     expect(files[0].rid).to.equal('testRid1');
-    expect(files[0].file).to.equal(path.resolve('some/file/path.txt'));
+    expect(files[0].file).to.equal(normalizePath(path.resolve('some/file/path.txt')));
     expect(files[0].uploaded).to.be.false;
   });
 });
@@ -213,7 +218,7 @@ describe('upload file by path', () => {
     const files = uploader.readUploadedFiles(runId);
     expect(files).to.have.lengthOf(1);
     expect(files[0].rid).to.equal('testRid1');
-    expect(files[0].file).to.equal(filePath);
+    expect(files[0].file).to.equal(normalizePath(filePath));
     expect(files[0].uploaded).to.be.false;
   });
 

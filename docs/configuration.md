@@ -8,6 +8,8 @@ Environment variables can be either passed inline, or from `.env` file or from s
 
 ## Variables List
 
+> 📋 For XML import specific configuration, see [XML Imports Configuration](xml-imports.md)
+
 #### `TESTOMATIO`
 
 Alternatively, `TESTOMATIO_TOKEN` or `TESTOMATIO_API_KEY`

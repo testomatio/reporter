@@ -13,13 +13,13 @@ describe('Client', () => {
 
     let error = new Error('Test error');
     let stack = client.formatError(error);
-    expect(stack).to.include('client_test.js');
+    expect(stack.replace(ANSI_REGEX, '')).to.include('client_test.js');
 
     process.env.TESTOMATIO_STACK_IGNORE = '**/client_test.js';
 
     error = new Error('Test error');
     stack = client.formatError(error);
-    expect(stack).not.to.include('client_test.js');
+    expect(stack.replace(ANSI_REGEX, '')).not.to.include('client_test.js');
 
     try {
       process.env.TESTOMATIO_STACK_IGNORE = null;
@@ -29,8 +29,8 @@ describe('Client', () => {
       stack = client.formatError(e);
       // prettier-ignore
       expect(stack.replace(ANSI_REGEX, '')).to.include('throw new Error(\'Test error\')');
-      expect(stack).to.include('data/src/error.js');
-      expect(stack).to.include('client_test.js');
+      expect(stack.replace(ANSI_REGEX, '')).to.include('data/src/error.js');
+      expect(stack.replace(ANSI_REGEX, '')).to.include('client_test.js');
     }
 
     try {
@@ -41,9 +41,9 @@ describe('Client', () => {
       stack = client.formatError(e);
 
       // prettier-ignore
-      expect(stack).not.to.include('throw new Error(\'Test error\')');
-      expect(stack).not.to.include('data/src/error.js');
-      expect(stack).to.include('client_test.js');
+      expect(stack.replace(ANSI_REGEX, '')).not.to.include('throw new Error(\'Test error\')');
+      expect(stack.replace(ANSI_REGEX, '')).not.to.include('data/src/error.js');
+      expect(stack.replace(ANSI_REGEX, '')).to.include('client_test.js');
     }
   });
 });

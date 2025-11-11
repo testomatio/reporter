@@ -23,7 +23,7 @@ program
   .option('--timelimit <time>', 'default time limit in seconds to kill a stuck process')
   .option('--env-file <envfile>', 'Load environment variables from env file')
   .action(async (pattern, opts) => {
-    if (!pattern.endsWith('.xml')) {
+    if (!pattern.endsWith('.xml') && !pattern.includes('*')) {
       pattern += '.xml';
     }
     let { javaTests, lang } = opts;
@@ -34,7 +34,10 @@ program
     }
     lang = lang?.toLowerCase();
     if (javaTests === true || (lang === 'java' && !javaTests)) javaTests = 'src/test/java';
-    const runReader = new XmlReader({ javaTests, lang });
+    const runReader = new XmlReader({
+      javaTests,
+      lang,
+    });
     const files = glob.sync(pattern, { cwd: opts.dir || process.cwd() });
     if (!files.length) {
       console.log(APP_PREFIX, `Report can't be created. No XML files found 😥`);
