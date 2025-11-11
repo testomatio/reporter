@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { S3Uploader } from './uploader.js';
 import { readLatestRunId, storeRunId, validateSuiteId, transformEnvVarToBoolean } from './utils/utils.js';
 import { filesize as prettyBytes } from 'filesize';
-import { formatLogs, formatError, stripColors } from './utils/log-formater.js';
+import { formatLogs, formatError, stripColors } from './utils/log-formatter.js';
 
 const debug = createDebugMessages('@testomatio/reporter:client');
 
