@@ -338,9 +338,9 @@ describe('TestomatioPipe', () => {
           status: 200,
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({
-            url: '/projects/1/testruns/123',
+            url: 'https://faketestomat.io/report/abc123',
             uid: 'test-run-123',
-            public_url: 'https://test.testomat.io/public/123'
+            public_url: 'https://faketestomat.io/public/xyz123'
           })
         }
       });
@@ -370,9 +370,9 @@ describe('TestomatioPipe', () => {
           status: 200,
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({
-            url: '/projects/1/testruns/124',
+            url: 'https://faketestomat.io/report/def456',
             uid: 'test-run-124',
-            public_url: 'https://test.testomat.io/public/124'
+            public_url: 'https://faketestomat.io/public/uvw456'
           })
         }
       });
@@ -401,9 +401,9 @@ describe('TestomatioPipe', () => {
           status: 200,
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({
-            url: '/projects/1/testruns/126',
+            url: 'https://faketestomat.io/report/ghi789',
             uid: 'test-run-126',
-            public_url: 'https://test.testomat.io/public/126'
+            public_url: 'https://faketestomat.io/public/rst789'
           })
         }
       });
