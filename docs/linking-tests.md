@@ -16,31 +16,60 @@ By default, Testomatio creates automated runs automatically when you run your te
 
 This behavior is perfect for CI/CD pipelines and development workflows where you want to focus on automated test results while maintaining traceability to manual test requirements. No explicit run creation is needed.
 
-### Manual and Mixed Runs
+### Manual Runs
 
-For manual or mixed runs, you must explicitly create a run first and pass its ID to your test runner. This workflow ensures the tests report to the correct run type.
+Manual runs are used when you want to report only manual test case execution. The automated test is completely hidden from the report - only linked manual test cases appear.
 
-**Workflow for Manual/Mixed Runs:**
+**Why use manual runs:**
+- Manual QA teams execute test cases separately from automated testing
+- You want a clean view of manual testing progress without automated test noise
+- Different teams work on different aspects of testing and need separate reporting
 
-1. **Create the run with desired kind:**
-   ```bash
-   RUN_ID=$(npx @testomatio/reporter start --kind manual | tail -n 1)    # For manual-only reporting
-   RUN_ID=$(npx @testomatio/reporter start --kind mixed | tail -n 1)     # For combined reporting
-   ```
+**Complete Flow:**
 
-2. **Run tests with the captured run ID:**
-   ```bash
-   TESTOMATIO=tstmt_xxxx TESTOMATIO_RUN=$RUN_ID npx playwright test
-   TESTOMATIO=tstmt_xxxx TESTOMATIO_RUN=$RUN_ID npx jest
-   TESTOMATIO=tstmt_xxxx TESTOMATIO_RUN=$RUN_ID npx vitest run
-   TESTOMATIO=tstmt_xxxx TESTOMATIO_RUN=$RUN_ID npx codeceptjs run
-   ```
+**Step 1: Create a manual run**
+```bash
+RUN_ID=$(npx @testomatio/reporter start --kind manual | tail -n 1)
+```
+This creates a manual run on Testomat.io and outputs the run ID. The run is now ready to receive manual test case results.
 
-**Alternative: One-step process**
-For convenience, you can use the `run` command which creates the run and executes tests in one step:
+**Step 2: Run your automated tests**
+```bash
+TESTOMATIO=tstmt_xxxx TESTOMATIO_RUN=$RUN_ID npx playwright test
+```
+Your automated tests execute but will NOT appear in the final report. Only the manual test cases linked via `linkTest()` will be shown.
 
+**Alternative: One-step approach**
 ```bash
 TESTOMATIO=tstmt_xxxx npx @testomatio/reporter run "npx playwright test" --kind manual
+```
+
+### Mixed Runs
+
+Mixed runs show both automated test execution results AND manual test case results as separate entities in the same report.
+
+**Why use mixed runs:**
+- Stakeholder reporting where you need comprehensive visibility
+- Audit trails that show both automated execution and manual testing coverage
+- Demonstrating complete test coverage across both automated and manual testing efforts
+- When automated tests cover core scenarios while manual testing handles edge cases
+
+**Complete Flow:**
+
+**Step 1: Create a mixed run**
+```bash
+RUN_ID=$(npx @testomatio/reporter start --kind mixed | tail -n 1)
+```
+This creates a mixed run that accepts both automated test results and manual test case results.
+
+**Step 2: Run your automated tests**
+```bash
+TESTOMATIO=tstmt_xxxx TESTOMATIO_RUN=$RUN_ID npx playwright test
+```
+Your automated tests execute and will appear in the report. Any manual test cases linked via `linkTest()` will also appear separately in the same report.
+
+**Alternative: One-step approach**
+```bash
 TESTOMATIO=tstmt_xxxx npx @testomatio/reporter run "npx playwright test" --kind mixed
 ```
 
