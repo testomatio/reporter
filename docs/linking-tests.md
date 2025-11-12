@@ -24,10 +24,13 @@ Manual runs are used when you want to report only manual test case execution. Th
 This behavior is useful if automated test verifies status for manual test cases.
 However, you don't want to see the automated test itself in the final report.
 
-**Step 1: Create a manual run**
+**Step 1: Create a manual run and capture Run ID**
 ```bash
-RUN_ID=$(npx @testomatio/reporter start --kind manual | tail -n 1)
+RUN_ID=$(TESTOMATIO=tstmt_xxxx npx @testomatio/reporter start --kind manual | tail -n 1)
 ```
+
+> To check RUN_ID is set run `echo $RUN_ID`. Command can be different depending on your shell (zsh, fish, powershell). Last line of `npx @testomatio/reporter start` output is the run ID.
+
 This creates a manual run on Testomat.io and outputs the run ID. The run is now ready to receive manual test case results.
 
 **Step 2: Run your automated tests**
