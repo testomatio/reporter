@@ -29,11 +29,27 @@ This creates a manual run on Testomat.io and saves the run ID into the environme
 
 **Step 2: Run your automated tests**
 ```bash
-TESTOMATIO=tstmt_xxxx TESTOMATIO_RUN=$RUN_ID npx playwright test
+TESTOMATIO=tstmt_xxxx TESTOMATIO_RUN=$RUN_ID <run tests command>
 ```
-Your automated tests execute but will NOT appear in the final report. Only the manual test cases linked via `linkTest()` will be shown.
+Your **automated tests with links will NOT appear** in the final report. Only the manual test cases linked via `linkTest()` will be shown.
 
 **Alternative: One-step approach**
+```bash
+TESTOMATIO=tstmt_xxxx npx @testomatio/reporter run "<run tests command>" --kind manual
+```
+
+Playwright Example:
+
+```bash
+# Step 1: Create manual run
+RUN_ID=$(TESTOMATIO=tstmt_xxxx npx @testomatio/reporter start --kind manual | tail -n 1)
+
+# Step 2: Run Playwright tests with manual run
+TESTOMATIO=tstmt_xxxx TESTOMATIO_RUN=$RUN_ID npx playwright test
+```
+
+Run tests with one line command:
+
 ```bash
 TESTOMATIO=tstmt_xxxx npx @testomatio/reporter run "npx playwright test" --kind manual
 ```
@@ -57,22 +73,33 @@ This creates a mixed run on Testomat.io and saves the run ID into the environmen
 
 **Step 2: Run your automated tests**
 ```bash
-TESTOMATIO=tstmt_xxxx TESTOMATIO_RUN=$RUN_ID npx playwright test
+TESTOMATIO=tstmt_xxxx TESTOMATIO_RUN=$RUN_ID <run tests command>
 ```
 Your automated tests execute and will appear in the report. Any manual test cases linked via `linkTest()` will also appear separately in the same report.
 
 **Alternative: One-step approach**
 ```bash
-TESTOMATIO=tstmt_xxxx npx @testomatio/reporter run "npx playwright test" --kind mixed
+TESTOMATIO=tstmt_xxxx npx @testomatio/reporter run "<run tests command>" --kind mixed
 ```
 
-### When to Use Each Type
 
-**Manual Run:** When you want to report only manual test case execution. The automated test is completely hidden from the report - only manual test cases appear. This is ideal when manual QA teams are executing test cases separately from automated testing and you want a clean view of manual testing progress without automated test noise.
+Playwright Example:
 
-**Mixed Run:** When you need comprehensive visibility. This shows both automated test execution results AND manual test case results as separate entities in the same report. It's perfect for stakeholder reporting, audit trails, or when you want to demonstrate complete test coverage across both automated and manual testing efforts.
+```bash
+# Step 1: Create manual run
+RUN_ID=$(TESTOMATIO=tstmt_xxxx npx @testomatio/reporter start --kind manual | tail -n 1)
 
-## linkTest Function
+# Step 2: Run Playwright tests with manual run
+TESTOMATIO=tstmt_xxxx TESTOMATIO_RUN=$RUN_ID npx playwright test
+```
+
+Run tests with one line command:
+
+```bash
+TESTOMATIO=tstmt_xxxx npx @testomatio/reporter run "npx playwright test" --kind manual
+```
+
+## How to link manual test cases
 
 Use `linkTest()` to connect automated tests to manual test cases:
 
@@ -97,7 +124,7 @@ linkTest(['T12345678', 'T87654321', 'T11223344']);
 
 ### Test Framework Examples
 
-```javascript
+```js
 // Playwright example
 import { test, expect } from '@playwright/test';
 import { linkTest } from '@testomatio/reporter';
@@ -117,7 +144,7 @@ test.describe('Authentication', () => {
 });
 ```
 
-```javascript
+```js
 // CodeceptJS example
 import { linkTest } from '@testomatio/reporter';
 
@@ -135,6 +162,8 @@ Scenario('user login functionality', ({ I }) => {
   I.see('Welcome', '[data-testid="welcome-message"]');
 });
 ```
+
+
 
 
 ## Report Results
