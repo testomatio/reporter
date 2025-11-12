@@ -1,6 +1,6 @@
 {
   "name": "@testomatio/reporter",
-  "version": "2.3.6",
+  "version": "2.3.8",
   "description": "Testomatio Reporter Client",
   "engines": {
     "node": ">=18"
@@ -106,7 +106,7 @@
     "vitest": "^1.6.0"
   },
   "bin": {
-    "@testomatio/reporter": "./lib/bin/cli.js",
+    "testomatio/reporter": "./lib/bin/cli.js",
     "report-xml": "./lib/bin/reportXml.js",
     "start-test-run": "./lib/bin/startTest.js",
     "upload-artifacts": "./lib/bin/uploadArtifacts.js"

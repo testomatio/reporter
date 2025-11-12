@@ -35,14 +35,20 @@ program
 program
   .command('start')
   .description('Start a new run and return its ID')
-  .action(async () => {
+  .option('--kind <type>', 'Specify run type: automated, manual, or mixed')
+  .action(async (opts) => {
     cleanLatestRunId();
 
     console.log('Starting a new Run on Testomat.io...');
     const apiKey = process.env['INPUT_TESTOMATIO-KEY'] || config.TESTOMATIO;
     const client = new TestomatClient({ apiKey });
 
-    client.createRun().then(() => {
+    const createRunParams = {};
+    if (opts.kind) {
+      createRunParams.kind = opts.kind;
+    }
+
+    client.createRun(createRunParams).then(() => {
       console.log(process.env.runId);
       process.exit(0);
     });
@@ -75,6 +81,7 @@ program
   .description('Run tests with the specified command')
   .argument('<command>', 'Test runner command')
   .option('--filter <filter>', 'Additional execution filter')
+  .option('--kind <type>', 'Specify run type: automated, manual, or mixed')
   .action(async (command, opts) => {
     const apiKey = process.env['INPUT_TESTOMATIO-KEY'] || config.TESTOMATIO;
     const title = process.env.TESTOMATIO_TITLE;
@@ -120,8 +127,13 @@ program
       });
     };
 
+    const createRunParams = {};
+    if (opts.kind) {
+      createRunParams.kind = opts.kind;
+    }
+
     if (apiKey) {
-      await client.createRun().then(runTests);
+      await client.createRun(createRunParams).then(runTests);
     } else {
       await runTests();
     }

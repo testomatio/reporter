@@ -418,45 +418,7 @@ describe('XML Reader', () => {
     expect(tests[0].suite_title).to.include('ApiFeature');
   });
 
-  it('should parse NUnit parameterized tests correctly (legacy parser)', () => {
-    const reader = new XmlReader({
-      lang: 'c#',
-      enhancedNunit: false, // Explicitly disable enhanced parser
-    });
-    const jsonData = reader.parse(path.join(dirname, 'data/nunit_parameterized.xml'));
-
-    expect(jsonData.status).to.eql('failed');
-    expect(jsonData.tests_count).to.eql(2); // Legacy parser creates 2 separate tests
-    expect(jsonData.tests.length).to.eql(2);
-
-    // Legacy parser creates separate tests for each parameterized variation
-    const tests = jsonData.tests;
-
-    // Both tests should have the same base method name but different parameters
-    expect(tests[0].title).to.eql('PostCashTransactionOnCashierPageNew');
-    expect(tests[1].title).to.eql('PostCashTransactionOnCashierPageNew');
-
-    // Both should have the same suite (legacy parser uses short name)
-    expect(tests[0].suite_title).to.eql('CashierShiftScenariosNew');
-    expect(tests[1].suite_title).to.eql('CashierShiftScenariosNew');
-
-    // Both should have the same test ID
-    expect(tests[0].test_id).to.eql('566a9209');
-    expect(tests[1].test_id).to.eql('566a9209');
-
-    // One should be passed, one should be failed
-    const passedTest = tests.find(t => t.status === 'passed');
-    const failedTest = tests.find(t => t.status === 'failed');
-
-    expect(passedTest).to.exist;
-    expect(failedTest).to.exist;
-
-    // Verify they have example parameters
-    expect(passedTest.example).to.exist;
-    expect(failedTest.example).to.exist;
-  });
-
-  it('should parse NUnit parameterized tests correctly (enhanced parser)', () => {
+  it('should parse NUnit parameterized tests correctly', () => {
     const reader = new XmlReader({
       lang: 'c#',
       // Enhanced parser is now enabled by default

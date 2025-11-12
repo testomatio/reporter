@@ -80,7 +80,7 @@ class XmlReader {
 
     // Enhanced NUnit parsing - enabled by default for NUnit XML
     // Can be disabled via opts.enhancedNunit = false or TESTOMATIO_LEGACY_NUNIT=1
-    this.enhancedNunit = opts.enhancedNunit !== false && !transformEnvVarToBoolean(TESTOMATIO_LEGACY_NUNIT); // Default true, can be disabled
+    this.enhancedNunit = !transformEnvVarToBoolean(TESTOMATIO_LEGACY_NUNIT);
     this.groupParameterized = opts.groupParameterized !== false; // Default true, can be disabled
 
     // @ts-ignore
