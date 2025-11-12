@@ -31,7 +31,7 @@ RUN_ID=$(TESTOMATIO=tstmt_xxxx npx @testomatio/reporter start --kind manual | ta
 
 > To check RUN_ID is set run `echo $RUN_ID`. Command can be different depending on your shell (zsh, fish, powershell). Last line of `npx @testomatio/reporter start` output is the run ID.
 
-This creates a manual run on Testomat.io and outputs the run ID. The run is now ready to receive manual test case results.
+This creates a manual run on Testomat.io and saves the run ID into the environment variable.
 
 **Step 2: Run your automated tests**
 ```bash
@@ -54,9 +54,12 @@ This behavior is needed when you want to see the most precise report of all auto
 
 **Step 1: Create a mixed run**
 ```bash
-RUN_ID=$(npx @testomatio/reporter start --kind mixed | tail -n 1)
+RUN_ID=$(TESTOMATIO=tstmt_xxxx npx @testomatio/reporter start --kind mixed | tail -n 1)
 ```
-This creates a mixed run that accepts both automated test results and manual test case results.
+
+> To check RUN_ID is set run `echo $RUN_ID`. Command can be different depending on your shell (zsh, fish, powershell). Last line of `npx @testomatio/reporter start` output is the run ID.
+
+This creates a mixed run on Testomat.io and saves the run ID into the environment variable.
 
 **Step 2: Run your automated tests**
 ```bash
