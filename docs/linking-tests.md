@@ -2,13 +2,7 @@
 
 Link automated test results to multiple manual test cases and control how they appear in reports.
 
-## What is Test Linking?
-
 Test linking connects automated test execution with manual test case management. When you run an automated test, you can link it to related manual test cases that cover scenarios not easily automated.
-
-## How Run Types Affect Reporting
-
-The `--kind` option determines what appears in your test report and affects how stakeholders view your testing coverage.
 
 ### Automated Run (Default Behavior)
 
