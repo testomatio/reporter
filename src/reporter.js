@@ -1,5 +1,5 @@
 import Client from './client.js';
-import * as TestomatioConstants   from './constants.js';
+import * as TestomatioConstants from './constants.js';
 import { services } from './services/index.js';
 import reporterFunctions from './reporter-functions.js';
 
@@ -39,5 +39,4 @@ export default {
 
   TestomatioClient: Client,
   STATUS,
-
 };
