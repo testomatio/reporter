@@ -139,9 +139,9 @@ import { label } from '@testomatio/reporter';
 
 describe('Your suite', () => {
   test('I can login', async () => {
-    label('Area', 'Auth')
-    label('Severity', 'High')
-    label('Browser')
+    label('Area', 'Auth');
+    label('Severity', 'High');
+    label('Browser');
     await page.login();
   });
 });
@@ -157,10 +157,10 @@ import { linkTest } from '@testomatio/reporter';
 test('my test', async () => {
   // Link single test ID
   linkTest('f2916e65');
-  
+
   // Link multiple test IDs
   linkTest('@T888ef960', '@Tf2916e65');
-  
+
   await page.login();
   assert(something);
 });
@@ -176,10 +176,10 @@ import { linkJira } from '@testomatio/reporter';
 test('my test', async () => {
   // Link single JIRA issue
   linkJira('PROJ-123');
-  
+
   // Link multiple JIRA issues
   linkJira('PROJ-456', 'PROJ-789');
-  
+
   await page.login();
   assert(something);
 });
