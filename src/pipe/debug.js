@@ -93,8 +93,7 @@ export class DebugPipe {
       const logData = { action: 'addTest', testId: data };
       if (this.store.runId) logData.runId = this.store.runId;
       this.logToFile(logData);
-    }
-    else this.batch.tests.push(data);
+    } else this.batch.tests.push(data);
 
     if (!this.batch.intervalFunction) await this.batchUpload();
   }

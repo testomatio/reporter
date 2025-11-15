@@ -254,7 +254,7 @@ function generateTmpFilepath(filename = '') {
  */
 function extractTags(test) {
   const tagsSet = new Set();
-  
+
   // Extract tags from test title (@tag format)
   const titleTagsMatch = test.title.match(/@\w+/g);
   if (titleTagsMatch) {
@@ -262,7 +262,7 @@ function extractTags(test) {
       tagsSet.add(tag.replace('@', '').toLowerCase());
     });
   }
-  
+
   // Extract tags from test.tags (Playwright built-in tags)
   if (test.tags && Array.isArray(test.tags)) {
     test.tags.forEach(tag => {

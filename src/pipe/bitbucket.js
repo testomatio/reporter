@@ -44,8 +44,8 @@ export class BitbucketPipe {
       baseURL: 'https://api.bitbucket.org/2.0',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.token}`
-      }
+        Authorization: `Bearer ${this.token}`,
+      },
     });
 
     debug('Bitbucket Pipe: Enabled');
@@ -186,7 +186,7 @@ export class BitbucketPipe {
       const addCommentResponse = await this.client.request({
         method: 'POST',
         url: commentsRequestURL,
-        data: { content: { raw: body } }
+        data: { content: { raw: body } },
       });
 
       const commentID = addCommentResponse.data.id;
@@ -221,7 +221,7 @@ async function deletePreviousReport(client, commentsRequestURL, hiddenCommentDat
   try {
     const response = await client.request({
       method: 'GET',
-      url: commentsRequestURL
+      url: commentsRequestURL,
     });
     comments = response.data.values;
   } catch (e) {
@@ -238,7 +238,7 @@ async function deletePreviousReport(client, commentsRequestURL, hiddenCommentDat
         const deleteCommentURL = `${commentsRequestURL}/${comment.id}`;
         await client.request({
           method: 'DELETE',
-          url: deleteCommentURL
+          url: deleteCommentURL,
         });
       } catch (e) {
         console.warn(`Can't delete previously added comment with testomat.io report. Ignored.`);

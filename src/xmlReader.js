@@ -274,9 +274,14 @@ class XmlReader {
   _parseTRXTestDefinition(td) {
     const title = td.name.replace(/\(.*?\)/, '').trim();
     const exampleMatch = td.name.match(/\((.*?)\)/);
-    const example = exampleMatch ? {
-      ...exampleMatch[1].split(',').map(p => p.trim()).filter(p => p !== '')
-    } : null;
+    const example = exampleMatch
+      ? {
+          ...exampleMatch[1]
+            .split(',')
+            .map(p => p.trim())
+            .filter(p => p !== ''),
+        }
+      : null;
 
     const suite = td.TestMethod.className.split(', ')[0].split('.');
     const suite_title = suite.pop();
@@ -600,7 +605,12 @@ function reduceTestCases(prev, item) {
 
       const exampleMatches = testCaseItem.name?.match(/\S\((.*?)\)/);
       if (exampleMatches) {
-        example = { ...exampleMatches[1].split(',').map(v => v.trim().replace(/[^\w\s-]/g, '')).filter(v => v !== '') };
+        example = {
+          ...exampleMatches[1]
+            .split(',')
+            .map(v => v.trim().replace(/[^\w\s-]/g, ''))
+            .filter(v => v !== ''),
+        };
         title = title.replace(/\(.*?\)/, '').trim();
       }
 

@@ -393,13 +393,15 @@ export class NUnitXmlParser {
     }
 
     // Clean up parameters - remove quotes if they wrap the entire parameter and filter empty ones
-    return parameters.map(param => {
-      param = param.trim();
-      if ((param.startsWith('"') && param.endsWith('"')) || (param.startsWith("'") && param.endsWith("'"))) {
-        return param.slice(1, -1);
-      }
-      return param;
-    }).filter(p => !!p);
+    return parameters
+      .map(param => {
+        param = param.trim();
+        if ((param.startsWith('"') && param.endsWith('"')) || (param.startsWith("'") && param.endsWith("'"))) {
+          return param.slice(1, -1);
+        }
+        return param;
+      })
+      .filter(p => !!p);
   }
 
   /**

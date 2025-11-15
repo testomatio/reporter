@@ -62,9 +62,8 @@ function setLabel(key, value = null) {
   if (Array.isArray(value)) {
     return value.forEach(label => setLabel(key, label));
   }
-  const labelObject = value !== null && value !== undefined && value !== ''
-    ? { label: `${key}:${value}` }
-    : { label: key };
+  const labelObject =
+    value !== null && value !== undefined && value !== '' ? { label: `${key}:${value}` } : { label: key };
   services.links.put([labelObject]);
 }
 

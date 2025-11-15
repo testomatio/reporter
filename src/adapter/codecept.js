@@ -17,12 +17,15 @@ if (!global.codeceptjs) {
 // @ts-ignore
 const { event, recorder, codecept, output } = global.codeceptjs;
 
-const [, MAJOR_VERSION, MINOR_VERSION] = codecept.version().match(/(\d+)\.(\d+)/).map(Number);
+const [, MAJOR_VERSION, MINOR_VERSION] = codecept
+  .version()
+  .match(/(\d+)\.(\d+)/)
+  .map(Number);
 
 // Constants for hook execution order
 const HOOK_EXECUTION_ORDER = {
   PRE_TEST: ['BeforeSuiteHook', 'BeforeHook'],
-  POST_TEST: ['AfterHook', 'AfterSuiteHook']
+  POST_TEST: ['AfterHook', 'AfterSuiteHook'],
 };
 
 // codeceptjs workers are self-contained
@@ -35,7 +38,9 @@ if (MAJOR_VERSION < 3) {
 }
 
 if (MAJOR_VERSION === 3 && MINOR_VERSION < 7) {
-  console.log('🔴 CodeceptJS 3.7+ is supported, please upgrade CodeceptJS or use 1.6 version of `@testomatio/reporter`');
+  console.log(
+    '🔴 CodeceptJS 3.7+ is supported, please upgrade CodeceptJS or use 1.6 version of `@testomatio/reporter`',
+  );
 }
 
 function CodeceptReporter(config) {
@@ -57,18 +62,18 @@ function CodeceptReporter(config) {
     say: output.say,
   };
 
-  output.debug = function(msg) {
+  output.debug = function (msg) {
     originalOutput.debug(msg);
     dataStorage.putData('log', repeat(this?.stepShift || 0) + pc.cyan(msg.toString()));
   };
 
-  output.say = function(message, color = 'cyan') {
+  output.say = function (message, color = 'cyan') {
     originalOutput.say(message, color);
     const sayMsg = repeat(this?.stepShift || 0) + `  ${pc.bold(pc[color](message))}`;
     dataStorage.putData('log', sayMsg);
   };
 
-  output.log = function(msg) {
+  output.log = function (msg) {
     originalOutput.log(msg);
     dataStorage.putData('log', repeat(this?.stepShift || 0) + pc.gray(msg));
   };
@@ -108,7 +113,7 @@ function CodeceptReporter(config) {
   });
 
   // Hook event listeners
-  event.dispatcher.on(event.hook.started, (hook) => {
+  event.dispatcher.on(event.hook.started, hook => {
     output.stepShift = 2;
     currentHook = hook.name;
     let title = hook.hookName;
@@ -125,7 +130,6 @@ function CodeceptReporter(config) {
     output.stepShift = 2;
     services.setContext(null);
   });
-
 
   // mark as failed all tests inside the failed hook
   event.dispatcher.on(event.hook.failed, hook => {
@@ -148,7 +152,6 @@ function CodeceptReporter(config) {
     }
   });
 
-
   event.dispatcher.on(event.suite.before, suite => {
     dataStorage.setContext(suite.fullTitle());
   });
@@ -167,7 +170,7 @@ function CodeceptReporter(config) {
     testTimeMap[test.uid] = Date.now();
   });
 
-  event.dispatcher.on(event.all.result, async (result) => {
+  event.dispatcher.on(event.all.result, async result => {
     debug('waiting for all tests to be reported');
     // all tests were reported and we can upload videos
     await Promise.all(reportTestPromises);
@@ -327,7 +330,7 @@ function captureHookStep(step, currentHook, hookSteps) {
     status: step.status,
     startTime,
     endTime,
-    helperMethod: step.helperMethod
+    helperMethod: step.helperMethod,
   });
   hookSteps.set(currentHook, hookStepsArray);
 }
@@ -422,13 +425,12 @@ function processTestSteps(steps, hierarchy) {
   }
 }
 
-
 function createSectionStep(metaStep) {
   return {
     category: 'user',
     title: metaStep.toString(), // Use built-in toString method
     duration: metaStep.duration || 0, // Use built-in duration
-    steps: []
+    steps: [],
   };
 }
 
@@ -439,7 +441,7 @@ function createHookSection(hookName, steps) {
     category: 'hook',
     title: formatHookName(hookName),
     duration: 0,
-    steps: []
+    steps: [],
   };
 
   for (const step of steps) {
@@ -457,7 +459,6 @@ function formatHookName(hookName) {
   return hookName.replace(/Hook$/, '');
 }
 
-
 // Format CodeceptJS step using its built-in methods
 function formatCodeceptStep(step) {
   if (!step) return null;
@@ -469,14 +470,14 @@ function formatCodeceptStep(step) {
   const formattedStep = {
     category,
     title,
-    duration
+    duration,
   };
 
   // Add error if step failed
   if (step.status === 'failed' && step.err) {
     formattedStep.error = {
       message: step.err.message || 'Step failed',
-      stack: step.err.stack || ''
+      stack: step.err.stack || '',
     };
   }
 
@@ -500,10 +501,9 @@ function formatHookStep(step) {
   return {
     category: 'hook',
     title,
-    duration: step.duration || 0
+    duration: step.duration || 0,
   };
 }
-
 
 export { CodeceptReporter };
 export default CodeceptReporter;
