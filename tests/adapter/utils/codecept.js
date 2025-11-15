@@ -40,8 +40,8 @@ export class CodeceptTestRunner {
           ...process.env,
           TESTOMATIO_DEBUG: '1',
           TESTOMATIO_DISABLE_BATCH_UPLOAD: '1',
-          ...extraEnv
-        }
+          ...extraEnv,
+        },
       });
       stdout = result.stdout;
       stderr = result.stderr;
@@ -50,22 +50,27 @@ export class CodeceptTestRunner {
       stderr = error.stderr || '';
     }
     await new Promise(resolve => setTimeout(resolve, 1000));
-    
+
     // Find the most recent debug file instead of relying on symlink
-    const tmpFiles = fs.readdirSync(os.tmpdir())
+    const tmpFiles = fs
+      .readdirSync(os.tmpdir())
       .filter(f => f.startsWith('testomatio.debug.') && f.endsWith('.json') && !f.includes('latest'))
       .map(f => ({
         name: f,
         path: path.join(os.tmpdir(), f),
-        mtime: fs.statSync(path.join(os.tmpdir(), f)).mtime.getTime()
+        mtime: fs.statSync(path.join(os.tmpdir(), f)).mtime.getTime(),
       }))
       .sort((a, b) => b.mtime - a.mtime);
 
     if (tmpFiles.length === 0) throw new Error('Debug file not found');
-    
+
     const debugFilePath = tmpFiles[0].path;
     const debugContent = fs.readFileSync(debugFilePath, 'utf-8');
-    const debugData = debugContent.trim().split('\n').filter(line => line.trim()).map(line => JSON.parse(line));
+    const debugData = debugContent
+      .trim()
+      .split('\n')
+      .filter(line => line.trim())
+      .map(line => JSON.parse(line));
     const testEntries = debugData.filter(entry => entry.action === 'addTest');
     return { stdout, stderr, debugData, testEntries };
   }
@@ -86,8 +91,8 @@ export class CodeceptTestRunner {
           ...process.env,
           TESTOMATIO_DEBUG: '1',
           TESTOMATIO_DISABLE_BATCH_UPLOAD: '1',
-          ...extraEnv
-        }
+          ...extraEnv,
+        },
       });
       stdout = result.stdout;
       stderr = result.stderr;
@@ -96,7 +101,8 @@ export class CodeceptTestRunner {
       stderr = error.stderr || '';
     }
     await new Promise(resolve => setTimeout(resolve, 1000));
-    const debugFiles = fs.readdirSync(os.tmpdir())
+    const debugFiles = fs
+      .readdirSync(os.tmpdir())
       .filter(f => f.startsWith('testomatio.debug.') && f.endsWith('.json'))
       .map(f => path.join(os.tmpdir(), f))
       .filter(f => fs.existsSync(f));
@@ -107,7 +113,11 @@ export class CodeceptTestRunner {
     for (const debugFile of debugFiles) {
       try {
         const debugContent = fs.readFileSync(debugFile, 'utf-8');
-        const fileData = debugContent.trim().split('\n').filter(line => line.trim()).map(line => JSON.parse(line));
+        const fileData = debugContent
+          .trim()
+          .split('\n')
+          .filter(line => line.trim())
+          .map(line => JSON.parse(line));
         debugData.push(...fileData);
       } catch (e) {}
     }

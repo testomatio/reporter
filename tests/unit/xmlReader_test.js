@@ -475,16 +475,15 @@ describe('XML Reader', () => {
     expect(test.baseMethodName).to.eql('VerifyChangesInServiceOrderActionLog');
     expect(test.status).to.eql('passed');
     expect(test.test_id).to.eql('dd2bac58');
-    expect(test.tags.length).to.eql(2)
-    expect(test.tags).to.include('Billing')
-    expect(test.tags).to.include('Action')
-    expect(test.stack).to.exist
-    expect(test.stack.length).to.above(0)
+    expect(test.tags.length).to.eql(2);
+    expect(test.tags).to.include('Billing');
+    expect(test.tags).to.include('Action');
+    expect(test.stack).to.exist;
+    expect(test.stack.length).to.above(0);
 
-    const stackFiles = fetchFilesFromStackTrace(test.stack, false)
-    expect(stackFiles).to.exist
-    expect(stackFiles).to.include('/folder/new.txt')
-
+    const stackFiles = fetchFilesFromStackTrace(test.stack, false);
+    expect(stackFiles).to.exist;
+    expect(stackFiles).to.include('/folder/new.txt');
   });
 
   describe('#request', () => {

@@ -8,22 +8,18 @@ describe('CodeceptJS BeforeSuite Failure Tests', function () {
     const { debugData } = await runTests('beforesuite_failure_test.js');
 
     // Find all test entries
-    const testEntries = debugData.filter(entry => 
-      entry.action === 'addTest' && 
-      entry.testId && 
-      entry.testId.title
-    );
-    
+    const testEntries = debugData.filter(entry => entry.action === 'addTest' && entry.testId && entry.testId.title);
+
     // Should have 3 tests
     expect(testEntries).to.have.lengthOf(3);
-    
+
     const testTitles = testEntries.map(entry => entry.testId.title);
     expect(testTitles).to.include.members([
       'test teams can be created',
-      'test teams can be updated', 
-      'test teams can be deleted'
+      'test teams can be updated',
+      'test teams can be deleted',
     ]);
-    
+
     // All tests should have failed status
     for (const entry of testEntries) {
       expect(entry.testId.status).to.equal('failed');
@@ -34,14 +30,12 @@ describe('CodeceptJS BeforeSuite Failure Tests', function () {
     const { debugData } = await runTests('beforesuite_failure_test.js');
 
     // Find any failed test (they should all have the BeforeSuite error)
-    const failedTest = debugData.find(entry => 
-      entry.action === 'addTest' && 
-      entry.testId && 
-      entry.testId.status === 'failed'
+    const failedTest = debugData.find(
+      entry => entry.action === 'addTest' && entry.testId && entry.testId.status === 'failed',
     );
-    
+
     expect(failedTest).to.exist;
-    
+
     // Should have error message from BeforeSuite
     expect(failedTest.testId.message).to.include('Fails in before suite');
   });

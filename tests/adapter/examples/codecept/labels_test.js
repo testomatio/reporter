@@ -6,7 +6,7 @@ Feature('Label Function Tests @S12345680');
 Scenario('Test with single label without value @T12345010', () => {
   // Add single label without value
   testomat.label('smoke');
-  
+
   const result = 1 + 1;
   console.log('Test executed with single label');
 });
@@ -14,7 +14,7 @@ Scenario('Test with single label without value @T12345010', () => {
 Scenario('Test with single label with value @T12345011', () => {
   // Add single label with value
   testomat.label('severity', 'high');
-  
+
   const result = 2 * 2;
   console.log('Test executed with single label and value');
 });
@@ -24,7 +24,7 @@ Scenario('Test with multiple label calls @T12345012', () => {
   testomat.label('smoke');
   testomat.label('priority', 'critical');
   testomat.label('team', 'qa');
-  
+
   const result = 3 + 3;
   console.log('Test executed with multiple label calls');
 });
@@ -35,7 +35,7 @@ Scenario('Test with mixed label types @T12345013', () => {
   testomat.label('severity', 'medium');
   testomat.label('feature', 'user_account');
   testomat.label('environment', 'staging');
-  
+
   const result = 4 + 4;
   console.log('Test executed with mixed label types');
 });
@@ -45,7 +45,7 @@ Scenario('Test with simple labels @T12345014', () => {
   testomat.label('integration');
   testomat.label('functional');
   testomat.label('ui');
-  
+
   const result = 5 + 5;
   console.log('Test executed with simple labels');
 });

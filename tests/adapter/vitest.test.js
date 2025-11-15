@@ -76,7 +76,10 @@ describe('Vitest Adapter Tests', function () {
       }))
       .sort((a, b) => b.mtime - a.mtime);
 
-    console.log('Found debug files:', tmpFiles.map(f => f.name));
+    console.log(
+      'Found debug files:',
+      tmpFiles.map(f => f.name),
+    );
     expect(tmpFiles.length).to.be.greaterThan(0, 'No debug files found');
 
     // Use the most recent debug file
@@ -148,9 +151,7 @@ describe('Vitest Adapter Tests', function () {
       const { testEntries } = await runVitestTest('tests/advanced.spec.js');
 
       // Find skipped test
-      const skippedTest = testEntries.find(
-        entry => entry.testId.title === 'skipped test should not run'
-      );
+      const skippedTest = testEntries.find(entry => entry.testId.title === 'skipped test should not run');
 
       if (skippedTest) {
         expect(skippedTest.testId.status).to.equal('skipped');
@@ -334,9 +335,7 @@ describe('Vitest Adapter Tests', function () {
 
       // Should have tests from both simple.spec.js and advanced.spec.js
       const simpleTests = testEntries.filter(entry => entry.testId.file.includes('simple.spec.js'));
-      const advancedTests = testEntries.filter(entry =>
-        entry.testId.file.includes('advanced.spec.js')
-      );
+      const advancedTests = testEntries.filter(entry => entry.testId.file.includes('advanced.spec.js'));
 
       expect(simpleTests.length).to.be.greaterThan(0);
       expect(advancedTests.length).to.be.greaterThan(0);

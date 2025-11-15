@@ -84,7 +84,7 @@ describe('Testomat reporter functions', () => {
     const filePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'links', `links_${contextHash}`);
     expect(fs.existsSync(filePath)).to.equal(true);
     const fileContent = fs.readFileSync(filePath, 'utf8');
-    expect(fileContent).to.equal(JSON.stringify([{label: 'smoke'}]));
+    expect(fileContent).to.equal(JSON.stringify([{ label: 'smoke' }]));
   });
 
   it('set multiple labels using testomat functions @T00000023', () => {
@@ -92,7 +92,7 @@ describe('Testomat reporter functions', () => {
     testomat.label('smoke');
     testomat.label('feature', 'login');
     const retrievedLinks = linkStorage.get('@T00000023');
-    expect(retrievedLinks).to.deep.equal([{label: 'smoke'}, {label: 'feature:login'}]);
+    expect(retrievedLinks).to.deep.equal([{ label: 'smoke' }, { label: 'feature:login' }]);
   });
 
   it('set single test link using testomat.linkTest function @T00000024', () => {
@@ -102,18 +102,14 @@ describe('Testomat reporter functions', () => {
     const filePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'links', `links_${contextHash}`);
     expect(fs.existsSync(filePath)).to.equal(true);
     const fileContent = fs.readFileSync(filePath, 'utf8');
-    expect(fileContent).to.equal(JSON.stringify([{test: 'TEST-123'}]));
+    expect(fileContent).to.equal(JSON.stringify([{ test: 'TEST-123' }]));
   });
 
   it('set multiple test links using testomat.linkTest function @T00000025', () => {
     dataStorage.setContext('@T00000025');
     testomat.linkTest('TEST-123', 'TEST-456', 'TEST-789');
     const retrievedLinks = linkStorage.get('@T00000025');
-    expect(retrievedLinks).to.deep.equal([
-      {test: 'TEST-123'},
-      {test: 'TEST-456'},
-      {test: 'TEST-789'}
-    ]);
+    expect(retrievedLinks).to.deep.equal([{ test: 'TEST-123' }, { test: 'TEST-456' }, { test: 'TEST-789' }]);
   });
 
   it('mix labels and test links using testomat functions @T00000026', () => {
@@ -124,10 +120,10 @@ describe('Testomat reporter functions', () => {
     testomat.linkTest('TEST-456');
     const retrievedLinks = linkStorage.get('@T00000026');
     expect(retrievedLinks).to.deep.equal([
-      {label: 'smoke'},
-      {test: 'TEST-123'},
-      {label: 'priority:high'},
-      {test: 'TEST-456'}
+      { label: 'smoke' },
+      { test: 'TEST-123' },
+      { label: 'priority:high' },
+      { test: 'TEST-456' },
     ]);
   });
 
@@ -138,9 +134,6 @@ describe('Testomat reporter functions', () => {
     testomat.label('smoke');
     testomat.label('smoke'); // duplicate
     const retrievedLinks = linkStorage.get('@T00000027');
-    expect(retrievedLinks).to.deep.equal([
-      {test: 'TEST-123'},
-      {label: 'smoke'}
-    ]);
+    expect(retrievedLinks).to.deep.equal([{ test: 'TEST-123' }, { label: 'smoke' }]);
   });
 });

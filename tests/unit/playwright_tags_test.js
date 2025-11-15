@@ -8,7 +8,7 @@ describe('Playwright Tags Extraction', () => {
       const testMock = {
         title: 'test case @ui @smoke',
         tags: null,
-        parent: null
+        parent: null,
       };
 
       const tags = extractTags(testMock);
@@ -21,7 +21,7 @@ describe('Playwright Tags Extraction', () => {
       const testMock = {
         title: 'test case @REGRESSION @Smoke',
         tags: null,
-        parent: null
+        parent: null,
       };
 
       const tags = extractTags(testMock);
@@ -34,7 +34,7 @@ describe('Playwright Tags Extraction', () => {
       const testMock = {
         title: 'test case',
         tags: ['critical', 'api'],
-        parent: null
+        parent: null,
       };
 
       const tags = extractTags(testMock);
@@ -47,7 +47,7 @@ describe('Playwright Tags Extraction', () => {
       const testMock = {
         title: 'test case',
         tags: ['@critical', '@api'],
-        parent: null
+        parent: null,
       };
 
       const tags = extractTags(testMock);
@@ -60,7 +60,7 @@ describe('Playwright Tags Extraction', () => {
       const testMock = {
         title: 'test case @ui',
         tags: ['critical', 'api'],
-        parent: null
+        parent: null,
       };
 
       const tags = extractTags(testMock);
@@ -74,7 +74,7 @@ describe('Playwright Tags Extraction', () => {
       const testMock = {
         title: 'test case @ui @critical',
         tags: ['critical', 'ui', 'api'],
-        parent: null
+        parent: null,
       };
 
       const tags = extractTags(testMock);
@@ -87,13 +87,13 @@ describe('Playwright Tags Extraction', () => {
     it('should extract tags from test title and test tags only', () => {
       const parentMock = {
         tags: ['suite-tag', 'integration'],
-        parent: null
+        parent: null,
       };
 
       const testMock = {
         title: 'test case @ui',
         tags: ['critical'],
-        parent: parentMock
+        parent: parentMock,
       };
 
       const tags = extractTags(testMock);
@@ -105,18 +105,18 @@ describe('Playwright Tags Extraction', () => {
     it('should extract tags without inheritance from parent levels', () => {
       const grandParentMock = {
         tags: ['root-tag'],
-        parent: null
+        parent: null,
       };
 
       const parentMock = {
         tags: ['suite-tag'],
-        parent: grandParentMock
+        parent: grandParentMock,
       };
 
       const testMock = {
         title: 'test case @ui',
         tags: ['critical'],
-        parent: parentMock
+        parent: parentMock,
       };
 
       const tags = extractTags(testMock);
@@ -129,7 +129,7 @@ describe('Playwright Tags Extraction', () => {
       const testMock = {
         title: 'test case without tags',
         tags: null,
-        parent: null
+        parent: null,
       };
 
       const tags = extractTags(testMock);
@@ -141,7 +141,7 @@ describe('Playwright Tags Extraction', () => {
       const testMock = {
         title: 'test case @ui',
         tags: ['critical'],
-        parent: null
+        parent: null,
       };
 
       const tags = extractTags(testMock);
@@ -153,13 +153,13 @@ describe('Playwright Tags Extraction', () => {
     it('should handle parent with no tags', () => {
       const parentMock = {
         tags: null,
-        parent: null
+        parent: null,
       };
 
       const testMock = {
         title: 'test case @ui',
         tags: ['critical'],
-        parent: parentMock
+        parent: parentMock,
       };
 
       const tags = extractTags(testMock);
@@ -172,7 +172,7 @@ describe('Playwright Tags Extraction', () => {
       const testMock = {
         title: 'test case',
         tags: [123, true, 'string-tag'],
-        parent: null
+        parent: null,
       };
 
       const tags = extractTags(testMock);
@@ -185,13 +185,13 @@ describe('Playwright Tags Extraction', () => {
     it('should normalize mixed case tags from test sources only', () => {
       const parentMock = {
         tags: ['SUITE-TAG'],
-        parent: null
+        parent: null,
       };
 
       const testMock = {
         title: 'test case @UI @SMOKE',
         tags: ['Critical', 'API'],
-        parent: parentMock
+        parent: parentMock,
       };
 
       const tags = extractTags(testMock);
@@ -207,13 +207,13 @@ describe('Playwright Tags Extraction', () => {
       const suiteMock = {
         title: 'critical suite',
         tags: ['critical'],
-        parent: null
+        parent: null,
       };
 
       const testMock = {
         title: 'nested @smoke',
         tags: null,
-        parent: suiteMock
+        parent: suiteMock,
       };
 
       const tags = extractTags(testMock);
@@ -226,7 +226,7 @@ describe('Playwright Tags Extraction', () => {
       const testMock = {
         title: 'case @ui',
         tags: ['regression'],
-        parent: null
+        parent: null,
       };
 
       const tags = extractTags(testMock);

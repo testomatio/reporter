@@ -8,10 +8,10 @@ const dirname = path.dirname(fileURLToPath(import.meta.url));
 describe('All NUnit XML Files Tests', () => {
   describe('nunit_data_provider_fix.xml', () => {
     it('should parse NUnit XML with ParameterizedMethod test suites correctly', () => {
-      const reader = new XmlReader({ 
-        lang: 'c#'
+      const reader = new XmlReader({
+        lang: 'c#',
       });
-      
+
       const jsonData = reader.parse(path.join(dirname, 'data/nunit_data_provider_fix.xml'));
 
       expect(jsonData.status).to.equal('passed');
@@ -57,10 +57,10 @@ describe('All NUnit XML Files Tests', () => {
 
   describe('nunit_enhanced_test.xml', () => {
     it('should parse complex NUnit XML with multiple test suites and parameterized tests', () => {
-      const reader = new XmlReader({ 
-        lang: 'c#'
+      const reader = new XmlReader({
+        lang: 'c#',
       });
-      
+
       const jsonData = reader.parse(path.join(dirname, 'data/nunit_enhanced_test.xml'));
 
       expect(jsonData.status).to.equal('failed');
@@ -100,10 +100,10 @@ describe('All NUnit XML Files Tests', () => {
 
   describe('nunit_parameterized.xml', () => {
     it('should parse parameterized NUnit XML correctly', () => {
-      const reader = new XmlReader({ 
-        lang: 'c#'
+      const reader = new XmlReader({
+        lang: 'c#',
       });
-      
+
       const jsonData = reader.parse(path.join(dirname, 'data/nunit_parameterized.xml'));
 
       expect(jsonData.status).to.equal('failed');
@@ -113,16 +113,16 @@ describe('All NUnit XML Files Tests', () => {
       // Verify parameterized test variations
       const test1 = jsonData.tests.find(t => t.title === 'PostCashTransactionOnCashierPageNew(True)');
       const test2 = jsonData.tests.find(t => t.title === 'PostCashTransactionOnCashierPageNew(False)');
-      
+
       expect(test1).to.exist;
       expect(test2).to.exist;
-      
+
       expect(test1.status).to.equal('passed');
       expect(test2.status).to.equal('failed');
-      
+
       expect(test1.parameters).to.deep.equal(['True']);
       expect(test2.parameters).to.deep.equal(['False']);
-      
+
       expect(test1.baseMethodName).to.equal('PostCashTransactionOnCashierPageNew');
       expect(test2.baseMethodName).to.equal('PostCashTransactionOnCashierPageNew');
     });
@@ -130,10 +130,10 @@ describe('All NUnit XML Files Tests', () => {
 
   describe('nunit.xml (TRX format)', () => {
     it('should parse NUnit TRX XML correctly', () => {
-      const reader = new XmlReader({ 
-        lang: 'c#'
+      const reader = new XmlReader({
+        lang: 'c#',
       });
-      
+
       const jsonData = reader.parse(path.join(dirname, 'data/nunit.xml'));
 
       expect(jsonData.status).to.equal('passed');
@@ -151,15 +151,15 @@ describe('All NUnit XML Files Tests', () => {
 
   describe('Backward compatibility with all formats', () => {
     it('should handle all NUnit XML formats without errors', () => {
-      const reader = new XmlReader({ 
-        lang: 'c#'
+      const reader = new XmlReader({
+        lang: 'c#',
       });
 
       const testFiles = [
         'nunit_data_provider_fix.xml',
-        'nunit_enhanced_test.xml', 
+        'nunit_enhanced_test.xml',
         'nunit_parameterized.xml',
-        'nunit.xml'
+        'nunit.xml',
       ];
 
       testFiles.forEach(fileName => {
@@ -175,8 +175,8 @@ describe('All NUnit XML Files Tests', () => {
 
   describe('Enhanced parser automatic detection', () => {
     it('should automatically use enhanced parser for NUnit XML files', () => {
-      const reader = new XmlReader({ 
-        lang: 'c#'
+      const reader = new XmlReader({
+        lang: 'c#',
       });
 
       // Test with nunit_data_provider_fix.xml which has ParameterizedMethod suites
@@ -184,12 +184,12 @@ describe('All NUnit XML Files Tests', () => {
 
       // Enhanced parser should handle ParameterizedMethod suites correctly
       expect(jsonData.tests_count).to.equal(6);
-      
+
       // Should not create tests from ParameterizedMethod suite names
       const testNames = jsonData.tests.map(t => t.title);
       expect(testNames).not.to.include('TestBooleanValue'); // Suite name
       expect(testNames).not.to.include('TestAddition'); // Suite name
-      
+
       // Should create tests from actual test-case elements
       expect(testNames).to.include('TestBooleanValue(True)');
       expect(testNames).to.include('TestAddition(1,2,3)');
