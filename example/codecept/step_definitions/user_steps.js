@@ -30,7 +30,7 @@ Given('I am on the user management page', () => {
 });
 
 // User existence steps
-Given('a user {string} exists in the system', (username) => {
+Given('a user {string} exists in the system', username => {
   I.say(`Verifying user ${username} exists in system`);
   I.expectTrue(username.length > 0);
   // Simulate user existence check
@@ -38,7 +38,7 @@ Given('a user {string} exists in the system', (username) => {
   global.existingUsers.push(username);
 });
 
-Given('a user {string} already exists', (email) => {
+Given('a user {string} already exists', email => {
   I.say(`Setting up existing user with email ${email}`);
   global.existingEmails = global.existingEmails || [];
   global.existingEmails.push(email);
@@ -46,7 +46,7 @@ Given('a user {string} already exists', (email) => {
 });
 
 // Action steps
-When('I click on {string} button', (buttonName) => {
+When('I click on {string} button', buttonName => {
   console.log(`🔴 Clicking on button: ${buttonName}`);
   I.say(`Clicking on ${buttonName} button`);
   I.expectTrue(buttonName.length > 0);
@@ -58,7 +58,7 @@ When('I fill in the user form with valid data', () => {
   const userData = {
     name: 'Test User',
     email: 'test@example.com',
-    role: 'editor'
+    role: 'editor',
   };
   I.expectEqual(userData.name, 'Test User');
   I.expectContain(userData.email, '@');
@@ -77,12 +77,12 @@ When('I submit the form with empty fields', () => {
   I.expectEqual(emptyForm.email, '');
 });
 
-When('I click on edit for user {string}', (username) => {
+When('I click on edit for user {string}', username => {
   I.say(`Clicking edit button for user ${username}`);
   I.expectTrue(global.existingUsers.includes(username));
 });
 
-When('I update the user email to {string}', (newEmail) => {
+When('I update the user email to {string}', newEmail => {
   I.say(`Updating user email to ${newEmail}`);
   I.expectContain(newEmail, '@');
 });
@@ -92,7 +92,7 @@ When('I save the changes', () => {
   I.expectTrue(true);
 });
 
-When('I click on delete for user {string}', (username) => {
+When('I click on delete for user {string}', username => {
   I.say(`Clicking delete button for user ${username}`);
   I.expectTrue(global.existingUsers.includes(username));
 });
@@ -102,17 +102,17 @@ When('I confirm the deletion', () => {
   I.expectTrue(true);
 });
 
-When('I create a user with role {string}', (role) => {
+When('I create a user with role {string}', role => {
   I.say(`Creating user with role: ${role}`);
   I.expectTrue(['admin', 'editor', 'viewer', 'moderator'].includes(role));
 });
 
-When('I assign permissions {string}', (permissions) => {
+When('I assign permissions {string}', permissions => {
   I.say(`Assigning permissions: ${permissions}`);
   I.expectTrue(permissions.length > 0);
 });
 
-When('I try to create another user with email {string}', (email) => {
+When('I try to create another user with email {string}', email => {
   I.say(`Attempting to create duplicate user with email ${email}`);
   I.expectTrue(global.existingEmails.includes(email));
 });
@@ -175,12 +175,12 @@ Then('I should see a deletion success message', () => {
   I.expectContain('User deleted successfully', 'deleted');
 });
 
-Then('the user should have {string} role', (role) => {
+Then('the user should have {string} role', role => {
   I.say(`Verifying user has role: ${role}`);
   I.expectTrue(['admin', 'editor', 'viewer', 'moderator'].includes(role));
 });
 
-Then('the user should have {string} permissions', (permissions) => {
+Then('the user should have {string} permissions', permissions => {
   I.say(`Verifying user has permissions: ${permissions}`);
   I.expectTrue(permissions.length > 0);
 });

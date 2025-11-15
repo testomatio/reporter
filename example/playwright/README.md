@@ -5,11 +5,13 @@ This example demonstrates how to use the Testomat.io reporter with Playwright te
 ## Setup
 
 1. Install dependencies:
+
 ```bash
 npm install
 ```
 
 2. Install Playwright browsers:
+
 ```bash
 npx playwright install
 ```
@@ -17,21 +19,25 @@ npx playwright install
 ## Running Tests
 
 ### Basic test run:
+
 ```bash
 npm test
 ```
 
 ### Run with Testomat.io reporter (requires API key):
+
 ```bash
 TESTOMATIO=your-api-key npm test
 ```
 
 ### Create tests in Testomat.io:
+
 ```bash
 TESTOMATIO=your-api-key TESTOMATIO_CREATE=1 npm test
 ```
 
 ### Use custom working directory for relative paths:
+
 ```bash
 TESTOMATIO=your-api-key TESTOMATIO_CREATE=1 TESTOMATIO_WORKDIR=/path/to/project npm test
 ```
@@ -39,8 +45,9 @@ TESTOMATIO=your-api-key TESTOMATIO_CREATE=1 TESTOMATIO_WORKDIR=/path/to/project 
 ## Test Files
 
 - **sample.spec.js**: Demonstrates various test annotations and scenarios including:
+
   - Passing test with issue annotation
-  - Failing test with bug annotation  
+  - Failing test with bug annotation
   - Test with multiple custom annotations
   - Skipped test
   - Slow test with built-in annotation

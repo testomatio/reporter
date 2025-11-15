@@ -7,8 +7,8 @@ function createLargeObject() {
     metadata: {
       field1: 'a'.repeat(10000),
       field2: 'b'.repeat(10000),
-      field3: 'c'.repeat(10000)
-    }
+      field3: 'c'.repeat(10000),
+    },
   };
 }
 

@@ -24,22 +24,22 @@ AfterSuite(({ I }) => {
 
 Scenario('Test with both hooks and sections', ({ I }) => {
   console.log('Main test execution with sections');
-  
+
   // Initial setup steps
   I.expectEqual(1, 1);
-  
+
   // Start first section
   Section('Data Preparation');
   I.expectEqual('data', 'data');
   I.expectTrue(!!global);
   Section();
-  
+
   // Second section
   Section('Processing');
   I.expectEqual(2 + 2, 4);
   I.expectContain('processing test', 'test');
   Section();
-  
+
   // Final steps
   I.expectTrue(true);
 });

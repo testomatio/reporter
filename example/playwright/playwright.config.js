@@ -14,9 +14,7 @@ module.exports = defineConfig({
   /* Single worker for predictable execution */
   workers: 1,
   /* Reporter to use - only testomatio reporter */
-  reporter: [
-    ['../../src/adapter/playwright.js']
-  ],
+  reporter: [['../../src/adapter/playwright.js']],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Always run headless */

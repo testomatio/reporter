@@ -4,12 +4,12 @@ exports.config = {
   // Enable BDD (Gherkin) features
   gherkin: {
     features: './features/*.feature',
-    steps: './step_definitions/*.js'
+    steps: './step_definitions/*.js',
   },
   helpers: {
     // Use Expect helper for assertions without browser dependencies
     Expect: {
-       require: '@codeceptjs/expect-helper'
+      require: '@codeceptjs/expect-helper',
     },
   },
   include: {
@@ -35,27 +35,27 @@ exports.config = {
   multiple: {
     basic: {
       grep: '@comprehensive',
-      browsers: ['chrome']
+      browsers: ['chrome'],
     },
     hooks: {
       grep: '@hooks',
-      browsers: ['chrome']
+      browsers: ['chrome'],
     },
     failing: {
       grep: '@failing-hooks',
-      browsers: ['chrome']
+      browsers: ['chrome'],
     },
     edge: {
       grep: '@edge-cases',
-      browsers: ['chrome']
+      browsers: ['chrome'],
     },
     hierarchy: {
       grep: '@parent|@child|@grandchild',
-      browsers: ['chrome']
+      browsers: ['chrome'],
     },
     bdd: {
       grep: '@bdd-feature',
-      browsers: ['chrome']
-    }
-  }
+      browsers: ['chrome'],
+    },
+  },
 };
