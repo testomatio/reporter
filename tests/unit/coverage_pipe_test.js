@@ -260,9 +260,9 @@ end_of_record`;
   });
 
   describe('Coverage Pipe toString', () => {
-    it('should return "Coverage" as string representation', () => {
+    it('should return "CodeCoverage" as string representation', () => {
       coveragePipe = new CoveragePipe({});
-      expect(coveragePipe.toString()).to.equal('Coverage');
+      expect(coveragePipe.toString()).to.equal('CodeCoverage');
     });
   });
 });

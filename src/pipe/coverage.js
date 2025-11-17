@@ -289,7 +289,7 @@ class CoveragePipe {
   }
 
   toString() {
-    return 'Coverage';
+    return 'CodeCoverage';
   }
 }
 
