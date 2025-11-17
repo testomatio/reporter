@@ -4,37 +4,37 @@ Feature('Steps and Sections Demo @steps-sections');
 
 Scenario('Test with multiple sections and steps', ({ I }) => {
   console.log('Starting comprehensive steps test');
-  
+
   I.say('Starting test execution with comment steps');
-  
+
   // Initial setup steps
   I.expectEqual(1, 1);
   I.expectTrue(true);
-  
+
   // Start first section
   Section('User Authentication');
   I.say('Validating user authentication process');
   I.expectEqual('user', 'user');
   I.expectTrue(!!global);
   I.expectContain('authentication process', 'authentication');
-  
+
   // Nested operations within authentication
   I.expectNotEqual('admin', 'user');
   I.expectFalse(false);
   Section(); // Close current section
-  
-  // Start second section  
+
+  // Start second section
   Section('Data Processing');
   I.say('Processing test data with various validations');
   const data = { id: 1, name: 'test', active: true };
   I.expectEqual(data.id, 1);
   I.expectEqual(data.name, 'test');
   I.expectTrue(data.active);
-  
+
   // Simulate data validation steps
   I.expectContain(data.name, 'test');
   I.expectNotContain(data.name, 'invalid');
-  
+
   // Start third section (auto-closes previous)
   Section('Result Verification');
   I.say('Verifying final results and calculations');
@@ -42,11 +42,11 @@ Scenario('Test with multiple sections and steps', ({ I }) => {
   I.expectEqual(result, 2);
   I.expectTrue(result > 0);
   I.expectFalse(result < 0);
-  
+
   // Final validation
   I.expectEqual(typeof result, 'number');
   Section(); // Close final section
-  
+
   // Cleanup steps outside sections
   I.say('Performing final cleanup and validation');
   I.expectTrue(true);
@@ -55,15 +55,15 @@ Scenario('Test with multiple sections and steps', ({ I }) => {
 
 Scenario('Test with failing step in section', ({ I }) => {
   console.log('Starting test with intentional failure');
-  
+
   I.say('Testing error handling within sections');
-  
+
   Section('Successful Operations');
   I.say('These operations should succeed');
   I.expectEqual(1, 1);
   I.expectTrue(true);
   Section();
-  
+
   Section('Operations with Failure');
   I.say('This section contains intentional failure');
   I.expectEqual(2, 2);
@@ -74,9 +74,9 @@ Scenario('Test with failing step in section', ({ I }) => {
 
 Scenario('Test with complex data operations', ({ I }) => {
   console.log('Starting complex data operations test');
-  
+
   I.say('Testing comprehensive data structure operations');
-  
+
   Section('Array Operations');
   I.say('Performing various array validations');
   const arr = [1, 2, 3, 4, 5];
@@ -86,14 +86,14 @@ Scenario('Test with complex data operations', ({ I }) => {
   I.expectEqual(arr[0], 1);
   I.expectEqual(arr[arr.length - 1], 5);
   Section();
-  
+
   Section('Object Operations');
   I.say('Validating object properties and structure');
-  const obj = { 
-    name: 'test object', 
-    count: 42, 
+  const obj = {
+    name: 'test object',
+    count: 42,
     active: true,
-    items: ['a', 'b', 'c']
+    items: ['a', 'b', 'c'],
   };
   I.expectEqual(obj.name, 'test object');
   I.expectEqual(obj.count, 42);
@@ -101,7 +101,7 @@ Scenario('Test with complex data operations', ({ I }) => {
   I.expectEqual(obj.items.length, 3);
   I.expectContain(obj.name, 'test');
   Section();
-  
+
   Section('Mathematical Operations');
   I.say('Checking mathematical calculations and comparisons');
   const x = 10;
@@ -113,7 +113,7 @@ Scenario('Test with complex data operations', ({ I }) => {
   I.expectTrue(x > y);
   I.expectFalse(x < y);
   Section();
-  
+
   console.log('Complex data operations completed');
 });
 
@@ -121,9 +121,9 @@ Scenario('Test truncation of large arguments @truncation', ({ I }) => {
   // Create a large JSON object (> 20K)
   const largeJson = {
     data: 'x'.repeat(10000),
-    items: Array(500).fill({ 
+    items: Array(500).fill({
       value: 'y'.repeat(50),
-      meta: { info: 'z'.repeat(20) }
+      meta: { info: 'z'.repeat(20) },
     }),
     nested: {
       level1: {
@@ -132,18 +132,18 @@ Scenario('Test truncation of large arguments @truncation', ({ I }) => {
           object: {
             a: 'a'.repeat(100),
             b: 'b'.repeat(100),
-            c: 'c'.repeat(100)
-          }
-        }
-      }
-    }
+            c: 'c'.repeat(100),
+          },
+        },
+      },
+    },
   };
-  
+
   // Use large JSON in steps - these should be truncated
   I.say(`Processing large JSON: ${JSON.stringify(largeJson)}`);
   I.expectEqual(typeof largeJson, 'object');
   I.expectTrue(JSON.stringify(largeJson).length > 20000);
-  
+
   // Force an error to generate stack trace with large data
   try {
     I.expectEqual(largeJson, 'small value');

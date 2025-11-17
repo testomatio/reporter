@@ -18,6 +18,7 @@ npm run build
 ### Adapter Configuration
 
 When configuring adapters in test frameworks:
+
 - Use `require('../../lib/adapter/codecept')` for production builds
 - Use `require('../../src/adapter/codecept')` only for development (may have ESM/CommonJS compatibility issues)
 - Always ensure `npm run build` is run first if using lib directory
@@ -36,6 +37,7 @@ TESTOMATIO_DEBUG=1 npx codeceptjs run
 ```
 
 The debug file contains:
+
 - Test execution timeline
 - Formatted step structures sent to reporter
 - Error information
@@ -44,6 +46,7 @@ The debug file contains:
 ### Testing Commands
 
 For CodeceptJS testing:
+
 ```bash
 # Run specific test with debug
 TESTOMATIO_DEBUG=1 npx codeceptjs run test_file.js --grep "@tag"
@@ -68,6 +71,7 @@ The CodeceptJS adapter formats steps to match Playwright adapter structure:
 ```
 
 ### Key Properties in CodeceptJS Steps:
+
 - `step.name` - Helper method name (e.g., 'expectEqual')
 - `step.actor` - Actor name (e.g., 'I')
 - `step.helperMethod` - Full helper method name
@@ -78,6 +82,7 @@ The CodeceptJS adapter formats steps to match Playwright adapter structure:
 ### Test Requirements
 
 When creating CodeceptJS tests:
+
 - Use `@codeceptjs/expect-helper` for assertions
 - Use `I.expectEqual()`, `I.expectTrue()`, etc. instead of browser functions
 - Remove invalid test IDs like `@T001` from test titles
@@ -90,6 +95,7 @@ When creating CodeceptJS tests:
 ### Lint and Type Check
 
 Always run these commands before committing changes:
+
 ```bash
 npm run lint      # If available
 npm run typecheck # If available
@@ -98,8 +104,9 @@ npm run typecheck # If available
 ### Testing Different Scenarios
 
 Ensure comprehensive test coverage:
+
 - Passing tests
-- Failing tests  
+- Failing tests
 - Skipped tests
 - Hook failures (BeforeSuite, AfterSuite, Before, After)
 - Section API usage

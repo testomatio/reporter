@@ -39,7 +39,7 @@ Scenario('Test hook execution order', ({ I, test }) => {
   // Verify that BeforeSuite ran before Before
   I.expectTrue(global.suiteData.initialized);
   I.expectTrue(global.testData.testStarted);
-  
+
   // Verify timing
   const now = Date.now();
   I.expectTrue(global.suiteData.timestamp < now);

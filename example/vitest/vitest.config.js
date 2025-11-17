@@ -3,10 +3,7 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     // Use the testomatio reporter
-    reporters: [
-      'default',
-      ['../../src/adapter/vitest.js', { }]
-    ],
+    reporters: ['default', ['../../src/adapter/vitest.js', {}]],
 
     // Run tests sequentially for predictable results
     pool: 'forks',

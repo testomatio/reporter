@@ -35,10 +35,7 @@ npm run test:ui
 The reporter is configured in `vitest.config.js`:
 
 ```javascript
-reporters: [
-  'default',
-  ['../../src/adapter/vitest.js', { }]
-]
+reporters: ['default', ['../../src/adapter/vitest.js', {}]];
 ```
 
 ## Environment Variables

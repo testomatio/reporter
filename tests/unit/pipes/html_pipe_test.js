@@ -156,37 +156,37 @@ describe('HTML report tests', () => {
 
   it('should contain JavaScript logic for processing different test statuses', () => {
     const htmlContent = fs.readFileSync(filepath, 'utf-8');
-    
+
     // Check that the HTML contains JavaScript functions that handle different statuses
     // Note: The JavaScript may be minified, so we check for the actual logic patterns
     expect(htmlContent).to.include("category === 'passed'");
     expect(htmlContent).to.include("category === 'skipped'");
-    expect(htmlContent).to.include("else {"); // This covers the failed case
-    
+    expect(htmlContent).to.include('else {'); // This covers the failed case
+
     // Check for status-related CSS classes in JavaScript
     expect(htmlContent).to.include("image.classList.add('passed')");
     expect(htmlContent).to.include("image.classList.add('failed')");
     expect(htmlContent).to.include("image.classList.add('skipped')");
-    
+
     // Check for status processing in content
     expect(htmlContent).to.include('category.toUpperCase()');
   });
 
   it('should include Google Charts data with test status distribution', () => {
     const htmlContent = fs.readFileSync(filepath, 'utf-8');
-    
+
     // Check that Google Charts script is included
     expect(htmlContent).to.include('google.charts.load');
     expect(htmlContent).to.include('google.visualization.arrayToDataTable');
-    
+
     // Check for test count variables - the actual values will be substituted by Handlebars
     expect(htmlContent).to.include('passedTests =');
     expect(htmlContent).to.include('failedTests =');
     expect(htmlContent).to.include('skippedTests =');
-    
+
     // Check for chart colors that correspond to status types
     expect(htmlContent).to.include("'colors': ['#A9C7FF', '#75B583', '#FF6363', '#FFC350']");
-    
+
     // Check for chart data structure
     expect(htmlContent).to.include("['Passed', passedTests]");
     expect(htmlContent).to.include("['Failed', failedTests]");
@@ -201,18 +201,18 @@ describe('HTML report tests', () => {
     // Execute the page JavaScript to test data processing
     const scriptElements = document.querySelectorAll('script');
     let testEntriesScript = '';
-    
+
     for (const script of scriptElements) {
       if (script.textContent && script.textContent.includes('testEntries')) {
         testEntriesScript = script.textContent;
         break;
       }
     }
-    
+
     // Check that the script contains the test data structure
     expect(testEntriesScript).to.include('testEntries');
     expect(testEntriesScript).to.include('totalTests');
-    
+
     // Verify that status categories are defined
     expect(testEntriesScript).to.include("'all'");
     expect(testEntriesScript).to.include("'passed'");
@@ -247,7 +247,7 @@ describe('HTML report tests', () => {
     expect(htmlContent).to.match(/passedTests =\s*1/);
     expect(htmlContent).to.match(/failedTests =\s*1/);
     expect(htmlContent).to.match(/skippedTests =\s*1/);
-    
+
     // Based on our test data, we should have:
     // 1 passed test, 1 failed test, 1 skipped test
     expect(expectedPassedCount).to.equal(1);
@@ -283,27 +283,27 @@ describe('HTML report tests', () => {
 
     // Check that filtering JavaScript functions exist
     expect(htmlContent).to.include('showBlockForCategory');
-    expect(htmlContent).to.include('category = input.getAttribute(\'category\')');
+    expect(htmlContent).to.include("category = input.getAttribute('category')");
   });
 
   it('should include proper status styling and visual indicators', () => {
     const htmlContent = fs.readFileSync(filepath, 'utf-8');
-    
+
     // Check for status-specific CSS styling
     expect(htmlContent).to.include('.btn-passed');
     expect(htmlContent).to.include('.btn-failed');
     expect(htmlContent).to.include('.btn-skipped');
-    
+
     // Check for status-specific colors
     expect(htmlContent).to.include('#75B583'); // Passed color (green)
     expect(htmlContent).to.include('#FF6363'); // Failed color (red)
     expect(htmlContent).to.include('#FFC350'); // Skipped color (yellow/orange)
-    
+
     // Check for hover states
     expect(htmlContent).to.include('.btn-passed:hover');
     expect(htmlContent).to.include('.btn-failed:hover');
     expect(htmlContent).to.include('.btn-skipped:hover');
-    
+
     // Check for checked states
     expect(htmlContent).to.include('.passedTest:checked');
     expect(htmlContent).to.include('.failedTest:checked');
@@ -312,22 +312,22 @@ describe('HTML report tests', () => {
 
   it('should verify that all test data from different statuses is properly processed', () => {
     const htmlContent = fs.readFileSync(filepath, 'utf-8');
-    
+
     // Check that test titles from all status types are included
     expect(htmlContent).to.include('New TEST #1 item @T50e82737'); // passed test
     expect(htmlContent).to.include('Create a new todo TEST #2 item @T5b8d1186'); // failed test
     expect(htmlContent).to.include('Skipped test for conditional feature @T5c9d2187'); // skipped test
-    
+
     // Check that suite titles are included
     expect(htmlContent).to.include('Create Tasks @step:01 @story:12 @S2f5c1942');
     expect(htmlContent).to.include('Suite 2 @smoke @story:13 @S2f5c1942');
-    expect(htmlContent).to.include('Feature Tests @feature @S3f6c2943'); 
-    
+    expect(htmlContent).to.include('Feature Tests @feature @S3f6c2943');
+
     // Verify the test data structure includes exactly 1 test per status
     const passedTestsFromData = DATA.tests.filter(test => test.status === 'passed');
     const failedTestsFromData = DATA.tests.filter(test => test.status === 'failed');
     const skippedTestsFromData = DATA.tests.filter(test => test.status === 'skipped');
-    
+
     expect(passedTestsFromData).to.have.length(1);
     expect(failedTestsFromData).to.have.length(1);
     expect(skippedTestsFromData).to.have.length(1);

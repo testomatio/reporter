@@ -49,7 +49,7 @@ class GitLabPipe {
       baseURL: 'https://gitlab.com/api/v4',
       headers: {
         'Content-Type': 'application/json',
-      }
+      },
     });
 
     debug('GitLab Pipe: Enabled');
@@ -176,7 +176,7 @@ class GitLabPipe {
         method: 'POST',
         url: commentsRequestURL,
         params: { access_token: this.token },
-        data: { body }
+        data: { body },
       });
 
       const commentID = addCommentResponse.data.id;
@@ -212,7 +212,7 @@ async function deletePreviousReport(client, commentsRequestURL, hiddenCommentDat
     const response = await client.request({
       method: 'GET',
       url: commentsRequestURL,
-      params: { access_token: token }
+      params: { access_token: token },
     });
     comments = response.data;
   } catch (e) {
@@ -230,7 +230,7 @@ async function deletePreviousReport(client, commentsRequestURL, hiddenCommentDat
         await client.request({
           method: 'DELETE',
           url: deleteCommentURL,
-          params: { access_token: token }
+          params: { access_token: token },
         });
       } catch (e) {
         console.warn(`Can't delete previously added comment with testomat.io report. Ignore.`);

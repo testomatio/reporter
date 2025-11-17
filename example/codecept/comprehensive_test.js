@@ -19,17 +19,19 @@ xScenario('Test that is skipped', ({ I }) => {
 });
 
 // Test with data-driven format
-Data(['{ "input": 2, "expected": 4 }', '{ "input": 3, "expected": 6 }', '{ "input": 5, "expected": 10 }'])
-  .Scenario('Test with multiple data sets', ({ I, current }) => {
+Data(['{ "input": 2, "expected": 4 }', '{ "input": 3, "expected": 6 }', '{ "input": 5, "expected": 10 }']).Scenario(
+  'Test with multiple data sets',
+  ({ I, current }) => {
     const data = JSON.parse(current);
     const result = data.input * 2;
     I.expectEqual(result, data.expected);
-  });
+  },
+);
 
 // Test with multiple steps
 Scenario('Test with multiple steps', ({ I, test }) => {
   console.log('Current test:', test.title);
-  
+
   // Step 1
   const step1 = 1 + 1;
   I.expectEqual(step1, 2);

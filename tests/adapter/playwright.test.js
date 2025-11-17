@@ -50,7 +50,7 @@ describe('Playwright Adapter Tests', function () {
           ...extraEnv,
         },
       });
-      
+
       console.log('Test execution output:', stdout);
       if (stderr) console.log('Test execution stderr:', stderr);
     } catch (error) {
@@ -64,22 +64,26 @@ describe('Playwright Adapter Tests', function () {
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     // Find the most recent debug file created during this test
-    const tmpFiles = fs.readdirSync(os.tmpdir())
+    const tmpFiles = fs
+      .readdirSync(os.tmpdir())
       .filter(f => f.startsWith('testomatio.debug.') && f.endsWith('.json') && !f.includes('latest'))
       .map(f => ({
         name: f,
         path: path.join(os.tmpdir(), f),
-        mtime: fs.statSync(path.join(os.tmpdir(), f)).mtime
+        mtime: fs.statSync(path.join(os.tmpdir(), f)).mtime,
       }))
       .sort((a, b) => b.mtime - a.mtime);
 
-    console.log('Found debug files:', tmpFiles.map(f => f.name));
+    console.log(
+      'Found debug files:',
+      tmpFiles.map(f => f.name),
+    );
     expect(tmpFiles.length).to.be.greaterThan(0, 'No debug files found');
-    
+
     // Use the most recent debug file
     debugFilePath = tmpFiles[0].path;
     console.log('Using debug file:', debugFilePath);
-    
+
     const debugContent = fs.readFileSync(debugFilePath, 'utf-8');
     const debugLines = debugContent
       .trim()
@@ -195,7 +199,7 @@ describe('Playwright Adapter Tests', function () {
     // Helper function to run Playwright tests with tags example
     async function runTagsTest(testFile = 'tags-example.spec.js', extraEnv = {}) {
       const cmd = `npx playwright test ${testFile}`;
-      
+
       try {
         const { stdout, stderr } = await execAsync(cmd, {
           cwd: exampleDir,
@@ -207,7 +211,7 @@ describe('Playwright Adapter Tests', function () {
             ...extraEnv,
           },
         });
-        
+
         console.log('Tags test execution output:', stdout);
         if (stderr) console.log('Tags test execution stderr:', stderr);
       } catch (error) {
@@ -221,23 +225,27 @@ describe('Playwright Adapter Tests', function () {
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       // Find the most recent debug file
-      const tmpFiles = fs.readdirSync(os.tmpdir())
+      const tmpFiles = fs
+        .readdirSync(os.tmpdir())
         .filter(f => f.startsWith('testomatio.debug.') && f.endsWith('.json') && !f.includes('latest'))
         .map(f => ({
           name: f,
           path: path.join(os.tmpdir(), f),
-          mtime: fs.statSync(path.join(os.tmpdir(), f)).mtime
+          mtime: fs.statSync(path.join(os.tmpdir(), f)).mtime,
         }))
         .sort((a, b) => b.mtime - a.mtime);
 
       expect(tmpFiles.length).to.be.greaterThan(0, 'No debug files found for tags test');
-      
+
       const debugFilePath = tmpFiles[0].path;
       const debugContent = fs.readFileSync(debugFilePath, 'utf-8');
-      const debugLines = debugContent.trim().split('\n').filter(line => line.trim());
+      const debugLines = debugContent
+        .trim()
+        .split('\n')
+        .filter(line => line.trim());
       const debugData = debugLines.map(line => JSON.parse(line));
       const testEntries = debugData.filter(entry => entry.action === 'addTest');
-      
+
       return { debugData, testEntries };
     }
 
@@ -261,13 +269,13 @@ test('api test @api @regression', async ({ request }) => {
 
       try {
         const { testEntries } = await runTagsTest('title-tags.spec.js');
-        
+
         // Find tests with expected tags
-        const uiSmokeTest = testEntries.find(entry => 
-          entry.testId && entry.testId.title && entry.testId.title.includes('@ui @smoke')
+        const uiSmokeTest = testEntries.find(
+          entry => entry.testId && entry.testId.title && entry.testId.title.includes('@ui @smoke'),
         );
-        const apiRegressionTest = testEntries.find(entry => 
-          entry.testId && entry.testId.title && entry.testId.title.includes('@api @regression')
+        const apiRegressionTest = testEntries.find(
+          entry => entry.testId && entry.testId.title && entry.testId.title.includes('@api @regression'),
         );
 
         expect(uiSmokeTest).to.exist;
@@ -311,14 +319,10 @@ test('multiple tags test', { tag: ['@smoke', '@critical'] }, async ({ page }) =>
 
       try {
         const { testEntries } = await runTagsTest('options-tags.spec.js');
-        
+
         // Find tests with expected tags
-        const regressionTest = testEntries.find(entry => 
-          entry.testId && entry.testId.title === 'regression test'
-        );
-        const multipleTagsTest = testEntries.find(entry => 
-          entry.testId && entry.testId.title === 'multiple tags test'
-        );
+        const regressionTest = testEntries.find(entry => entry.testId && entry.testId.title === 'regression test');
+        const multipleTagsTest = testEntries.find(entry => entry.testId && entry.testId.title === 'multiple tags test');
 
         expect(regressionTest).to.exist;
         expect(multipleTagsTest).to.exist;
@@ -362,13 +366,11 @@ test.describe('Auth Suite', { tag: '@auth' }, () => {
 
       try {
         const { testEntries } = await runTagsTest('suite-tags.spec.js');
-        
+
         // Find tests in the suite
-        const loginTest = testEntries.find(entry => 
-          entry.testId && entry.testId.title === 'login test'
-        );
-        const logoutTest = testEntries.find(entry => 
-          entry.testId && entry.testId.title && entry.testId.title.includes('logout test @ui')
+        const loginTest = testEntries.find(entry => entry.testId && entry.testId.title === 'login test');
+        const logoutTest = testEntries.find(
+          entry => entry.testId && entry.testId.title && entry.testId.title.includes('logout test @ui'),
         );
 
         expect(loginTest).to.exist;
@@ -409,10 +411,10 @@ test.describe('Mixed Case Suite', { tag: ['@CRITICAL', '@smoke'] }, () => {
 
       try {
         const { testEntries } = await runTagsTest('normalize-tags.spec.js');
-        
+
         // Find the test with mixed tags
-        const mixedTest = testEntries.find(entry => 
-          entry.testId && entry.testId.title && entry.testId.title.includes('duplicate tags')
+        const mixedTest = testEntries.find(
+          entry => entry.testId && entry.testId.title && entry.testId.title.includes('duplicate tags'),
         );
 
         expect(mixedTest).to.exist;
@@ -428,7 +430,7 @@ test.describe('Mixed Case Suite', { tag: ['@CRITICAL', '@smoke'] }, () => {
           expect(mixedTest.testId.tags).to.include('critical');
           expect(mixedTest.testId.tags).to.include('smoke');
           expect(mixedTest.testId.tags).to.include('regression');
-          
+
           // Check for no duplicates
           const uniqueTags = [...new Set(mixedTest.testId.tags)];
           expect(mixedTest.testId.tags).to.have.length(uniqueTags.length);
@@ -463,15 +465,15 @@ test('case @ui', { tag: '@regression' }, async ({ page }) => {
 
       try {
         const { testEntries } = await runTagsTest('task-example.spec.js');
-        
+
         // Find the nested test - should have both 'critical' (from suite) and 'smoke' (from title)
-        const nestedTest = testEntries.find(entry => 
-          entry.testId && entry.testId.title && entry.testId.title.includes('nested @smoke')
+        const nestedTest = testEntries.find(
+          entry => entry.testId && entry.testId.title && entry.testId.title.includes('nested @smoke'),
         );
-        
+
         // Find the standalone test - should have both 'ui' (from title) and 'regression' (from options)
-        const standaloneTest = testEntries.find(entry => 
-          entry.testId && entry.testId.title && entry.testId.title.includes('case @ui')
+        const standaloneTest = testEntries.find(
+          entry => entry.testId && entry.testId.title && entry.testId.title.includes('case @ui'),
         );
 
         expect(nestedTest).to.exist;
@@ -484,7 +486,7 @@ test('case @ui', { tag: '@regression' }, async ({ page }) => {
           expect(nestedTest.testId.tags).to.have.length(2);
         }
 
-        // Verify standalone test has expected tags: ['ui', 'regression']  
+        // Verify standalone test has expected tags: ['ui', 'regression']
         if (standaloneTest.testId.tags) {
           expect(standaloneTest.testId.tags).to.include('ui'); // from title
           expect(standaloneTest.testId.tags).to.include('regression'); // from options

@@ -6,24 +6,25 @@ describe('CodeceptJS Argument Truncation Tests', function () {
 
   it('should truncate large arguments in steps', async () => {
     const { debugData } = await runTests('steps_sections_test.js', {
-      grep: '@truncation'
+      grep: '@truncation',
     });
 
     // Find the truncation test
-    const truncationTest = debugData.find(entry => 
-      entry.action === 'addTest' && 
-      entry.testId && 
-      entry.testId.title?.includes('Test truncation of large arguments')
+    const truncationTest = debugData.find(
+      entry =>
+        entry.action === 'addTest' &&
+        entry.testId &&
+        entry.testId.title?.includes('Test truncation of large arguments'),
     );
-    
+
     expect(truncationTest).to.exist;
     expect(truncationTest.testId.steps).to.exist;
-    
+
     // Check all steps are under 1K (1000 chars)
     for (const step of truncationTest.testId.steps) {
       expect(step.title.length).to.be.lessThan(1000);
     }
-    
+
     // Verify we have the expected steps
     const stepTitles = truncationTest.testId.steps.map(s => s.title);
     const hasLargeJsonStep = stepTitles.some(title => title.includes('Processing large JSON'));
@@ -32,18 +33,19 @@ describe('CodeceptJS Argument Truncation Tests', function () {
 
   it('should truncate stack traces', async () => {
     const { debugData } = await runTests('steps_sections_test.js', {
-      grep: '@truncation'
+      grep: '@truncation',
     });
 
     // Find the truncation test
-    const truncationTest = debugData.find(entry => 
-      entry.action === 'addTest' && 
-      entry.testId && 
-      entry.testId.title?.includes('Test truncation of large arguments')
+    const truncationTest = debugData.find(
+      entry =>
+        entry.action === 'addTest' &&
+        entry.testId &&
+        entry.testId.title?.includes('Test truncation of large arguments'),
     );
-    
+
     expect(truncationTest).to.exist;
-    
+
     // Look for failed steps (they should have stack traces)
     let foundStack = false;
     for (const step of truncationTest.testId.steps) {
@@ -53,7 +55,7 @@ describe('CodeceptJS Argument Truncation Tests', function () {
         expect(step.error.stack.length).to.be.lessThan(2000);
       }
     }
-    
+
     // Should have found a stack trace from the forced error
     expect(foundStack).to.be.true;
   });
@@ -76,7 +78,7 @@ describe('CodeceptJS Argument Truncation Tests', function () {
         }
       }
     }
-    
+
     expect(foundSmallArg).to.be.true;
   });
 });

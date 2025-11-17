@@ -21,12 +21,14 @@ codecept/
 ## Test Categories
 
 ### 1. Basic Tests (`simple_test.js`)
+
 - ✅ Test that passes
 - ❌ Test that fails
 
 ### 2. Comprehensive Tests (`comprehensive_test.js`)
+
 - ✅ Passing tests
-- ❌ Failing tests  
+- ❌ Failing tests
 - ⏭️ Skipped tests
 - 📊 Data-driven tests with examples
 - 🔄 Multi-step tests
@@ -34,24 +36,29 @@ codecept/
 - 💥 Tests with exceptions
 
 ### 3. Hook Tests (`hooks_test.js`)
+
 - 🔧 BeforeSuite/AfterSuite execution
 - 🎯 Before/After test execution
 - 📊 Hook execution order verification
 - ⏭️ Skipped tests with hooks
 
 ### 4. Failing Hook Tests (`failing_hooks_test.js`)
+
 - 💥 Tests where Before hooks fail
 - 💥 Tests where After hooks fail
 - 🔄 Recovery after hook failures
 
 ### 5. Bug Demonstration Files
+
 - 🐛 `aftersuite_bug_demo_test.js` - **Reproduces Issue #948**: AfterSuite failure incorrectly marks all passing tests as failed
 - 🐛 `beforesuite_bug_demo_test.js` - BeforeSuite failure behavior testing
 
 ## Test Features
 
 ### Test Object Injection and Expect Helper
+
 All test scenarios use proper patterns:
+
 ```javascript
 // Regular scenario with Expect helper
 Scenario('Test name', ({ I, test }) => {
@@ -62,14 +69,15 @@ Scenario('Test name', ({ I, test }) => {
 });
 
 // Data-driven scenario
-Data(['data1', 'data2'])
-  .Scenario('Data test', ({ I, current }) => {
-    I.expectEqual(current, current);
-  });
+Data(['data1', 'data2']).Scenario('Data test', ({ I, current }) => {
+  I.expectEqual(current, current);
+});
 ```
 
 ### Feature Tags
+
 Tests include feature-level tags for organization:
+
 - `@comprehensive` - Core test functionality
 - `@hooks` - Hook execution testing
 - `@failing-hooks` - Hook failure scenarios
@@ -77,16 +85,18 @@ Tests include feature-level tags for organization:
 ## Running Tests
 
 ### Run All Tests
+
 ```bash
 npx codeceptjs run
 ```
 
 ### Run Specific Test Categories
+
 ```bash
 # Comprehensive tests only
 npx codeceptjs run comprehensive_test.js
 
-# Hook tests only  
+# Hook tests only
 npx codeceptjs run hooks_test.js
 
 # Failing hook tests only
@@ -98,11 +108,13 @@ npx codeceptjs run beforesuite_bug_demo_test.js
 ```
 
 ### Run with Testomatio Reporting
+
 ```bash
 TESTOMATIO=your-api-key npx codeceptjs run
 ```
 
 ### Run with Debug Output
+
 ```bash
 TESTOMATIO=your-api-key TESTOMATIO_DEBUG=1 npx codeceptjs run
 ```
@@ -112,6 +124,7 @@ TESTOMATIO=your-api-key TESTOMATIO_DEBUG=1 npx codeceptjs run
 When running these tests, you should expect:
 
 ### Passing Tests
+
 - Basic math operations
 - Async operations
 - Tests with proper setup from hooks
@@ -119,18 +132,21 @@ When running these tests, you should expect:
 - Unicode and special character handling
 
 ### Failing Tests
+
 - Intentional assertion failures
 - Tests with incorrect expected values
 - Tests affected by failing hooks
 - Multiple assertion failures
 
 ### Skipped Tests
+
 - Tests marked with `.skip()`
 - Tests in skipped suites
 
 ### Reporter Verification
 
 The Testomatio reporter should capture:
+
 - ✅ Test status (passed/failed/skipped)
 - ⏱️ Execution time
 - 📝 Test titles and suite names
@@ -152,6 +168,7 @@ The Testomatio reporter should capture:
 ## Troubleshooting
 
 If tests don't run:
+
 1. Ensure CodeceptJS 3.7+ is installed
 2. Check that the Testomatio adapter path is correct
 3. Verify environment variables are set
@@ -160,6 +177,7 @@ If tests don't run:
 ## Integration Testing
 
 These tests are designed to work with the comprehensive unit tests in:
+
 - `tests/adapter/codecept_comprehensive.test.js`
 
 The unit tests will execute these scenarios and verify that the Testomatio adapter correctly captures and reports all test outcomes, hook executions, and edge cases.

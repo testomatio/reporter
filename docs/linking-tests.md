@@ -19,6 +19,7 @@ This behavior is useful if automated test verifies status for manual test cases.
 However, you don't want to see the automated test itself in the final report.
 
 **Step 1: Create a manual run and capture Run ID**
+
 ```bash
 RUN_ID=$(TESTOMATIO=tstmt_xxxx npx @testomatio/reporter start --kind manual | tail -n 1)
 ```
@@ -28,12 +29,15 @@ RUN_ID=$(TESTOMATIO=tstmt_xxxx npx @testomatio/reporter start --kind manual | ta
 This creates a manual run on Testomat.io and saves the run ID into the environment variable.
 
 **Step 2: Run your automated tests**
+
 ```bash
 TESTOMATIO=tstmt_xxxx TESTOMATIO_RUN=$RUN_ID <run tests command>
 ```
+
 Your **automated tests with links will NOT appear** in the final report. Only the manual test cases linked via `linkTest()` will be shown.
 
 **Alternative: One-step approach**
+
 ```bash
 TESTOMATIO=tstmt_xxxx npx @testomatio/reporter run "<run tests command>" --kind manual
 ```
@@ -58,11 +62,10 @@ TESTOMATIO=tstmt_xxxx npx @testomatio/reporter run "npx playwright test" --kind 
 
 Mixed runs show both automated test execution results AND manual test case results as separate entities in the same report.
 
-
 This behavior is needed when you want to see the most precise report of all automated tests and linked manual tests in one report.
 
-
 **Step 1: Create a mixed run**
+
 ```bash
 RUN_ID=$(TESTOMATIO=tstmt_xxxx npx @testomatio/reporter start --kind mixed | tail -n 1)
 ```
@@ -72,16 +75,18 @@ RUN_ID=$(TESTOMATIO=tstmt_xxxx npx @testomatio/reporter start --kind mixed | tai
 This creates a mixed run on Testomat.io and saves the run ID into the environment variable.
 
 **Step 2: Run your automated tests**
+
 ```bash
 TESTOMATIO=tstmt_xxxx TESTOMATIO_RUN=$RUN_ID <run tests command>
 ```
+
 Your automated tests execute and will appear in the report. Any manual test cases linked via `linkTest()` will also appear separately in the same report.
 
 **Alternative: One-step approach**
+
 ```bash
 TESTOMATIO=tstmt_xxxx npx @testomatio/reporter run "<run tests command>" --kind mixed
 ```
-
 
 Playwright Example:
 
@@ -116,6 +121,7 @@ linkTest(['T12345678', 'T87654321', 'T11223344']);
 ## Example: Login Feature
 
 ### Manual Test Cases
+
 - `T12345678` - Login with valid credentials
 - `T87654321` - Login with invalid password
 - `T11223344` - Login with empty username
@@ -163,16 +169,13 @@ Scenario('user login functionality', ({ I }) => {
 });
 ```
 
-
-
-
 ## Report Results
 
-| Run Type | Automated Tests | Manual Tests | Total in Report |
-|----------|-----------------|--------------|-----------------|
-| Automated | 1 (with links) | 0 | 1 |
-| Manual | 0 | 5 | 5 |
-| Mixed | 1 | 5 | 6 |
+| Run Type  | Automated Tests | Manual Tests | Total in Report |
+| --------- | --------------- | ------------ | --------------- |
+| Automated | 1 (with links)  | 0            | 1               |
+| Manual    | 0               | 5            | 5               |
+| Mixed     | 1               | 5            | 6               |
 
 ## Use Case
 

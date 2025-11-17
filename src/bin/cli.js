@@ -36,7 +36,7 @@ program
   .command('start')
   .description('Start a new run and return its ID')
   .option('--kind <type>', 'Specify run type: automated, manual, or mixed')
-  .action(async (opts) => {
+  .action(async opts => {
     cleanLatestRunId();
 
     console.log('Starting a new Run on Testomat.io...');

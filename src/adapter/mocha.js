@@ -84,7 +84,7 @@ function MochaReporter(runner, opts) {
     const artifacts = services.artifacts.get(test.fullTitle());
     const keyValues = services.keyValues.get(test.fullTitle());
     const links = services.links.get(test.fullTitle());
-    
+
     client.addTestRun(STATUS.SKIPPED, {
       title: getTestName(test),
       suite_title: getSuiteTitle(test),

@@ -8,7 +8,10 @@ class CSharpAdapter extends Adapter {
       const exampleMatch = t.title.match(/\((.*?)\)/);
       if (exampleMatch) {
         // Extract parameters as object with numeric keys for API
-        const params = exampleMatch[1].split(',').map(param => param.trim()).filter(param => param !== '');
+        const params = exampleMatch[1]
+          .split(',')
+          .map(param => param.trim())
+          .filter(param => param !== '');
         t.example = {};
         params.forEach((param, index) => {
           t.example[index] = param;

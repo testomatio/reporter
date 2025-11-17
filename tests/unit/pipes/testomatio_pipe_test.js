@@ -28,11 +28,11 @@ describe('TestomatioPipe', () => {
   beforeEach(() => {
     originalEnv = { ...process.env };
     process.env.TESTOMATIO_URL = TESTOMATIO_URL;
-    
+
     testomatioPipe = new TestomatioPipe({
       apiKey: TESTOMATIO,
       testomatioUrl: TESTOMATIO_URL,
-      isBatchEnabled: false
+      isBatchEnabled: false,
     });
   });
 
@@ -78,7 +78,7 @@ describe('TestomatioPipe', () => {
         const result = parseFilterParams('plan-id=b62f3170');
         expect(result).to.deep.equal({
           type: 'plan',
-          id: 'b62f3170'
+          id: 'b62f3170',
         });
       });
 
@@ -86,7 +86,7 @@ describe('TestomatioPipe', () => {
         const result = parseFilterParams('tag-name=smoke');
         expect(result).to.deep.equal({
           type: 'tag',
-          id: 'smoke'
+          id: 'smoke',
         });
       });
 
@@ -94,7 +94,7 @@ describe('TestomatioPipe', () => {
         const result = parseFilterParams('plan-id=test-plan-123-abc');
         expect(result).to.deep.equal({
           type: 'plan',
-          id: 'test-plan-123-abc'
+          id: 'test-plan-123-abc',
         });
       });
     });
@@ -104,16 +104,16 @@ describe('TestomatioPipe', () => {
         const result = generateFilterRequestParams({
           type: 'plan',
           id: 'b62f3170',
-          apiKey: 'test-api-key'
+          apiKey: 'test-api-key',
         });
 
         expect(result).to.deep.equal({
           params: {
             type: 'plan',
             id: 'b62f3170',
-            api_key: 'test-api-key'
+            api_key: 'test-api-key',
           },
-          responseType: 'json'
+          responseType: 'json',
         });
       });
 
@@ -121,7 +121,7 @@ describe('TestomatioPipe', () => {
         const result = generateFilterRequestParams({
           type: 'plan',
           id: 'test plan with spaces',
-          apiKey: 'test-api-key'
+          apiKey: 'test-api-key',
         });
 
         expect(result.params.id).to.equal('test%20plan%20with%20spaces');
@@ -130,7 +130,7 @@ describe('TestomatioPipe', () => {
       it('should return undefined if type is missing', () => {
         const result = generateFilterRequestParams({
           id: 'b62f3170',
-          apiKey: 'test-api-key'
+          apiKey: 'test-api-key',
         });
 
         expect(result).to.be.undefined;
@@ -139,7 +139,7 @@ describe('TestomatioPipe', () => {
       it('should return undefined if id is missing', () => {
         const result = generateFilterRequestParams({
           type: 'plan',
-          apiKey: 'test-api-key'
+          apiKey: 'test-api-key',
         });
 
         expect(result).to.be.undefined;
@@ -160,9 +160,9 @@ describe('TestomatioPipe', () => {
           status: 200,
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({
-            tests: expectedTests
-          })
-        }
+            tests: expectedTests,
+          }),
+        },
       });
 
       const result = await testomatioPipe.prepareRun(`plan-id=${planId}`);
@@ -181,9 +181,9 @@ describe('TestomatioPipe', () => {
           status: 200,
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({
-            tests: expectedTests
-          })
-        }
+            tests: expectedTests,
+          }),
+        },
       });
 
       const result = await testomatioPipe.prepareRun(`tag-name=${tagName}`);
@@ -199,9 +199,9 @@ describe('TestomatioPipe', () => {
           status: 200,
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({
-            tests: []
-          })
-        }
+            tests: [],
+          }),
+        },
       });
 
       const result = await testomatioPipe.prepareRun('plan-id=nonexistent');
@@ -217,9 +217,9 @@ describe('TestomatioPipe', () => {
           status: 200,
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({
-            tests: null
-          })
-        }
+            tests: null,
+          }),
+        },
       });
 
       const result = await testomatioPipe.prepareRun('plan-id=test');
@@ -235,9 +235,9 @@ describe('TestomatioPipe', () => {
           status: 500,
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({
-            error: 'Internal server error'
-          })
-        }
+            error: 'Internal server error',
+          }),
+        },
       });
 
       const result = await testomatioPipe.prepareRun('plan-id=test');
@@ -249,7 +249,7 @@ describe('TestomatioPipe', () => {
       const disabledPipe = new TestomatioPipe({
         // No API key provided, pipe should be disabled
         testomatioUrl: TESTOMATIO_URL,
-        isBatchEnabled: false
+        isBatchEnabled: false,
       });
 
       const result = await disabledPipe.prepareRun('plan-id=test');
@@ -274,15 +274,15 @@ describe('TestomatioPipe', () => {
           status: 200,
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({
-            tests: ['test1']
-          })
+            tests: ['test1'],
+          }),
         },
-        delay: 0
+        delay: 0,
       });
 
       // Spy on the actual HTTP request to verify parameters
       const originalRequest = testomatioPipe.client.request;
-      testomatioPipe.client.request = async function(config) {
+      testomatioPipe.client.request = async function (config) {
         receivedQuery = config.params;
         return originalRequest.call(this, config);
       };
@@ -292,7 +292,7 @@ describe('TestomatioPipe', () => {
       expect(receivedQuery).to.deep.equal({
         type: 'plan',
         id: planId,
-        api_key: TESTOMATIO
+        api_key: TESTOMATIO,
       });
     });
 
@@ -307,14 +307,14 @@ describe('TestomatioPipe', () => {
           status: 200,
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({
-            tests: ['test1']
-          })
-        }
+            tests: ['test1'],
+          }),
+        },
       });
 
       // Spy on the actual HTTP request to verify parameters
       const originalRequest = testomatioPipe.client.request;
-      testomatioPipe.client.request = async function(config) {
+      testomatioPipe.client.request = async function (config) {
         receivedQuery = config.params;
         return originalRequest.call(this, config);
       };
@@ -340,14 +340,14 @@ describe('TestomatioPipe', () => {
           body: JSON.stringify({
             url: 'https://faketestomat.io/report/abc123',
             uid: 'test-run-123',
-            public_url: 'https://faketestomat.io/public/xyz123'
-          })
-        }
+            public_url: 'https://faketestomat.io/public/xyz123',
+          }),
+        },
       });
 
       // Spy on the HTTP client to capture the request body
       const originalRequest = testomatioPipe.client.request;
-      testomatioPipe.client.request = async function(config) {
+      testomatioPipe.client.request = async function (config) {
         receivedRequestBody = config;
         return originalRequest.call(this, config);
       };
@@ -372,13 +372,13 @@ describe('TestomatioPipe', () => {
           body: JSON.stringify({
             url: 'https://faketestomat.io/report/def456',
             uid: 'test-run-124',
-            public_url: 'https://faketestomat.io/public/uvw456'
-          })
-        }
+            public_url: 'https://faketestomat.io/public/uvw456',
+          }),
+        },
       });
 
       const originalRequest = testomatioPipe.client.request;
-      testomatioPipe.client.request = async function(config) {
+      testomatioPipe.client.request = async function (config) {
         receivedRequestBody = config;
         return originalRequest.call(this, config);
       };
@@ -403,13 +403,13 @@ describe('TestomatioPipe', () => {
           body: JSON.stringify({
             url: 'https://faketestomat.io/report/ghi789',
             uid: 'test-run-126',
-            public_url: 'https://faketestomat.io/public/rst789'
-          })
-        }
+            public_url: 'https://faketestomat.io/public/rst789',
+          }),
+        },
       });
 
       const originalRequest = testomatioPipe.client.request;
-      testomatioPipe.client.request = async function(config) {
+      testomatioPipe.client.request = async function (config) {
         receivedRequestBody = config;
         return originalRequest.call(this, config);
       };
@@ -427,7 +427,7 @@ describe('TestomatioPipe', () => {
     it('should create enabled pipe with valid API key', () => {
       const pipe = new TestomatioPipe({
         apiKey: 'valid-api-key',
-        testomatioUrl: TESTOMATIO_URL
+        testomatioUrl: TESTOMATIO_URL,
       });
 
       expect(pipe.isEnabled).to.be.true;
@@ -436,7 +436,7 @@ describe('TestomatioPipe', () => {
 
     it('should create disabled pipe without API key', () => {
       const pipe = new TestomatioPipe({
-        testomatioUrl: TESTOMATIO_URL
+        testomatioUrl: TESTOMATIO_URL,
       });
 
       expect(pipe.isEnabled).to.be.false;
@@ -445,7 +445,7 @@ describe('TestomatioPipe', () => {
     it('should use parameters over environment variables', () => {
       const pipe = new TestomatioPipe({
         apiKey: 'param-api-key',
-        testomatioUrl: 'https://param.testomat.io'
+        testomatioUrl: 'https://param.testomat.io',
       });
 
       expect(pipe.apiKey).to.equal('param-api-key');
@@ -460,9 +460,9 @@ describe('TestomatioPipe', () => {
       pipe = new TestomatioPipe({
         apiKey: TESTOMATIO,
         testomatioUrl: TESTOMATIO_URL,
-        isBatchEnabled: false
+        isBatchEnabled: false,
       });
-      
+
       // Set a run ID to enable test reporting
       pipe.runId = 'test-run-id';
     });
@@ -477,44 +477,44 @@ describe('TestomatioPipe', () => {
     describe('TESTOMATIO_NO_STEPS', () => {
       it('should remove steps from all tests when enabled (single upload)', () => {
         process.env.TESTOMATIO_NO_STEPS = '1';
-        
+
         const testData = {
           title: 'Test with steps',
           status: 'passed',
           steps: [{ step: 'Step 1' }, { step: 'Step 2' }],
-          stack: 'Error stack trace'
+          stack: 'Error stack trace',
         };
 
         pipe.addTest(testData);
-        
+
         // The steps should be nullified in the formatted data
         expect(testData.steps).to.be.null;
       });
 
       it('should remove steps from failed tests when enabled (single upload)', () => {
         process.env.TESTOMATIO_NO_STEPS = '1';
-        
+
         const testData = {
           title: 'Failed test with steps',
           status: 'failed',
           steps: [{ step: 'Step 1' }, { step: 'Failed step' }],
-          stack: 'Error stack trace'
+          stack: 'Error stack trace',
         };
 
         pipe.addTest(testData);
-        
+
         expect(testData.steps).to.be.null;
       });
 
-      it('should remove steps in batch upload when enabled', (done) => {
+      it('should remove steps in batch upload when enabled', done => {
         process.env.TESTOMATIO_NO_STEPS = '1';
-        
+
         const batchPipe = new TestomatioPipe({
           apiKey: TESTOMATIO,
           testomatioUrl: TESTOMATIO_URL,
-          isBatchEnabled: true
+          isBatchEnabled: true,
         });
-        
+
         // Set a run ID to enable test reporting
         batchPipe.runId = 'test-run-id';
 
@@ -522,14 +522,14 @@ describe('TestomatioPipe', () => {
           title: 'Passed test with steps',
           status: 'passed',
           steps: [{ step: 'Step 1' }],
-          stack: 'Stack trace'
+          stack: 'Stack trace',
         };
 
         const testData2 = {
           title: 'Failed test with steps',
           status: 'failed',
           steps: [{ step: 'Step 1' }, { step: 'Failed step' }],
-          stack: 'Error stack trace'
+          stack: 'Error stack trace',
         };
 
         // Mock the server to capture the batch upload
@@ -539,14 +539,14 @@ describe('TestomatioPipe', () => {
           reply: {
             status: 200,
             headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({ success: true })
-          }
+            body: JSON.stringify({ success: true }),
+          },
         });
 
         // Add tests to batch - they should be formatted immediately
         batchPipe.addTest(testData1);
         batchPipe.addTest(testData2);
-        
+
         // Wait a bit for the batch to process
         setTimeout(() => {
           // Steps should be nullified for both tests due to formatting
@@ -561,11 +561,11 @@ describe('TestomatioPipe', () => {
           title: 'Test with steps',
           status: 'passed',
           steps: [{ step: 'Step 1' }, { step: 'Step 2' }],
-          stack: 'Error stack trace'
+          stack: 'Error stack trace',
         };
 
         pipe.addTest(testData);
-        
+
         // By default, TESTOMATIO_STEPS_PASSED is not set, so steps should be removed for passed tests
         expect(testData.steps).to.be.null;
       });
@@ -575,11 +575,11 @@ describe('TestomatioPipe', () => {
           title: 'Failed test with steps',
           status: 'failed',
           steps: [{ step: 'Step 1' }, { step: 'Failed step' }],
-          stack: 'Error stack trace'
+          stack: 'Error stack trace',
         };
 
         pipe.addTest(testData);
-        
+
         // Steps should be preserved for failed tests even when TESTOMATIO_NO_STEPS is not set
         expect(testData.steps).to.deep.equal([{ step: 'Step 1' }, { step: 'Failed step' }]);
       });
@@ -592,26 +592,26 @@ describe('TestomatioPipe', () => {
           title: 'Passed test with stack',
           status: 'passed',
           steps: [{ step: 'Step 1' }],
-          stack: 'Stack trace for passed test'
+          stack: 'Stack trace for passed test',
         };
 
         pipe.addTest(testData);
-        
+
         expect(testData.stack).to.be.null;
       });
 
       it('should preserve stack from passed tests when enabled', () => {
         process.env.TESTOMATIO_STACK_PASSED = '1';
-        
+
         const testData = {
           title: 'Passed test with stack',
           status: 'passed',
           steps: [{ step: 'Step 1' }],
-          stack: 'Stack trace for passed test'
+          stack: 'Stack trace for passed test',
         };
 
         pipe.addTest(testData);
-        
+
         expect(testData.stack).to.equal('Stack trace for passed test');
       });
 
@@ -621,7 +621,7 @@ describe('TestomatioPipe', () => {
           title: 'Failed test with stack',
           status: 'failed',
           steps: [{ step: 'Step 1' }],
-          stack: 'Error stack trace'
+          stack: 'Error stack trace',
         };
 
         pipe.addTest(testDataFailed);
@@ -633,20 +633,20 @@ describe('TestomatioPipe', () => {
           title: 'Failed test with stack 2',
           status: 'failed',
           steps: [{ step: 'Step 2' }],
-          stack: 'Error stack trace 2'
+          stack: 'Error stack trace 2',
         };
 
         pipe.addTest(testDataFailed2);
         expect(testDataFailed2.stack).to.equal('Error stack trace 2');
       });
 
-      it('should handle stack in batch upload correctly', (done) => {
+      it('should handle stack in batch upload correctly', done => {
         const batchPipe = new TestomatioPipe({
           apiKey: TESTOMATIO,
           testomatioUrl: TESTOMATIO_URL,
-          isBatchEnabled: true
+          isBatchEnabled: true,
         });
-        
+
         // Set a run ID to enable test reporting
         batchPipe.runId = 'test-run-id';
 
@@ -654,14 +654,14 @@ describe('TestomatioPipe', () => {
           title: 'Passed test with stack',
           status: 'passed',
           steps: [{ step: 'Step 1' }],
-          stack: 'Stack trace for passed test'
+          stack: 'Stack trace for passed test',
         };
 
         const testDataFailed = {
           title: 'Failed test with stack',
           status: 'failed',
           steps: [{ step: 'Step 2' }],
-          stack: 'Error stack trace'
+          stack: 'Error stack trace',
         };
 
         // Mock the server to capture the batch upload
@@ -671,13 +671,13 @@ describe('TestomatioPipe', () => {
           reply: {
             status: 200,
             headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({ success: true })
-          }
+            body: JSON.stringify({ success: true }),
+          },
         });
 
         batchPipe.addTest(testDataPassed);
         batchPipe.addTest(testDataFailed);
-        
+
         // Wait a bit for the batch to process
         setTimeout(() => {
           // Stack should be null for passed test, preserved for failed test
@@ -695,26 +695,26 @@ describe('TestomatioPipe', () => {
           title: 'Passed test with steps',
           status: 'passed',
           steps: [{ step: 'Step 1' }, { step: 'Step 2' }],
-          stack: 'Stack trace'
+          stack: 'Stack trace',
         };
 
         pipe.addTest(testData);
-        
+
         expect(testData.steps).to.be.null;
       });
 
       it('should preserve steps from passed tests when enabled', () => {
         process.env.TESTOMATIO_STEPS_PASSED = '1';
-        
+
         const testData = {
           title: 'Passed test with steps',
           status: 'passed',
           steps: [{ step: 'Step 1' }, { step: 'Step 2' }],
-          stack: 'Stack trace'
+          stack: 'Stack trace',
         };
 
         pipe.addTest(testData);
-        
+
         expect(testData.steps).to.deep.equal([{ step: 'Step 1' }, { step: 'Step 2' }]);
       });
 
@@ -724,7 +724,7 @@ describe('TestomatioPipe', () => {
           title: 'Failed test with steps',
           status: 'failed',
           steps: [{ step: 'Step 1' }, { step: 'Failed step' }],
-          stack: 'Error stack trace'
+          stack: 'Error stack trace',
         };
 
         pipe.addTest(testDataFailed);
@@ -736,20 +736,20 @@ describe('TestomatioPipe', () => {
           title: 'Failed test with steps 2',
           status: 'failed',
           steps: [{ step: 'Step 2' }, { step: 'Failed step 2' }],
-          stack: 'Error stack trace 2'
+          stack: 'Error stack trace 2',
         };
 
         pipe.addTest(testDataFailed2);
         expect(testDataFailed2.steps).to.deep.equal([{ step: 'Step 2' }, { step: 'Failed step 2' }]);
       });
 
-      it('should handle steps in batch upload correctly', (done) => {
+      it('should handle steps in batch upload correctly', done => {
         const batchPipe = new TestomatioPipe({
           apiKey: TESTOMATIO,
           testomatioUrl: TESTOMATIO_URL,
-          isBatchEnabled: true
+          isBatchEnabled: true,
         });
-        
+
         // Set a run ID to enable test reporting
         batchPipe.runId = 'test-run-id';
 
@@ -757,14 +757,14 @@ describe('TestomatioPipe', () => {
           title: 'Passed test with steps',
           status: 'passed',
           steps: [{ step: 'Step 1' }, { step: 'Step 2' }],
-          stack: 'Stack trace'
+          stack: 'Stack trace',
         };
 
         const testDataFailed = {
           title: 'Failed test with steps',
           status: 'failed',
           steps: [{ step: 'Step 1' }, { step: 'Failed step' }],
-          stack: 'Error stack trace'
+          stack: 'Error stack trace',
         };
 
         // Mock the server to capture the batch upload
@@ -774,13 +774,13 @@ describe('TestomatioPipe', () => {
           reply: {
             status: 200,
             headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({ success: true })
-          }
+            body: JSON.stringify({ success: true }),
+          },
         });
 
         batchPipe.addTest(testDataPassed);
         batchPipe.addTest(testDataFailed);
-        
+
         // Wait a bit for the batch to process
         setTimeout(() => {
           // Steps should be null for passed test, preserved for failed test
@@ -796,16 +796,16 @@ describe('TestomatioPipe', () => {
         process.env.TESTOMATIO_NO_STEPS = '1';
         process.env.TESTOMATIO_STEPS_PASSED = '1';
         process.env.TESTOMATIO_STACK_PASSED = '1';
-        
+
         const testData = {
           title: 'Test with all data',
           status: 'passed',
           steps: [{ step: 'Step 1' }],
-          stack: 'Stack trace'
+          stack: 'Stack trace',
         };
 
         pipe.addTest(testData);
-        
+
         // TESTOMATIO_NO_STEPS should override other settings
         expect(testData.steps).to.be.null;
         // Stack should be preserved due to TESTOMATIO_STACK_PASSED
@@ -815,16 +815,16 @@ describe('TestomatioPipe', () => {
       it('should apply all filters correctly for failed tests', () => {
         process.env.TESTOMATIO_NO_STEPS = '1';
         process.env.TESTOMATIO_STACK_PASSED = '1';
-        
+
         const testData = {
           title: 'Failed test with all data',
           status: 'failed',
           steps: [{ step: 'Step 1' }, { step: 'Failed step' }],
-          stack: 'Error stack trace'
+          stack: 'Error stack trace',
         };
 
         pipe.addTest(testData);
-        
+
         // TESTOMATIO_NO_STEPS should remove steps even for failed tests
         expect(testData.steps).to.be.null;
         // Stack should be preserved due to TESTOMATIO_STACK_PASSED

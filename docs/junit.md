@@ -58,7 +58,7 @@ The reporter automatically detects and uploads files referenced in test output u
 Supported File URL Formats:
 
 - **Unix/Linux paths**: `file:///absolute/path/to/file.png` (3 slashes)
-- **Unix/Linux paths**: `file://relative/path/to/file.png` (2 slashes)  
+- **Unix/Linux paths**: `file://relative/path/to/file.png` (2 slashes)
 - **Windows paths**: `file:/C:\Users\username\path\to\file.png` (backslashes)
 - **Windows paths**: `file://C:/Users/username/path/to/file.png` (forward slashes)
 
@@ -69,7 +69,7 @@ Example:
   <system-out><![CDATA[
 Test execution started
 Step 1: Navigate to login page - PASSED
-Step 2: Enter credentials - PASSED  
+Step 2: Enter credentials - PASSED
 Step 3: Click submit button - FAILED
 
 Evidence files captured:
@@ -131,7 +131,7 @@ def test_login():
     # Test logic here
     screenshot_path = "/tmp/screenshots/login_test.png"
     print(f"file://{screenshot_path}")
-    
+
     # Link to existing test in Testomat.io
     print("tid://@T8acca9eb")
 ```
@@ -161,8 +161,8 @@ public void testLogin() {
     // Test logic here
     String screenshotPath = "/tmp/screenshots/login_test.png";
     System.out.println("file://" + screenshotPath);
-    
-    // Link to existing test in Testomat.io  
+
+    // Link to existing test in Testomat.io
     System.out.println("tid://@T8acca9eb");
 }
 ```
@@ -235,7 +235,7 @@ public void TestLogin()
     // Test logic here
     string screenshotPath = @"C:\temp\screenshots\login_test.png";
     Console.WriteLine($"file://{screenshotPath}");
-    
+
     // Link to existing test in Testomat.io
     Console.WriteLine("tid://@T8acca9eb");
 }
@@ -280,7 +280,7 @@ def test_user_login
   # Test logic here
   screenshot_path = "/tmp/screenshots/login_test.png"
   puts "file://#{screenshot_path}"
-  
+
   # Link to existing test in Testomat.io
   puts "tid://@T8acca9eb"
 end
@@ -326,7 +326,7 @@ public function testLogin()
     // Test logic here
     $screenshotPath = '/tmp/screenshots/login_test.png';
     echo "file://$screenshotPath\n";
-    
+
     // Link to existing test in Testomat.io
     echo "tid://@T8acca9eb\n";
 }

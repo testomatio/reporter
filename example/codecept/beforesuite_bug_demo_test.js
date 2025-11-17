@@ -3,7 +3,7 @@ Feature('BeforeSuite Bug Demo @beforesuite-bug');
 // This BeforeSuite fails - should affect test execution but not mark individual tests as failed
 BeforeSuite(() => {
   console.log('BeforeSuite: About to fail intentionally');
-  
+
   // Use assert to ensure failure
   const assert = require('assert');
   assert.equal(1, 2, 'BeforeSuite intentionally fails');

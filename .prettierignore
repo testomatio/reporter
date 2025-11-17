@@ -3,3 +3,4 @@ lib/template/testomatio.hbs
 lib/pipe/testomatio.js
 
 lib/
+src/template/testomatio.hbs

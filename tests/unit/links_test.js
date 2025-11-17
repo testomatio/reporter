@@ -17,7 +17,7 @@ describe('Link Functions', () => {
       const context = `test1-${testCounter}`;
       services.setContext(context);
       linkTest('TEST-123');
-      
+
       const links = services.links.get(context);
       expect(links).to.have.length(1);
       expect(links[0]).to.deep.equal({ test: 'TEST-123' });
@@ -27,14 +27,10 @@ describe('Link Functions', () => {
       const context = `test2-${testCounter}`;
       services.setContext(context);
       linkTest('TEST-123', 'TEST-456', 'TEST-789');
-      
+
       const links = services.links.get(context);
       expect(links).to.have.length(3);
-      expect(links).to.deep.equal([
-        { test: 'TEST-123' },
-        { test: 'TEST-456' },
-        { test: 'TEST-789' }
-      ]);
+      expect(links).to.deep.equal([{ test: 'TEST-123' }, { test: 'TEST-456' }, { test: 'TEST-789' }]);
     });
   });
 
@@ -43,7 +39,7 @@ describe('Link Functions', () => {
       const context = `jira1-${testCounter}`;
       services.setContext(context);
       linkJira('PROJ-123');
-      
+
       const links = services.links.get(context);
       expect(links).to.have.length(1);
       expect(links[0]).to.deep.equal({ jira: 'PROJ-123' });
@@ -53,28 +49,20 @@ describe('Link Functions', () => {
       const context = `jira2-${testCounter}`;
       services.setContext(context);
       linkJira('PROJ-123', 'PROJ-456', 'ISSUE-789');
-      
+
       const links = services.links.get(context);
       expect(links).to.have.length(3);
-      expect(links).to.deep.equal([
-        { jira: 'PROJ-123' },
-        { jira: 'PROJ-456' },
-        { jira: 'ISSUE-789' }
-      ]);
+      expect(links).to.deep.equal([{ jira: 'PROJ-123' }, { jira: 'PROJ-456' }, { jira: 'ISSUE-789' }]);
     });
 
     it('should handle various JIRA ID formats', () => {
       const context = `jira3-${testCounter}`;
       services.setContext(context);
       linkJira('PROJECT-1234', 'ABC-999', 'DEF-001');
-      
+
       const links = services.links.get(context);
       expect(links).to.have.length(3);
-      expect(links).to.deep.equal([
-        { jira: 'PROJECT-1234' },
-        { jira: 'ABC-999' },
-        { jira: 'DEF-001' }
-      ]);
+      expect(links).to.deep.equal([{ jira: 'PROJECT-1234' }, { jira: 'ABC-999' }, { jira: 'DEF-001' }]);
     });
   });
 
@@ -83,7 +71,7 @@ describe('Link Functions', () => {
       const context = `label1-${testCounter}`;
       services.setContext(context);
       label('smoke');
-      
+
       const links = services.links.get(context);
       expect(links).to.have.length(1);
       expect(links[0]).to.deep.equal({ label: 'smoke' });
@@ -93,7 +81,7 @@ describe('Link Functions', () => {
       const context = `label2-${testCounter}`;
       services.setContext(context);
       label('severity', 'high');
-      
+
       const links = services.links.get(context);
       expect(links).to.have.length(1);
       expect(links[0]).to.deep.equal({ label: 'severity:high' });
@@ -108,14 +96,14 @@ describe('Link Functions', () => {
       linkTest('TEST-456');
       label('smoke');
       label('priority', 'high');
-      
+
       const links = services.links.get(context);
       expect(links).to.have.length(4);
       expect(links).to.deep.equal([
         { jira: 'PROJ-123' },
         { test: 'TEST-456' },
         { label: 'smoke' },
-        { label: 'priority:high' }
+        { label: 'priority:high' },
       ]);
     });
 
@@ -128,14 +116,10 @@ describe('Link Functions', () => {
       linkTest('TEST-456'); // duplicate
       label('smoke');
       label('smoke'); // duplicate
-      
+
       const links = services.links.get(context);
       expect(links).to.have.length(3);
-      expect(links).to.deep.equal([
-        { jira: 'PROJ-123' },
-        { test: 'TEST-456' },
-        { label: 'smoke' }
-      ]);
+      expect(links).to.deep.equal([{ jira: 'PROJ-123' }, { test: 'TEST-456' }, { label: 'smoke' }]);
     });
   });
 
@@ -143,16 +127,16 @@ describe('Link Functions', () => {
     it('should isolate links by context', () => {
       const context1 = `context1-${testCounter}`;
       const context2 = `context2-${testCounter}`;
-      
+
       services.setContext(context1);
       linkJira('PROJ-123');
-      
+
       services.setContext(context2);
       linkTest('TEST-456');
-      
+
       const links1 = services.links.get(context1);
       const links2 = services.links.get(context2);
-      
+
       expect(links1).to.deep.equal([{ jira: 'PROJ-123' }]);
       expect(links2).to.deep.equal([{ test: 'TEST-456' }]);
     });

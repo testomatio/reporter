@@ -8,7 +8,9 @@ describe('Advanced Test Scenarios', () => {
 
   it('test with error details', () => {
     const error = new Error('Custom error message');
-    expect(() => { throw error; }).toThrow('Custom error message');
+    expect(() => {
+      throw error;
+    }).toThrow('Custom error message');
   });
 
   it.skip('skipped test should not run', () => {

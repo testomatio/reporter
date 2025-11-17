@@ -28,7 +28,7 @@ describe('Client Stack Artifacts', () => {
         error: new Error('Test error'),
         steps: [],
         logs: 'A'.repeat(50000), // Make it much larger to exceed truncation limits
-        rid: 'test-123'
+        rid: 'test-123',
       };
 
       await client.addTestRun('failed', testData);
@@ -49,7 +49,7 @@ describe('Client Stack Artifacts', () => {
         error: new Error('Test error'),
         steps: [{ title: 'Step 1', duration: 100 }],
         logs: 'A'.repeat(50000), // Make it much larger to exceed truncation limits
-        rid: 'test-123'
+        rid: 'test-123',
       };
 
       await client.addTestRun('failed', testData);
@@ -60,12 +60,13 @@ describe('Client Stack Artifacts', () => {
       expect(uploadCalls[0].path[2]).to.match(/^logs_\d+\.log$/);
     });
 
-    
     it('should upload only logs artifact when both logs and steps are large', async () => {
-      const largeSteps = Array(200).fill().map((_, i) => ({
-        title: `Very long step title that takes up a lot of characters ${i}`,
-        duration: 100
-      }));
+      const largeSteps = Array(200)
+        .fill()
+        .map((_, i) => ({
+          title: `Very long step title that takes up a lot of characters ${i}`,
+          duration: 100,
+        }));
 
       const testData = {
         title: 'Test Title',
@@ -73,7 +74,7 @@ describe('Client Stack Artifacts', () => {
         error: new Error('Test error'),
         steps: largeSteps,
         logs: 'A'.repeat(50000), // Make it much larger to exceed truncation limits
-        rid: 'test-123'
+        rid: 'test-123',
       };
 
       await client.addTestRun('failed', testData);
@@ -103,7 +104,7 @@ describe('Client Stack Artifacts', () => {
         error,
         steps,
         logs: largeLogs, // Large logs with ANSI codes to trigger upload
-        rid: 'test-123'
+        rid: 'test-123',
       };
 
       await client.addTestRun('failed', testData);
@@ -131,7 +132,7 @@ describe('Client Stack Artifacts', () => {
         error: null,
         steps: [{ title: 'Step 1', duration: 100 }],
         logs: 'Small logs',
-        rid: 'test-123'
+        rid: 'test-123',
       };
 
       await client.addTestRun('failed', testData);
@@ -162,7 +163,7 @@ describe('Client Stack Artifacts', () => {
         error: null, // No error for passed test
         steps: [{ title: 'Successful step', duration: 100 }],
         logs: largeLogs,
-        rid: 'test-123'
+        rid: 'test-123',
       };
 
       await client.addTestRun('passed', testData);

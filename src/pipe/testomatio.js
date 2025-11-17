@@ -60,8 +60,8 @@ class TestomatioPipe {
       retryConfig: {
         retry: REPORTER_REQUEST_RETRIES.retriesPerRequest,
         retryDelay: REPORTER_REQUEST_RETRIES.retryTimeout,
-        httpMethodsToRetry: ['GET','PUT','HEAD','OPTIONS','DELETE','POST'],
-        shouldRetry: (error) => {
+        httpMethodsToRetry: ['GET', 'PUT', 'HEAD', 'OPTIONS', 'DELETE', 'POST'],
+        shouldRetry: error => {
           if (!error.response) return false;
           switch (error.response?.status) {
             case 400: // Bad request (probably wrong API key)
@@ -73,8 +73,8 @@ class TestomatioPipe {
               break;
           }
           return error.response?.status >= 401; // Retry on 401+ and 5xx
-        }
-      }
+        },
+      },
     });
 
     this.isEnabled = true;
@@ -104,7 +104,6 @@ class TestomatioPipe {
     // add test ID + run ID
     if (data.rid) data.rid = `${this.runId}-${data.rid}`;
 
-
     if (!process.env.TESTOMATIO_STACK_PASSED && data.status === STATUS.PASSED) {
       data.stack = null;
     }
@@ -119,7 +118,6 @@ class TestomatioPipe {
 
     return data;
   }
-
 
   /**
    * Asynchronously prepares and retrieves the Testomat.io test grepList based on the provided options.
@@ -216,7 +214,7 @@ class TestomatioPipe {
         method: 'PUT',
         url: `/api/reporter/${this.runId}`,
         data: runParams,
-        responseType: 'json'
+        responseType: 'json',
       });
       if (resp.data.artifacts) setS3Credentials(resp.data.artifacts);
       return;
@@ -229,7 +227,7 @@ class TestomatioPipe {
         url: '/api/reporter',
         data: runParams,
         maxContentLength: Infinity,
-        responseType: 'json'
+        responseType: 'json',
       });
 
       this.runId = resp.data.uid;
@@ -288,43 +286,43 @@ class TestomatioPipe {
 
     debug('Adding test', json);
 
-    return this.client.request({
-      method: 'POST',
-      url: `/api/reporter/${this.runId}/testrun`,
-      data: json,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      maxContentLength: Infinity
-    }).catch(err => {
-      this.requestFailures++;
-      this.notReportedTestsCount++;
-      if (err.response) {
-        if (err.response.status >= 400) {
-          const responseData = err.response.data || { message: '' };
+    return this.client
+      .request({
+        method: 'POST',
+        url: `/api/reporter/${this.runId}/testrun`,
+        data: json,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        maxContentLength: Infinity,
+      })
+      .catch(err => {
+        this.requestFailures++;
+        this.notReportedTestsCount++;
+        if (err.response) {
+          if (err.response.status >= 400) {
+            const responseData = err.response.data || { message: '' };
+            console.log(
+              APP_PREFIX,
+              pc.yellow(`Warning: ${responseData.message} (${err.response.status})`),
+              pc.gray(data?.title || ''),
+            );
+            if (err.response?.data?.message?.includes('could not be matched')) {
+              this.hasUnmatchedTests = true;
+            }
+            return;
+          }
           console.log(
             APP_PREFIX,
-            pc.yellow(`Warning: ${responseData.message} (${err.response.status})`),
-            pc.gray(data?.title || ''),
+            pc.yellow(`Warning: ${data?.title || ''} (${err.response?.status})`),
+            `Report couldn't be processed: ${err?.response?.data?.message}`,
           );
-          if (err.response?.data?.message?.includes('could not be matched')) {
-            this.hasUnmatchedTests = true;
-          }
-          return;
+          printCreateIssue(err);
+        } else {
+          console.log(APP_PREFIX, pc.blue(data?.title || ''), "Report couldn't be processed", err);
         }
-        console.log(
-          APP_PREFIX,
-          pc.yellow(`Warning: ${data?.title || ''} (${err.response?.status})`),
-          `Report couldn't be processed: ${err?.response?.data?.message}`,
-        );
-        printCreateIssue(err);
-      } else {
-        console.log(APP_PREFIX, pc.blue(data?.title || ''), "Report couldn't be processed", err);
-      }
-    });
+      });
   };
-
-
 
   /**
    * Uploads tests as a batch (multiple tests at once). Intended to be used with a setInterval
@@ -350,43 +348,42 @@ class TestomatioPipe {
     const testsToSend = this.batch.tests.splice(0);
     debug('📨 Batch upload', testsToSend.length, 'tests');
 
-    return this.client.request({
-      method: 'POST',
-      url: `/api/reporter/${this.runId}/testrun`,
-      data: {
-        api_key: this.apiKey,
-        tests: testsToSend,
-        batch_index: this.batch.batchIndex
-      },
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      maxContentLength: Infinity
-    }).catch(err => {
-      this.requestFailures++;
-      this.notReportedTestsCount += testsToSend.length;
-      if (err.response) {
-        if (err.response.status >= 400) {
-          const responseData = err.response.data || { message: '' };
+    return this.client
+      .request({
+        method: 'POST',
+        url: `/api/reporter/${this.runId}/testrun`,
+        data: {
+          api_key: this.apiKey,
+          tests: testsToSend,
+          batch_index: this.batch.batchIndex,
+        },
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        maxContentLength: Infinity,
+      })
+      .catch(err => {
+        this.requestFailures++;
+        this.notReportedTestsCount += testsToSend.length;
+        if (err.response) {
+          if (err.response.status >= 400) {
+            const responseData = err.response.data || { message: '' };
+            console.log(APP_PREFIX, pc.yellow(`Warning: ${responseData.message} (${err.response.status})`));
+            if (err.response?.data?.message?.includes('could not be matched')) {
+              this.hasUnmatchedTests = true;
+            }
+            return;
+          }
           console.log(
             APP_PREFIX,
-            pc.yellow(`Warning: ${responseData.message} (${err.response.status})`),
+            pc.yellow(`Warning: (${err.response?.status})`),
+            `Report couldn't be processed: ${err?.response?.data?.message}`,
           );
-          if (err.response?.data?.message?.includes('could not be matched')) {
-            this.hasUnmatchedTests = true;
-          }
-          return;
+          printCreateIssue(err);
+        } else {
+          console.log(APP_PREFIX, "Report couldn't be processed", err);
         }
-        console.log(
-          APP_PREFIX,
-          pc.yellow(`Warning: (${err.response?.status})`),
-          `Report couldn't be processed: ${err?.response?.data?.message}`,
-        );
-        printCreateIssue(err);
-      } else {
-        console.log(APP_PREFIX, "Report couldn't be processed", err);
-      }
-    });
+      });
   };
 
   /**
@@ -409,9 +406,9 @@ class TestomatioPipe {
     else this.batch.tests.push(data);
 
     // if test is added after run which is already finished
-     if (!this.batch.intervalFunction) uploading = this.#batchUpload();
+    if (!this.batch.intervalFunction) uploading = this.#batchUpload();
 
-     // return promise to be able to wait for it
+    // return promise to be able to wait for it
     return uploading;
   }
 
@@ -460,7 +457,7 @@ class TestomatioPipe {
             status_event,
             detach: params.detach,
             tests: params.tests,
-          }
+          },
         });
 
         if (this.runUrl) {
@@ -526,9 +523,6 @@ function printCreateIssue(err) {
     console.log({ body: body?.replace(/"(tstmt_[^"]+)"/g, 'tstmt_*'), url, baseURL, method, time });
     console.log('```');
   });
-
 }
-
-
 
 export default TestomatioPipe;
