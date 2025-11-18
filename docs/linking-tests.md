@@ -171,6 +171,9 @@ Scenario('user login functionality', ({ I }) => {
 
 ## Report Results
 
+1 automated test is linked to 5 manual tests. 
+The final report depends on a type of Run:
+
 | Run Type  | Automated Tests | Manual Tests | Total in Report |
 | --------- | --------------- | ------------ | --------------- |
 | Automated | 1 (with links)  | 0            | 1               |
