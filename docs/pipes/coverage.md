@@ -29,17 +29,15 @@ The coverage file defines mappings between changed source files and the tests or
 ✅ Sample coverage.yml
 
 ```yaml
-todomvc-tests/helpers/**:
+src/Auth/*.tsx:
   - "@S171a8"
-  - "@T091e"
-  - "tag:@smoke"
+  - "tag:@auth"
 
-todomvc-tests/edit-todos_test.js:
+src/Admin/**:
   - "@T0922"
 
-todomvc-tests/pages/**/*.js:
-  - "tag:@step-06"
-  - "@Safa7"
+src/Checkout/**/*.tsx:
+  - "tag:@checkaut"
 ```
 
 _(For now we cover only cases where suiteid/testid/tag can be used as coverage values)_
