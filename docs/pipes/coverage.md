@@ -62,12 +62,39 @@ _(For now we cover only cases where suiteid/testid/tag can be used as coverage v
 
 ## 📘 Usage Examples
 
-* Run tests related to changed files using coverage data by the default `master` Git branch
+### Retrieve a list of tests matching your filter (without running them):
+_If you want to check which tests match your filter without executing the test runner, use the `--filter-list` option_
+
+This is useful for:
+- debugging your filter expression
+- confirming which tests the server will return
+- CI pipelines that only need to inspect affected tests
+
+**Examples:**
+
+```bash
+npx @testomatio/reporter run --filter-list "coverage:file=coverage.yml"
+```
+
+with a branch comparison:
+
+```bash
+npx @testomatio/reporter run --filter-list "coverage:file=coverage/coverage.yml,diff=develop"
+
+```
+
+### Run tests based on changed files _(by the default `master` Git branch)_:
+
+**Example:**
+
 ```bash
 npx @testomatio/reporter run "npx jest" --filter "coverage:file=coverage.yml"
 ```
 
 * Compare changes to a specific Git branch
+
+**Example:**
+
 ```bash
 npx @testomatio/reporter run "npx jest" --filter "coverage:file=coverage/coverage.yml,diff=develop"
 ```
