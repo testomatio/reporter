@@ -4,7 +4,6 @@ import yaml from 'js-yaml';
 import { execSync } from 'child_process';
 import { Gaxios } from 'gaxios';
 import { minimatch } from 'minimatch';
-import pc from 'picocolors';
 import { APP_PREFIX, AXIOS_TIMEOUT, REPORTER_REQUEST_RETRIES } from '../constants.js';
 import { generateFilterRequestParams } from '../utils/pipe_utils.js';
 import { parsePipeOptions } from '../utils/pipe_utils.js';
@@ -162,10 +161,6 @@ class CoveragePipe { // or Changes for the future???
                 console.log(APP_PREFIX, 'ℹ️  No tests found for execution based on Git changes.');            
                 return [];
             }
-
-            console.log(
-                pc.green(`📝 Retrieving a list of all modified tests from files is complete! Start running tests...`)
-            );
         }
 
         this.results = [...this.tests];

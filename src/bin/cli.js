@@ -81,6 +81,7 @@ program
   .description('Run tests with the specified command')
   .argument('<command>', 'Test runner command')
   .option('--filter <filter>', 'Additional execution filter')
+  .option('--filter-list <filter>', 'Get a list of all tests by filter before running')
   .option('--kind <type>', 'Specify run type: automated, manual, or mixed')
   .action(async (command, opts) => {
     const apiKey = process.env['INPUT_TESTOMATIO-KEY'] || config.TESTOMATIO;
@@ -93,10 +94,11 @@ program
 
     const client = new TestomatClient({ apiKey, title });
 
-    if (opts.filter) {
+    if (opts.filter || opts.filterList) {
       // Example of use: npx @testomatio/reporter run "npx jest" --filter "testomatio:tag-name=frontend"
       // Example of use: npx @testomatio/reporter run "npx jest" --filter "coverage:file=coverage.yml"
-      const [pipe, ...optsArray] = opts.filter.split(':');
+      // Example of use: npx @testomatio/reporter run "npx jest" --filter-list "coverage:file=coverage.yml"
+      const [pipe, ...optsArray] = opts?.filter ? opts?.filter.split(':') : opts?.filterList.split(':');
       const pipeOptions = optsArray.join(':');
 
       const SUPPORTED_PIPES = ['coverage', 'testomatio'];
@@ -105,17 +107,29 @@ program
         console.log(APP_PREFIX,
           `🚫 Unsupported --filter mode: "${pipe}".\n` +
           '✅ Supported formats:\n' +
-          '   • "coverage:<options>" (e.g., --filter="coverage:file=coverage.yml")\n' +
-          '   • "testomatio:<options>" (e.g., --filter="testomatio:tag-name=smoke")\n\n' +
+          '   • "coverage:<options>" (e.g., --filter-list "coverage:file=coverage.yml")\n' +
+          '   • "coverage:<options>" (e.g., --filter "coverage:file=coverage.yml")\n' +
+          '   • "testomatio:<options>" (e.g., --filter-list "testomatio:tag-name=smoke")\n' +
+          '   • "testomatio:<options>" (e.g., --filter "testomatio:tag-name=smoke")\n\n' +
           '👉 Please refer to the documentation for supported options and usage examples.\n'
         );
         return;
       }
 
-      try {
-        const tests = await client.prepareRun({ pipe, pipeOptions });
+      const prepareRunParams = { pipe, pipeOptions };
 
-        if (!tests || tests.length === 0) return;
+      try {
+        const tests = await client.prepareRun(prepareRunParams);
+
+        if (!tests || tests.length === 0) {
+          console.log(APP_PREFIX, pc.yellow('No tests found.'));
+          return;
+        }
+
+        if(opts.filterList) {
+          console.log(APP_PREFIX, pc.green(`Matched test/suite IDs:: ${tests}`));
+          return;
+        }
 
         const grepPattern = tests.join('|');
         debug(`Full "grep" command: --grep "(${grepPattern})"`);
