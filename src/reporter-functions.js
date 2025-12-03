@@ -29,9 +29,15 @@ function logMessage(...args) {
  * @param {string} message - step message
  * @returns {void}
  */
+let warnedPlaywrightStep = false;
 function addStep(message) {
-  if (process.env.IS_PLAYWRIGHT)
-    throw new Error('This function is not available in Playwright framework. Use playwright steps');
+  if (process.env.IS_PLAYWRIGHT && !warnedPlaywrightStep) {
+    warnedPlaywrightStep = true;
+    console.warn(
+      '[@testomatio/reporter] `step()` is deprecated for Playwright. ' +
+      'Use `import { setTestStep, step } from "@testomatio/reporter/playwright/step.js"` instead.'
+    );
+  }
 
   services.logger.step(message);
 }
