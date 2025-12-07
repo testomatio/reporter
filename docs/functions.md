@@ -193,5 +193,5 @@ Supported frameworks:
 - 🟢 Cucumber
 - 🟢 Jest
 - 🟢 Mocha
-- 🟢 Playwright (optional, use native functionality)
+- 🔴 Playwright (not supported; use logging via `console` and `test.step` instead)
 - 🟢 WDIO (everything, except artifacts)
