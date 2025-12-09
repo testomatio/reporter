@@ -627,14 +627,17 @@ function applyFilter(command, tests) {
 
   if (lower.includes('cypress')) {
     if (command.includes('--env')) {
-      return `${command},grep="${pattern}",grepFilterSpecs=true`;
+      return command.replace(
+        /--env\s+([^\s]+)/,
+        (match, envVal) => `--env ${envVal},grep="${pattern}",grepFilterSpecs=true`
+      );
     }
+
     return `${command} --env grep="${pattern}",grepFilterSpecs=true`;
   }
 
   return `${command} --grep "${pattern}"`;
 }
-
 
 export {
   ansiRegExp,

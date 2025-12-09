@@ -99,9 +99,7 @@ program
 
       try {
         const tests = await client.prepareRun({ pipe, pipeOptions });
-        if (tests && tests.length > 0) {
-          command = applyFilter(command, tests);
-        }
+        command = applyFilter(command, tests);
       } catch (err) {
         console.log(APP_PREFIX, err);
       }
