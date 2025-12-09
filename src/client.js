@@ -8,7 +8,6 @@ import path from 'path';
 import { fileURLToPath } from 'node:url';
 import { S3Uploader } from './uploader.js';
 import { readLatestRunId, storeRunId, validateSuiteId, transformEnvVarToBoolean } from './utils/utils.js';
-import { parsePipeOptions } from './utils/pipe_utils.js';
 import { filesize as prettyBytes } from 'filesize';
 import { formatLogs, formatError, stripColors } from './utils/log-formatter.js';
 
@@ -69,22 +68,6 @@ class Client {
 
   async prepareRun(params) {
     const { pipe, pipeOptions } = params;
-    const parsedOptions = parsePipeOptions(pipeOptions);
-
-    // Handle Coverage pipe-specific setup
-    if (pipe === 'coverage') {
-      if (!parsedOptions.file) {
-        console.warn(APP_PREFIX,
-          '🚫 Missing required parameter: "file".\n' +
-          '👉 Usage: --filter="coverage:file=coverage.yml"'
-        );
-
-        return;
-      }
-  
-      process.env.COVERAGE_FILEPATH = parsedOptions?.file;
-      process.env.COVERAGE_BRANCH = parsedOptions?.diff || "master";
-    }
 
     this.pipes = await pipesFactory(params || this.paramsForPipesFactory || {}, this.pipeStore);
 
@@ -106,11 +89,8 @@ class Client {
       }
 
       // Run only the selected pipe
-      const result = await p.prepareRun(pipeOptions);
-
-      if (!result || result.length === 0) {
-        return [];
-      }
+      const rawResult = await p.prepareRun(pipeOptions);
+      const result = Array.isArray(rawResult) ? rawResult : [];
 
       debug('Execution tests list', result);
 

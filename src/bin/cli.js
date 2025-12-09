@@ -101,21 +101,6 @@ program
       const [pipe, ...optsArray] = opts?.filter ? opts?.filter.split(':') : opts?.filterList.split(':');
       const pipeOptions = optsArray.join(':');
 
-      const SUPPORTED_PIPES = ['coverage', 'testomatio'];
-
-      if (!SUPPORTED_PIPES.includes(pipe)) {
-        console.log(APP_PREFIX,
-          `🚫 Unsupported --filter mode: "${pipe}".\n` +
-          '✅ Supported formats:\n' +
-          '   • "coverage:<options>" (e.g., --filter-list "coverage:file=coverage.yml")\n' +
-          '   • "coverage:<options>" (e.g., --filter "coverage:file=coverage.yml")\n' +
-          '   • "testomatio:<options>" (e.g., --filter-list "testomatio:tag-name=smoke")\n' +
-          '   • "testomatio:<options>" (e.g., --filter "testomatio:tag-name=smoke")\n\n' +
-          '👉 Please refer to the documentation for supported options and usage examples.\n'
-        );
-        return;
-      }
-
       const prepareRunParams = { pipe, pipeOptions };
 
       try {
@@ -127,7 +112,7 @@ program
         }
 
         if(opts.filterList) {
-          console.log(APP_PREFIX, pc.green(`Matched test/suite IDs:: ${tests}`));
+          console.log(APP_PREFIX, pc.green(`Matched test/suite IDs: ${tests}`));
           return;
         }
 
