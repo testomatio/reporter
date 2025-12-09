@@ -69,6 +69,17 @@ class Client {
   async prepareRun(params) {
     const { pipe, pipeOptions } = params;
 
+    // ❗ Validation: pipe is required
+    if (!pipe || !pipeOptions) {
+      console.warn(`❗ No valid pipe found in filter cmd. Expected format: <pipe>:<options>
+      Examples:
+        --filter "testomatio:tag-name=frontend"
+        --filter "coverage:file=coverage.yml"
+        --filter-list "coverage:file=coverage.yml"
+      Received: "${params}"`);
+      return;
+    }
+
     this.pipes = await pipesFactory(params || this.paramsForPipesFactory || {}, this.pipeStore);
 
     // all pipes disabled, skipping
