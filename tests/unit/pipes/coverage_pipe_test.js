@@ -2,7 +2,6 @@ import { expect } from 'chai';
 import ServerMock from 'mock-http-server';
 import fs from 'fs';
 import path from 'path';
-import { execSync } from 'child_process';
 import CoveragePipe from '../../../src/pipe/coverage.js';
 import { config } from '../../adapter/config/index.js';
 import { fileURLToPath } from 'url';
@@ -32,7 +31,8 @@ describe('CoveragePipe: general positive cases.', () => {
         coveragePipe = new CoveragePipe({
             apiKey: TESTOMATIO,
             testomatioUrl: TESTOMATIO_URL,
-            isBatchEnabled: false
+            isBatchEnabled: false,
+            pipeOptions: `file=${TEMP_COVERAGE_FILE}`
         });
 
         server.start(() => {
@@ -67,7 +67,7 @@ describe('CoveragePipe: general positive cases.', () => {
     beforeEach(() => {
         originalEnv = { ...process.env };
         process.env.TESTOMATIO_URL = TESTOMATIO_URL;
-        process.env.COVERAGE_FILEPATH = TEMP_COVERAGE_FILE;
+        // process.env.COVERAGE_FILEPATH = TEMP_COVERAGE_FILE;
         process.env['INPUT_TESTOMATIO-KEY'] = TESTOMATIO;
     });
 
