@@ -141,6 +141,19 @@ TESTOMATIO={API_KEY} npx cypress run
 
 > 🖼 Screenshots of failed tests and videos will be automatically uploaded as [Artifacts](./artifacts.md)
 
+For test filtering functionality to work properly, install the `@cypress/grep` plugin:
+
+```bash
+npm install --save-dev @cypress/grep
+```
+
+This plugin enables filtering commands that use grep functionality:
+
+```bash
+# Filter tests by pattern
+npx cypress run --env grep="pattern"
+```
+
 > 📑 [Example Project](https://github.com/testomatio/examples/tree/master/cypress) | 🥒 [Cypress + Cucumber Example](https://github.com/testomatio/examples/tree/master/cypress-cucumber)
 
 ### Mocha

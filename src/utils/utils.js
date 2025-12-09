@@ -615,6 +615,27 @@ function truncate(s, size = 255) {
   return `${str.substring(0, size)}...`;
 }
 
+function applyFilter(command, tests) {
+  if (!tests || !tests.length) return command;
+
+  const lower = (command || '').toLowerCase();
+  const pattern = `(${tests.join('|')})`;
+
+  if (lower.includes('jest')) {
+    return `${command} --testNamePattern "${pattern}"`;
+  }
+
+  if (lower.includes('cypress')) {
+    if (command.includes('--env')) {
+      return `${command},grep="${pattern}",grepFilterSpecs=true`;
+    }
+    return `${command} --env grep="${pattern}",grepFilterSpecs=true`;
+  }
+
+  return `${command} --grep "${pattern}"`;
+}
+
+
 export {
   ansiRegExp,
   truncate,
@@ -640,4 +661,5 @@ export {
   testRunnerHelper,
   transformEnvVarToBoolean,
   validateSuiteId,
+  applyFilter
 };

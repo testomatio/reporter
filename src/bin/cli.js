@@ -7,7 +7,7 @@ import createDebugMessages from 'debug';
 import TestomatClient from '../client.js';
 import XmlReader from '../xmlReader.js';
 import { APP_PREFIX, STATUS } from '../constants.js';
-import { cleanLatestRunId, getPackageVersion } from '../utils/utils.js';
+import { cleanLatestRunId, getPackageVersion, applyFilter } from '../utils/utils.js';
 import { config } from '../config.js';
 import { readLatestRunId } from '../utils/utils.js';
 import pc from 'picocolors';
@@ -100,7 +100,7 @@ program
       try {
         const tests = await client.prepareRun({ pipe, pipeOptions });
         if (tests && tests.length > 0) {
-          command += ` --grep (${tests.join('|')})`;
+          command = applyFilter(command, tests);
         }
       } catch (err) {
         console.log(APP_PREFIX, err);
