@@ -15,6 +15,7 @@ function setS3Credentials(artifacts) {
   if (artifacts.BUCKET) process.env.S3_BUCKET = artifacts.BUCKET;
   if (artifacts.SESSION_TOKEN) process.env.S3_SESSION_TOKEN = artifacts.SESSION_TOKEN;
   if (artifacts.presign) process.env.TESTOMATIO_PRIVATE_ARTIFACTS = '1';
+  if (artifacts.stack_artifacts) process.env.TESTOMATIO_STACK_ARTIFACTS = '1';
   // endpoint is not received from the server; and shuld be empty if IAM used (credentails obtained from the testomat)
   process.env.S3_ENDPOINT = artifacts.ENDPOINT || '';
 }
