@@ -113,7 +113,7 @@ program
       const testCmds = command.split(' ');
       const cmd = spawn(testCmds[0], testCmds.slice(1), {
         stdio: 'inherit',
-        env: { ...process.env, TESTOMATIO_PROCEED: 'true', runId: client.runId },
+        env: { ...process.env, TESTOMATIO_PROCEED: 'true', runId: client.runId, TESTOMATIO_RUN: client.runId },
       });
 
       cmd.on('close', async code => {
