@@ -111,15 +111,16 @@ program
           return;
         }
 
+        const grepPattern = tests.join('|');
+        command += ` --grep "(${grepPattern})"`;
+
+        debug(`Full "grep" command: --grep "(${grepPattern})"`);
+
         if(opts.filterList) {
-          console.log(APP_PREFIX, pc.green(`Matched test/suite IDs: ${tests}`));
+          console.log(APP_PREFIX, pc.blue(`Matched test/suite IDs: ${tests}`));
+          console.log(APP_PREFIX, pc.green(`Full Running Command: ${command}`));
           return;
         }
-
-        const grepPattern = tests.join('|');
-        debug(`Full "grep" command: --grep "(${grepPattern})"`);
-        
-        command += ` --grep "(${grepPattern})"`;
       } 
       catch (err) {
         console.log(APP_PREFIX, err.message || err);
