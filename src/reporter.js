@@ -2,6 +2,7 @@ import Client from './client.js';
 import * as TestomatioConstants from './constants.js';
 import { services } from './services/index.js';
 import reporterFunctions from './reporter-functions.js';
+import { isPlaywright } from './helpers.js';
 
 export { Client };
 export const STATUS = TestomatioConstants.STATUS;
@@ -9,7 +10,8 @@ export const artifact = reporterFunctions.artifact;
 export const log = reporterFunctions.log;
 export const logger = services.logger;
 export const meta = reporterFunctions.keyValue;
-export const step = reporterFunctions.step;
+export let step = reporterFunctions.step;
+if (isPlaywright) step = log;
 export const label = reporterFunctions.label;
 export const linkTest = reporterFunctions.linkTest;
 export const linkJira = reporterFunctions.linkJira;
@@ -32,7 +34,7 @@ export default {
   log: reporterFunctions.log,
   logger: services.logger,
   meta: reporterFunctions.keyValue,
-  step: reporterFunctions.step,
+  step: isPlaywright ? reporterFunctions.log : reporterFunctions.step,
   label: reporterFunctions.label,
   linkTest: reporterFunctions.linkTest,
   linkJira: reporterFunctions.linkJira,

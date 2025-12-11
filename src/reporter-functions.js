@@ -1,3 +1,4 @@
+import { isPlaywright } from './helpers.js';
 import { services } from './services/index.js';
 
 /**
@@ -18,7 +19,6 @@ function saveArtifact(data, context = null) {
  * @returns {void}
  */
 function logMessage(...args) {
-  showPlaywrightWarning('log', 'Use console.log instead.');
   services.logger._templateLiteralLog(...args);
 }
 
@@ -28,8 +28,6 @@ function logMessage(...args) {
  * @returns {void}
  */
 function addStep(message) {
-  showPlaywrightWarning('step', 'Use test.step instead.');
-
   services.logger.step(message);
 }
 
@@ -85,7 +83,7 @@ function linkJira(...jiraIds) {
 }
 
 function showPlaywrightWarning(functionName, recommendation) {
-  if (process.env.PLAYWRIGHT_TEST || process.env.PLAYWRIGHT) {
+  if (isPlaywright) {
     console.warn(`[TESTOMATIO] '${functionName}' function is not supported for Playwright. ${recommendation}`);
   }
 }
