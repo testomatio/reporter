@@ -29,6 +29,9 @@ function logMessage(...args) {
  */
 function addStep(message) {
   services.logger.step(message);
+  // this is done because Playwright reporter intercepts console logs and then we gather them and show on Testomat
+  // if not console.log, the step message will be lost from reporter
+  if (isPlaywright) console.log(`Step: ${message}`);
 }
 
 /**
