@@ -15,6 +15,7 @@ function setS3Credentials(artifacts) {
   if (artifacts.BUCKET) process.env.S3_BUCKET = artifacts.BUCKET;
   if (artifacts.SESSION_TOKEN) process.env.S3_SESSION_TOKEN = artifacts.SESSION_TOKEN;
   if (artifacts.presign) process.env.TESTOMATIO_PRIVATE_ARTIFACTS = '1';
+  if (artifacts.stack_artifacts) process.env.TESTOMATIO_STACK_ARTIFACTS = '1';
   // endpoint is not received from the server; and shuld be empty if IAM used (credentails obtained from the testomat)
   process.env.S3_ENDPOINT = artifacts.ENDPOINT || '';
 }
@@ -25,6 +26,12 @@ function setS3Credentials(artifacts) {
  * @returns {Object|null} - An object containing the generated request parameters, or null if the type is invalid.
  */
 function generateFilterRequestParams(params) {
+  // Defensive check: ensure params is an object
+  if (!params || typeof params !== 'object') {
+    console.error(APP_PREFIX, `Invalid parameters provided. Expected an object, got: ${typeof params}`);
+    return;
+  }
+
   const { type, id, apiKey } = params;
 
   if (!type) {
@@ -53,8 +60,12 @@ function generateFilterRequestParams(params) {
  *                   The object has properties "type" and "id".
  */
 function parseFilterParams(opts) {
-  const [type, id] = opts.split('=');
+  const [type, ...idParts] = opts.split('=');
+  const id = idParts.join('=');
+  
   const validType = updateFilterType(type);
+
+  if (!validType) return undefined;
 
   return {
     type: validType,
@@ -69,6 +80,8 @@ function parseFilterParams(opts) {
  *                            Returns undefined if the type is not valid.
  */
 function updateFilterType(type) {
+  if (!type || typeof type !== 'string') return;
+
   let typeLowerCase = type.toLowerCase();
 
   const filterTypes = ['tag-name', 'plan', 'label', 'jira-ticket'];
@@ -86,7 +99,7 @@ function updateFilterType(type) {
   ];
 
   if (!filterTypes.includes(typeLowerCase)) {
-    console.log(APP_PREFIX, `❗❗❗ Invalid "filter=${type}" start settings! Available option list: ${filterTypes}`);
+    console.log(APP_PREFIX, `❗❗❗ Invalid filter: "${type}" start settings! Available option list: ${filterTypes}`);
     return;
   }
 
@@ -120,4 +133,40 @@ function fullName(t) {
   return line;
 }
 
-export { updateFilterType, parseFilterParams, generateFilterRequestParams, setS3Credentials, statusEmoji, fullName };
+/**
+ * Parses a comma-separated list of key-value pairs into an options object.
+ *
+ * The input string should be formatted as `"key1=value1,key2=value2,..."`.
+ * Whitespace around keys and values is trimmed. If the input is empty or undefined,
+ * an empty object is returned.
+ *
+ * @param {string} [optionsStr] - A comma-separated string of key=value pairs.
+ * @returns {Object} An object mapping option keys to their string values.
+ *
+ * @example
+ * parsePipeOptions('foo=bar,baz=qux');
+ * => Returns: { foo: 'bar', baz: 'qux' }
+ */
+function parsePipeOptions(optionsStr) {
+  const options = {};
+  if (!optionsStr) return options;
+
+  const pairs = optionsStr.split(',');
+  for (const pair of pairs) {
+    const [key, value] = pair.split('=');
+    if (key && value) {
+      options[key.trim()] = value.trim();
+    }
+  }
+  return options;
+}
+
+export { 
+  updateFilterType, 
+  parseFilterParams, 
+  generateFilterRequestParams, 
+  setS3Credentials, 
+  statusEmoji, 
+  fullName,
+  parsePipeOptions
+};

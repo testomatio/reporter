@@ -81,6 +81,7 @@ program
   .description('Run tests with the specified command')
   .argument('<command>', 'Test runner command')
   .option('--filter <filter>', 'Additional execution filter')
+  .option('--filter-list <filter>', 'Get a list of all tests by filter before running')
   .option('--kind <type>', 'Specify run type: automated, manual, or mixed')
   .action(async (command, opts) => {
     const apiKey = process.env['INPUT_TESTOMATIO-KEY'] || config.TESTOMATIO;
@@ -93,15 +94,39 @@ program
 
     const client = new TestomatClient({ apiKey, title });
 
-    if (opts.filter) {
-      const [pipe, ...optsArray] = opts.filter.split(':');
+    if (opts.filter || opts.filterList) {
+      // Example of use: npx @testomatio/reporter run "npx jest" --filter "testomatio:tag-name=frontend"
+      // Example of use: npx @testomatio/reporter run "npx jest" --filter "coverage:file=coverage.yml"
+      // Example of use: npx @testomatio/reporter run "npx jest" --filter-list "coverage:file=coverage.yml"
+      const [pipe, ...optsArray] = opts?.filter ? opts?.filter.split(':') : opts?.filterList.split(':');
       const pipeOptions = optsArray.join(':');
 
+      const prepareRunParams = { pipe, pipeOptions };
+
       try {
-        const tests = await client.prepareRun({ pipe, pipeOptions });
-        command = applyFilter(command, tests);
-      } catch (err) {
-        console.log(APP_PREFIX, err);
+        const tests = await client.prepareRun(prepareRunParams);
+
+        if (!tests || tests.length === 0) {
+          console.log(APP_PREFIX, pc.yellow('No tests found.'));
+          return;
+        }
+
+        const pattern = `(${tests.join('|')})`;
+        const filteredCommand = applyFilter(command, tests);
+
+        debug(`Execution pattern: "${pattern}"`);
+
+        if(opts.filterList) {
+          console.log(APP_PREFIX, pc.blue(`Matched test/suite IDs: ${tests.join(', ')}`));
+          console.log(APP_PREFIX, pc.green(`Full Running Command: ${filteredCommand}`));
+          return;
+        }
+        
+        command = filteredCommand;
+      } 
+      catch (err) {
+        console.log(APP_PREFIX, err.message || err);
+        return;
       }
     }
 
@@ -111,7 +136,7 @@ program
       const testCmds = command.split(' ');
       const cmd = spawn(testCmds[0], testCmds.slice(1), {
         stdio: 'inherit',
-        env: { ...process.env, TESTOMATIO_PROCEED: 'true', runId: client.runId },
+        env: { ...process.env, TESTOMATIO_PROCEED: 'true', runId: client.runId, TESTOMATIO_RUN: client.runId },
       });
 
       cmd.on('close', async code => {

@@ -260,7 +260,7 @@ describe('TestomatioPipe', () => {
     it('should handle invalid filter format', async () => {
       const result = await testomatioPipe.prepareRun('invalid-filter-format');
 
-      expect(result).to.be.undefined;
+      expect(result).to.deep.equal([]);
     });
 
     it('should verify correct request parameters are sent', async () => {

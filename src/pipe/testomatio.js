@@ -129,17 +129,23 @@ class TestomatioPipe {
   async prepareRun(opts) {
     if (!this.isEnabled) return [];
 
-    const { type, id } = parseFilterParams(opts);
+    const clearOptions = parseFilterParams(opts);
+
+    if (!clearOptions) {
+      return [];
+    }
+
+    const { type, id } = clearOptions;
 
     try {
       const q = generateFilterRequestParams({
         type,
         id,
-        apiKey: this.apiKey.trim(),
+        apiKey: this?.apiKey?.trim(),
       });
 
       if (!q) {
-        return;
+        return [];
       }
 
       const resp = await this.client.request({

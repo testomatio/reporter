@@ -96,13 +96,42 @@ Alias for this command – `test`, e.g. `npx @testomatio/reporter test [options]
 
 ```bash
 npx @testomatio/reporter run "npm test"
-npx @testomatio/reporter run "npx jest" --filter "testomatio:tag=frontend"
+npx @testomatio/reporter run "npx jest" --filter-list "testomatio:tag-name=frontend"
+npx @testomatio/reporter run "npx jest" --filter "testomatio:tag-name=frontend"
 npx @testomatio/reporter run "npx jest" --filter "testomatio:label=Smoke"
 npx @testomatio/reporter run "npx jest" --filter "testomatio:jira=TC-123"
 npx @testomatio/reporter run "npx jest" --filter "testomatio:plan=a123fb12"
+npx @testomatio/reporter run "npx jest" --filter-list "coverage:file=coverage.yml,diff=user-branch"
+npx @testomatio/reporter run "npx jest" --filter "coverage:file=coverage.yml,diff=user-branch"
+npx @testomatio/reporter run "npx jest" --filter "coverage:file=coverage/coverage.yml"
 npx @testomatio/reporter run "mocha tests/" --env-file .env.test
 npx @testomatio/reporter run "npm test" --kind manual
 npx @testomatio/reporter run "npx jest" --kind mixed
+```
+
+#### 3.1 run by "--filter" option
+
+⚠️ Note on unsupported --filter modes
+
+If you provide a --filter value that does not start with either `testomatio:` or `coverage:` ,
+the reporter will stop execution and print a clear error message.
+
+Example of wrong command:
+```bash
+npx @testomatio/reporter run "npx jest" --filter "tcoverage:file=coverage.yml"
+```
+
+Output:
+
+```bash
+[TESTOMATIO] 🚫 Unsupported --filter mode: "tcoverage".
+✅ Supported formats:
+   • "coverage:<options>" (e.g., --filter-list "coverage:file=coverage.yml")
+   • "coverage:<options>" (e.g., --filter "coverage:file=coverage.yml")
+   • "testomatio:<options>" (e.g., --filter-list "testomatio:tag-name=smoke")
+   • "testomatio:<options>" (e.g., --filter "testomatio:tag-name=smoke")
+
+👉 Please refer to the documentation for supported options and usage examples.
 ```
 
 > Previously known as: `npx start-test-run -c "command"` _(before 1.6.0)_

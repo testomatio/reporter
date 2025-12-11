@@ -20,7 +20,7 @@ Testomat.io Reporter (this npm package) supports:
 - 💯 Free & open-source.
 - 📊 Public and private Run reports on cloud via [Testomat.io App](https://testomat.io) 👇
 
-![](./docs/images/app.png)
+<img width="1920" height="1085" alt="image" src="https://github.com/user-attachments/assets/cf823e8b-1305-4ed2-a7c5-712efec12ceb" />
 
 ## How It Works
 
