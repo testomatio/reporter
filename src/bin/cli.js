@@ -12,6 +12,7 @@ import { config } from '../config.js';
 import { readLatestRunId } from '../utils/utils.js';
 import pc from 'picocolors';
 import { filesize as prettyBytes } from 'filesize';
+import { execSync } from 'child_process';
 import dotenv from 'dotenv';
 import Replay from '../replay.js';
 
@@ -86,10 +87,28 @@ program
   .action(async (command, opts) => {
     const apiKey = process.env['INPUT_TESTOMATIO-KEY'] || config.TESTOMATIO;
     let title = process.env.TESTOMATIO_TITLE;
+    const hasSharedRunEnv = !!process.env.TESTOMATIO_SHARED_RUN_TIMEOUT || !!process.env.TESTOMATIO_SHARED_RUN;
 
-    if (!title && (process.env.TESTOMATIO_SHARED_RUN_TIMEOUT || process.env.TESTOMATIO_SHARED_RUN)) {
-      const date = new Date().toISOString().split('T')[0];
-      title = `Shared Run - ${date}`;
+    if (!title && hasSharedRunEnv) {
+      let sha;
+
+      try {
+        sha = execSync('git rev-parse --short HEAD', {
+          stdio: ['ignore', 'pipe', 'ignore']
+        }).toString().trim();
+      } catch (error) {
+        console.log(APP_PREFIX, pc.red('Failed to resolve git commit SHA for shared run title.'));
+        console.log(APP_PREFIX,'Please run the tests inside a Git repository or set TESTOMATIO_TITLE explicitly.');
+        process.exit(1);
+      }
+
+      if (!sha) {
+        console.log(APP_PREFIX, pc.red('Git returned empty SHA for shared run title.'));
+        console.log(APP_PREFIX, 'Please set TESTOMATIO_TITLE explicitly or check your Git repository.');
+        process.exit(1);
+      }
+
+      title = `Shared Run - ${sha}`;
       console.log(APP_PREFIX, `🔄 Auto-generated title for shared run: ${title}`);
     }
 
