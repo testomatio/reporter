@@ -85,7 +85,13 @@ program
   .option('--kind <type>', 'Specify run type: automated, manual, or mixed')
   .action(async (command, opts) => {
     const apiKey = process.env['INPUT_TESTOMATIO-KEY'] || config.TESTOMATIO;
-    const title = process.env.TESTOMATIO_TITLE;
+    let title = process.env.TESTOMATIO_TITLE;
+
+    if (!title && (process.env.TESTOMATIO_SHARED_RUN_TIMEOUT || process.env.TESTOMATIO_SHARED_RUN)) {
+      const date = new Date().toISOString().split('T')[0];
+      title = `Shared Run - ${date}`;
+      console.log(APP_PREFIX, `🔄 Auto-generated title for shared run: ${title}`);
+    }
 
     if (!command || !command.split) {
       console.log(APP_PREFIX, `No command provided. Use -c option to launch a test runner.`);
@@ -149,6 +155,9 @@ program
     };
 
     const createRunParams = {};
+    if (title) {
+      createRunParams.title = title;
+    }
     if (opts.kind) {
       createRunParams.kind = opts.kind;
     }

@@ -46,7 +46,14 @@ class TestomatioPipe {
     this.store = store || {};
     this.title = params.title || process.env.TESTOMATIO_TITLE;
     this.sharedRun = !!process.env.TESTOMATIO_SHARED_RUN;
-    this.sharedRunTimeout = !!process.env.TESTOMATIO_SHARED_RUN_TIMEOUT;
+    this.sharedRunTimeout = process.env.TESTOMATIO_SHARED_RUN_TIMEOUT
+      ? parseInt(process.env.TESTOMATIO_SHARED_RUN_TIMEOUT, 10)
+      : undefined;
+
+    if (this.sharedRunTimeout && !this.sharedRun) {
+      debug('Auto-enabling sharedRun because sharedRunTimeout is set');
+      this.sharedRun = true;
+    }
     this.groupTitle = params.groupTitle || process.env.TESTOMATIO_RUNGROUP_TITLE;
     this.env = process.env.TESTOMATIO_ENV;
     this.label = process.env.TESTOMATIO_LABEL;
