@@ -15,8 +15,9 @@ declare module '@testomatio/reporter' {
   /**
    * Similar to "log" function but marks message in report as a step
    * @param message - step message
+   * @param logs – object with additional info (e.g. logs)
    */
-  export function step(message: string): void;
+  export function step(message: string, logs: {[key: string]: any}): void;
 
   /**
    * Add key-value pair(s) to the test report
