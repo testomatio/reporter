@@ -25,17 +25,18 @@ function logMessage(...args) {
 /**
  * Similar to "log" function but marks message in report as a step
  * @param {string} message - step message
- * @param {{[key: string]: any}} [logs={}] - optional key-value object with additional info, e.g. logs
+ * @param {{[key: string]: any}} [logs={}] optional key-value object with additional info, e.g. logs
  * @returns {void}
  *
  * Example:
  * step('Get response', { logs: {status: 'success'} });
  */
 function addStep(message, logs = {}) {
-  services.logger.step(message, logs);
   // this is done because Playwright reporter intercepts console logs and then we gather them and show on Testomat
   // if not console.log, the step message will be lost from reporter
   if (isPlaywright) services.logger._templateLiteralLog(message, logs);
+  // all other frameworks
+  else services.logger.step(message, logs);
 }
 
 /**
