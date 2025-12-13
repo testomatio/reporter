@@ -93,7 +93,7 @@ describe('Your suite @S12345678', () => {
     step`Login successful`;
     assert(something);
 
-    // You can also pass additional info to the step
+    // You can also pass additional info to the step in 2nd argument as key-value object
     const response = await api.get('/endpoint');
     step('Get response', { status: response.status, body: response.body });
   });
