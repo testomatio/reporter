@@ -92,6 +92,10 @@ describe('Your suite @S12345678', () => {
     await page.login();
     step`Login successful`;
     assert(something);
+
+    // You can also pass additional info to the step
+    const response = await api.get('/endpoint');
+    step('Get response', { status: response.status, body: response.body });
   });
 });
 ```

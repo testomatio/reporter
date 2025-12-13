@@ -104,8 +104,8 @@ class Logger {
   }
 
   /**
-   * Tagget template literal. Allows to use different syntaxes:
-   * 1. Tagget template: log`text ${someVar}`
+   * Tagged template literal. Allows to use different syntaxes:
+   * 1. Tagged template: log`text ${someVar}`
    * 2. Standard: log(`text ${someVar}`)
    * 3. Standard with multiple arguments: log('text', someVar)
    */
