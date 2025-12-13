@@ -23,6 +23,51 @@ export class Replay {
   }
 
   /**
+   * Merge unique files from two arrays, avoiding duplicates
+   * @param {Array} existingFiles - Existing files array
+   * @param {Array} newFiles - New files to merge
+   * @returns {Array} Merged array without duplicates
+   */
+  mergeUniqueFiles(existingFiles, newFiles) {
+    if (!existingFiles || existingFiles.length === 0) return newFiles || [];
+    if (!newFiles || newFiles.length === 0) return existingFiles;
+
+    const unique = newFiles.filter(f => !existingFiles.includes(f));
+    return [...existingFiles, ...unique];
+  }
+
+  /**
+   * Merge unique artifacts from two arrays, avoiding duplicates based on path
+   * @param {Array} existingArtifacts - Existing artifacts array
+   * @param {Array} newArtifacts - New artifacts to merge
+   * @returns {Array} Merged array without duplicates
+   */
+  mergeUniqueArtifacts(existingArtifacts, newArtifacts) {
+    if (!existingArtifacts || existingArtifacts.length === 0) return newArtifacts || [];
+    if (!newArtifacts || newArtifacts.length === 0) return existingArtifacts;
+
+    const existingPaths = existingArtifacts.map(a => (typeof a === 'string' ? a : a.path));
+    const unique = newArtifacts.filter(a => {
+      const path = typeof a === 'string' ? a : a.path;
+      return !existingPaths.includes(path);
+    });
+    return [...existingArtifacts, ...unique];
+  }
+
+  /**
+   * Update test status, prioritizing passed status
+   * @param {Object} mergedTest - Test object to update
+   * @param {string} newStatus - New status to potentially apply
+   */
+  updateTestStatus(mergedTest, newStatus) {
+    if (newStatus === 'passed') {
+      mergedTest.status = 'passed';
+    } else if (!mergedTest.status || mergedTest.status !== 'passed') {
+      mergedTest.status = newStatus;
+    }
+  }
+
+  /**
    * Parse a debug file and extract test data
    * @param {string} debugFile - Path to the debug file
    * @returns {Object} Parsed debug data
@@ -80,28 +125,17 @@ export class Replay {
                 Object.keys(test).forEach(key => {
                   if (test[key] !== null && test[key] !== undefined) {
                     if (key === 'files' && Array.isArray(test[key]) && test[key].length > 0) {
-                      // Merge files arrays, removing duplicates
-                      const existingFiles = existingTest.files || [];
-                      const newFiles = test[key].filter(f => !existingFiles.includes(f));
-                      mergedTest.files = [...existingFiles, ...newFiles];
+                      mergedTest.files = this.mergeUniqueFiles(existingTest.files, test[key]);
                     } else if (key === 'artifacts' && Array.isArray(test[key]) && test[key].length > 0) {
-                      // Merge artifacts arrays, removing duplicates based on path
-                      const existingArtifacts = existingTest.artifacts || [];
-                      const existingPaths = existingArtifacts.map(a => (typeof a === 'string' ? a : a.path));
-                      const newArtifacts = test[key].filter(a => {
-                        const path = typeof a === 'string' ? a : a.path;
-                        return !existingPaths.includes(path);
-                      });
-                      mergedTest.artifacts = [...existingArtifacts, ...newArtifacts];
+                      mergedTest.artifacts = this.mergeUniqueArtifacts(existingTest.artifacts, test[key]);
+                    } else if (key === 'status') {
+                      this.updateTestStatus(mergedTest, test[key]);
                     } else if (
                       existingTest[key] === null ||
                       existingTest[key] === undefined ||
                       (Array.isArray(existingTest[key]) && existingTest[key].length === 0)
                     ) {
                       // Use new value if existing is null/undefined/empty array
-                      mergedTest[key] = test[key];
-                    } else if (key === 'status' && test[key] === 'passed') {
-                      // If test eventually passed after retry, use passed status
                       mergedTest[key] = test[key];
                     }
                   }
@@ -132,22 +166,14 @@ export class Replay {
               // Merge with existing test
               const mergedTest = { ...existingTest, ...test };
               // Preserve merged arrays
-              if (existingTest.files && test.files) {
-                const newFiles = test.files.filter(f => !existingTest.files.includes(f));
-                mergedTest.files = [...existingTest.files, ...newFiles];
+              if (existingTest.files || test.files) {
+                mergedTest.files = this.mergeUniqueFiles(existingTest.files, test.files);
               }
-              if (existingTest.artifacts && test.artifacts) {
-                const existingPaths = existingTest.artifacts.map(a => (typeof a === 'string' ? a : a.path));
-                const newArtifacts = test.artifacts.filter(a => {
-                  const path = typeof a === 'string' ? a : a.path;
-                  return !existingPaths.includes(path);
-                });
-                mergedTest.artifacts = [...existingTest.artifacts, ...newArtifacts];
+              if (existingTest.artifacts || test.artifacts) {
+                mergedTest.artifacts = this.mergeUniqueArtifacts(existingTest.artifacts, test.artifacts);
               }
-              // If test eventually passed after retry, use passed status
-              if (test.status === 'passed') {
-                mergedTest.status = 'passed';
-              }
+              // Update status with passed priority
+              this.updateTestStatus(mergedTest, test.status);
               testsMap.set(test.rid, mergedTest);
             } else {
               testsMap.set(test.rid, { ...test });
