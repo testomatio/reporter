@@ -669,4 +669,460 @@ describe('ReplayService', () => {
       });
     });
   });
+
+  describe('retry handling', () => {
+    let originalCreateRun;
+    let originalAddTestRun;
+    let originalUpdateRunStatus;
+    let mockClient;
+
+    beforeEach(() => {
+      mockClient = {
+        runId: 'test-run-id',
+        createRunCalled: false,
+        addTestRunCalls: [],
+        updateRunStatusCalls: [],
+      };
+
+      originalCreateRun = TestomatClient.prototype.createRun;
+      originalAddTestRun = TestomatClient.prototype.addTestRun;
+      originalUpdateRunStatus = TestomatClient.prototype.updateRunStatus;
+
+      TestomatClient.prototype.createRun = function () {
+        mockClient.createRunCalled = true;
+        this.runId = 'test-run-id';
+        return Promise.resolve();
+      };
+
+      TestomatClient.prototype.addTestRun = function (status, test) {
+        mockClient.addTestRunCalls.push({ status, test });
+        return Promise.resolve();
+      };
+
+      TestomatClient.prototype.updateRunStatus = function (status) {
+        mockClient.updateRunStatusCalls.push({ status });
+        return Promise.resolve();
+      };
+    });
+
+    afterEach(() => {
+      TestomatClient.prototype.createRun = originalCreateRun;
+      TestomatClient.prototype.addTestRun = originalAddTestRun;
+      TestomatClient.prototype.updateRunStatus = originalUpdateRunStatus;
+    });
+
+    it('should track retry attempts for tests with same rid', () => {
+      const debugData = [
+        { action: 'createRun', params: {} },
+        {
+          action: 'addTestsBatch',
+          tests: [
+            { id: 'test1', rid: 'rid-1', status: 'failed', title: 'Test 1 - Attempt 1' },
+            { id: 'test2', rid: 'rid-2', status: 'passed', title: 'Test 2' },
+          ],
+        },
+        {
+          action: 'addTestsBatch',
+          tests: [
+            { id: 'test1', rid: 'rid-1', status: 'failed', title: 'Test 1 - Attempt 2' },
+          ],
+        },
+        {
+          action: 'addTestsBatch',
+          tests: [
+            { id: 'test1', rid: 'rid-1', status: 'passed', title: 'Test 1 - Attempt 3' },
+          ],
+        },
+      ];
+
+      fs.writeFileSync(debugFile, debugData.map(line => JSON.stringify(line)).join('\n'));
+
+      const result = replayService.parseDebugFile(debugFile);
+
+      expect(result.tests).to.have.length(2);
+      expect(result.totalRetries).to.equal(2); // 2 retries for test1
+
+      const retriedTest = result.tests.find(t => t.rid === 'rid-1');
+      expect(retriedTest).to.exist;
+      expect(retriedTest.retryAttempts).to.equal(2);
+      expect(retriedTest.status).to.equal('passed'); // Final status after retries
+    });
+
+    it('should merge artifacts from multiple retry attempts', () => {
+      const debugData = [
+        { action: 'createRun', params: {} },
+        {
+          action: 'addTestsBatch',
+          tests: [
+            {
+              id: 'test1',
+              rid: 'rid-1',
+              status: 'failed',
+              artifacts: [{ path: '/path/to/screenshot1.png', type: 'image/png' }],
+            },
+          ],
+        },
+        {
+          action: 'addTestsBatch',
+          tests: [
+            {
+              id: 'test1',
+              rid: 'rid-1',
+              status: 'passed',
+              artifacts: [{ path: '/path/to/screenshot2.png', type: 'image/png' }],
+            },
+          ],
+        },
+      ];
+
+      fs.writeFileSync(debugFile, debugData.map(line => JSON.stringify(line)).join('\n'));
+
+      const result = replayService.parseDebugFile(debugFile);
+
+      expect(result.tests).to.have.length(1);
+      const test = result.tests[0];
+      expect(test.artifacts).to.have.length(2);
+      expect(test.artifacts[0].path).to.equal('/path/to/screenshot1.png');
+      expect(test.artifacts[1].path).to.equal('/path/to/screenshot2.png');
+      expect(test.retryAttempts).to.equal(1);
+    });
+
+    it('should not duplicate artifacts with same path', () => {
+      const debugData = [
+        { action: 'createRun', params: {} },
+        {
+          action: 'addTestsBatch',
+          tests: [
+            {
+              id: 'test1',
+              rid: 'rid-1',
+              status: 'failed',
+              artifacts: ['/path/to/screenshot.png'],
+            },
+          ],
+        },
+        {
+          action: 'addTestsBatch',
+          tests: [
+            {
+              id: 'test1',
+              rid: 'rid-1',
+              status: 'passed',
+              artifacts: ['/path/to/screenshot.png'], // Same artifact
+            },
+          ],
+        },
+      ];
+
+      fs.writeFileSync(debugFile, debugData.map(line => JSON.stringify(line)).join('\n'));
+
+      const result = replayService.parseDebugFile(debugFile);
+
+      expect(result.tests).to.have.length(1);
+      const test = result.tests[0];
+      expect(test.artifacts).to.have.length(1); // Should not be duplicated
+      expect(test.artifacts[0]).to.equal('/path/to/screenshot.png');
+    });
+
+    it('should merge files from multiple retry attempts without duplicates', () => {
+      const debugData = [
+        { action: 'createRun', params: {} },
+        {
+          action: 'addTestsBatch',
+          tests: [
+            {
+              id: 'test1',
+              rid: 'rid-1',
+              status: 'failed',
+              files: ['/path/to/video1.mp4', '/path/to/log1.txt'],
+            },
+          ],
+        },
+        {
+          action: 'addTestsBatch',
+          tests: [
+            {
+              id: 'test1',
+              rid: 'rid-1',
+              status: 'passed',
+              files: ['/path/to/video1.mp4', '/path/to/log2.txt'], // video1 is duplicate
+            },
+          ],
+        },
+      ];
+
+      fs.writeFileSync(debugFile, debugData.map(line => JSON.stringify(line)).join('\n'));
+
+      const result = replayService.parseDebugFile(debugFile);
+
+      expect(result.tests).to.have.length(1);
+      const test = result.tests[0];
+      expect(test.files).to.have.length(3); // No duplicate video1
+      expect(test.files).to.include('/path/to/video1.mp4');
+      expect(test.files).to.include('/path/to/log1.txt');
+      expect(test.files).to.include('/path/to/log2.txt');
+    });
+
+    it('should use last status when multiple retries occur', () => {
+      const debugData = [
+        { action: 'createRun', params: {} },
+        {
+          action: 'addTestsBatch',
+          tests: [{ id: 'test1', rid: 'rid-1', status: 'failed' }],
+        },
+        {
+          action: 'addTestsBatch',
+          tests: [{ id: 'test1', rid: 'rid-1', status: 'passed' }],
+        },
+        {
+          action: 'addTestsBatch',
+          tests: [{ id: 'test1', rid: 'rid-1', status: 'failed' }], // Last status wins
+        },
+      ];
+
+      fs.writeFileSync(debugFile, debugData.map(line => JSON.stringify(line)).join('\n'));
+
+      const result = replayService.parseDebugFile(debugFile);
+
+      const test = result.tests[0];
+      expect(test.status).to.equal('passed'); // Passed status is prioritized
+    });
+
+    it('should handle retries in addTest entries', () => {
+      const debugData = [
+        { action: 'createRun', params: {} },
+        { action: 'addTest', testId: { id: 'test1', rid: 'rid-1', status: 'failed' } },
+        { action: 'addTest', testId: { id: 'test1', rid: 'rid-1', status: 'passed' } },
+      ];
+
+      fs.writeFileSync(debugFile, debugData.map(line => JSON.stringify(line)).join('\n'));
+
+      const result = replayService.parseDebugFile(debugFile);
+
+      expect(result.tests).to.have.length(1);
+      expect(result.totalRetries).to.equal(1);
+      const test = result.tests[0];
+      expect(test.retryAttempts).to.equal(1);
+      expect(test.status).to.equal('passed');
+    });
+
+    it('should report retry statistics in replay results', async () => {
+      const debugData = [
+        { action: 'createRun', params: {} },
+        {
+          action: 'addTestsBatch',
+          tests: [
+            { id: 'test1', rid: 'rid-1', status: 'failed' },
+            { id: 'test2', rid: 'rid-2', status: 'passed' },
+          ],
+        },
+        {
+          action: 'addTestsBatch',
+          tests: [
+            { id: 'test1', rid: 'rid-1', status: 'passed' },
+            { id: 'test2', rid: 'rid-2', status: 'passed' },
+          ],
+        },
+      ];
+
+      fs.writeFileSync(debugFile, debugData.map(line => JSON.stringify(line)).join('\n'));
+
+      const result = await replayService.replay(debugFile);
+
+      expect(result.totalRetries).to.equal(2); // Both tests have 1 retry each
+      expect(mockLogs.some(log => log.includes('2 retry attempts'))).to.be.true;
+    });
+  });
+
+  describe('artifact handling', () => {
+    it('should filter out non-existent artifacts', () => {
+      const existingFile = path.join(tempDir, 'existing.png');
+      fs.writeFileSync(existingFile, 'test data');
+
+      const artifacts = [
+        { path: existingFile, type: 'image/png' },
+        { path: '/non/existent/file.png', type: 'image/png' },
+        existingFile,
+        '/another/missing/file.jpg',
+      ];
+
+      const filtered = replayService.filterExistingArtifacts(artifacts);
+
+      expect(filtered).to.have.length(2);
+      expect(filtered[0].path).to.equal(existingFile);
+      expect(filtered[1]).to.equal(existingFile);
+    });
+
+    it('should filter out non-existent files', () => {
+      const existingFile = path.join(tempDir, 'existing.log');
+      fs.writeFileSync(existingFile, 'test data');
+
+      const files = [existingFile, '/non/existent/file.log', '/another/missing/file.txt'];
+
+      const filtered = replayService.filterExistingFiles(files);
+
+      expect(filtered).to.have.length(1);
+      expect(filtered[0]).to.equal(existingFile);
+    });
+
+    it('should handle empty artifacts array', () => {
+      const filtered = replayService.filterExistingArtifacts([]);
+      expect(filtered).to.have.length(0);
+    });
+
+    it('should handle null artifacts', () => {
+      const filtered = replayService.filterExistingArtifacts(null);
+      expect(filtered).to.have.length(0);
+    });
+
+    it('should handle artifacts without path property', () => {
+      const artifacts = [{ type: 'image/png' }, { name: 'file.png' }];
+
+      const filtered = replayService.filterExistingArtifacts(artifacts);
+
+      expect(filtered).to.have.length(0);
+    });
+  });
+
+  describe('artifact and file filtering during replay', () => {
+    let originalCreateRun;
+    let originalAddTestRun;
+    let originalUpdateRunStatus;
+    let mockClient;
+
+    beforeEach(() => {
+      mockClient = {
+        runId: 'test-run-id',
+        createRunCalled: false,
+        addTestRunCalls: [],
+        updateRunStatusCalls: [],
+      };
+
+      originalCreateRun = TestomatClient.prototype.createRun;
+      originalAddTestRun = TestomatClient.prototype.addTestRun;
+      originalUpdateRunStatus = TestomatClient.prototype.updateRunStatus;
+
+      TestomatClient.prototype.createRun = function () {
+        mockClient.createRunCalled = true;
+        this.runId = 'test-run-id';
+        return Promise.resolve();
+      };
+
+      TestomatClient.prototype.addTestRun = function (status, test) {
+        mockClient.addTestRunCalls.push({ status, test });
+        return Promise.resolve();
+      };
+
+      TestomatClient.prototype.updateRunStatus = function (status) {
+        mockClient.updateRunStatusCalls.push({ status });
+        return Promise.resolve();
+      };
+    });
+
+    afterEach(() => {
+      TestomatClient.prototype.createRun = originalCreateRun;
+      TestomatClient.prototype.addTestRun = originalAddTestRun;
+      TestomatClient.prototype.updateRunStatus = originalUpdateRunStatus;
+    });
+
+    it('should filter missing artifacts during replay', async () => {
+      const existingFile = path.join(tempDir, 'screenshot.png');
+      fs.writeFileSync(existingFile, 'test data');
+
+      const debugData = [
+        { action: 'createRun', params: {} },
+        {
+          action: 'addTestsBatch',
+          tests: [
+            {
+              id: 'test1',
+              status: 'passed',
+              artifacts: [
+                { path: existingFile, type: 'image/png' },
+                { path: '/missing/file.png', type: 'image/png' },
+              ],
+              files: [existingFile, '/missing/video.mp4'],
+            },
+          ],
+        },
+      ];
+
+      fs.writeFileSync(debugFile, debugData.map(line => JSON.stringify(line)).join('\n'));
+
+      const result = await replayService.replay(debugFile);
+
+      expect(result.totalArtifacts).to.equal(2);
+      expect(result.missingArtifacts).to.equal(1);
+      expect(result.availableArtifacts).to.equal(1);
+      expect(result.totalFiles).to.equal(2);
+      expect(result.missingFiles).to.equal(1);
+      expect(result.availableFiles).to.equal(1);
+
+      // Check that test was sent with only available artifacts/files
+      expect(mockClient.addTestRunCalls).to.have.length(1);
+      const sentTest = mockClient.addTestRunCalls[0].test;
+      expect(sentTest.artifacts).to.have.length(1);
+      expect(sentTest.artifacts[0].path).to.equal(existingFile);
+      expect(sentTest.files).to.have.length(1);
+      expect(sentTest.files[0]).to.equal(existingFile);
+    });
+
+    it('should log artifact filtering information', async () => {
+      const debugData = [
+        { action: 'createRun', params: {} },
+        {
+          action: 'addTestsBatch',
+          tests: [
+            {
+              id: 'test1',
+              status: 'passed',
+              artifacts: ['/missing1.png', '/missing2.png'],
+            },
+          ],
+        },
+      ];
+
+      fs.writeFileSync(debugFile, debugData.map(line => JSON.stringify(line)).join('\n'));
+
+      await replayService.replay(debugFile);
+
+      expect(mockLogs.some(log => log.includes('2 artifacts'))).to.be.true;
+      expect(mockLogs.some(log => log.includes('0 available, 2 missing'))).to.be.true;
+      expect(mockLogs.some(log => log.includes('Missing artifacts/files will be skipped'))).to.be.true;
+    });
+
+    it('should report artifact statistics in dry run', async () => {
+      const dryRunService = new ReplayService({
+        apiKey: 'test-key',
+        dryRun: true,
+        onLog: mockOnLog,
+      });
+
+      const existingFile = path.join(tempDir, 'file.png');
+      fs.writeFileSync(existingFile, 'test data');
+
+      const debugData = [
+        { action: 'createRun', params: {} },
+        {
+          action: 'addTestsBatch',
+          tests: [
+            {
+              id: 'test1',
+              status: 'passed',
+              artifacts: [existingFile, '/missing.png'],
+            },
+          ],
+        },
+      ];
+
+      fs.writeFileSync(debugFile, debugData.map(line => JSON.stringify(line)).join('\n'));
+
+      const result = await dryRunService.replay(debugFile);
+
+      expect(result.dryRun).to.be.true;
+      expect(result.totalArtifacts).to.equal(2);
+      expect(result.missingArtifacts).to.equal(1);
+      expect(result.availableArtifacts).to.equal(1);
+    });
+  });
 });

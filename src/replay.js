@@ -47,6 +47,7 @@ export class Replay {
     let parseErrors = 0;
     const testsMap = new Map(); // Use Map to deduplicate by rid
     const testsWithoutRid = []; // For tests without rid (backward compatibility)
+    const testRetries = new Map(); // Track retry attempts by rid
     const envVars = {};
     let runId = null;
 
@@ -70,22 +71,37 @@ export class Replay {
               // Handle tests with rid (deduplicate)
               const existingTest = testsMap.get(test.rid);
               if (existingTest) {
+                // Track retry attempts
+                const retryCount = testRetries.get(test.rid) || 0;
+                testRetries.set(test.rid, retryCount + 1);
+
                 // Merge test data - prioritize non-null/non-empty values
                 const mergedTest = { ...existingTest };
                 Object.keys(test).forEach(key => {
                   if (test[key] !== null && test[key] !== undefined) {
                     if (key === 'files' && Array.isArray(test[key]) && test[key].length > 0) {
-                      // Merge files arrays
-                      mergedTest.files = [...(existingTest.files || []), ...test[key]];
+                      // Merge files arrays, removing duplicates
+                      const existingFiles = existingTest.files || [];
+                      const newFiles = test[key].filter(f => !existingFiles.includes(f));
+                      mergedTest.files = [...existingFiles, ...newFiles];
                     } else if (key === 'artifacts' && Array.isArray(test[key]) && test[key].length > 0) {
-                      // Merge artifacts arrays
-                      mergedTest.artifacts = [...(existingTest.artifacts || []), ...test[key]];
+                      // Merge artifacts arrays, removing duplicates based on path
+                      const existingArtifacts = existingTest.artifacts || [];
+                      const existingPaths = existingArtifacts.map(a => (typeof a === 'string' ? a : a.path));
+                      const newArtifacts = test[key].filter(a => {
+                        const path = typeof a === 'string' ? a : a.path;
+                        return !existingPaths.includes(path);
+                      });
+                      mergedTest.artifacts = [...existingArtifacts, ...newArtifacts];
                     } else if (
                       existingTest[key] === null ||
                       existingTest[key] === undefined ||
                       (Array.isArray(existingTest[key]) && existingTest[key].length === 0)
                     ) {
                       // Use new value if existing is null/undefined/empty array
+                      mergedTest[key] = test[key];
+                    } else if (key === 'status' && test[key] === 'passed') {
+                      // If test eventually passed after retry, use passed status
                       mergedTest[key] = test[key];
                     }
                   }
@@ -109,8 +125,29 @@ export class Replay {
             // Handle tests with rid (deduplicate)
             const existingTest = testsMap.get(test.rid);
             if (existingTest) {
+              // Track retry attempts
+              const retryCount = testRetries.get(test.rid) || 0;
+              testRetries.set(test.rid, retryCount + 1);
+
               // Merge with existing test
               const mergedTest = { ...existingTest, ...test };
+              // Preserve merged arrays
+              if (existingTest.files && test.files) {
+                const newFiles = test.files.filter(f => !existingTest.files.includes(f));
+                mergedTest.files = [...existingTest.files, ...newFiles];
+              }
+              if (existingTest.artifacts && test.artifacts) {
+                const existingPaths = existingTest.artifacts.map(a => (typeof a === 'string' ? a : a.path));
+                const newArtifacts = test.artifacts.filter(a => {
+                  const path = typeof a === 'string' ? a : a.path;
+                  return !existingPaths.includes(path);
+                });
+                mergedTest.artifacts = [...existingTest.artifacts, ...newArtifacts];
+              }
+              // If test eventually passed after retry, use passed status
+              if (test.status === 'passed') {
+                mergedTest.status = 'passed';
+              }
               testsMap.set(test.rid, mergedTest);
             } else {
               testsMap.set(test.rid, { ...test });
@@ -138,6 +175,16 @@ export class Replay {
     // Combine tests with rid and tests without rid
     const allTests = [...Array.from(testsMap.values()), ...testsWithoutRid];
 
+    // Add retry information to tests
+    for (const test of allTests) {
+      if (test.rid && testRetries.has(test.rid)) {
+        const retryCount = testRetries.get(test.rid);
+        if (retryCount > 0) {
+          test.retryAttempts = retryCount;
+        }
+      }
+    }
+
     return {
       runParams,
       finishParams,
@@ -146,7 +193,51 @@ export class Replay {
       parseErrors,
       totalLines: lines.length,
       runId,
+      totalRetries: Array.from(testRetries.values()).reduce((sum, count) => sum + count, 0),
     };
+  }
+
+  /**
+   * Filter artifacts to only include files that exist on the file system
+   * @param {Array} artifacts - Array of artifact objects or paths
+   * @returns {Array} Filtered artifacts array
+   */
+  filterExistingArtifacts(artifacts) {
+    if (!artifacts || !Array.isArray(artifacts) || artifacts.length === 0) {
+      return [];
+    }
+
+    return artifacts.filter(artifact => {
+      const filePath = typeof artifact === 'string' ? artifact : artifact.path;
+      if (!filePath) return false;
+
+      try {
+        return fs.existsSync(filePath);
+      } catch (err) {
+        return false;
+      }
+    });
+  }
+
+  /**
+   * Filter files to only include those that exist on the file system
+   * @param {Array} files - Array of file paths
+   * @returns {Array} Filtered files array
+   */
+  filterExistingFiles(files) {
+    if (!files || !Array.isArray(files) || files.length === 0) {
+      return [];
+    }
+
+    return files.filter(filePath => {
+      if (!filePath) return false;
+
+      try {
+        return fs.existsSync(filePath);
+      } catch (err) {
+        return false;
+      }
+    });
   }
 
   /**
@@ -180,12 +271,49 @@ export class Replay {
 
     // Parse the debug file
     const debugData = this.parseDebugFile(debugFile);
-    const { runParams, finishParams, tests, envVars, runId } = debugData;
+    const { runParams, finishParams, tests, envVars, runId, totalRetries } = debugData;
 
     this.onLog(`Found ${tests.length} tests to replay`);
+    if (totalRetries > 0) {
+      this.onLog(`Detected ${totalRetries} retry attempts across tests`);
+    }
 
     if (tests.length === 0) {
       throw new Error('No test data found in debug file');
+    }
+
+    // Filter artifacts and files that don't exist
+    let totalArtifacts = 0;
+    let missingArtifacts = 0;
+    let totalFiles = 0;
+    let missingFiles = 0;
+
+    for (const test of tests) {
+      if (test.artifacts) {
+        const originalCount = test.artifacts.length;
+        totalArtifacts += originalCount;
+        test.artifacts = this.filterExistingArtifacts(test.artifacts);
+        missingArtifacts += originalCount - test.artifacts.length;
+      }
+
+      if (test.files) {
+        const originalCount = test.files.length;
+        totalFiles += originalCount;
+        test.files = this.filterExistingFiles(test.files);
+        missingFiles += originalCount - test.files.length;
+      }
+    }
+
+    if (totalArtifacts > 0) {
+      const available = totalArtifacts - missingArtifacts;
+      this.onLog(`Found ${totalArtifacts} artifacts (${available} available, ${missingArtifacts} missing)`);
+    }
+    if (totalFiles > 0) {
+      const available = totalFiles - missingFiles;
+      this.onLog(`Found ${totalFiles} files (${available} available, ${missingFiles} missing)`);
+    }
+    if (missingArtifacts > 0 || missingFiles > 0) {
+      this.onLog('⚠️  Missing artifacts/files will be skipped during upload');
     }
 
     // Restore environment variables
@@ -200,6 +328,13 @@ export class Replay {
         envVars,
         runId,
         dryRun: true,
+        totalRetries,
+        totalArtifacts,
+        missingArtifacts,
+        availableArtifacts: totalArtifacts - missingArtifacts,
+        totalFiles,
+        missingFiles,
+        availableFiles: totalFiles - missingFiles,
       };
     }
 
@@ -257,9 +392,22 @@ export class Replay {
       finishParams,
       envVars,
       runId: runId || client.runId,
+      totalRetries,
+      totalArtifacts,
+      missingArtifacts,
+      availableArtifacts: totalArtifacts - missingArtifacts,
+      totalFiles,
+      missingFiles,
+      availableFiles: totalFiles - missingFiles,
     };
 
     this.onLog(`Successfully replayed ${successCount}/${tests.length} tests from debug file`);
+    if (totalRetries > 0) {
+      this.onLog(`Processed ${totalRetries} test retries`);
+    }
+    if (totalArtifacts - missingArtifacts > 0) {
+      this.onLog(`Uploaded ${totalArtifacts - missingArtifacts} artifacts`);
+    }
 
     return result;
   }
