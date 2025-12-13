@@ -639,5 +639,5 @@ export {
   storeRunId,
   testRunnerHelper,
   transformEnvVarToBoolean,
-  validateSuiteId,
+  validateSuiteId
 };

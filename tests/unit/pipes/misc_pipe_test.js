@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { parseFilterParams, updateFilterType, generateFilterRequestParams } from '../../../src/utils/pipe_utils.js';
 
-describe('testing ipe/misc.js functions', () => {
+describe('testing utils/pipe_utils.js functions', () => {
   describe('updateFilterType function', () => {
     it('should return "tag" when input is "tag-name"', () => {
       const result = updateFilterType('tag-name');
@@ -50,7 +50,7 @@ describe('testing ipe/misc.js functions', () => {
     it('should handle unsupported type correctly', () => {
       const input = 'unsupported-type=abc';
       const result = parseFilterParams(input);
-      expect(result).to.deep.equal({ type: undefined, id: 'abc' });
+      expect(result).to.be.undefined;
     });
 
     it('should handle undefined input correctly', () => {
