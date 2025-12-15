@@ -6,6 +6,7 @@ import isValid from 'is-valid-path';
 import createDebugMessages from 'debug';
 import os from 'os';
 import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
 
 const debug = createDebugMessages('@testomatio/reporter:util');
 
@@ -56,6 +57,21 @@ const validateSuiteId = suiteId => {
 
   const match = suiteId.match(SUITE_ID_REGEX);
   return match ? match[0] : null;
+};
+
+/**
+ * Gets current git commit SHA
+ * @returns {String|null} git commit SHA or null if not available
+ */
+const getGitCommitSha = () => {
+  try {
+    const sha = execSync('git rev-parse --short HEAD', {
+      stdio: ['ignore', 'pipe', 'ignore']
+    }).toString().trim();
+    return sha || null;
+  } catch (error) {
+    return null;
+  }
 };
 
 const ansiRegExp = () => {
@@ -629,6 +645,7 @@ export {
   foundedTestLog,
   formatStep,
   getCurrentDateTime,
+  getGitCommitSha,
   getTestomatIdFromTestTitle,
   humanize,
   isValidUrl,

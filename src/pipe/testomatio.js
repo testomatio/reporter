@@ -3,7 +3,7 @@ import pc from 'picocolors';
 import { Gaxios } from 'gaxios';
 import JsonCycle from 'json-cycle';
 import { APP_PREFIX, STATUS, AXIOS_TIMEOUT, REPORTER_REQUEST_RETRIES } from '../constants.js';
-import { isValidUrl, foundedTestLog, readLatestRunId, transformEnvVarToBoolean } from '../utils/utils.js';
+import { isValidUrl, foundedTestLog, readLatestRunId, transformEnvVarToBoolean, getGitCommitSha } from '../utils/utils.js';
 import { parseFilterParams, generateFilterRequestParams, setS3Credentials } from '../utils/pipe_utils.js';
 import { config } from '../config.js';
 
@@ -53,6 +53,17 @@ class TestomatioPipe {
     if (this.sharedRunTimeout && !this.sharedRun) {
       debug('Auto-enabling sharedRun because sharedRunTimeout is set');
       this.sharedRun = true;
+    }
+
+    if (!this.title && (this.sharedRun || this.sharedRunTimeout)) {
+      const sha = getGitCommitSha();
+      if (sha) {
+        this.title = `Shared Run - ${sha}`;
+        console.log(APP_PREFIX, `🔄 Auto-generated title for shared run: ${this.title}`);
+      } else {
+        console.log(APP_PREFIX, pc.red('Failed to resolve git commit SHA for shared run title.'));
+        console.log(APP_PREFIX, 'Please run the tests inside a Git repository or set TESTOMATIO_TITLE explicitly.');
+      }
     }
     this.groupTitle = params.groupTitle || process.env.TESTOMATIO_RUNGROUP_TITLE;
     this.env = process.env.TESTOMATIO_ENV;
