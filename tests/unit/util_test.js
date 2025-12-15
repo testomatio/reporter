@@ -32,6 +32,7 @@ import {
   testRunnerHelper,
   transformEnvVarToBoolean,
   validateSuiteId,
+  applyFilter,
 } from '../../src/utils/utils.js';
 
 describe('Utils', () => {
@@ -690,6 +691,64 @@ ${process.cwd()}/tests/unit/data/cli/RunCest.php:24
         expect(transformEnvVarToBoolean([])).to.be.false; // empty array -> "" -> false (empty string after trim)
         expect(transformEnvVarToBoolean([1, 2])).to.be.true; // array -> "1,2" -> true (not recognized, so Boolean("1,2"))
       });
+    });
+  });
+
+  describe('#applyFilter', () => {
+    it('should return original command when tests list is empty or undefined', () => {
+      expect(applyFilter('npx jest', [])).to.eql('npx jest');
+      expect(applyFilter('npx jest', null)).to.eql('npx jest');
+      expect(applyFilter('npx jest', undefined)).to.eql('npx jest');
+    });
+
+    it('should append --testNamePattern for Jest commands', () => {
+      const cmd = 'npx jest';
+      const result = applyFilter(cmd, ['T123', 'T456']);
+      expect(result).to.eql('npx jest --testNamePattern (T123|T456)');
+    });
+
+    it('should detect Jest command case-insensitively', () => {
+      const cmd = 'npx Jest tests/unit';
+      const result = applyFilter(cmd, ['T1']);
+      expect(result).to.eql('npx Jest tests/unit --testNamePattern (T1)');
+    });
+
+    it('should append --grep for non-Jest / non-Cypress commands', () => {
+      const cmd = 'npx playwright test';
+      const result = applyFilter(cmd, ['T1', 'T2']);
+      expect(result).to.eql('npx playwright test --grep (T1|T2)');
+    });
+
+    it('should add --env with grep options for Cypress when no existing --env', () => {
+      const cmd = 'npx cypress run --browser chrome';
+      const result = applyFilter(cmd, ['T0171ba11']);
+      expect(result).to.eql(
+        'npx cypress run --browser chrome --env {"grep":"T0171ba11","grepFilterSpecs":true,"grepOmitFiltered":true}'
+      );
+    });
+
+    it('should extend existing unquoted --env for Cypress', () => {
+      const cmd = 'npx cypress run --env FOO=bar';
+      const result = applyFilter(cmd, ['T1', 'T2']);
+      expect(result).to.eql(
+        'npx cypress run --env {"FOO":"bar","grep":"T1,T2","grepFilterSpecs":true,"grepOmitFiltered":true}'
+      );
+    });
+
+    it('should extend existing quoted --env for Cypress', () => {
+      const cmd = 'npx cypress run --env "FOO=bar,baz=1"';
+      const result = applyFilter(cmd, ['T1', 'T2']);
+      expect(result).to.eql(
+        'npx cypress run --env {"FOO":"bar","baz":"1","grep":"T1,T2","grepFilterSpecs":true,"grepOmitFiltered":true}'
+      );
+    });
+
+    it('should detect Cypress command case-insensitively', () => {
+      const cmd = 'npx Cypress run';
+      const result = applyFilter(cmd, ['T1']);
+      expect(result).to.eql(
+        'npx Cypress run --env {"grep":"T1","grepFilterSpecs":true,"grepOmitFiltered":true}'
+      );
     });
   });
 });

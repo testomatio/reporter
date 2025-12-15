@@ -1,3 +1,4 @@
+import { isPlaywright } from './helpers.js';
 import { services } from './services/index.js';
 
 /**
@@ -7,9 +8,7 @@ import { services } from './services/index.js';
  * @returns {void}
  */
 function saveArtifact(data, context = null) {
-  if (process.env.IS_PLAYWRIGHT)
-    throw new Error(`This function is not available in Playwright framework.
-    /Playwright supports artifacts out of the box`);
+  showPlaywrightWarning('artifact', 'Playwright supports artifacts out of the box.');
   if (!data) return;
   services.artifacts.put(data, context);
 }
@@ -20,7 +19,6 @@ function saveArtifact(data, context = null) {
  * @returns {void}
  */
 function logMessage(...args) {
-  if (process.env.IS_PLAYWRIGHT) throw new Error('This function is not available in Playwright framework');
   services.logger._templateLiteralLog(...args);
 }
 
@@ -30,10 +28,10 @@ function logMessage(...args) {
  * @returns {void}
  */
 function addStep(message) {
-  if (process.env.IS_PLAYWRIGHT)
-    throw new Error('This function is not available in Playwright framework. Use playwright steps');
-
   services.logger.step(message);
+  // this is done because Playwright reporter intercepts console logs and then we gather them and show on Testomat
+  // if not console.log, the step message will be lost from reporter
+  if (isPlaywright) console.log(`Step: ${message}`);
 }
 
 /**
@@ -43,8 +41,7 @@ function addStep(message) {
  * @returns {void}
  */
 function setKeyValue(keyValue, value = null) {
-  if (process.env.IS_PLAYWRIGHT)
-    throw new Error('This function is not available in Playwright framework. Use test tag instead.');
+  showPlaywrightWarning('meta', 'Use test annotations instead.');
 
   if (typeof keyValue === 'string') {
     keyValue = { [keyValue]: value };
@@ -59,6 +56,7 @@ function setKeyValue(keyValue, value = null) {
  * @returns {void}
  */
 function setLabel(key, value = null) {
+  showPlaywrightWarning('label', 'Use test tag instead.');
   if (Array.isArray(value)) {
     return value.forEach(label => setLabel(key, label));
   }
@@ -85,6 +83,12 @@ function linkTest(...testIds) {
 function linkJira(...jiraIds) {
   const links = jiraIds.map(jiraId => ({ jira: jiraId }));
   services.links.put(links);
+}
+
+function showPlaywrightWarning(functionName, recommendation) {
+  if (isPlaywright) {
+    console.warn(`[TESTOMATIO] '${functionName}' function is not supported for Playwright. ${recommendation}`);
+  }
 }
 
 export default {

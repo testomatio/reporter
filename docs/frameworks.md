@@ -141,6 +141,23 @@ TESTOMATIO={API_KEY} npx cypress run
 
 > 🖼 Screenshots of failed tests and videos will be automatically uploaded as [Artifacts](./artifacts.md)
 
+For test filtering functionality to work properly, install the `@cypress/grep` plugin:
+
+```bash
+npm install --save-dev @cypress/grep
+```
+
+This plugin enables filtering Cypress tests via the grep environment variable
+
+```bash
+# Filter tests by pattern
+npx cypress run --env '{"grep":"T123","grepFilterSpecs":true,"grepOmitFiltered":true}'
+```
+
+Note: with @cypress/grep Cypress still loads the whole spec file and shows all tests in the output,
+but tests that do not match grep are marked as pending (effectively skipped).
+Only the matched tests are actually executed and reported
+
 > 📑 [Example Project](https://github.com/testomatio/examples/tree/master/cypress) | 🥒 [Cypress + Cucumber Example](https://github.com/testomatio/examples/tree/master/cypress-cucumber)
 
 ### Mocha

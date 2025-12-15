@@ -631,6 +631,63 @@ function truncate(s, size = 255) {
   return `${str.substring(0, size)}...`;
 }
 
+function applyFilter(command, tests) {
+  if (!tests || !tests.length) return command;
+
+  const lower = (command || '').toLowerCase();
+  const regexPattern = `(${tests.join('|')})`;
+
+  if (lower.includes('jest')) {
+    return `${command} --testNamePattern ${regexPattern}`;
+  }
+
+  if (lower.includes('cypress')) {
+    const grepValue = tests.join(',');
+    const baseEnv = {
+      grep: grepValue,
+      grepFilterSpecs: true,
+      grepOmitFiltered: true,
+    };
+
+    if (command.includes('--env')) {
+      return command.replace(
+        /--env\s+(['"]?)([^\s'"]+)\1/,
+        (match, quote, envVal) => {
+          const existingEnv = {};
+
+          if (envVal.startsWith('{') && envVal.endsWith('}')) {
+            try {
+              Object.assign(existingEnv, JSON.parse(envVal));
+            } catch (e) {
+            }
+          }
+
+          if (!Object.keys(existingEnv).length) {
+            envVal.split(',').forEach((pair) => {
+              const [k, v] = pair.split('=');
+              if (!k) return;
+
+              if (v === 'true') existingEnv[k] = true;
+              else if (v === 'false') existingEnv[k] = false;
+              else existingEnv[k] = v;
+            });
+          }
+
+          const merged = { ...existingEnv, ...baseEnv };
+          const json = JSON.stringify(merged);
+
+          return `--env ${json}`;
+        },
+      );
+    }
+
+    const json = JSON.stringify(baseEnv);
+    return `${command} --env ${json}`;
+  }
+
+  return `${command} --grep ${regexPattern}`;
+}
+
 export {
   ansiRegExp,
   truncate,
@@ -656,5 +713,6 @@ export {
   storeRunId,
   testRunnerHelper,
   transformEnvVarToBoolean,
-  validateSuiteId
+  validateSuiteId,
+  applyFilter
 };
