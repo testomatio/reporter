@@ -3,7 +3,12 @@ import pc from 'picocolors';
 import { Gaxios } from 'gaxios';
 import JsonCycle from 'json-cycle';
 import { APP_PREFIX, STATUS, AXIOS_TIMEOUT, REPORTER_REQUEST_RETRIES } from '../constants.js';
-import { isValidUrl, foundedTestLog, readLatestRunId, transformEnvVarToBoolean, getGitCommitSha } from '../utils/utils.js';
+import { isValidUrl, 
+  foundedTestLog, 
+  readLatestRunId, 
+  transformEnvVarToBoolean, 
+  getGitCommitSha 
+} from '../utils/utils.js';
 import { parseFilterParams, generateFilterRequestParams, setS3Credentials } from '../utils/pipe_utils.js';
 import { config } from '../config.js';
 
