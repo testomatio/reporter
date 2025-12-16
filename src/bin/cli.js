@@ -151,6 +151,9 @@ program
     };
 
     const createRunParams = {};
+    if (title) {
+      createRunParams.title = title;
+    }
     if (opts.kind) {
       createRunParams.kind = opts.kind;
     }
