@@ -1,7 +1,5 @@
 ## Coverage Pipe
 
-![](./images/coverage.png)
-
 The **Coverage Pipe** allows you to dynamically filter tests based on actual code changes and a coverage report. It uses Git diff and a coverage file to detect which tests are impacted by modified files, so you only run what's necessary.
 
 This is useful for:
