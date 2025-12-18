@@ -59,14 +59,10 @@ class Logger {
    * @param  {...any} values
    */
   step(strings, ...values) {
-    let logs = '';
-    for (let i = 0; i < strings.length; i++) {
-      logs += strings[i];
-      if (i < values.length) {
-        logs += values[i];
-      }
-    }
-    logs = pc.blue(`> ${logs}`);
+    // Filter trailing undefined from optional params (e.g., step('message') called without second arg)
+    const filteredValues = values.filter(v => v !== undefined);
+    const message = this.#formatMessage(strings, ...filteredValues);
+    const logs = pc.blue(`> ${message}`);
     dataStorage.putData('log', logs);
   }
 
@@ -87,7 +83,11 @@ class Logger {
     for (const arg of args) {
       // ignore empty strings
       if (arg === '') continue;
-      if (typeof arg === 'string') {
+      if (arg === undefined) {
+        logs.push('undefined');
+      } else if (arg === null) {
+        logs.push('null');
+      } else if (typeof arg === 'string') {
         logs.push(arg);
       } else if (Array.isArray(arg)) {
         logs.push(arg.join(' '));
@@ -104,37 +104,42 @@ class Logger {
   }
 
   /**
-   * Tagget template literal. Allows to use different syntaxes:
-   * 1. Tagget template: log`text ${someVar}`
+   * Formats a message from either tagged template literal or standard function call.
+   * @param {*} strings - Template strings array or first argument
+   * @param {...any} args - Template values or additional arguments
+   * @returns {string} Formatted message
+   */
+  #formatMessage(strings, ...args) {
+    if (Array.isArray(args)) args = args.filter(item => item !== '');
+
+    // Tagged template syntax: func`text ${someVar}`
+    if (Array.isArray(strings) && strings.length === args.length + 1) {
+      return strings.reduce(
+        (result, current, index) =>
+          result +
+          current +
+          (index < args.length
+            ? args[index] === undefined
+              ? 'undefined'
+              : typeof args[index] === 'string'
+                ? args[index]
+                : this.#stringifyLogs(args[index])
+            : ''),
+        '',
+      );
+    }
+    // Standard function call: func('text', someVar)
+    return this.#stringifyLogs(strings, ...args);
+  }
+
+  /**
+   * Tagged template literal. Allows to use different syntaxes:
+   * 1. Tagged template: log`text ${someVar}`
    * 2. Standard: log(`text ${someVar}`)
    * 3. Standard with multiple arguments: log('text', someVar)
    */
   _templateLiteralLog(strings, ...args) {
-    if (Array.isArray(strings)) strings = strings.filter(item => item !== '').map(item => item.trim());
-    if (Array.isArray(args)) args = args.filter(item => item !== '');
-
-    let logs;
-    // this block means tagged template is used (syntax like $`text ${someVar}`)
-    if (Array.isArray(strings) && strings.length === args.length + 1) {
-      logs = strings.reduce(
-        (result, current, index) =>
-          result +
-          current +
-          // strings are splitted by args when use tagged template, thus we add arg after each string
-          // it looks like: `string1 arg1 string2 arg2 string3`
-          (args[index] !== undefined
-            ? typeof args[index] === 'string'
-              ? args[index] // add arg as it is
-              : this.#stringifyLogs(args[index]) // stringify arg
-            : ''),
-        // initial accumulator value
-        '',
-      );
-    } else {
-      // this block means arguments syntax is used (syntax like $('text', someVar))
-      // in this case strings represents just a first argument
-      logs = this.#stringifyLogs(strings, ...args);
-    }
+    const logs = this.#formatMessage(strings, ...args);
     this.#originalUserLogger.log(logs);
     dataStorage.putData('log', logs);
   }

@@ -1,12 +1,12 @@
-import reporter from '../lib/reporter.js';
+import reporter from '../src/reporter.js';
 import { expect } from 'chai';
 import fs from 'fs';
 import path from 'path';
-import { TESTOMAT_TMP_STORAGE_DIR } from '../lib/constants.js';
-import { fileSystem, removeColorCodes } from '../lib/utils/utils.js';
-import { dataStorage, stringToMD5Hash } from '../lib/data-storage.js';
-import { logger } from '../lib/services/logger.js';
-import testomat from '../lib/reporter.js';
+import { TESTOMAT_TMP_STORAGE_DIR } from '../src/constants.js';
+import { fileSystem, removeColorCodes } from '../src/utils/utils.js';
+import { dataStorage, stringToMD5Hash } from '../src/data-storage.js';
+import { logger } from '../src/services/logger.js';
+import testomat from '../src/reporter.js';
 import pino from 'pino';
 
 const { log, step } = reporter;
@@ -139,15 +139,41 @@ describe('Logger', () => {
     });
   });
 
-  it('log step @T00000008', () => {
-    dataStorage.setContext('@T00000008');
-    const message = 'test step message';
-    step(message);
-    const contextHash = stringToMD5Hash('@T00000008');
-    const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', `log_${contextHash}`);
-    expect(fs.existsSync(logFilePath)).to.equal(true);
-    const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
-    expect(logContent).to.equal(`> ${message}`);
+  describe('Step function', () => {
+    it('log step with plain string @T00000008', () => {
+      dataStorage.setContext('@T00000008');
+      const message = 'test step message';
+      step(message);
+      const contextHash = stringToMD5Hash('@T00000008');
+      const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', `log_${contextHash}`);
+      expect(fs.existsSync(logFilePath)).to.equal(true);
+      const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
+      expect(logContent).to.equal(`> ${message}`);
+    });
+
+    it('log step with additional data @T00000030', () => {
+      dataStorage.setContext('@T00000030');
+      step('Get response', { response: { status: 200 } });
+      const contextHash = stringToMD5Hash('@T00000030');
+      const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', `log_${contextHash}`);
+      expect(fs.existsSync(logFilePath)).to.equal(true);
+      const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
+      // Objects are pretty-printed by default
+      expect(logContent).to.include('> Get response');
+      expect(logContent).to.include('"response"');
+      expect(logContent).to.include('"status": 200');
+    });
+
+    it('log step with tagged template @T00000031', () => {
+      dataStorage.setContext('@T00000031');
+      const action = 'clicked';
+      step`User ${action} the button`;
+      const contextHash = stringToMD5Hash('@T00000031');
+      const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', `log_${contextHash}`);
+      expect(fs.existsSync(logFilePath)).to.equal(true);
+      const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
+      expect(logContent).to.equal('> User clicked the button');
+    });
   });
 
   describe('Template literals', () => {
@@ -185,6 +211,39 @@ describe('Logger', () => {
       expect(fs.existsSync(logFilePath)).to.equal(true);
       const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
       expect(logContent).to.equal(`${message} ${someVar} ${someVar2}`);
+    });
+
+    it('log undefined value @T00000032', () => {
+      dataStorage.setContext('@T00000032');
+      const undefinedVar = undefined;
+      log('value is', undefinedVar);
+      const contextHash = stringToMD5Hash('@T00000032');
+      const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', `log_${contextHash}`);
+      expect(fs.existsSync(logFilePath)).to.equal(true);
+      const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
+      expect(logContent).to.equal('value is undefined');
+    });
+
+    it('log null value @T00000033', () => {
+      dataStorage.setContext('@T00000033');
+      const nullVar = null;
+      log('value is', nullVar);
+      const contextHash = stringToMD5Hash('@T00000033');
+      const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', `log_${contextHash}`);
+      expect(fs.existsSync(logFilePath)).to.equal(true);
+      const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
+      expect(logContent).to.equal('value is null');
+    });
+
+    it('log undefined in tagged template @T00000034', () => {
+      dataStorage.setContext('@T00000034');
+      const undefinedVar = undefined;
+      log`value is ${undefinedVar}`;
+      const contextHash = stringToMD5Hash('@T00000034');
+      const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', `log_${contextHash}`);
+      expect(fs.existsSync(logFilePath)).to.equal(true);
+      const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
+      expect(logContent).to.equal('value is undefined');
     });
   });
 
