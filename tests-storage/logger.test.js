@@ -212,6 +212,39 @@ describe('Logger', () => {
       const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
       expect(logContent).to.equal(`${message} ${someVar} ${someVar2}`);
     });
+
+    it('log undefined value @T00000032', () => {
+      dataStorage.setContext('@T00000032');
+      const undefinedVar = undefined;
+      log('value is', undefinedVar);
+      const contextHash = stringToMD5Hash('@T00000032');
+      const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', `log_${contextHash}`);
+      expect(fs.existsSync(logFilePath)).to.equal(true);
+      const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
+      expect(logContent).to.equal('value is undefined');
+    });
+
+    it('log null value @T00000033', () => {
+      dataStorage.setContext('@T00000033');
+      const nullVar = null;
+      log('value is', nullVar);
+      const contextHash = stringToMD5Hash('@T00000033');
+      const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', `log_${contextHash}`);
+      expect(fs.existsSync(logFilePath)).to.equal(true);
+      const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
+      expect(logContent).to.equal('value is null');
+    });
+
+    it('log undefined in tagged template @T00000034', () => {
+      dataStorage.setContext('@T00000034');
+      const undefinedVar = undefined;
+      log`value is ${undefinedVar}`;
+      const contextHash = stringToMD5Hash('@T00000034');
+      const logFilePath = path.join(TESTOMAT_TMP_STORAGE_DIR, 'log', `log_${contextHash}`);
+      expect(fs.existsSync(logFilePath)).to.equal(true);
+      const logContent = removeColorCodes(fs.readFileSync(logFilePath, 'utf8'));
+      expect(logContent).to.equal('value is undefined');
+    });
   });
 
   it('get logs from file @T00000016', () => {

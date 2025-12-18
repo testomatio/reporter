@@ -59,7 +59,9 @@ class Logger {
    * @param  {...any} values
    */
   step(strings, ...values) {
-    const message = this.#formatMessage(strings, ...values);
+    // Filter trailing undefined from optional params (e.g., step('message') called without second arg)
+    const filteredValues = values.filter(v => v !== undefined);
+    const message = this.#formatMessage(strings, ...filteredValues);
     const logs = pc.blue(`> ${message}`);
     dataStorage.putData('log', logs);
   }
@@ -81,7 +83,11 @@ class Logger {
     for (const arg of args) {
       // ignore empty strings
       if (arg === '') continue;
-      if (typeof arg === 'string') {
+      if (arg === undefined) {
+        logs.push('undefined');
+      } else if (arg === null) {
+        logs.push('null');
+      } else if (typeof arg === 'string') {
         logs.push(arg);
       } else if (Array.isArray(arg)) {
         logs.push(arg.join(' '));
@@ -112,10 +118,12 @@ class Logger {
         (result, current, index) =>
           result +
           current +
-          (args[index] !== undefined
-            ? typeof args[index] === 'string'
-              ? args[index]
-              : this.#stringifyLogs(args[index])
+          (index < args.length
+            ? args[index] === undefined
+              ? 'undefined'
+              : typeof args[index] === 'string'
+                ? args[index]
+                : this.#stringifyLogs(args[index])
             : ''),
         '',
       );
