@@ -25,7 +25,6 @@ class HtmlPipe {
 
     this.isEnabled = false;
     this.htmlOutputPath = '';
-    this.fullHtmlOutputPath = '';
     this.filenameMsg = '';
     this.tests = [];
 
@@ -73,16 +72,25 @@ class HtmlPipe {
   }
 
   /**
-   * Add test data to the result array for saving. As a result of this function, we get a result object to save.
-   * @param {import('../../types/types.js').RunData} test - object which includes each test entry.
+   * Add test data to the result array for saving.
+   * @param {any} test - Test entry
    */
   addTest(test) {
     if (!this.isEnabled) return;
 
-    if (!test.status) return;
+    const hasPayload =
+      Boolean(test?.status) ||
+      (Array.isArray(test?.files) && test.files.length) ||
+      (Array.isArray(test?.artifacts) && test.artifacts.length) ||
+      (Array.isArray(test?.steps) && test.steps.length) ||
+      Boolean(test?.message) ||
+      Boolean(test?.logs) ||
+      (test?.meta &&
+        ((Array.isArray(test.meta.attachments) && test.meta.attachments.length) || test.meta.traces !== undefined));
+
+    if (!hasPayload) return;
 
     const index = this.tests.findIndex(t => isSameTest(t, test));
-    // update if they were already added
     if (index >= 0) {
       this.tests[index] = merge(this.tests[index], test);
       return;
@@ -129,18 +137,83 @@ class HtmlPipe {
       console.log(pc.blue(msg));
     }
 
-    tests.forEach(test => {
-      // steps could be an array or a string
-      test.steps = Array.isArray(test.steps)
-        ? (test.steps = test.steps
-            .map(step => formatStep(step))
-            .flat()
-            .join('\n'))
-        : test.steps;
+    const aggregatedTests = aggregateTests(tests);
 
-      if (!test.message?.trim()) {
-        test.message = "This test has no 'message' code";
+    aggregatedTests.forEach(test => {
+      const logsRaw =
+        test.logs || test.meta?.logs || test.meta?.console || test.meta?.stdout || test.meta?.stderr || '';
+      const stackRaw = test.stack || '';
+      const messageRaw = test.message || '';
+
+      const { steps: stepsFromMsg, restText: messageClean } = extractStepLines(messageRaw);
+      const { steps: stepsFromLogs, restText: logsClean } = extractStepLines(logsRaw);
+      const { steps: stepsFromStack, restText: stackClean } = extractStepLines(stackRaw);
+
+      const allStepLines = [...stepsFromMsg, ...stepsFromLogs, ...stepsFromStack];
+      const fallbackStepsText = allStepLines.length ? allStepLines.map((s, i) => `${i + 1}. ${s}`).join('\n') : '';
+
+      test.message = messageClean;
+      test.stack = stackClean;
+
+      parseRetryInfo(test);
+
+      if (test.meta?.traces !== undefined) {
+        test.traces =
+          typeof test.meta.traces === 'string' ? test.meta.traces : JSON.stringify(test.meta.traces, null, 2);
+        delete test.meta.traces;
       }
+
+      const statusLower = String(test.status || '').toLowerCase();
+
+      if (Array.isArray(test.steps) && test.steps.length) {
+        const userSteps = filterUserStepsTree(test.steps);
+        test.stepsArray = userSteps;
+
+        if (userSteps.length) {
+          test.steps = userSteps
+            .map(s => formatStep(s))
+            .flat()
+            .join('\n');
+        } else if (fallbackStepsText) {
+          test.stepsArray = allStepLines.map(t => ({ category: 'user', title: t, duration: 0 }));
+          test.steps = fallbackStepsText;
+        } else {
+          test.steps = '';
+          test.stepsArray = [];
+        }
+      } else if (fallbackStepsText) {
+        test.stepsArray = allStepLines.map(t => ({ category: 'user', title: t, duration: 0 }));
+        test.steps = fallbackStepsText;
+      } else if (typeof test.steps === 'string' && test.steps.trim()) {
+        test.stepsArray = [];
+        test.steps = String(test.steps).replace(ansiRegExp(), '').trim();
+      } else {
+        test.steps = '';
+        test.stepsArray = [];
+      }
+
+      delete test._stepsFromMessage;
+      test.steps = toHtmlSafe(test.steps || '');
+
+      const rawFields = stripFailureBlock(toPlainText(logsClean));
+      const rawStack = extractLogsFromStack(test.stack);
+
+      const logsFromFields = normalizeLogs(rawFields);
+      const logsFromStack = normalizeLogs(stripStepMarkedLinesRaw(rawStack));
+      const logsMerged = (logsFromFields || logsFromStack).trim();
+
+      const messageProcessed = normalizeForProcessing(toPlainText(test.message)).trim();
+      const messageNoInlineLogs = stripInlineLogsBlock(messageProcessed);
+      const messageFinal = cleanNoiseBlock(messageNoInlineLogs).trim();
+      const logsFinal = cleanNoiseBlock(logsMerged).trim();
+
+      const finalText = buildMessageForReport({
+        statusLower,
+        messageRaw: messageFinal,
+        logsText: logsFinal,
+      });
+
+      test.message = toHtmlSafe(finalText);
 
       if (!test.suite_title?.trim()) {
         test.suite_title = 'Unknown suite';
@@ -150,20 +223,62 @@ class HtmlPipe {
         test.title = 'Unknown test title';
       }
 
-      if (!test.files?.length) {
-        test.files = 'This test has no files';
-      }
-
-      if (!test.steps?.trim()) {
-        test.steps = "This test has no 'steps' code";
-      } else {
-        test.steps = removeAnsiColorCodes(test.steps);
-      }
-
-      // TODO: future-proof: currently there is no need to display Artifacts and Metadata in HTML
       test.artifacts = test.artifacts || [];
       test.meta = test.meta || {};
-      // TODO: u can added an additional test values to this checks in the future
+
+      const allArtifacts = [
+        ...(test.artifacts || []),
+        ...(test.meta?.attachments || []),
+        ...(test.manuallyAttachedArtifacts || []),
+        ...(test.files || []),
+        ...(test.meta?.manuallyAttachedArtifacts || []),
+      ];
+
+      test.artifacts = allArtifacts
+        .map(artifact => {
+          if (typeof artifact === 'string') {
+            const abs = path.isAbsolute(artifact) ? artifact : path.resolve(process.cwd(), artifact);
+            const href = artifact.startsWith('file://') ? artifact : fileUrl(abs, { resolve: true });
+            const base = path.basename(abs);
+
+            return {
+              name: base,
+              title: base,
+              path: href,
+              fsPath: abs,
+              relativePath: artifact,
+            };
+          }
+
+          if (artifact?.path) {
+            const raw = String(artifact.path);
+            const isFileUrl = raw.startsWith('file://');
+            const abs = isFileUrl ? null : path.isAbsolute(raw) ? raw : path.resolve(process.cwd(), raw);
+            const href = isFileUrl ? raw : fileUrl(abs, { resolve: true });
+            const base = abs ? path.basename(abs) : artifact.name || artifact.title || 'attachment';
+
+            return {
+              ...artifact,
+              name: artifact.name || artifact.title || base,
+              title: artifact.title || artifact.name || base,
+              path: href,
+              fsPath: abs || artifact.fsPath || null,
+              relativePath: artifact.relativePath || raw,
+            };
+          }
+
+          return artifact;
+        })
+        .filter(Boolean);
+
+      if (!test.artifacts.length) {
+        test.artifacts = [];
+      }
+
+      normalizeRetries(test);
+      if (test.traces) {
+        test.traces = typeof test.traces === 'string' ? test.traces : JSON.stringify(test.traces, null, 2);
+      }
     });
 
     const data = {
@@ -171,9 +286,9 @@ class HtmlPipe {
       status: runParams.status || 'No status info',
       parallel: runParams.isParallel || 'No parallel info',
       runUrl: this.store.runUrl || '',
-      executionTime: testExecutionSumTime(tests),
+      executionTime: testExecutionSumTime(aggregatedTests),
       executionDate: getCurrentDateTimeFormatted(),
-      tests,
+      tests: aggregatedTests,
     };
     // generate output HTML based on the template
     const html = this.#generateHTMLReport(data, templatePath);
@@ -225,6 +340,23 @@ class HtmlPipe {
       'getTestsByStatus',
       (tests, status) => tests.filter(test => test.status.toLowerCase() === status.toLowerCase()).length,
     );
+
+    handlebars.registerHelper('formatDuration', milliseconds => {
+      if (!milliseconds || milliseconds === 0) return '0ms';
+
+      const totalSeconds = Math.floor(milliseconds / 1000);
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      const ms = milliseconds % 1000;
+
+      if (minutes > 0) {
+        return `${minutes}m ${seconds}s ${ms}ms`;
+      } else if (seconds > 0) {
+        return `${seconds}s ${ms}ms`;
+      } else {
+        return `${ms}ms`;
+      }
+    });
 
     handlebars.registerHelper(
       'selectComponent',
@@ -290,7 +422,7 @@ class HtmlPipe {
             let filteredItems = totalTests;
 
             if (status !== 'all') {
-              filteredItems = totalTests.filter(item => item.status === status);
+              filteredItems = totalTests.filter(item => String(item.status).toLowerCase() === status);
             }
 
             pageItemGroups[status][option] = paginateItems(filteredItems, pageSize);
@@ -326,16 +458,234 @@ function testExecutionSumTime(tests) {
   return formatDuration(totalMilliseconds);
 }
 
-/**
- * Removes ANSI color codes and converts newline characters to HTML line breaks in a given string.
- * @param {string} str - The input string containing ANSI color codes.
- * @returns {string} - The updated string with removed ANSI color codes and replaced newline characters.
- */
-function removeAnsiColorCodes(str) {
-  let updatedStr = str.replace(ansiRegExp(), '');
-  updatedStr = updatedStr.replace(/\n/g, '<br>');
+function parseRetryInfo(test) {
+  test.retries = test.retries || { retryCount: 0, attempts: [] };
 
-  return updatedStr;
+  if (test.meta && test.meta.retryCount !== undefined) {
+    const n = Number(test.meta.retryCount);
+    if (!Number.isNaN(n)) test.retries.retryCount = n;
+  }
+
+  if (!test.title) return;
+
+  const retryMatch = test.title.match(/\[RETRIES:(\d+)\|FLAKY:(true|false)\]/);
+  if (!retryMatch) return;
+
+  const retryCount = parseInt(retryMatch[1], 10);
+  const isFlaky = retryMatch[2] === 'true';
+
+  test.title = test.title.replace(/\s*\[RETRIES:\d+\|FLAKY:(true|false)\]/, '');
+
+  test.retries.retryCount = Number.isFinite(retryCount) ? retryCount : test.retries.retryCount || 0;
+
+  test.meta = test.meta || {};
+  if (isFlaky) test.meta.isFlaky = true;
+}
+
+function escapeHtml(str = '') {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function toPlainText(value) {
+  if (!value) return '';
+  if (Array.isArray(value)) return value.map(v => String(v)).join('\n');
+  return String(value);
+}
+
+function stripFailureBlock(text = '') {
+  const t = String(text);
+  const idx = t.indexOf('################[ Failure ]');
+  if (idx !== -1) return t.slice(0, idx).trim();
+  const idx2 = t.indexOf('[ Failure ]');
+  if (idx2 !== -1) return t.slice(0, idx2).trim();
+  return t.trim();
+}
+
+function normalizeLogs(text = '') {
+  return String(text)
+    .replace(ansiRegExp(), '')
+    .split('\n')
+    .map(l => l.replace(/^\s*(?:(?:>|&gt;|[⏩►])\s*)/, '').trimEnd())
+    .filter(l => l.trim())
+    .join('\n')
+    .trim();
+}
+
+function toHtmlSafe(value) {
+  const noAnsi = toPlainText(value).replace(ansiRegExp(), '');
+  return escapeHtml(noAnsi).replace(/\n/g, '<br>');
+}
+
+function hasMeaningfulText(value) {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function buildMessageForReport({ statusLower, messageRaw, logsText }) {
+  const hasMsg = hasMeaningfulText(messageRaw);
+  const hasLogs = hasMeaningfulText(logsText);
+
+  if (statusLower === 'failed') {
+    const parts = [];
+    if (hasMsg) parts.push(messageRaw);
+    if (hasLogs) parts.push(`--- Logs ---\n${logsText}`);
+    return parts.length ? parts.join('\n\n') : 'No message';
+  }
+
+  if (hasMsg) return messageRaw;
+  if (hasLogs) return logsText;
+
+  return 'No logs';
+}
+
+function stripInlineLogsBlock(text = '') {
+  const t = String(text || '');
+
+  const markers = ['--- Logs ---', '[ Logs ]', 'Logs:'];
+  let cut = -1;
+
+  for (const m of markers) {
+    const i = t.indexOf(m);
+    if (i !== -1) cut = cut === -1 ? i : Math.min(cut, i);
+  }
+
+  return (cut === -1 ? t : t.slice(0, cut)).trim();
+}
+
+function extractLogsFromStack(stack) {
+  if (!stack) return '';
+
+  const clean = String(stack).replace(ansiRegExp(), '');
+  const lines = clean.split('\n');
+
+  const startIdx = lines.findIndex(l => l.includes('[ Logs ]'));
+  if (startIdx === -1) return '';
+
+  let endIdx = lines.findIndex(
+    (l, i) => i > startIdx && (l.includes('[ Failure ]') || l.includes('################[ Failure ]')),
+  );
+  if (endIdx === -1) endIdx = lines.length;
+
+  const slice = lines.slice(startIdx + 1, endIdx);
+
+  return slice
+    .map(l => l.trimEnd())
+    .filter(l => l.trim())
+    .filter(l => !l.includes('[ Logs ]') && !l.includes('Logs:'))
+    .join('\n')
+    .trim();
+}
+
+function normalizeForProcessing(value = '') {
+  return String(value || '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/&gt;/gi, '>')
+    .replace(/&lt;/gi, '<')
+    .replace(/&amp;/gi, '&')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/\r\n/g, '\n');
+}
+
+function stripStepMarkedLinesRaw(text = '') {
+  const t = normalizeForProcessing(text);
+  return t
+    .split('\n')
+    .filter(line => {
+      const ln = line.replace(ansiRegExp(), '');
+      return !/^\s*(?:>|&gt;|[⏩►])\s/i.test(ln);
+    })
+    .join('\n')
+    .trim();
+}
+
+function normalizeStatus(value) {
+  const s = String(value || '').toLowerCase();
+
+  if (['passed', 'pass', 'success', 'ok'].includes(s)) return 'passed';
+  if (['failed', 'fail', 'failure', 'broken', 'timedout', 'timeout', 'error'].includes(s)) return 'failed';
+  if (['skipped', 'skip', 'pending', 'disabled', 'ignored', 'todo'].includes(s)) return 'skipped';
+
+  return s ? s : 'unknown';
+}
+
+function pickAttemptStatus(a) {
+  if (!a) return 'unknown';
+
+  if (a.passed === true) return 'passed';
+  if (a.passed === false) return 'failed';
+
+  return normalizeStatus(a.status ?? a.state ?? a.outcome ?? a.result ?? a.verdict ?? a.ok ?? 'unknown');
+}
+
+function pickAttemptDuration(a) {
+  const n = a?.duration ?? a?.durationMs ?? a?.run_time ?? a?.time ?? a?.elapsed ?? null;
+
+  return typeof n === 'number' && !Number.isNaN(n) ? n : null;
+}
+
+function buildAttemptsFromCount(retryCount, finalStatus) {
+  const total = Math.max(1, Number(retryCount || 0) + 1);
+  const arr = [];
+
+  for (let i = 0; i < total; i++) {
+    const status = i === total - 1 ? normalizeStatus(finalStatus) : 'unknown';
+    arr.push({ status, duration: null });
+  }
+
+  return arr;
+}
+
+function normalizeRetries(test) {
+  test.meta = test.meta || {};
+
+  parseRetryInfo(test);
+
+  const finalStatus = normalizeStatus(test.status);
+
+  const attemptsRaw =
+    (Array.isArray(test.attempts) && test.attempts) ||
+    (Array.isArray(test.retries?.attempts) && test.retries.attempts) ||
+    (Array.isArray(test.meta?.attempts) && test.meta.attempts) ||
+    (Array.isArray(test.meta?.retries) && test.meta.retries) ||
+    [];
+
+  const retryCountFromMeta = typeof test.meta.retryCount === 'number' ? test.meta.retryCount : undefined;
+
+  const retryCountFromRetries = typeof test.retries?.retryCount === 'number' ? test.retries.retryCount : undefined;
+
+  let attemptsNormalized = [];
+
+  if (attemptsRaw.length > 0) {
+    attemptsNormalized = attemptsRaw.map(a => ({
+      status: pickAttemptStatus(a),
+      duration: pickAttemptDuration(a),
+    }));
+
+    const lastIdx = attemptsNormalized.length - 1;
+    if (lastIdx >= 0) attemptsNormalized[lastIdx].status = finalStatus;
+  } else {
+    const retryCount = retryCountFromMeta ?? retryCountFromRetries ?? 0;
+
+    attemptsNormalized = buildAttemptsFromCount(retryCount, finalStatus);
+  }
+
+  const retryCountFinal = Math.max(0, attemptsNormalized.length - 1);
+
+  const hadFailures = attemptsNormalized.slice(0, -1).some(a => a.status === 'failed');
+
+  const passedAfterRetries = finalStatus === 'passed' && hadFailures;
+
+  test.retries = {
+    retryCount: retryCountFinal,
+    attempts: attemptsNormalized,
+    hadFailures,
+    passedAfterRetries,
+    finalStatus,
+  };
+
+  const metaFlaky = test.meta?.flaky === true || test.meta?.isFlaky === true;
+
+  test.flaky = Boolean(metaFlaky || passedAfterRetries);
 }
 
 /**
@@ -368,6 +718,174 @@ function getCurrentDateTimeFormatted() {
   const seconds = currentDate.getSeconds().toString().padStart(2, '0');
 
   return `(${day}/${month}/${year} ${hours}:${minutes}:${seconds})`;
+}
+
+/**
+ * Aggregates duplicate test records (from retries) into a single entry
+ * @param {Array} tests - Array of all tests
+ * @returns {Array} - Aggregated array of tests
+ */
+function aggregateTests(tests) {
+  if (!Array.isArray(tests) || tests.length === 0) return tests;
+
+  const grouped = new Map();
+
+  for (const t of tests) {
+    const rid = t?.rid || t?.meta?.rid || t?.meta?.RID || t?.meta?.runRid || t?.meta?.testRid;
+
+    const key = rid ? `rid:${rid}` : `ft:${t?.file || ''}|${t?.title || ''}`;
+
+    if (!grouped.has(key)) grouped.set(key, []);
+    grouped.get(key).push(t);
+  }
+
+  const aggregated = [];
+
+  grouped.forEach(group => {
+    if (group.length === 1) {
+      aggregated.push(group[0]);
+      return;
+    }
+
+    const attemptsOnly = group.filter(x => x && x.status);
+    const base = attemptsOnly.length ? attemptsOnly[attemptsOnly.length - 1] : group[group.length - 1];
+
+    const allFiles = [];
+    const allArtifacts = [];
+    const allMetaAttachments = [];
+    const allManual = [];
+
+    for (const x of group) {
+      if (Array.isArray(x?.files)) allFiles.push(...x.files);
+      if (Array.isArray(x?.artifacts)) allArtifacts.push(...x.artifacts);
+      if (Array.isArray(x?.meta?.attachments)) allMetaAttachments.push(...x.meta.attachments);
+      if (Array.isArray(x?.manuallyAttachedArtifacts)) allManual.push(...x.manuallyAttachedArtifacts);
+      if (Array.isArray(x?.meta?.manuallyAttachedArtifacts)) allManual.push(...x.meta.manuallyAttachedArtifacts);
+    }
+
+    const attempts = attemptsOnly.map(a => ({
+      status: normalizeStatus(a.status),
+      duration: a.run_time || a.time || 0,
+    }));
+
+    const retryCount = Math.max(0, attempts.length - 1);
+    const hadFailures = attempts.slice(0, -1).some(a => a.status === 'failed');
+    const finalStatus = normalizeStatus(base.status);
+    const passedAfterRetries = finalStatus === 'passed' && hadFailures;
+
+    const merged = merge({}, base);
+
+    if (allFiles.length) merged.files = allFiles;
+    if (allArtifacts.length) merged.artifacts = allArtifacts;
+
+    merged.meta = merged.meta || {};
+    if (allMetaAttachments.length) {
+      merged.meta.attachments = [...(merged.meta.attachments || []), ...allMetaAttachments];
+    }
+    if (allManual.length) {
+      merged.manuallyAttachedArtifacts = [...(merged.manuallyAttachedArtifacts || []), ...allManual];
+    }
+
+    merged.retries = {
+      retryCount,
+      attempts,
+      hadFailures,
+      passedAfterRetries,
+      finalStatus,
+    };
+    merged.flaky = Boolean(passedAfterRetries || merged.meta?.flaky || merged.meta?.isFlaky);
+
+    aggregated.push(merged);
+  });
+
+  return aggregated;
+}
+
+function extractStepLines(raw = '') {
+  const text = normalizeForProcessing(toPlainText(raw || ''));
+  if (!text.trim()) return { steps: [], restText: '' };
+
+  const lines = text.split('\n');
+  const steps = [];
+  const rest = [];
+
+  for (const line of lines) {
+    const cleanedLine = line.replace(ansiRegExp(), '');
+    const stepMatch = cleanedLine.match(/^\s*(?:>|&gt;|[⏩►])\s*(.+?)\s*$/i);
+    if (stepMatch) {
+      steps.push(stepMatch[1].trim());
+      continue;
+    }
+
+    const stepWithLabel = cleanedLine.match(/^\s*(?:>|&gt;|[⏩►]\s*)?\s*Step:\s*(.+)\s*$/i);
+    if (stepWithLabel) {
+      steps.push(stepWithLabel[1].trim());
+      continue;
+    }
+
+    if (/^\s*Step\s*\d+\s*$/i.test(cleanedLine)) continue;
+
+    rest.push(line);
+  }
+
+  return { steps, restText: rest.join('\n').trim() };
+}
+
+function filterUserStepsTree(steps) {
+  if (!Array.isArray(steps)) return [];
+
+  const isUserStep = s => String(s?.category || '').toLowerCase() === 'user';
+
+  const walk = arr => {
+    const out = [];
+    for (const s of arr) {
+      if (!s) continue;
+
+      const children = walk(s.steps || []);
+
+      if (isUserStep(s)) {
+        const copy = { ...s };
+        if (children.length) copy.steps = children;
+        else delete copy.steps;
+        out.push(copy);
+      } else if (children.length) {
+        out.push(...children);
+      }
+    }
+    return out;
+  };
+
+  return walk(steps);
+}
+
+function cleanNoiseBlock(text = '') {
+  const t = normalizeForProcessing(String(text || '')).replace(ansiRegExp(), '');
+
+  let lines = t
+    .split('\n')
+    .map(l => l.trim())
+    .filter(Boolean);
+
+  lines = dropISayEcho(lines);
+
+  return lines.join('\n').trim();
+}
+
+function dropISayEcho(lines) {
+  const out = [];
+  for (let i = 0; i < lines.length; i++) {
+    const cur = lines[i];
+    const prev = out[out.length - 1];
+
+    const m = prev && prev.match(/^I say\s+"([\s\S]*)"$/);
+    if (m) {
+      const said = m[1];
+      if (cur === said) continue;
+    }
+
+    out.push(cur);
+  }
+  return out;
 }
 
 export default HtmlPipe;
