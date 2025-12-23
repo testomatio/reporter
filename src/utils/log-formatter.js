@@ -102,11 +102,16 @@ export function formatError(error, message) {
  * @returns {boolean}
  */
 function isNotInternalFrame(frame) {
+  const fileName = frame.getFileName();
+  if (!fileName) return false;
+
+  const isFileUrl = fileName.startsWith('file://');
+  const hasPathSeparator = fileName.includes(sep) || fileName.includes('/') || isFileUrl;
+
   return (
-    frame.getFileName() &&
-    frame.getFileName().includes(sep) &&
-    !frame.getFileName().includes('node_modules') &&
-    !frame.getFileName().includes('internal')
+    hasPathSeparator &&
+    !fileName.includes('node_modules') &&
+    !fileName.includes('internal')
   );
 }
 
