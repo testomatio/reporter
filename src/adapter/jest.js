@@ -44,8 +44,7 @@ export class JestReporter {
       let steps;
       const { status, title, duration, failureMessages } = result;
       if (failureMessages[0]) {
-        let errorMessage = failureMessages[0].replace(ansiRegExp(), '');
-        errorMessage = errorMessage.split('\n')[0];
+        const errorMessage = failureMessages[0].replace(ansiRegExp(), '');
         error = new Error(errorMessage);
         steps = failureMessages[0];
       }
