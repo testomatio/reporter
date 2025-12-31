@@ -3,11 +3,11 @@ import pc from 'picocolors';
 import { Gaxios } from 'gaxios';
 import JsonCycle from 'json-cycle';
 import { APP_PREFIX, STATUS, AXIOS_TIMEOUT, REPORTER_REQUEST_RETRIES } from '../constants.js';
-import { isValidUrl, 
-  foundedTestLog, 
-  readLatestRunId, 
-  transformEnvVarToBoolean, 
-  getGitCommitSha 
+import { isValidUrl,
+  foundedTestLog,
+  readLatestRunId,
+  transformEnvVarToBoolean,
+  getGitCommitSha
 } from '../utils/utils.js';
 import { parseFilterParams, generateFilterRequestParams, setS3Credentials } from '../utils/pipe_utils.js';
 import { config } from '../config.js';
@@ -198,6 +198,9 @@ class TestomatioPipe {
     if (!this.isEnabled) return;
     if (this.batch.isEnabled && this.isEnabled)
       this.batch.intervalFunction = setInterval(this.#batchUpload, this.batch.intervalTime);
+    if (this.store) {
+      this.store.runKind = params.kind;
+    }
 
     let buildUrl = process.env.BUILD_URL || process.env.CI_JOB_URL || process.env.CIRCLE_BUILD_URL;
 
@@ -219,6 +222,16 @@ class TestomatioPipe {
 
     const accessEvent = process.env.TESTOMATIO_PUBLISH ? 'publish' : null;
 
+    const coverageConfiguration = this.store?.coverageConfiguration;
+    let description = null;
+    let configuration = null;
+    if (coverageConfiguration && (coverageConfiguration.tests?.length || coverageConfiguration.suites?.length)) {
+      description = this.store?.coverageDescription || null;
+      configuration = {
+        tests: coverageConfiguration.tests?.map(id => id.replace(/^T/, '')) || [],
+        suites: coverageConfiguration.suites?.map(id => id.replace(/^S/, '')) || [],
+      };
+    }
     const runParams = Object.fromEntries(
       Object.entries({
         ci_build_url: buildUrl,
@@ -232,6 +245,8 @@ class TestomatioPipe {
         shared_run: this.sharedRun,
         shared_run_timeout: this.sharedRunTimeout,
         kind: params.kind,
+        configuration,
+        description,
       }).filter(([, value]) => !!value),
     );
     debug(' >>>>>> Run params', JSON.stringify(runParams, null, 2));
