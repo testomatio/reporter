@@ -145,7 +145,7 @@ program
         if (client.pipeStore.runUrl) console.log(APP_PREFIX, `📊 Report URL: ${pc.magenta(client.pipeStore.runUrl)}`);
 
         if (opts.kind !== 'manual') {
-          console.log(APP_PREFIX, `No command passed, so you need to run tests yourself:`)
+          console.log(APP_PREFIX, `No command passed, so you need to run tests yourself:`);
           console.log(APP_PREFIX, `TESTOMATIO_RUN=${runId} <command>`);
         }
       } else {

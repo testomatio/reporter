@@ -469,7 +469,7 @@ class CoveragePipe { // or Changes for the future???
           const affectedItems = [];
           if (suitesCount > 0) affectedItems.push(`**${suitesCount} suites**`);
           if (testsCount > 0) affectedItems.push(`**${testsCount} individual tests**`);
-          description += `May affect ${affectedItems.join(' and ')} which are recommended to be checked for regression.\n\n`;
+          description += `May affect ${affectedItems.join(' and ')} which are recommended to be tested for regression.\n\n`; // eslint-disable-line
         }
         description += 'Updated source files:\n';
         if (updatedFiles.length) {
