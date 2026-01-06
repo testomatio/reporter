@@ -72,8 +72,8 @@ class HtmlPipe {
   }
 
   /**
-   * Add test data to the result array for saving.
-   * @param {any} test - Test entry
+   * Add test data to the result array for saving. As a result of this function, we get a result object to save.
+   * @param {import('../../types/types.js').TestData} test - object which includes each test entry.
    */
   addTest(test) {
     if (!this.isEnabled) return;
@@ -137,9 +137,9 @@ class HtmlPipe {
       console.log(pc.blue(msg));
     }
 
-    const aggregatedTests = aggregateTests(tests);
+    const aggregateTestRetries = aggregateTests(tests);
 
-    aggregatedTests.forEach(test => {
+    aggregateTestRetries.forEach(test => {
       const logsRaw =
         test.logs || test.meta?.logs || test.meta?.console || test.meta?.stdout || test.meta?.stderr || '';
       const stackRaw = test.stack || '';
@@ -148,6 +148,16 @@ class HtmlPipe {
       const { steps: stepsFromMsg, restText: messageClean } = extractStepLines(messageRaw);
       const { steps: stepsFromLogs, restText: logsClean } = extractStepLines(logsRaw);
       const { steps: stepsFromStack, restText: stackClean } = extractStepLines(stackRaw);
+
+      let stepsTree = null;
+      if (Array.isArray(test.steps) && test.steps.length) {
+        const userSteps = filterUserStepsTree(test.steps);
+        stepsTree = userSteps.length ? userSteps : null;
+      }
+
+      if (!stepsTree && stepsFromLogs.length > 0) {
+        stepsTree = buildStepsTreeFromLogs(stepsFromLogs);
+      }
 
       const allStepLines = [...stepsFromMsg, ...stepsFromLogs, ...stepsFromStack];
       const fallbackStepsText = allStepLines.length ? allStepLines.map((s, i) => `${i + 1}. ${s}`).join('\n') : '';
@@ -163,7 +173,60 @@ class HtmlPipe {
         delete test.meta.traces;
       }
 
-      const statusLower = String(test.status || '').toLowerCase();
+      if (!test.traces && test.files && Array.isArray(test.files) && test.files.length > 0) {
+        const traceFiles = test.files.filter(f =>
+          f.path &&
+          f.path.trim().length > 0 &&
+          (f.title === 'trace' || f.name === 'trace') &&
+          (f.type === 'application/zip' || f.path.endsWith('.zip'))
+        );
+
+        if (traceFiles.length > 0) {
+          const traceDataList = [];
+          traceFiles.forEach(f => {
+            if (!fs.existsSync(f.path)) {
+              console.warn(`Trace file not found: ${f.path}`);
+              return;
+            }
+
+            try {
+              const fileBuffer = fs.readFileSync(f.path, null);
+
+              if (!fileBuffer || fileBuffer.length === 0) {
+                console.warn(`Empty trace file: ${f.path}`);
+                return;
+              }
+              const base64 = fileBuffer.toString('base64');
+
+              let filename = 'trace.zip';
+              try {
+                filename = path.basename(f.path);
+              } catch (e) {
+                console.warn(`Could not extract filename from ${f.path}, using default`);
+              }
+
+              const dataUrl = `data:application/zip;base64,${base64}`;
+
+              traceDataList.push({
+                dataUrl,
+                name: filename
+              });
+
+            } catch (e) {
+              console.error(`Failed to convert trace to base64: ${f.path}`, e.message);
+            }
+          });
+
+          if (traceDataList.length > 0) {
+            test.traces = traceDataList;
+          }
+        }
+      }
+
+      const status = String(test.status || '').toLowerCase();
+      if ((status === 'skipped' || status === 'pending') && test.meta?.todo) {
+        test.status = 'todo';
+      }
 
       if (Array.isArray(test.steps) && test.steps.length) {
         const userSteps = filterUserStepsTree(test.steps);
@@ -174,6 +237,9 @@ class HtmlPipe {
             .map(s => formatStep(s))
             .flat()
             .join('\n');
+        } else if (stepsTree) {
+          test.stepsArray = stepsTree;
+          test.steps = stepsTree.map(s => formatStep(s)).flat().join('\n');
         } else if (fallbackStepsText) {
           test.stepsArray = allStepLines.map(t => ({ category: 'user', title: t, duration: 0 }));
           test.steps = fallbackStepsText;
@@ -181,6 +247,9 @@ class HtmlPipe {
           test.steps = '';
           test.stepsArray = [];
         }
+      } else if (stepsTree) {
+        test.stepsArray = stepsTree;
+        test.steps = stepsTree.map(s => formatStep(s)).flat().join('\n');
       } else if (fallbackStepsText) {
         test.stepsArray = allStepLines.map(t => ({ category: 'user', title: t, duration: 0 }));
         test.steps = fallbackStepsText;
@@ -202,13 +271,13 @@ class HtmlPipe {
       const logsFromStack = normalizeLogs(stripStepMarkedLinesRaw(rawStack));
       const logsMerged = (logsFromFields || logsFromStack).trim();
 
-      const messageProcessed = normalizeForProcessing(toPlainText(test.message)).trim();
+      const messageProcessed = decodeHtmlEntities(toPlainText(test.message)).trim();
       const messageNoInlineLogs = stripInlineLogsBlock(messageProcessed);
       const messageFinal = cleanNoiseBlock(messageNoInlineLogs).trim();
       const logsFinal = cleanNoiseBlock(logsMerged).trim();
 
       const finalText = buildMessageForReport({
-        statusLower,
+        status,
         messageRaw: messageFinal,
         logsText: logsFinal,
       });
@@ -269,11 +338,26 @@ class HtmlPipe {
 
           return artifact;
         })
-        .filter(Boolean);
+        .filter(Boolean)
+        .filter(artifact => {
+          const isTrace = (artifact.title === 'trace' || artifact.name === 'trace') &&
+                         (artifact.type === 'application/zip' ||
+                          artifact.path?.endsWith('.zip') ||
+                          artifact.relativePath?.endsWith('.zip'));
+          return !isTrace;
+        });
 
-      if (!test.artifacts.length) {
-        test.artifacts = [];
-      }
+      const allPossibleArtifacts = [
+        ...(test.artifacts || []),
+        ...(test.manuallyAttachedArtifacts || []),
+        ...(test.files || []),
+        ...(test.meta?.attachments || []),
+      ];
+
+      test.artifactsUploaded = allPossibleArtifacts.some(artifact => {
+        const link = artifact?.link || artifact?.path;
+        return link && (link.startsWith('http://') || link.startsWith('https://')) && !link.startsWith('file://');
+      });
 
       normalizeRetries(test);
       if (test.traces) {
@@ -282,13 +366,15 @@ class HtmlPipe {
     });
 
     const data = {
+      title: this.title || 'Test Results',
       runId: this.store.runId || '',
       status: runParams.status || 'No status info',
       parallel: runParams.isParallel || 'No parallel info',
       runUrl: this.store.runUrl || '',
-      executionTime: testExecutionSumTime(aggregatedTests),
+      executionTime: testExecutionSumTime(aggregateTestRetries),
       executionDate: getCurrentDateTimeFormatted(),
-      tests: aggregatedTests,
+      tests: aggregateTestRetries,
+      envVars: collectEnvironmentVariables(),
     };
     // generate output HTML based on the template
     const html = this.#generateHTMLReport(data, templatePath);
@@ -398,12 +484,13 @@ class HtmlPipe {
         1: 25,
         2: 50,
       };
-      const statuses = ['all', 'passed', 'failed', 'skipped'];
+      const statuses = ['all', 'passed', 'failed', 'skipped', 'todo'];
       const pageItemGroups = {
         all: {},
         passed: {},
         failed: {},
         skipped: {},
+        todo: {},
         totalTests,
       };
 
@@ -433,6 +520,10 @@ class HtmlPipe {
       pageItemGroups.totalTests = totalTests;
 
       return JSON.stringify(pageItemGroups);
+    });
+
+    handlebars.registerHelper('ObjectLength', obj => {
+      return Object.keys(obj).length;
     });
   }
 
@@ -465,27 +556,17 @@ function parseRetryInfo(test) {
     const n = Number(test.meta.retryCount);
     if (!Number.isNaN(n)) test.retries.retryCount = n;
   }
-
-  if (!test.title) return;
-
-  const retryMatch = test.title.match(/\[RETRIES:(\d+)\|FLAKY:(true|false)\]/);
-  if (!retryMatch) return;
-
-  const retryCount = parseInt(retryMatch[1], 10);
-  const isFlaky = retryMatch[2] === 'true';
-
-  test.title = test.title.replace(/\s*\[RETRIES:\d+\|FLAKY:(true|false)\]/, '');
-
-  test.retries.retryCount = Number.isFinite(retryCount) ? retryCount : test.retries.retryCount || 0;
-
-  test.meta = test.meta || {};
-  if (isFlaky) test.meta.isFlaky = true;
 }
 
 function escapeHtml(str = '') {
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+/**
+ * Converts value to plain text. Handles arrays by joining with newlines.
+ * @param {string|string[]} value - String or array of strings
+ * @returns {string} Plain text representation
+ */
 function toPlainText(value) {
   if (!value) return '';
   if (Array.isArray(value)) return value.map(v => String(v)).join('\n');
@@ -501,6 +582,12 @@ function stripFailureBlock(text = '') {
   return t.trim();
 }
 
+/**
+ * Normalizes log text by removing ANSI codes and step markers from line starts.
+ * Keeps the text but removes markers like >, ⏩, ► (unlike stripStepMarkedLinesRaw which removes entire lines)
+ * @param {string} text - Raw log text
+ * @returns {string} Cleaned log text
+ */
 function normalizeLogs(text = '') {
   return String(text)
     .replace(ansiRegExp(), '')
@@ -520,11 +607,11 @@ function hasMeaningfulText(value) {
   return typeof value === 'string' && value.trim().length > 0;
 }
 
-function buildMessageForReport({ statusLower, messageRaw, logsText }) {
+function buildMessageForReport({ status, messageRaw, logsText }) {
   const hasMsg = hasMeaningfulText(messageRaw);
   const hasLogs = hasMeaningfulText(logsText);
 
-  if (statusLower === 'failed') {
+  if (status === 'failed') {
     const parts = [];
     if (hasMsg) parts.push(messageRaw);
     if (hasLogs) parts.push(`--- Logs ---\n${logsText}`);
@@ -575,7 +662,7 @@ function extractLogsFromStack(stack) {
     .trim();
 }
 
-function normalizeForProcessing(value = '') {
+function decodeHtmlEntities(value = '') {
   return String(value || '')
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/&gt;/gi, '>')
@@ -587,7 +674,7 @@ function normalizeForProcessing(value = '') {
 }
 
 function stripStepMarkedLinesRaw(text = '') {
-  const t = normalizeForProcessing(text);
+  const t = decodeHtmlEntities(text);
   return t
     .split('\n')
     .filter(line => {
@@ -598,12 +685,20 @@ function stripStepMarkedLinesRaw(text = '') {
     .trim();
 }
 
+/**
+ * Normalizes various status formats to unified Testomat.io status.
+ * Handles different formats from external systems (XML, APIs, retries).
+ * @param {string} value - Status in any format
+ * @returns {string} Normalized status ('passed', 'failed', 'skipped', 'todo', or 'unknown')
+ */
 function normalizeStatus(value) {
   const s = String(value || '').toLowerCase();
 
   if (['passed', 'pass', 'success', 'ok'].includes(s)) return 'passed';
   if (['failed', 'fail', 'failure', 'broken', 'timedout', 'timeout', 'error'].includes(s)) return 'failed';
-  if (['skipped', 'skip', 'pending', 'disabled', 'ignored', 'todo'].includes(s)) return 'skipped';
+  if (['todo'].includes(s)) return 'todo';
+  if (['pending'].includes(s)) return 'todo';
+  if (['skipped', 'skip', 'disabled', 'ignored'].includes(s)) return 'skipped';
 
   return s ? s : 'unknown';
 }
@@ -802,7 +897,7 @@ function aggregateTests(tests) {
 }
 
 function extractStepLines(raw = '') {
-  const text = normalizeForProcessing(toPlainText(raw || ''));
+  const text = decodeHtmlEntities(toPlainText(raw || ''));
   if (!text.trim()) return { steps: [], restText: '' };
 
   const lines = text.split('\n');
@@ -858,8 +953,53 @@ function filterUserStepsTree(steps) {
   return walk(steps);
 }
 
+/**
+ * Builds a tree structure from a flat array of step names
+ * This is used when steps are stored as logs (like in Playwright)
+ * @param {string[]} stepLines - Array of step names
+ * @returns {Array} - Tree structure of steps
+ */
+function buildStepsTreeFromLogs(stepLines) {
+  if (!Array.isArray(stepLines) || stepLines.length === 0) return [];
+
+  const result = [];
+  const stack = [];
+  const indentStack = [];
+
+  stepLines.forEach(line => {
+    if (!line || !line.trim()) return;
+
+    const text = line.trim();
+    const indent = line.search(/\S/);
+
+    while (indentStack.length > 0 && indentStack[indentStack.length - 1] >= indent) {
+      stack.pop();
+      indentStack.pop();
+    }
+
+    const stepObj = {
+      category: 'user',
+      title: text,
+      duration: 0,
+    };
+
+    if (stack.length === 0) {
+      result.push(stepObj);
+    } else {
+      const parent = stack[stack.length - 1];
+      if (!parent.steps) parent.steps = [];
+      parent.steps.push(stepObj);
+    }
+
+    stack.push(stepObj);
+    indentStack.push(indent);
+  });
+
+  return result;
+}
+
 function cleanNoiseBlock(text = '') {
-  const t = normalizeForProcessing(String(text || '')).replace(ansiRegExp(), '');
+  const t = decodeHtmlEntities(String(text || '')).replace(ansiRegExp(), '');
 
   let lines = t
     .split('\n')
@@ -886,6 +1026,129 @@ function dropISayEcho(lines) {
     out.push(cur);
   }
   return out;
+}
+
+/**
+ * Collects all Testomatio and S3 environment variables
+ * Uses hardcoded list to avoid file system dependencies for end users
+ * @returns {Object} Object with TESTOMATIO_ and S3_ variables grouped
+ */
+function collectEnvironmentVariables() {
+  return getHardcodedEnvVars();
+}
+
+/**
+ * Hardcoded environment variables stored in code
+ * This is the main source of truth for env vars to avoid file system dependencies
+ * @returns {Object} Object with TESTOMATIO_ and S3_ variables
+ */
+function getHardcodedEnvVars() {
+  const allVars = {
+    testomatio: {
+      TESTOMATIO: { description: 'API Key for Testomat.io' },
+      TESTOMATIO_TOKEN: { description: 'API Token (alias for TESTOMATIO)' },
+      TESTOMATIO_API_KEY: { description: 'API Key (alias for TESTOMATIO)' },
+      TESTOMATIO_CREATE: { description: 'Create new tests in Testomat.io' },
+      TESTOMATIO_RUN: { description: 'Run ID to report tests to' },
+      TESTOMATIO_TITLE: { description: 'Title for the test run' },
+      TESTOMATIO_ENV: { description: 'Environment label (e.g., "Windows, Chrome")' },
+      TESTOMATIO_RUNGROUP_TITLE: { description: 'Title for run group' },
+      TESTOMATIO_SHARED_RUN: { description: 'Share run for parallel execution' },
+      TESTOMATIO_SHARED_RUN_TIMEOUT: { description: 'Timeout for shared run (in seconds)' },
+      TESTOMATIO_PROCEED: { description: 'Proceed even if tests fail' },
+      TESTOMATIO_PUBLISH: { description: 'Publish results to Testomat.io' },
+      TESTOMATIO_SUITE: { description: 'Suite ID for new tests' },
+      TESTOMATIO_WORKDIR: { description: 'Working directory for relative paths' },
+      TESTOMATIO_EXCLUDE_SKIPPED: { description: 'Exclude skipped tests from report' },
+      TESTOMATIO_EXCLUDE_FILES_FROM_REPORT_GLOB_PATTERN: { description: 'Glob pattern to exclude files' },
+      TESTOMATIO_NO_STEPS: { description: 'Disable steps reporting' },
+      TESTOMATIO_STEPS_PASSED: { description: 'Report steps for passed tests' },
+      TESTOMATIO_STACK_PASSED: { description: 'Report stack for passed tests' },
+      TESTOMATIO_STACK_ARTIFACTS: { description: 'Stack artifacts in report' },
+      TESTOMATIO_STACK_FILTER: { description: 'Filter stack traces' },
+      TESTOMATIO_REQUEST_TIMEOUT: { description: 'Request timeout in milliseconds' },
+      TESTOMATIO_MAX_REQUEST_FAILURES: { description: 'Max request failures' },
+      TESTOMATIO_MAX_REQUEST_FAILURES_COUNT: { description: 'Max request failures count' },
+      TESTOMATIO_MAX_REQUEST_RETRIES_WITHIN_TIME_SECONDS: { description: 'Max retries within time period' },
+      TESTOMATIO_INTERCEPT_CONSOLE_LOGS: { description: 'Intercept console logs' },
+      TESTOMATIO_NO_TIMESTAMP: { description: 'Remove timestamps from logs' },
+      TESTOMATIO_DEBUG: { description: 'Enable debug mode' },
+      TESTOMATIO_DISABLE_BATCH_UPLOAD: { description: 'Disable batch upload' },
+      TESTOMATIO_MARK_DETACHED: { description: 'Mark tests as detached' },
+      TESTOMATIO_HTML_REPORT_SAVE: { description: 'Save HTML report' },
+      TESTOMATIO_HTML_REPORT_FOLDER: { description: 'Folder for HTML report' },
+      TESTOMATIO_HTML_FILENAME: { description: 'HTML report filename' },
+      TESTOMATIO_URL: { description: 'Testomat.io URL (custom instance)' },
+    },
+    s3: {
+      S3_BUCKET: { description: 'S3 bucket name' },
+      S3_REGION: { description: 'S3 region' },
+      S3_ENDPOINT: { description: 'S3 endpoint URL' },
+      S3_KEY: { description: 'S3 access key' },
+      S3_SECRET: { description: 'S3 secret key' },
+      S3_ACCESS_KEY_ID: { description: 'S3 access key ID' },
+      S3_SECRET_ACCESS_KEY: { description: 'S3 secret access key' },
+      S3_SESSION_TOKEN: { description: 'S3 session token' },
+      S3_FORCE_PATH_STYLE: { description: 'S3 force path style' },
+      S3_PREFIX: { description: 'S3 key prefix' },
+    },
+  };
+
+  const sensitiveVars = new Set([
+    'TESTOMATIO',
+    'TESTOMATIO_TOKEN',
+    'TESTOMATIO_API_KEY',
+    'S3_KEY',
+    'S3_SECRET',
+    'S3_ACCESS_KEY_ID',
+    'S3_SECRET_ACCESS_KEY',
+    'S3_SESSION_TOKEN',
+  ]);
+
+  const envVars = {
+    testomatio: {},
+    s3: {},
+  };
+
+  for (const [key, config] of Object.entries(allVars.testomatio)) {
+    const value = process.env[key];
+    const isSensitive = sensitiveVars.has(key);
+
+    if (isSensitive) {
+      if (value !== undefined) {
+        envVars.testomatio[key] = { value: '***', description: config.description, isSet: true, isSensitive: true };
+      } else {
+        envVars.testomatio[key] = { value: '', description: config.description, isSet: false, isSensitive: true };
+      }
+    } else {
+      if (value !== undefined) {
+        envVars.testomatio[key] = { value, description: config.description, isSet: true };
+      } else {
+        envVars.testomatio[key] = { value: '', description: config.description, isSet: false };
+      }
+    }
+  }
+
+  for (const [key, config] of Object.entries(allVars.s3)) {
+    const value = process.env[key];
+    const isSensitive = sensitiveVars.has(key);
+
+    if (isSensitive) {
+      if (value !== undefined) {
+        envVars.s3[key] = { value: '***', description: config.description, isSet: true, isSensitive: true };
+      } else {
+        envVars.s3[key] = { value: '', description: config.description, isSet: false, isSensitive: true };
+      }
+    } else {
+      if (value !== undefined) {
+        envVars.s3[key] = { value, description: config.description, isSet: true };
+      } else {
+        envVars.s3[key] = { value: '', description: config.description, isSet: false };
+      }
+    }
+  }
+
+  return envVars;
 }
 
 export default HtmlPipe;

@@ -70,6 +70,23 @@ const DATA = {
       api_key: 'tstmt_gRqrhBUaVxTpezGpZjRmlahOeqcRBBbDMA1692050199',
       create: false,
     },
+    {
+      files: [],
+      steps: 'I.wait(5000)',
+      status: 'pending',
+      stack: 'Test is marked as todo',
+      meta: { todo: true },
+      example: null,
+      code: null,
+      title: 'Todo test implementation @T5d0e3198',
+      suite_title: 'Todo Tests @todo @S4g7d3054',
+      test_id: '5d0e3198',
+      message: 'Not implemented yet',
+      run_time: 0,
+      artifacts: [],
+      api_key: 'tstmt_gRqrhBUaVxTpezGpZjRmlahOeqcRBBbDMA1692050199',
+      create: false,
+    },
   ],
 };
 
@@ -154,21 +171,25 @@ describe('HTML report tests', () => {
     const passedTestsButton = document.querySelector('.filter-tab[data-filter="passed"]');
     const failedTestsButton = document.querySelector('.filter-tab[data-filter="failed"]');
     const skippedTestsButton = document.querySelector('.filter-tab[data-filter="skipped"]');
+    const todoTestsButton = document.querySelector('.filter-tab[data-filter="todo"]');
 
     expect(allTestsButton).to.exist;
     expect(passedTestsButton).to.exist;
     expect(failedTestsButton).to.exist;
     expect(skippedTestsButton).to.exist;
+    expect(todoTestsButton).to.exist;
 
     // Check that buttons have correct class
     expect(passedTestsButton.classList.contains('filter-tab')).to.be.true;
     expect(failedTestsButton.classList.contains('filter-tab')).to.be.true;
     expect(skippedTestsButton.classList.contains('filter-tab')).to.be.true;
+    expect(todoTestsButton.classList.contains('filter-tab')).to.be.true;
 
     // Check button text content
     expect(passedTestsButton.textContent).to.include('Passed');
     expect(failedTestsButton.textContent).to.include('Failed');
     expect(skippedTestsButton.textContent).to.include('Skipped');
+    expect(todoTestsButton.textContent).to.include('Todo');
   });
 
   it('should contain JavaScript logic for processing different test statuses', () => {
@@ -188,6 +209,7 @@ describe('HTML report tests', () => {
     expect(htmlContent).to.include("'passed': 'check'");
     expect(htmlContent).to.include("'failed': 'times'");
     expect(htmlContent).to.include("'skipped': 'forward'");
+    expect(htmlContent).to.include("'todo': 'circle'");
   });
 
   it('should include Google Charts data with test status distribution', () => {
@@ -201,17 +223,20 @@ describe('HTML report tests', () => {
     expect(htmlContent).to.include('const passedTests =');
     expect(htmlContent).to.include('const failedTests =');
     expect(htmlContent).to.include('const skippedTests =');
+    expect(htmlContent).to.include('const todoTests =');
 
     // Check for chart colors (new template uses conditional colors based on todoTests)
     expect(htmlContent).to.include("#10b981"); // Passed green
     expect(htmlContent).to.include("#ef4444"); // Failed red
     expect(htmlContent).to.include("#f59e0b"); // Skipped yellow
+    expect(htmlContent).to.include("#8b5cf6"); // Todo purple
 
     // Check for chart data structure in rendered HTML
     expect(htmlContent).to.include("['Status', 'Count']");
     expect(htmlContent).to.include("['Passed',");
     expect(htmlContent).to.include("['Failed',");
     expect(htmlContent).to.include("['Skipped',");
+    expect(htmlContent).to.include("['Todo',");
   });
 
   it('should handle test data properly for all status types', () => {
@@ -240,6 +265,7 @@ describe('HTML report tests', () => {
     expect(testDataScript).to.include("'passed'");
     expect(testDataScript).to.include("'failed'");
     expect(testDataScript).to.include("'skipped'");
+    expect(testDataScript).to.include("'todo'");
   });
 
   it('should calculate correct test counts for each status type', () => {
@@ -248,9 +274,13 @@ describe('HTML report tests', () => {
     const document = dom.window.document;
 
     // Count expected test statuses from our test data
+    // Note: pending + meta.todo = todo status
     const expectedPassedCount = DATA.tests.filter(test => test.status === 'passed').length;
     const expectedFailedCount = DATA.tests.filter(test => test.status === 'failed').length;
     const expectedSkippedCount = DATA.tests.filter(test => test.status === 'skipped').length;
+    const expectedTodoCount = DATA.tests.filter(test =>
+      (test.status === 'pending' && test.meta?.todo) || test.status === 'todo'
+    ).length;
     const expectedTotalCount = DATA.tests.length;
 
     // Check that the total test count is displayed correctly in the stats section
@@ -269,18 +299,21 @@ describe('HTML report tests', () => {
     const countPassed = document.getElementById('countPassed');
     const countFailed = document.getElementById('countFailed');
     const countSkipped = document.getElementById('countSkipped');
+    const countTodo = document.getElementById('countTodo');
 
     expect(countAll).to.exist;
     expect(countPassed).to.exist;
     expect(countFailed).to.exist;
     expect(countSkipped).to.exist;
+    expect(countTodo).to.exist;
 
     // Based on our test data, we should have:
-    // 1 passed test, 1 failed test, 1 skipped test
+    // 1 passed test, 1 failed test, 1 skipped test, 1 todo test
     expect(expectedPassedCount).to.equal(1);
     expect(expectedFailedCount).to.equal(1);
     expect(expectedSkippedCount).to.equal(1);
-    expect(expectedTotalCount).to.equal(3);
+    expect(expectedTodoCount).to.equal(1);
+    expect(expectedTotalCount).to.equal(4);
   });
 
   it('should render filter functionality for different test statuses', () => {
@@ -343,20 +376,26 @@ describe('HTML report tests', () => {
     expect(htmlContent).to.include('New TEST #1 item @T50e82737'); // passed test
     expect(htmlContent).to.include('Create a new todo TEST #2 item @T5b8d1186'); // failed test
     expect(htmlContent).to.include('Skipped test for conditional feature @T5c9d2187'); // skipped test
+    expect(htmlContent).to.include('Todo test implementation @T5d0e3198'); // todo test (pending + meta.todo)
 
     // Check that suite titles are included
     expect(htmlContent).to.include('Create Tasks @step:01 @story:12 @S2f5c1942');
     expect(htmlContent).to.include('Suite 2 @smoke @story:13 @S2f5c1942');
     expect(htmlContent).to.include('Feature Tests @feature @S3f6c2943');
+    expect(htmlContent).to.include('Todo Tests @todo @S4g7d3054');
 
     // Verify the test data structure includes exactly 1 test per status
     const passedTestsFromData = DATA.tests.filter(test => test.status === 'passed');
     const failedTestsFromData = DATA.tests.filter(test => test.status === 'failed');
     const skippedTestsFromData = DATA.tests.filter(test => test.status === 'skipped');
+    const todoTestsFromData = DATA.tests.filter(test =>
+      (test.status === 'pending' && test.meta?.todo) || test.status === 'todo'
+    );
 
     expect(passedTestsFromData).to.have.length(1);
     expect(failedTestsFromData).to.have.length(1);
     expect(skippedTestsFromData).to.have.length(1);
+    expect(todoTestsFromData).to.have.length(1);
   });
 });
 

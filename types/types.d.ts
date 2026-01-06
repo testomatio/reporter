@@ -159,6 +159,12 @@ export interface TestData {
   /** The unique identifier from Testomat.io of the test case. If provided, updates the existing test case with the given ID. */
   test_id?: string;
 
+  /** The status of the test (passed, failed, skipped, etc.) */
+  status?: string;
+
+  /** An array of artifacts associated with the test case (screenshots, videos, traces, etc.) */
+  artifacts?: ArtifactData[];
+
   /** An object representing an error that occurred during the execution of the test case. */
   error?: Error;
 
@@ -198,7 +204,28 @@ export interface TestData {
   manuallyAttachedArtifacts?: (string | { path: string; type: string })[];
 
   /** Meta information (key: value) */
-  meta?: { [key: string]: any } | {};
+  meta?: { [key: string]: any } & {
+    /** Attachments array */
+    attachments?: any[];
+    /** Traces data */
+    traces?: any;
+    /** Console logs */
+    console?: any;
+    /** Standard output */
+    stdout?: any;
+    /** Standard error */
+    stderr?: any;
+    /** Logs */
+    logs?: any;
+    /** Retry count */
+    retryCount?: number;
+    /** Is flaky test */
+    isFlaky?: boolean;
+    /** Attempts array */
+    attempts?: any[];
+    /** Retries array */
+    retries?: any[];
+  };
 
   /** Links array (e.g. [{test: 'TEST-123'}, {label: 'smoke'}]) */
   links?: object[];

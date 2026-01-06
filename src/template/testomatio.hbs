@@ -4,7 +4,7 @@
     <meta charset='UTF-8' />
     <meta
       name='viewport'
-      content='width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0'
+      content='width=device-width, initial-scale=1.0'
     />
     <meta http-equiv='X-UA-Compatible' content='ie=edge' />
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -94,6 +94,23 @@
             margin: 0;
             font-size: 28px;
             font-weight: 700;
+            transition: color 0.3s ease;
+        }
+
+        .header-title h1.status-passed {
+            color: var(--success-color);
+        }
+
+        .header-title h1.status-failed {
+            color: var(--danger-color);
+        }
+
+        .header-title h1.status-skipped {
+            color: var(--warning-color);
+        }
+
+        .header-title h1.status-todo {
+            color: #8b5cf6;
         }
 
         .header-badge {
@@ -153,48 +170,63 @@
 
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: 2fr 1fr;
             gap: 30px;
             margin-bottom: 30px;
         }
 
         .chart-container {
             background: white;
-            padding: 20px;
+            padding: 25px;
             border-radius: var(--border-radius);
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            height: 350px;
+            min-height: 400px;
+        }
+
+        .chart-section {
+            width: 100%;
+            overflow: hidden;
+        }
+
+        #testChart {
+            width: 100% !important;
+            max-width: 100% !important;
         }
 
         .stats-info {
-            display: grid;
-            gap: 15px;
-        }
-
-        .stat-card {
             background: white;
-            padding: 20px;
+            padding: 25px;
             border-radius: var(--border-radius);
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: var(--transition);
+            flex-direction: column;
+            justify-content: center;
+            gap: 20px;
         }
 
-        .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        .stat-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .stat-card:last-child {
+            border-bottom: none;
         }
 
         .stat-label {
-            font-size: 14px;
+            font-size: 13px;
             color: var(--gray-600);
             font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .stat-value {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 700;
             color: var(--gray-900);
         }
@@ -417,6 +449,26 @@
             font-weight: 600;
             color: var(--gray-900);
             margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .artifact-upload-indicator {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            color: var(--primary-color);
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .artifact-upload-indicator:hover {
+            transform: scale(1.1);
+            transition: transform 0.2s ease;
         }
 
         .test-suite {
@@ -479,6 +531,98 @@
 
         .test-item.expanded .test-content {
             display: block;
+        }
+
+        .test-group {
+            background: white;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .test-group:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .test-group-header {
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: var(--transition);
+        }
+
+        .test-group-header:hover {
+            filter: brightness(1.1);
+        }
+
+        .test-group-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+        }
+
+        .test-group-name {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .test-group-count {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .test-group-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+
+        .test-group-stat {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .test-group-expand {
+            color: white;
+            transition: var(--transition);
+            font-size: 18px;
+        }
+
+        .test-group.expanded .test-group-expand {
+            transform: rotate(180deg);
+        }
+
+        .test-group-content {
+            display: none;
+            background: var(--gray-50);
+        }
+
+        .test-group.expanded .test-group-content {
+            display: block;
+        }
+
+        .test-group-content .test-item {
+            border: none;
+            border-bottom: 1px solid var(--gray-200);
+            border-radius: 0;
+            margin-bottom: 0;
+        }
+
+        .test-group-content .test-item:last-child {
+            border-bottom: none;
         }
 
         .test-tabs {
@@ -626,6 +770,68 @@
             color: var(--gray-500);
             font-weight: 600;
             margin-top: 4px;
+        }
+
+        .step-children {
+            position: relative;
+            margin-left: 48px;
+            padding-left: 0;
+        }
+
+        .step-children::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--gray-300);
+        }
+
+        .step-children .step-item {
+            position: relative;
+        }
+
+        .step-children .step-item::before {
+            content: '';
+            position: absolute;
+            left: -16px;
+            top: 24px;
+            width: 16px;
+            height: 2px;
+            background: var(--gray-300);
+        }
+
+        .step-children .step-item:last-child {
+            border-bottom: none;
+        }
+
+        .step-level-0 {
+            padding-left: 16px;
+        }
+
+        .step-level-1 {
+            padding-left: 8px;
+        }
+
+        .step-level-2 {
+            padding-left: 16px;
+        }
+
+        .step-level-3 {
+            padding-left: 24px;
+        }
+
+        .step-level-4 {
+            padding-left: 32px;
+        }
+
+        .step-item[data-step-id] {
+            position: relative;
+        }
+
+        .step-item.step-level-0::before {
+            display: none;
         }
 
         .step-duration {
@@ -838,16 +1044,114 @@
             color: var(--success-color);
         }
 
-        .traces-container {
-            background: var(--gray-900);
-            color: #e5e7eb;
+        .traces-instruction {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
             padding: 20px;
-            border-radius: 8px;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .instruction-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .instruction-content ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .instruction-content li {
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .instruction-content strong {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .instruction-content code {
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            padding: 6px 10px;
+            border-radius: 6px;
             font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
             font-size: 13px;
-            line-height: 1.4;
-            max-height: 400px;
-            overflow-y: auto;
+            display: inline-block;
+            margin: 5px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .traces-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .trace-download-item {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            transition: var(--transition);
+        }
+
+        .trace-download-item:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
+        }
+
+        .trace-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .trace-info i {
+            font-size: 24px;
+            color: var(--warning-color);
+        }
+
+        .trace-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--gray-700);
+        }
+
+        .trace-download-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .trace-download-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .trace-download-btn:active {
+            transform: translateY(0);
         }
 
         .pagination-container {
@@ -946,14 +1250,15 @@
 
         @media (max-width: 768px) {
             .main-container {
-                margin: 10px;
+                margin: 5px;
                 border-radius: 15px;
             }
 
             .header {
-                padding: 20px;
+                padding: 15px;
                 flex-direction: column;
                 align-items: flex-start;
+                gap: 15px;
             }
 
             .header-actions {
@@ -961,43 +1266,247 @@
                 justify-content: space-between;
             }
 
+            .stats-section {
+                padding: 15px;
+            }
+
             .stats-grid {
                 grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .chart-container {
+                min-height: auto;
+                padding: 15px;
+            }
+
+            .stats-info {
+                padding: 15px;
+            }
+
+            .stat-card {
+                padding: 10px 0;
+            }
+
+            .stat-value {
+                font-size: 20px;
+            }
+
+            .stat-label {
+                font-size: 12px;
+            }
+
+            .chart-section {
+                padding: 10px;
+                width: 100%;
+            }
+
+            #testChart {
+                width: 100% !important;
+                max-width: 100% !important;
             }
 
             .filters-container {
+                padding: 15px;
                 flex-direction: column;
-                align-items: stretch;
+                gap: 15px;
             }
 
             .filter-tabs {
+                width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
                 order: 2;
             }
 
             .pagination-control {
                 order: 1;
                 justify-content: center;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .pagination-select {
+                font-size: 14px;
+                padding: 6px 10px;
+            }
+
+            .search-container {
+                margin-bottom: 5px;
+            }
+
+            .tests-section, .controls-section {
+                padding: 10px;
+            }
+
+            .test-item {
+                margin-bottom: 10px;
             }
 
             .test-header {
+                padding: 12px;
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 15px;
+                gap: 10px;
             }
 
             .test-meta {
                 width: 100%;
                 justify-content: space-between;
+                padding: 0;
             }
 
             .test-tabs {
                 overflow-x: auto;
                 white-space: nowrap;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .test-tab {
+                padding: 8px 12px;
+                font-size: 13px;
+            }
+
+            .test-tab-content {
+                padding: 12px;
             }
 
             .metadata-grid,
             .attachments-grid {
                 grid-template-columns: 1fr;
+                gap: 8px;
+            }
+
+            .metadata-item,
+            .attachment-item {
+                padding: 10px;
+            }
+
+            .pagination-container {
+                padding: 15px;
+            }
+
+            .pagination-btn {
+                padding: 8px 12px;
+                font-size: 14px;
+            }
+
+            .settings-modal-content {
+                width: 95%;
+                max-width: none;
+                margin: 10px;
+            }
+
+            .settings-meta-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .env-var-item {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+
+            .env-vars-list {
+                max-height: 250px;
+            }
+
+            .env-var-value {
+                padding: 4px 8px;
+            }
+        }
+
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .stats-section {
+                padding: 20px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .chart-container {
+                padding: 20px;
+            }
+
+            .stats-info {
+                padding: 20px;
+            }
+
+            .chart-section {
+                padding: 20px;
+            }
+
+            #testChart {
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+
+            .filters-container {
+                padding: 15px 20px;
+            }
+
+            .tests-section {
+                padding: 15px;
+            }
+
+            .test-header {
+                padding: 15px;
+            }
+
+            .metadata-grid,
+            .attachments-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-section {
+                padding: 10px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .chart-container {
+                padding: 10px;
+                min-height: auto;
+            }
+
+            .stats-info {
+                padding: 12px;
+            }
+
+            .stat-card {
+                padding: 8px 0;
+            }
+
+            .stat-value {
+                font-size: 18px;
+            }
+
+            .stat-label {
+                font-size: 11px;
+            }
+
+            .chart-section {
+                padding: 5px;
+            }
+
+            .filter-tabs {
+                gap: 5px;
+            }
+
+            .test-tab {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+
+            .badge {
+                font-size: 10px;
+                padding: 2px 6px;
             }
         }
 
@@ -1062,6 +1571,398 @@
         .test-status-icon.todo i {
             color: white;
         }
+
+        .settings-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .settings-btn i{ 
+            transition: var(--transition);
+        }
+
+        .settings-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .settings-btn:hover i{
+            transform: rotate(45deg);
+        }
+
+        .settings-modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+        }
+
+        .settings-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .settings-modal-content {
+            background: white;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .settings-modal-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+            color: white;
+            padding: 20px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .settings-modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .settings-modal-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 20px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .settings-modal-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .settings-modal-body {
+            padding: 25px;
+            overflow-y: auto;
+            max-height: calc(80vh - 80px);
+        }
+
+        .settings-section {
+            margin-bottom: 25px;
+        }
+
+        .settings-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .settings-section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--gray-700);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .settings-meta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .settings-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            background: var(--gray-50);
+            border-radius: 8px;
+            border: 2px solid var(--gray-200);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .settings-meta-item:hover {
+            border-color: var(--primary-color);
+            background: white;
+        }
+
+        .settings-meta-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--primary-color);
+        }
+
+        .settings-meta-label {
+            font-size: 14px;
+            color: var(--gray-700);
+            font-weight: 500;
+            flex: 1;
+            word-break: break-word;
+        }
+
+        .settings-meta-count {
+            font-size: 11px;
+            color: var(--gray-500);
+            background: var(--gray-200);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        .settings-tabs-nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--gray-200);
+            padding-bottom: 0;
+        }
+
+        .settings-tab {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            background: transparent;
+            color: var(--gray-600);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        .settings-tab:hover {
+            background: var(--gray-100);
+            color: var(--gray-700);
+        }
+
+        .settings-tab.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .settings-tab-content {
+            display: none;
+        }
+
+        .settings-tab-content.active {
+            display: block;
+        }
+
+        .env-vars-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .env-vars-group {
+            background: var(--gray-50);
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .env-vars-group-title {
+            background: var(--gray-100);
+            padding: 12px 15px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--gray-700);
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .env-vars-count {
+            font-size: 11px;
+            background: var(--primary-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+
+        .env-vars-list {
+            display: flex;
+            flex-direction: column;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .env-var-item {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--gray-200);
+            gap: 15px;
+            transition: var(--transition);
+        }
+
+        .env-var-item:last-child {
+            border-bottom: none;
+        }
+
+        .env-var-item:hover {
+            background: white;
+        }
+
+        .env-var-item.env-var-unset {
+            background: var(--gray-100);
+            opacity: 0.7;
+        }
+
+        .env-var-item.env-var-unset:hover {
+            background: var(--gray-200);
+        }
+
+        .env-var-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .env-var-key {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--primary-color);
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+        }
+
+        .env-var-description {
+            font-size: 11px;
+            color: var(--gray-600);
+            line-height: 1.3;
+        }
+
+        .env-var-value {
+            font-size: 12px;
+            color: var(--gray-700);
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+            padding: 6px 10px;
+            background: white;
+            border: 1px solid var(--gray-300);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+        }
+
+        .env-var-value.env-var-empty {
+            background: var(--gray-100);
+            color: var(--gray-500);
+            font-style: italic;
+            border-style: dashed;
+        }
+
+        .env-var-value.env-var-confidential {
+            background: var(--gray-100);
+            color: var(--gray-600);
+            font-style: italic;
+        }
+
+        .settings-footer {
+            padding: 15px 25px;
+            background: var(--gray-50);
+            border-top: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .settings-btn-action {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 14px;
+        }
+
+        .settings-btn-reset {
+            background: transparent;
+            color: var(--gray-500);
+            border: 1px solid var(--gray-300);
+            margin-right: auto;
+        }
+
+        .settings-btn-reset:hover {
+            background: var(--gray-100);
+            color: var(--gray-700);
+        }
+
+        .settings-btn-cancel {
+            background: var(--gray-200);
+            color: var(--gray-700);
+        }
+
+        .settings-btn-cancel:hover {
+            background: var(--gray-300);
+        }
+
+        .settings-btn-save {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .settings-btn-save:hover {
+            background: var(--primary-hover);
+        }
+
+        /* Meta item visibility control */
+        .meta-item {
+            transition: var(--transition);
+        }
+
+        .meta-item.hidden {
+            display: none !important;
+        }
     </style>
 </head>
 
@@ -1069,7 +1970,7 @@
     <div class='main-container'>
         <header class='header'>
             <div class='header-title'>
-                <h1>Test Results</h1>
+                <h1 id='mainTitle'>{{title}}</h1>
                 <div class='header-badge'>Automated Tests</div>
             </div>
             <div class='header-actions'>
@@ -1079,6 +1980,9 @@
                         Run #{{runId}}
                     </div>
                 {{/if}}
+                <button class='settings-btn' onclick='openSettings()' title='Report Settings'>
+                    <i class='fas fa-cog'></i>
+                </button>
                 {{#if runUrl}}
                     <a href='{{runUrl}}' target='_blank' class='btn-primary-custom'>
                         <i class='fas fa-external-link-alt'></i>
@@ -1100,34 +2004,34 @@
                 </div>
                 <div class='stats-info'>
                     <div class='stat-card'>
-                        <div>
-                            <div class='stat-label'>Execution Status</div>
-                            <div class='stat-value'>
-                                <span class='status-badge status-{{status}}'>{{status}}</span>
-                            </div>
+                        <div class='stat-label'>
+                            <i class='fas fa-chart-line' style='font-size: 14px;'></i>
+                            Execution Status
                         </div>
-                        <i class='fas fa-chart-line' style='font-size: 24px; color: var(--gray-400);'></i>
+                        <div class='stat-value'>
+                            <span class='status-badge status-{{status}}'>{{status}}</span>
+                        </div>
                     </div>
                     <div class='stat-card'>
-                        <div>
-                            <div class='stat-label'>Duration</div>
-                            <div class='stat-value'>{{executionTime}}</div>
+                        <div class='stat-label'>
+                            <i class='fas fa-clock' style='font-size: 14px;'></i>
+                            Duration
                         </div>
-                        <i class='fas fa-clock' style='font-size: 24px; color: var(--gray-400);'></i>
+                        <div class='stat-value'>{{executionTime}}</div>
                     </div>
                     <div class='stat-card'>
-                        <div>
-                            <div class='stat-label'>Total Tests</div>
-                            <div class='stat-value'>{{tests.length}}</div>
+                        <div class='stat-label'>
+                            <i class='fas fa-list-check' style='font-size: 14px;'></i>
+                            Total Tests
                         </div>
-                        <i class='fas fa-list-check' style='font-size: 24px; color: var(--gray-400);'></i>
+                        <div class='stat-value'>{{tests.length}}</div>
                     </div>
                     <div class='stat-card'>
-                        <div>
-                            <div class='stat-label'>Started At</div>
-                            <div class='stat-value'>{{executionDate}}</div>
+                        <div class='stat-label'>
+                            <i class='fas fa-calendar-alt' style='font-size: 14px;'></i>
+                            Started At
                         </div>
-                        <i class='fas fa-calendar-alt' style='font-size: 24px; color: var(--gray-400);'></i>
+                        <div class='stat-value'>{{executionDate}}</div>
                     </div>
                 </div>
             </div>
@@ -1167,7 +2071,7 @@
                     </button>
                     <button class='filter-tab' data-filter='todo'>
                         <i class='fas fa-list-check'></i>
-                        TODO
+                        Todo
                         <span class='count' id='countTodo'>{{getTestsByStatus tests "todo"}}</span>
                     </button>
                 </div>
@@ -1178,6 +2082,12 @@
                         <option value='25'>25</option>
                         <option value='50'>50</option>
                         <option value='100'>100</option>
+                    </select>
+                    <label for='groupingSelect' style='font-weight: 500; color: var(--gray-600); margin-left: 20px;'>Group by:</label>
+                    <select id='groupingSelect' class='pagination-select'>
+                        <option value='all'>All Tests</option>
+                        <option value='suite'>By Suite</option>
+                        <option value='file'>By File</option>
                     </select>
                 </div>
             </div>
@@ -1204,6 +2114,110 @@
         </section>
     </div>
 
+    <div id='settingsModal' class='settings-modal'>
+        <div class='settings-modal-content'>
+            <div class='settings-modal-header'>
+                <div class='settings-modal-title'>
+                    <i class='fas fa-cog'></i>
+                    Report Settings
+                </div>
+                <button class='settings-modal-close' onclick='closeSettings()'>
+                    <i class='fas fa-times'></i>
+                </button>
+            </div>
+            <div class='settings-modal-body'>
+                <div class='settings-tabs-nav'>
+                    <button class='settings-tab active' data-tab='metadata' onclick='switchSettingsTab(event)'>
+                        <i class='fas fa-tags'></i>
+                        Metadata
+                    </button>
+                    <button class='settings-tab' data-tab='envvars' onclick='switchSettingsTab(event)'>
+                        <i class='fas fa-code'></i>
+                        Environment Variables
+                    </button>
+                </div>
+
+                <div class='settings-tab-content active' data-tab='metadata'>
+                    <div class='settings-section'>
+                        <div class='settings-section-title'>
+                            <i class='fas fa-tags'></i>
+                            Visible Metadata Fields
+                        </div>
+                        <div id='metaFieldsList' class='settings-meta-grid'>
+                            <!-- Meta fields will be dynamically inserted here -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class='settings-tab-content' data-tab='envvars'>
+                    <div class='env-vars-container'>
+                        <div class='env-vars-group'>
+                            <div class='env-vars-group-title'>
+                                TESTOMATIO Variables
+                                <span class='env-vars-count'>{{ObjectLength envVars.testomatio}} total</span>
+                            </div>
+                            <div class='env-vars-list'>
+                                {{#each envVars.testomatio}}
+                                    <div class='env-var-item {{#unless this.isSet}}env-var-unset{{/unless}}'>
+                                        <div class='env-var-info'>
+                                            <div class='env-var-key'>{{@key}}</div>
+                                            <div class='env-var-description'>{{this.description}}</div>
+                                        </div>
+                                        <div class='env-var-value {{#unless this.isSet}}env-var-empty{{/unless}} {{#if this.isSensitive}}env-var-confidential{{/if}}'>
+                                            {{#if this.isSensitive}}
+                                                <em>confidential</em>
+                                            {{else if this.isSet}}
+                                                {{this.value}}
+                                            {{else}}
+                                                <em>(not set)</em>
+                                            {{/if}}
+                                        </div>
+                                    </div>
+                                {{/each}}
+                            </div>
+                        </div>
+                        <div class='env-vars-group'>
+                            <div class='env-vars-group-title'>
+                                S3 Variables
+                                <span class='env-vars-count'>{{ObjectLength envVars.s3}} total</span>
+                            </div>
+                            <div class='env-vars-list'>
+                                {{#each envVars.s3}}
+                                    <div class='env-var-item {{#unless this.isSet}}env-var-unset{{/unless}}'>
+                                        <div class='env-var-info'>
+                                            <div class='env-var-key'>{{@key}}</div>
+                                            <div class='env-var-description'>{{this.description}}</div>
+                                        </div>
+                                        <div class='env-var-value {{#unless this.isSet}}env-var-empty{{/unless}} {{#if this.isSensitive}}env-var-confidential{{/if}}'>
+                                            {{#if this.isSensitive}}
+                                                <em>confidential</em>
+                                            {{else if this.isSet}}
+                                                {{this.value}}
+                                            {{else}}
+                                                <em>(not set)</em>
+                                            {{/if}}
+                                        </div>
+                                    </div>
+                                {{/each}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class='settings-footer'>
+                <button class='settings-btn-action settings-btn-reset' onclick='resetToDefaults()'>
+                    Reset to Defaults
+                </button>
+                <button class='settings-btn-action settings-btn-cancel' onclick='closeSettings()'>
+                    Cancel
+                </button>
+                <button class='settings-btn-action settings-btn-save' onclick='saveSettings()'>
+                    Apply Changes
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript">
         let allTests = {{{ pageDispleyElements tests }}}.totalTests;
@@ -1212,9 +2226,22 @@
         let pageSize = 10;
         let searchTerm = '';
         let hasTodoTests = false;
+        let reportTitle = '{{title}}';
+        let groupingMode = 'all';
 
         google.charts.load('current', {'packages':['corechart']});
         google.charts.setOnLoadCallback(drawTestChart);
+
+        function createMetadataItems(metadata) {
+            if (!metadata || Object.keys(metadata).length === 0) return '';
+
+            return Object.entries(metadata).map(([key, value]) => `
+                <div class='metadata-item meta-item' data-meta-key='${key}'>
+                    <div class='metadata-key'>${key}</div>
+                    <div class='metadata-value'>${typeof value === 'object' ? JSON.stringify(value, null, 2) : value}</div>
+                </div>
+            `).join('');
+        }
 
         function drawTestChart() {
             const passedTests = {{getTestsByStatus tests "passed"}};
@@ -1229,19 +2256,56 @@
                 ['Skipped', skippedTests],
             ];
 
-            if (todoTests > 0) rows.push(['TODO', todoTests]);
+            if (todoTests > 0) rows.push(['Todo', todoTests]);
 
             const data = google.visualization.arrayToDataTable(rows);
 
+            const screenWidth = window.innerWidth;
+            let chartHeight = 350;
+            let chartAreaHeight = '80%';
+            let pieSliceFontSize = 12;
+            let legendFontSize = 12;
+
+            if (screenWidth < 480) {
+                chartHeight = 180;
+                chartAreaHeight = '70%';
+                pieSliceFontSize = 9;
+                legendFontSize = 9;
+            } else if (screenWidth < 768) {
+                chartHeight = 220;
+                chartAreaHeight = '75%';
+                pieSliceFontSize = 10;
+                legendFontSize = 10;
+            } else if (screenWidth < 1024) {
+                chartHeight = 260;
+                chartAreaHeight = '75%';
+                pieSliceFontSize = 11;
+                legendFontSize = 11;
+            }
+
             const options = {
-                title: 'Test Results Distribution',
+                title: reportTitle + ' Distribution',
                 pieHole: 0.4,
                 colors: todoTests > 0
                 ? ['#10b981', '#ef4444', '#f59e0b', '#8b5cf6']
                 : ['#10b981', '#ef4444', '#f59e0b'],
                 legend: { position: 'bottom', alignment: 'center' },
-                height: 300,
-                chartArea: { left: 10, top: 20, width: '100%', height: '80%' }
+                height: chartHeight,
+                chartArea: { left: 10, top: 20, width: '100%', height: chartAreaHeight },
+                pieSliceTextStyle: {
+                    fontSize: pieSliceFontSize
+                },
+                legend: {
+                    position: 'bottom',
+                    alignment: 'center',
+                    textStyle: {
+                        fontSize: legendFontSize
+                    },
+                    maxLines: 1
+                },
+                titleTextStyle: {
+                    fontSize: screenWidth < 768 ? 14 : 16
+                }
             };
 
             const chart = new google.visualization.PieChart(document.getElementById('testChart'));
@@ -1252,6 +2316,21 @@
             const testItem = document.createElement('div');
             testItem.className = 'test-item fade-in';
             testItem.dataset.testId = `test-${index}`;
+            testItem.dataset.testIndex = index;
+
+            if (test.traces) {
+                if (!window.testTraces) window.testTraces = {};
+                if (typeof test.traces === 'string') {
+                    try {
+                        window.testTraces[index] = JSON.parse(test.traces);
+                    } catch (e) {
+                        console.error('Failed to parse traces:', e);
+                        window.testTraces[index] = [];
+                    }
+                } else {
+                    window.testTraces[index] = test.traces;
+                }
+            }
 
             const statusClass = test.status.toLowerCase();
             const hasRetries = test.retries && test.retries.retryCount > 0;
@@ -1261,6 +2340,8 @@
             const attemptsCount = (test.retries && Array.isArray(test.retries.attempts)) ? test.retries.attempts.length : 0;
             const retryCount = Math.max(0, attemptsCount - 1);
             const isTodo = statusClass === 'todo';
+            const isSkippedOrTodo = statusClass === 'skipped' || statusClass === 'todo';
+            const displayTime = isSkippedOrTodo ? '-' : formatDuration(test.run_time || 0);
 
             testItem.innerHTML = `
                 <div class='test-header' onclick='toggleTest(this)'>
@@ -1269,14 +2350,21 @@
                             <i class='fas fa-${getStatusIcon(statusClass)}'></i>
                         </div>
                         <div class='test-details'>
-                            <div class='test-title'>${test.title || 'Untitled Test'}</div>
+                            <div class='test-title'>
+                                ${test.title || 'Untitled Test'}
+                                ${test.artifactsUploaded ? `
+                                    <span class='artifact-upload-indicator' title='Artifacts uploaded to storage'>
+                                        <i class='fas fa-cloud-upload-alt'></i>
+                                    </span>
+                                ` : ''}
+                            </div>
                             <div class='test-suite'>${test.suite_title || 'Unknown Suite'}</div>
                         </div>
                     </div>
                     <div class='test-meta'>
                         <div class='test-duration'>
                             <i class='fas fa-clock'></i>
-                            ${formatDuration(test.run_time || 0)}
+                            ${displayTime}
                         </div>
                         <div class='test-badges'>
                             ${test.flaky ? '<span class=\"badge badge-flaky\">Flaky</span>' : ''}
@@ -1332,7 +2420,22 @@
                     ` : `
                         <div class='test-tab-content active' data-tab='steps'>
                             <div class='steps-container' id='steps-${index}'>
-                                ${parseStepsToHtml(test.steps || 'No steps recorded')}
+                                ${(() => {
+                                    const hasStepsArray = test.stepsArray && Array.isArray(test.stepsArray) && test.stepsArray.length > 0;
+                                    const hasStepsString = test.steps && typeof test.steps === 'string' && test.steps.trim().length > 0;
+
+                                    if (hasStepsArray) {
+                                        return renderStepsTree(test.stepsArray);
+                                    } else if (hasStepsString) {
+                                        const isErrorMessage = test.steps.match(/^Error:/i);
+
+                                        if (!isErrorMessage) {
+                                            return renderStepsTree(test.steps);
+                                        }
+                                    }
+
+                                    return '<div style=\'padding: 20px; color: var(--gray-500); text-align: center;\'>No steps recorded</div>';
+                                })()}
                             </div>
                         </div>
                         <div class='test-tab-content' data-tab='message'>
@@ -1359,14 +2462,10 @@
                         </div>
                     </div>` : ''}
                     ${Object.keys(test.meta || {}).length > 0 ? `<div class='test-tab-content' data-tab='metadata'>
-                        <div class='metadata-grid'>
-                            ${createMetadataItems(test.meta)}
-                        </div>
+                        <div class='metadata-grid' data-test-meta></div>
                     </div>` : ''}
                     ${hasTraces ? `<div class='test-tab-content' data-tab='traces'>
-                        <div class='traces-container'>
-                            ${test.traces}
-                        </div>
+                        <div class='trace-viewer-container'></div>
                     </div>` : ''}
                 </div>
             `;
@@ -1380,7 +2479,7 @@
                 'failed': 'times',
                 'skipped': 'forward',
                 'pending': 'clock',
-                'todo': 'list-ul'
+                'todo': 'circle'
             };
             return icons[status] || 'question';
         }
@@ -1475,6 +2574,60 @@
                     </div>
                 </div>`;
             }
+
+        function renderStepsTree(steps, depth = 0) {
+            if (Array.isArray(steps) && steps.length > 0) {
+                let html = '';
+                let stepNumber = 1;
+
+                steps.forEach((step, index) => {
+                    if (!step) return;
+
+                    const hasChildren = step.steps && Array.isArray(step.steps) && step.steps.length > 0;
+                    const stepId = `step-${depth}-${index}`;
+                    const status = step.status || 'passed';
+                    const duration = step.duration || 0;
+                    const category = step.category || '';
+
+                    html += `
+                        <div class="step-item step-level-${depth}" data-step-id="${stepId}">
+                            <div class="step-number">${stepNumber}</div>
+                            <div class="step-content">
+                                <p class="step-text">${step.title || 'Untitled step'}</p>
+                                ${category ? `<div class="step-category">${category}</div>` : ''}
+                                <div class="step-time">
+                                    Step ${stepNumber}
+                                    ${duration > 0 ? `<span class="step-duration"><i class="fas fa-clock"></i> ${formatDuration(duration)}</span>` : ''}
+                                </div>
+                            </div>
+                            <div class="step-status ${status}"></div>
+                        </div>
+                    `;
+
+                    if (hasChildren) {
+                        html += `
+                            <div class="step-children">
+                                ${renderStepsTree(step.steps, depth + 1)}
+                            </div>
+                        `;
+                    }
+
+                    stepNumber++;
+                });
+
+                return html;
+            }
+
+            if (typeof steps === 'string') {
+                return parseStepsToHtml(steps);
+            }
+
+            return `<div class="step-item">
+                <div class="step-content">
+                    <p class="step-text">${steps}</p>
+                </div>
+            </div>`;
+        }
 
         function createStepHtml(text, number, status = null, category = null) {
             const statusClass = status || 'passed';
@@ -1624,17 +2777,6 @@
             return icons[ext] || 'file';
         }
 
-        function createMetadataItems(metadata) {
-            if (!metadata || Object.keys(metadata).length === 0) return '';
-
-            return Object.entries(metadata).map(([key, value]) => `
-                <div class='metadata-item'>
-                    <div class='metadata-key'>${key}</div>
-                    <div class='metadata-value'>${typeof value === 'object' ? JSON.stringify(value, null, 2) : value}</div>
-                </div>
-            `).join('');
-        }
-
         function toggleTest(header) {
             const testItem = header.closest('.test-item');
             testItem.classList.toggle('expanded');
@@ -1650,6 +2792,107 @@
 
             tab.classList.add('active');
             testContent.querySelector(`[data-tab=\"${tabName}\"]`).classList.add('active');
+
+            if (tabName === 'traces') {
+                const testItem = tab.closest('.test-item');
+                const testIndex = testItem.dataset.testIndex;
+                loadTraceForTest(testIndex);
+            }
+        }
+
+        async function loadTraceForTest(testIndex) {
+            const testItem = document.querySelector(`.test-item[data-test-index="${testIndex}"]`);
+            if (!testItem) return;
+
+            let traces = window.testTraces && window.testTraces[testIndex];
+            if (!traces || !Array.isArray(traces) || traces.length === 0) return;
+
+            traces = traces.filter(t => {
+                if (typeof t === 'string' && t.trim().length > 0) return true;
+                if (t && t.dataUrl && typeof t.dataUrl === 'string' && t.dataUrl.trim().length > 0) return true;
+                return false;
+            });
+            if (traces.length === 0) return;
+
+            const viewerDiv = testItem.querySelector('.trace-viewer-container');
+            if (!viewerDiv) return;
+
+            if (viewerDiv.dataset.loaded === 'true') return;
+
+            let html = `
+                <div class="traces-instruction">
+                    <div class="instruction-header">
+                        <i class="fas fa-info-circle"></i>
+                        <span>How to view trace files</span>
+                    </div>
+                    <div class="instruction-content">
+                        <ol>
+                            <li>Download the trace file using the button below</li>
+                            <li>Extract the .zip archive if needed</li>
+                            <li><strong>Playwright traces:</strong><br>
+                                <code>npx playwright show-trace trace.zip</code><br>
+                                Or VS Code extension: "Playwright Test for VS Code"
+                            </li>
+                            <li><strong>TestCafe traces:</strong><br>
+                                <code>testcafe show-trace trace.zip</code>
+                            </li>
+                            <li><strong>Other traces:</strong><br>
+                                Check your testing framework documentation
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+            `;
+
+            html += '<div class="traces-list">';
+
+            for (let idx = 0; idx < traces.length; idx++) {
+                const trace = traces[idx];
+                const traceDataUrl = typeof trace === 'string' ? trace : trace.dataUrl;
+                let traceName = 'trace.zip';
+
+                if (typeof trace === 'object' && trace.name) {
+                    traceName = trace.name;
+                } else if (idx === 0) {
+                    traceName = 'test-failed-trace.zip';
+                } else {
+                    traceName = `trace-${idx + 1}.zip`;
+                }
+
+                html += `
+                    <div class="trace-download-item">
+                        <div class="trace-info">
+                            <i class="fas fa-file-archive"></i>
+                            <span class="trace-name">${traceName}</span>
+                        </div>
+                        <button class="trace-download-btn" onclick='downloadTrace("${testIndex}", ${idx})'>
+                            <i class="fas fa-download"></i>
+                            Download Trace
+                        </button>
+                    </div>
+                `;
+            }
+
+            html += '</div>';
+            viewerDiv.innerHTML = html;
+            viewerDiv.dataset.loaded = 'true';
+        }
+
+        function downloadTrace(testIndex, traceIdx) {
+            const traces = window.testTraces && window.testTraces[testIndex];
+            if (!traces || !Array.isArray(traces) || traceIdx >= traces.length) return;
+
+            const trace = traces[traceIdx];
+            const traceDataUrl = typeof trace === 'string' ? trace : trace.dataUrl;
+            const traceName = typeof trace === 'object' && trace.name ? trace.name :
+                             (traceIdx === 0 ? 'test-failed-trace.zip' : `trace-${traceIdx + 1}.zip`);
+
+            const link = document.createElement('a');
+            link.href = traceDataUrl;
+            link.download = traceName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         function openAttachment(filePath) {
@@ -1660,6 +2903,42 @@
 
             const w = window.open(url, '_blank', 'noopener,noreferrer');
             if (w) w.opener = null;
+        }
+
+        function groupTestsBySuite(tests) {
+            const groups = {};
+
+            tests.forEach(test => {
+                const suite = test.suite_title || 'Unknown Suite';
+                if (!groups[suite]) {
+                    groups[suite] = [];
+                }
+                groups[suite].push(test);
+            });
+
+            return Object.entries(groups).map(([name, tests]) => ({
+                name,
+                type: 'suite',
+                tests
+            }));
+        }
+
+        function groupTestsByFile(tests) {
+            const groups = {};
+
+            tests.forEach(test => {
+                const file = test.file || 'Unknown File';
+                if (!groups[file]) {
+                    groups[file] = [];
+                }
+                groups[file].push(test);
+            });
+
+            return Object.entries(groups).map(([name, tests]) => ({
+                name,
+                type: 'file',
+                tests
+            }));
         }
 
         function filterTests() {
@@ -1678,6 +2957,16 @@
         function renderTests() {
             const container = document.getElementById('testsContainer');
             const filteredTests = filterTests();
+
+            if (groupingMode === 'suite') {
+                const groups = groupTestsBySuite(filteredTests);
+                renderGroupedTests(container, groups);
+                return;
+            } else if (groupingMode === 'file') {
+                const groups = groupTestsByFile(filteredTests);
+                renderGroupedTests(container, groups);
+                return;
+            }
 
             const startIndex = (currentPage - 1) * pageSize;
             const endIndex = startIndex + pageSize;
@@ -1702,6 +2991,116 @@
             }
 
             renderPagination(filteredTests.length);
+            setTimeout(populateMetadataFields, 50);
+        }
+
+        function populateMetadataFields() {
+            const metaGrids = document.querySelectorAll('[data-test-meta]');
+            metaGrids.forEach(grid => {
+                const testItem = grid.closest('.test-item');
+                if (!testItem) return;
+
+                const testIndex = parseInt(testItem.getAttribute('data-test-index'));
+                const test = allTests[testIndex];
+                if (!test || !test.meta) return;
+
+                Object.entries(test.meta).forEach(([key, value]) => {
+                    const metaItem = document.createElement('div');
+                    metaItem.className = 'metadata-item meta-item';
+                    metaItem.setAttribute('data-meta-key', key);
+
+                    const keyDiv = document.createElement('div');
+                    keyDiv.className = 'metadata-key';
+                    keyDiv.textContent = key;
+
+                    const valueDiv = document.createElement('div');
+                    valueDiv.className = 'metadata-value';
+                    valueDiv.textContent = typeof value === 'object' ? JSON.stringify(value, null, 2) : value;
+
+                    metaItem.appendChild(keyDiv);
+                    metaItem.appendChild(valueDiv);
+                    grid.appendChild(metaItem);
+                });
+            });
+
+            setTimeout(applyMetaVisibility, 10);
+        }
+
+        function renderGroupedTests(container, groups) {
+            if (groups.length === 0) {
+                container.innerHTML = `
+                    <div class='empty-state'>
+                        <div class='empty-icon'>
+                            <i class='fas fa-search'></i>
+                        </div>
+                        <div class='empty-title'>No Tests Found</div>
+                        <div class='empty-description'>No tests match your current filter criteria.</div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = '';
+
+            const startIndex = (currentPage - 1) * pageSize;
+            const endIndex = startIndex + pageSize;
+            const paginatedGroups = groups.slice(startIndex, endIndex);
+
+            paginatedGroups.forEach(group => {
+                const groupItem = createTestGroup(group);
+                container.appendChild(groupItem);
+            });
+
+            renderPagination(groups.length);
+            setTimeout(populateMetadataFields, 50);
+        }
+
+        function createTestGroup(group) {
+            const groupElement = document.createElement('div');
+            groupElement.className = 'test-group';
+
+            const passedCount = group.tests.filter(t => t.status.toLowerCase() === 'passed').length;
+            const failedCount = group.tests.filter(t => t.status.toLowerCase() === 'failed').length;
+            const skippedCount = group.tests.filter(t => t.status.toLowerCase() === 'skipped').length;
+            const todoCount = group.tests.filter(t => t.status.toLowerCase() === 'todo').length;
+
+            const groupIcon = group.type === 'suite' ? 'layer-group' : 'file-code';
+
+            const header = document.createElement('div');
+            header.className = 'test-group-header';
+            header.innerHTML = `
+                <div class='test-group-title'>
+                    <i class='fas fa-${groupIcon}'></i>
+                    <div class='test-group-name'>${group.name}</div>
+                    <div class='test-group-count'>${group.tests.length} tests</div>
+                </div>
+                <div class='test-group-stats'>
+                    ${passedCount > 0 ? `<div class='test-group-stat' style='color: #10b981;'><i class='fas fa-check-circle'></i> ${passedCount}</div>` : ''}
+                    ${failedCount > 0 ? `<div class='test-group-stat' style='color: #ef4444;'><i class='fas fa-times-circle'></i> ${failedCount}</div>` : ''}
+                    ${skippedCount > 0 ? `<div class='test-group-stat' style='color: #f59e0b;'><i class='fas fa-forward'></i> ${skippedCount}</div>` : ''}
+                    ${todoCount > 0 ? `<div class='test-group-stat' style='color: #8b5cf6;'><i class='fas fa-clock'></i> ${todoCount}</div>` : ''}
+                </div>
+                <i class='fas fa-chevron-down test-group-expand'></i>
+            `;
+            header.onclick = () => toggleTestGroup(header);
+            groupElement.appendChild(header);
+
+            const content = document.createElement('div');
+            content.className = 'test-group-content';
+
+            group.tests.forEach((test, index) => {
+                const testItem = createTestItem(test, index);
+                content.appendChild(testItem);
+            });
+
+            groupElement.appendChild(content);
+
+            return groupElement;
+        }
+
+        function toggleTestGroup(header) {
+            const group = header.parentElement;
+            group.classList.toggle('expanded');
         }
 
         function renderPagination(totalItems) {
@@ -1781,6 +3180,28 @@
             if (todoTab) todoTab.style.display = counts.todo > 0 ? '' : 'none';
         }
 
+        function updateTitleColor() {
+            const by = (s) => allTests.filter(t => String(t.status || '').toLowerCase() === s).length;
+            const failed = by('failed');
+            const passed = by('passed');
+            const skipped = by('skipped');
+            const todo = by('todo');
+
+            const mainTitle = document.getElementById('mainTitle');
+            if (!mainTitle) return;
+
+            mainTitle.classList.remove('status-passed', 'status-failed', 'status-skipped', 'status-todo');
+
+            if (failed > 0) {
+                mainTitle.classList.add('status-failed');
+            } else if (passed > 0) {
+                mainTitle.classList.add('status-passed');
+            } else if (skipped > 0) {
+                mainTitle.classList.add('status-skipped');
+            } else if (todo > 0) {
+                mainTitle.classList.add('status-todo');
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
             const filterTabs = document.querySelectorAll('.filter-tab');
@@ -1810,6 +3231,13 @@
                 renderTests();
             });
 
+            const groupingSelect = document.getElementById('groupingSelect');
+            groupingSelect.addEventListener('change', function() {
+                groupingMode = this.value;
+                currentPage = 1;
+                renderTests();
+            });
+
             const badge = document.querySelector('.status-badge');
             if (badge) {
                 const s = badge.textContent.trim().toLowerCase();
@@ -1817,6 +3245,7 @@
             }
 
             updateCounts();
+            updateTitleColor();
             renderTests();
         });
 
@@ -1834,56 +3263,161 @@
             return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
         }
 
-        function downloadAttachment(filePath, fileName) {
-            const link = document.createElement('a');
-            link.href = filePath;
-            link.download = fileName;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
 
-        function openAttachmentModal(imageSrc, fileName) {
-            const modal = document.createElement('div');
-            modal.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.9);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 9999;
-                cursor: pointer;
-            `;
+        let visibleMetaKeys = new Set();
+        const SETTINGS_STORAGE_KEY = 'testomatio_report_settings';
 
-            const img = document.createElement('img');
-            img.src = imageSrc;
-            img.alt = fileName;
-            img.style.cssText = `
-                max-width: 90%;
-                max-height: 90%;
-                border-radius: 8px;
-                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            `;
+        function collectAllMetaKeys() {
+            const metaKeys = new Map();
 
-            modal.appendChild(img);
-            document.body.appendChild(modal);
-
-            modal.addEventListener('click', () => {
-                document.body.removeChild(modal);
+            allTests.forEach(test => {
+                if (test.meta && typeof test.meta === 'object') {
+                    Object.keys(test.meta).forEach(key => {
+                        metaKeys.set(key, (metaKeys.get(key) || 0) + 1);
+                    });
+                }
             });
 
-            const closeOnEscape = (e) => {
-                if (e.key === 'Escape') {
-                    document.body.removeChild(modal);
-                    document.removeEventListener('keydown', closeOnEscape);
-                }
-            };
-            document.addEventListener('keydown', closeOnEscape);
+            return metaKeys;
         }
+
+        function openSettings() {
+            const modal = document.getElementById('settingsModal');
+            modal.classList.add('active');
+
+            const savedSettings = localStorage.getItem(SETTINGS_STORAGE_KEY);
+            if (savedSettings) {
+                visibleMetaKeys = new Set(JSON.parse(savedSettings));
+            } else {
+                const metaKeys = collectAllMetaKeys();
+                visibleMetaKeys = new Set(metaKeys.keys());
+            }
+
+            renderSettingsMetaList();
+        }
+
+        function closeSettings() {
+            const modal = document.getElementById('settingsModal');
+            modal.classList.remove('active');
+        }
+
+        function switchSettingsTab(event) {
+            const clickedTab = event.currentTarget;
+            const targetTab = clickedTab.getAttribute('data-tab');
+
+            const allTabs = document.querySelectorAll('.settings-tab');
+            allTabs.forEach(tab => tab.classList.remove('active'));
+
+            const allContents = document.querySelectorAll('.settings-tab-content');
+            allContents.forEach(content => content.classList.remove('active'));
+
+            clickedTab.classList.add('active');
+
+            const targetContent = document.querySelector(`.settings-tab-content[data-tab="${targetTab}"]`);
+            if (targetContent) {
+                targetContent.classList.add('active');
+            }
+        }
+
+        function resetToDefaults() {
+            const metaKeys = collectAllMetaKeys();
+            visibleMetaKeys = new Set(metaKeys.keys());
+
+            const checkboxes = document.querySelectorAll('#metaFieldsList input[type="checkbox"]');
+            checkboxes.forEach(cb => {
+                cb.checked = true;
+            });
+
+            console.log('[Settings] Reset to defaults - all meta fields visible');
+        }
+
+        function renderSettingsMetaList() {
+            const container = document.getElementById('metaFieldsList');
+            const metaKeys = collectAllMetaKeys();
+
+            if (metaKeys.size === 0) {
+                container.innerHTML = `
+                    <div style='grid-column: 1/-1; text-align: center; color: var(--gray-500); padding: 40px;'>
+                        <i class='fas fa-tag' style='font-size: 48px; margin-bottom: 15px; opacity: 0.3;'></i>
+                        <p style='margin: 0;'>No metadata fields found in tests</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const sortedKeys = Array.from(metaKeys.entries()).sort((a, b) => b[1] - a[1]);
+
+            container.innerHTML = sortedKeys.map(([key, count]) => `
+                <label class='settings-meta-item'>
+                    <input
+                        type='checkbox'
+                        value='${key}'
+                        ${visibleMetaKeys.has(key) ? 'checked' : ''}
+                        onchange='toggleMetaKey("${key}")'
+                    >
+                    <span class='settings-meta-label'>${key}</span>
+                    <span class='settings-meta-count'>${count}</span>
+                </label>
+            `).join('');
+        }
+
+        function toggleMetaKey(key) {
+            if (visibleMetaKeys.has(key)) {
+                visibleMetaKeys.delete(key);
+            } else {
+                visibleMetaKeys.add(key);
+            }
+        }
+
+        function saveSettings() {
+            localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(Array.from(visibleMetaKeys)));
+
+            applyMetaVisibility();
+
+            closeSettings();
+        }
+
+        function applyMetaVisibility() {
+            const allMetaItems = document.querySelectorAll('.meta-item[data-meta-key]');
+
+            allMetaItems.forEach(item => {
+                const key = item.getAttribute('data-meta-key');
+                if (visibleMetaKeys.has(key)) {
+                    item.classList.remove('hidden');
+                } else {
+                    item.classList.add('hidden');
+                }
+            });
+        }
+
+        function initializeSettings() {
+            const savedSettings = localStorage.getItem(SETTINGS_STORAGE_KEY);
+
+            if (savedSettings) {
+                try {
+                    const parsed = JSON.parse(savedSettings);
+                    visibleMetaKeys = new Set(parsed);
+                } catch (e) {
+                    console.error('[Settings] Failed to parse saved settings, using defaults', e);
+                    const metaKeys = collectAllMetaKeys();
+                    visibleMetaKeys = new Set(metaKeys.keys());
+                }
+            } else {
+                const metaKeys = collectAllMetaKeys();
+                visibleMetaKeys = new Set(metaKeys.keys());
+            }
+
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeSettings();
+        });
+
+        const originalRenderTests = renderTests;
+        renderTests = function() {
+            originalRenderTests();
+            setTimeout(applyMetaVisibility, 50);
+        };
     </script>
 </body>
 </html>
