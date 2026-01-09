@@ -583,8 +583,8 @@ function stripFailureBlock(text = '') {
 }
 
 /**
- * Normalizes log text by removing ANSI codes and step markers from line starts.
- * Keeps the text but removes markers like >, ⏩, ► (unlike stripStepMarkedLinesRaw which removes entire lines)
+ * Normalizes log text by removing ANSI codes and trimming whitespace.
+ * Removes empty lines and trims trailing spaces from each line.
  * @param {string} text - Raw log text
  * @returns {string} Cleaned log text
  */
@@ -592,7 +592,7 @@ function normalizeLogs(text = '') {
   return String(text)
     .replace(ansiRegExp(), '')
     .split('\n')
-    .map(l => l.replace(/^\s*(?:(?:>|&gt;|[⏩►])\s*)/, '').trimEnd())
+    .map(l => l.trimEnd())
     .filter(l => l.trim())
     .join('\n')
     .trim();
