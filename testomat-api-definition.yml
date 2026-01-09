@@ -140,6 +140,11 @@ components:
         parallel:
           type: boolean
           description: Whether to create a parallel run
+      example:
+        title: "My Test Run"
+        env: "production"
+        group_title: "Release 1.0"
+        tags: ["smoke", "api"]
 
     UpdateRunData:
       type: object
@@ -167,6 +172,12 @@ components:
           items:
             $ref: '#/components/schemas/TestData'
           description: The details of each test
+      example:
+        status_event: "finish"
+        duration: 25.5
+        tests_count: 10
+        passed_count: 8
+        failed_count: 2
 
     TestData:
       type: object
@@ -229,6 +240,14 @@ components:
         overwrite:
           type: boolean
           description: Whether to overwrite previous status to avoid retry counters. Defaults to false
+      example:
+        title: "Should login successfully"
+        status: "passed"
+        suite_title: "Authentication Tests"
+        test_id: "@Ta0b0c0d0"
+        run_time: 0.5
+        message: "Login failed"
+        stack: "Error: Login failed..."
 
     Step:
       type: object
