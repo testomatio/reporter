@@ -4,19 +4,14 @@ info:
   version: 1.0.0
 servers:
   - url: https://app.testomat.io
+security:
+  - apiKey: []
 paths:
   /api/reporter:
     post:
       summary: Create a new (empty) run
       description: |
         Creates a new test run in Testomat.io, which can be used to report the results of multiple tests. Returns a unique ID for the run.
-      parameters:
-        - name: api_key
-          in: query
-          description: The API key for your Testomat.io account
-          required: true
-          schema:
-            type: string
       requestBody:
         required: true
         content:
@@ -53,12 +48,6 @@ paths:
           required: true
           schema:
             type: string
-        - name: api_key
-          in: query
-          description: The API key for your Testomat.io account
-          required: true
-          schema:
-            type: string
         - name: shared_run
           in: query
           description: Should be 'true' if multiple test executions are running in parallel and need to be reported to the same run
@@ -89,12 +78,6 @@ paths:
           description: The ID of the test run to report results for
           schema:
             type: string
-        - in: query
-          name: api_key
-          required: true
-          description: Your Testomat.io API key
-          schema:
-            type: string
       requestBody:
         description: The test data to report
         required: true
@@ -113,6 +96,11 @@ paths:
           description: Not found - check the runId parameter
 
 components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      name: api_key
+      in: query
   schemas:
     TestStatus:
       type: string
