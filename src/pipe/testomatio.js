@@ -247,7 +247,8 @@ class TestomatioPipe {
       });
       if (resp.data.artifacts) setS3Credentials(resp.data.artifacts);
       if (resp.data.url) {
-        this.runUrl = `${this.url}/${resp.data.url.split('/').splice(3).join('/')}`;
+        const respUrl = new URL(resp.data.url);
+        this.runUrl = `${this.url}${respUrl.pathname}`;
         this.runPublicUrl = resp.data.public_url;
         this.store.runUrl = this.runUrl;
         this.store.runPublicUrl = this.runPublicUrl;
