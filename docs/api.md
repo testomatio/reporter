@@ -62,6 +62,8 @@ all params are **optional**:
 - `title` (string): Name of your test run
 - `env` (string): The environment tests ran in (e.g., "staging", "production")
 - `group_title` (string): Put this run into Rungroup found by its title
+- `tags` (array): Strings tags to associate with the test run
+- `parallel` (boolean): Whether to create a parallel run
 
 **Response:**
 
@@ -202,9 +204,15 @@ Content-Type: application/json
 - `run_time` (number): Test duration in seconds
 - `message` (string): Error message for failed tests
 - `stack` (string): Stack trace for failed tests
-- `steps` (array): Test steps (optional)
+- `steps` (array): Test steps with optional `options` (e.g. `box`) (optional)
 - `artifacts` (array): URLs to test artifacts like screenshots (optional)
 - `rid` (string): Report ID to uniquely identify test executions (optional)
+- `suite_id` (string): The ID of the test suite (optional)
+- `substatus` (string): Optional substatus of the test
+- `links` (array): Link objects with `test`, `label`, or `jira` properties (optional)
+- `code` (string): Source code of the test (optional)
+- `meta` (object): Key-value metadata pairs (optional)
+- `overwrite` (boolean): Whether to overwrite previous status to avoid retry counters (defaults to false)
 
 > `rid` parameter is used to identify the same test which are executed in multiple environments. So let's say we run one test on Windows and Linux, but we want to have it reported twice, so we can use different rids but same test_id for it
 
@@ -250,7 +258,8 @@ By using different `rid` values, both test executions will be reported separatel
 
 ## Step 3: Finish the Test Run
 
-When all tests are reported, finish the test run:
+When all tests are reported, finish the test run.
+If you are running tests in parallel, use `shared_run=true` query parameter to report to the same run from multiple executors.
 
 **CURL Example:**
 
@@ -277,8 +286,9 @@ Content-Type: application/json
 
 **Finishing Options:**
 
-- `status_event`: Use "finish" to calculate status from test results, or explicitly set "pass" or "fail"
+- `status_event`: Use "finish" to calculate status from test results, or explicitly set "pass" or "fail". Parallel runs support `pass_parallel`, `fail_parallel`, `finish_parallel`.
 - `duration`: Total run duration in seconds
+- `create_tests` (boolean): Whether to create new tests or update existing ones (enabled by default for `POST /testrun` with `create: true` but can be set here too)
 
 ## Creating Tests Automatically
 
