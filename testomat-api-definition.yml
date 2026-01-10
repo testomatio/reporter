@@ -246,8 +246,6 @@ components:
         suite_title: "Authentication Tests"
         test_id: "@Ta0b0c0d0"
         run_time: 0.5
-        message: "Login failed"
-        stack: "Error: Login failed..."
 
     Step:
       type: object
