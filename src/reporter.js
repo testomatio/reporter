@@ -2,6 +2,7 @@ import Client from './client.js';
 import * as TestomatioConstants from './constants.js';
 import { services } from './services/index.js';
 import reporterFunctions from './reporter-functions.js';
+import { testRunnerHelper } from './utils/utils.js';
 
 export { Client };
 export const STATUS = TestomatioConstants.STATUS;
@@ -13,6 +14,9 @@ export const step = reporterFunctions.step;
 export const label = reporterFunctions.label;
 export const linkTest = reporterFunctions.linkTest;
 export const linkJira = reporterFunctions.linkJira;
+export const jestHelpers = {
+  enableTimeline: testRunnerHelper.saveWorkerIdToFile,
+}
 
 /**
  * @typedef {typeof import('./reporter-functions.js').default.artifact} ArtifactFunction
@@ -36,6 +40,10 @@ export default {
   label: reporterFunctions.label,
   linkTest: reporterFunctions.linkTest,
   linkJira: reporterFunctions.linkJira,
+
+  jestHelpers: {
+    enableTimeline: testRunnerHelper.saveWorkerIdToFile,
+  },
 
   TestomatioClient: Client,
   STATUS,
