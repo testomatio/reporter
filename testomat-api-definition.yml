@@ -152,6 +152,9 @@ components:
         status_event:
           $ref: '#/components/schemas/RunStatusEvent'
           description: The final status of the run. Suffix _parallel and marks that only one part of this run has finished.
+        duration:
+          type: number
+          description: The duration of the run in seconds
         create_tests:
           type: boolean
           description: Whether to create new tests or update existing ones
