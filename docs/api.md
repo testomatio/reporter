@@ -62,7 +62,7 @@ all params are **optional**:
 - `title` (string): Name of your test run
 - `env` (string): The environment tests ran in (e.g., "staging", "production")
 - `group_title` (string): Put this run into Rungroup found by its title
-- `tags` (array): Strings tags to associate with the test run
+- `tags` (array): String tags to associate with the test run
 - `parallel` (boolean): Whether to create a parallel run
 
 **Response:**
