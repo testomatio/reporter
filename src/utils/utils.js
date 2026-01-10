@@ -2,7 +2,6 @@ import { URL } from 'url';
 import path, { sep, basename } from 'path';
 import pc from 'picocolors';
 import fs from 'fs';
-import isValid from 'is-valid-path';
 import createDebugMessages from 'debug';
 import os from 'os';
 import { fileURLToPath } from 'url';
@@ -531,12 +530,39 @@ const testRunnerHelper = {
     if (!process.env.JEST_WORKER_ID) return null;
     try {
       // TODO: expect?.getState()?.testPath + ' ' + expect?.getState()?.currentTestName
-      // @ts-expect-error "expect" could only be defined inside Jest environement (forbidden to import it outside)
+      // @ts-expect-error "expect" could only be defined inside Jest environment (forbidden to import it outside)
       return expect?.getState()?.currentTestName;
     } catch (e) {
       return null;
     }
   },
+
+  saveWorkerIdToFile: () => {
+    const workerId = process.env.JEST_WORKER_ID ?? null;
+    const dataToSave = {
+      // @ts-expect-error
+      fileName:  expect?.getState()?.testPath,
+      // @ts-expect-error
+      testTitle: expect?.getState()?.currentTestName,
+      workerId,
+    };
+    // const filePath = path.join(os.tmpdir(), `testomatio-jest-workers-distribution.json`);
+    const filePath = path.join(process.cwd(), `testomatio-jest-workers-distribution.json`);
+    
+    
+    fs.appendFileSync(filePath, JSON.stringify(dataToSave) + os.EOL);
+  },
+
+  /*
+    need to add to jest project setup file (jest.setup.js):
+    (and specify it in jest.config.js -> setupFilesAfterEnv: ['./jest.setup.js'],)
+    import { jestHelpers } from '@testomatio/reporter';
+
+    beforeEach(() => {
+      jestHelpers.enableTimeline();
+    });
+  */
+
 };
 
 function storeRunId(runId) {
