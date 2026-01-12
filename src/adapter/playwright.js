@@ -106,7 +106,7 @@ class PlaywrightReporter {
       test_id: getTestomatIdFromTestTitle(`${title} ${tags.join(' ')}`),
       suite_title,
       title,
-      tags,
+      tags: tags.map(tag => tag.replace('@', '')),
       steps: steps.length ? steps : undefined,
       time: duration,
       logs,
@@ -259,29 +259,35 @@ function generateTmpFilepath(filename = '') {
 }
 
 /**
- * Extracts and normalizes tags from test title, test options, and suite level
+ * Extracts tags from test title, test options, and suite level
+ * Identifies duplicate tags (case-insensitive)
  * @param {*} test - testInfo object from Playwright
- * @returns {string[]} - array of normalized tags
+ * @returns {string[]} - array of normalized tags with @ prefix
  */
 function extractTags(test) {
-  const tagsSet = new Set();
+  const tagsMap = new Map(); // key: lowercase tag, value: original case tag
 
-  // Extract tags from test title (@tag format)
-  const titleTagsMatch = test.title.match(/@\w+/g);
-  if (titleTagsMatch) {
-    titleTagsMatch.forEach(tag => {
-      tagsSet.add(tag.replace('@', '').toLowerCase());
-    });
+  function addTag(tag) {
+    if (typeof tag !== 'string') return;
+    const trimmed = tag.trim();
+    if (!trimmed) return;
+    const normalizedTag = trimmed.startsWith('@') ? trimmed : `@${trimmed}`;
+    const lowercaseTag = normalizedTag.toLowerCase();
+    if (!tagsMap.has(lowercaseTag)) {
+      tagsMap.set(lowercaseTag, normalizedTag);
+    }
   }
 
-  // Extract tags from test.tags (Playwright built-in tags)
-  if (test.tags && Array.isArray(test.tags)) {
-    test.tags.forEach(tag => {
-      const normalizedTag = typeof tag === 'string' ? tag.replace('@', '').toLowerCase() : String(tag).toLowerCase();
-      tagsSet.add(normalizedTag);
-    });
+  // Extract tags from test title (@tag format); only test title is considered
+  const titleTagsMatch = test.title.match(/@[A-Za-z0-9_-]+/g) || [];
+  titleTagsMatch.forEach(addTag);
+
+  // Extract tags from test.tags (Playwright built-in tags); ignore parents
+  if (Array.isArray(test.tags)) {
+    test.tags.forEach(addTag);
   }
-  return Array.from(tagsSet);
+
+  return Array.from(tagsMap.values());
 }
 
 /**
