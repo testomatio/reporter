@@ -73,7 +73,7 @@ class HtmlPipe {
 
   /**
    * Add test data to the result array for saving. As a result of this function, we get a result object to save.
-   * @param {import('../../types/types.js').TestData} test - object which includes each test entry.
+   * @param {import('../../types/types.js').HtmlTestData} test - object which includes each test entry.
    */
   addTest(test) {
     if (!this.isEnabled) return;
@@ -137,9 +137,9 @@ class HtmlPipe {
       console.log(pc.blue(msg));
     }
 
-    const aggregateTestRetries = aggregateTests(tests);
+    const aggregatedTests = aggregateTestRetries(tests);
 
-    aggregateTestRetries.forEach(test => {
+    aggregatedTests.forEach(test => {
       const logsRaw =
         test.logs || test.meta?.logs || test.meta?.console || test.meta?.stdout || test.meta?.stderr || '';
       const stackRaw = test.stack || '';
@@ -173,93 +173,14 @@ class HtmlPipe {
         delete test.meta.traces;
       }
 
-      if (!test.traces && test.files && Array.isArray(test.files) && test.files.length > 0) {
-        const traceFiles = test.files.filter(f =>
-          f.path &&
-          f.path.trim().length > 0 &&
-          (f.title === 'trace' || f.name === 'trace') &&
-          (f.type === 'application/zip' || f.path.endsWith('.zip'))
-        );
-
-        if (traceFiles.length > 0) {
-          const traceDataList = [];
-          traceFiles.forEach(f => {
-            if (!fs.existsSync(f.path)) {
-              console.warn(`Trace file not found: ${f.path}`);
-              return;
-            }
-
-            try {
-              const fileBuffer = fs.readFileSync(f.path, null);
-
-              if (!fileBuffer || fileBuffer.length === 0) {
-                console.warn(`Empty trace file: ${f.path}`);
-                return;
-              }
-              const base64 = fileBuffer.toString('base64');
-
-              let filename = 'trace.zip';
-              try {
-                filename = path.basename(f.path);
-              } catch (e) {
-                console.warn(`Could not extract filename from ${f.path}, using default`);
-              }
-
-              const dataUrl = `data:application/zip;base64,${base64}`;
-
-              traceDataList.push({
-                dataUrl,
-                name: filename
-              });
-
-            } catch (e) {
-              console.error(`Failed to convert trace to base64: ${f.path}`, e.message);
-            }
-          });
-
-          if (traceDataList.length > 0) {
-            test.traces = traceDataList;
-          }
-        }
-      }
+      loadTracesFromFiles(test);
 
       const status = String(test.status || '').toLowerCase();
       if ((status === 'skipped' || status === 'pending') && test.meta?.todo) {
         test.status = 'todo';
       }
 
-      if (Array.isArray(test.steps) && test.steps.length) {
-        const userSteps = filterUserStepsTree(test.steps);
-        test.stepsArray = userSteps;
-
-        if (userSteps.length) {
-          test.steps = userSteps
-            .map(s => formatStep(s))
-            .flat()
-            .join('\n');
-        } else if (stepsTree) {
-          test.stepsArray = stepsTree;
-          test.steps = stepsTree.map(s => formatStep(s)).flat().join('\n');
-        } else if (fallbackStepsText) {
-          test.stepsArray = allStepLines.map(t => ({ category: 'user', title: t, duration: 0 }));
-          test.steps = fallbackStepsText;
-        } else {
-          test.steps = '';
-          test.stepsArray = [];
-        }
-      } else if (stepsTree) {
-        test.stepsArray = stepsTree;
-        test.steps = stepsTree.map(s => formatStep(s)).flat().join('\n');
-      } else if (fallbackStepsText) {
-        test.stepsArray = allStepLines.map(t => ({ category: 'user', title: t, duration: 0 }));
-        test.steps = fallbackStepsText;
-      } else if (typeof test.steps === 'string' && test.steps.trim()) {
-        test.stepsArray = [];
-        test.steps = String(test.steps).replace(ansiRegExp(), '').trim();
-      } else {
-        test.steps = '';
-        test.stepsArray = [];
-      }
+      prepareTestStepsForReport(test, stepsTree, allStepLines, fallbackStepsText);
 
       delete test._stepsFromMessage;
       test.steps = toHtmlSafe(test.steps || '');
@@ -292,60 +213,7 @@ class HtmlPipe {
         test.title = 'Unknown test title';
       }
 
-      test.artifacts = test.artifacts || [];
-      test.meta = test.meta || {};
-
-      const allArtifacts = [
-        ...(test.artifacts || []),
-        ...(test.meta?.attachments || []),
-        ...(test.manuallyAttachedArtifacts || []),
-        ...(test.files || []),
-        ...(test.meta?.manuallyAttachedArtifacts || []),
-      ];
-
-      test.artifacts = allArtifacts
-        .map(artifact => {
-          if (typeof artifact === 'string') {
-            const abs = path.isAbsolute(artifact) ? artifact : path.resolve(process.cwd(), artifact);
-            const href = artifact.startsWith('file://') ? artifact : fileUrl(abs, { resolve: true });
-            const base = path.basename(abs);
-
-            return {
-              name: base,
-              title: base,
-              path: href,
-              fsPath: abs,
-              relativePath: artifact,
-            };
-          }
-
-          if (artifact?.path) {
-            const raw = String(artifact.path);
-            const isFileUrl = raw.startsWith('file://');
-            const abs = isFileUrl ? null : path.isAbsolute(raw) ? raw : path.resolve(process.cwd(), raw);
-            const href = isFileUrl ? raw : fileUrl(abs, { resolve: true });
-            const base = abs ? path.basename(abs) : artifact.name || artifact.title || 'attachment';
-
-            return {
-              ...artifact,
-              name: artifact.name || artifact.title || base,
-              title: artifact.title || artifact.name || base,
-              path: href,
-              fsPath: abs || artifact.fsPath || null,
-              relativePath: artifact.relativePath || raw,
-            };
-          }
-
-          return artifact;
-        })
-        .filter(Boolean)
-        .filter(artifact => {
-          const isTrace = (artifact.title === 'trace' || artifact.name === 'trace') &&
-                         (artifact.type === 'application/zip' ||
-                          artifact.path?.endsWith('.zip') ||
-                          artifact.relativePath?.endsWith('.zip'));
-          return !isTrace;
-        });
+      test.artifacts = normalizeArtifacts(test);
 
       const allPossibleArtifacts = [
         ...(test.artifacts || []),
@@ -371,9 +239,9 @@ class HtmlPipe {
       status: runParams.status || 'No status info',
       parallel: runParams.isParallel || 'No parallel info',
       runUrl: this.store.runUrl || '',
-      executionTime: testExecutionSumTime(aggregateTestRetries),
+      executionTime: testExecutionSumTime(aggregatedTests),
       executionDate: getCurrentDateTimeFormatted(),
-      tests: aggregateTestRetries,
+      tests: aggregatedTests,
       envVars: collectEnvironmentVariables(),
     };
     // generate output HTML based on the template
@@ -686,21 +554,14 @@ function stripStepMarkedLinesRaw(text = '') {
 }
 
 /**
- * Normalizes various status formats to unified Testomat.io status.
- * Handles different formats from external systems (XML, APIs, retries).
- * @param {string} value - Status in any format
- * @returns {string} Normalized status ('passed', 'failed', 'skipped', 'todo', or 'unknown')
+ * Converts 'pending' status to 'todo' for Testomat.io display
+ * @param {string} value - Status value
+ * @returns {string} Status with 'pending' converted to 'todo'
  */
 function normalizeStatus(value) {
   const s = String(value || '').toLowerCase();
-
-  if (['passed', 'pass', 'success', 'ok'].includes(s)) return 'passed';
-  if (['failed', 'fail', 'failure', 'broken', 'timedout', 'timeout', 'error'].includes(s)) return 'failed';
-  if (['todo'].includes(s)) return 'todo';
-  if (['pending'].includes(s)) return 'todo';
-  if (['skipped', 'skip', 'disabled', 'ignored'].includes(s)) return 'skipped';
-
-  return s ? s : 'unknown';
+  if (s === 'pending') return 'todo';
+  return s || 'unknown';
 }
 
 function pickAttemptStatus(a) {
@@ -820,7 +681,7 @@ function getCurrentDateTimeFormatted() {
  * @param {Array} tests - Array of all tests
  * @returns {Array} - Aggregated array of tests
  */
-function aggregateTests(tests) {
+function aggregateTestRetries(tests) {
   if (!Array.isArray(tests) || tests.length === 0) return tests;
 
   const grouped = new Map();
@@ -1038,6 +899,37 @@ function collectEnvironmentVariables() {
 }
 
 /**
+ * Process environment variables configuration and collect their values
+ * @param {Object} varConfigs - Object with variable configurations { [key]: { description } }
+ * @param {Set} sensitiveVars - Set of sensitive variable names
+ * @returns {Object} Processed environment variables with metadata
+ */
+function processEnvironmentVariables(varConfigs, sensitiveVars) {
+  const result = {};
+
+  for (const [key, config] of Object.entries(varConfigs)) {
+    const value = process.env[key];
+    const isSensitive = sensitiveVars.has(key);
+
+    if (isSensitive) {
+      if (value !== undefined) {
+        result[key] = { value: '***', description: config.description, isSet: true, isSensitive: true };
+      } else {
+        result[key] = { value: '', description: config.description, isSet: false, isSensitive: true };
+      }
+    } else {
+      if (value !== undefined) {
+        result[key] = { value, description: config.description, isSet: true };
+      } else {
+        result[key] = { value: '', description: config.description, isSet: false };
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
  * Hardcoded environment variables stored in code
  * This is the main source of truth for env vars to avoid file system dependencies
  * @returns {Object} Object with TESTOMATIO_ and S3_ variables
@@ -1046,51 +938,52 @@ function getHardcodedEnvVars() {
   const allVars = {
     testomatio: {
       TESTOMATIO: { description: 'API Key for Testomat.io' },
-      TESTOMATIO_TOKEN: { description: 'API Token (alias for TESTOMATIO)' },
       TESTOMATIO_API_KEY: { description: 'API Key (alias for TESTOMATIO)' },
       TESTOMATIO_CREATE: { description: 'Create new tests in Testomat.io' },
-      TESTOMATIO_RUN: { description: 'Run ID to report tests to' },
-      TESTOMATIO_TITLE: { description: 'Title for the test run' },
+      TESTOMATIO_DEBUG: { description: 'Enable debug mode' },
+      TESTOMATIO_DISABLE_BATCH_UPLOAD: { description: 'Disable batch upload' },
       TESTOMATIO_ENV: { description: 'Environment label (e.g., "Windows, Chrome")' },
-      TESTOMATIO_RUNGROUP_TITLE: { description: 'Title for run group' },
-      TESTOMATIO_SHARED_RUN: { description: 'Share run for parallel execution' },
-      TESTOMATIO_SHARED_RUN_TIMEOUT: { description: 'Timeout for shared run (in seconds)' },
-      TESTOMATIO_PROCEED: { description: 'Proceed even if tests fail' },
-      TESTOMATIO_PUBLISH: { description: 'Publish results to Testomat.io' },
-      TESTOMATIO_SUITE: { description: 'Suite ID for new tests' },
-      TESTOMATIO_WORKDIR: { description: 'Working directory for relative paths' },
-      TESTOMATIO_EXCLUDE_SKIPPED: { description: 'Exclude skipped tests from report' },
       TESTOMATIO_EXCLUDE_FILES_FROM_REPORT_GLOB_PATTERN: { description: 'Glob pattern to exclude files' },
-      TESTOMATIO_NO_STEPS: { description: 'Disable steps reporting' },
-      TESTOMATIO_STEPS_PASSED: { description: 'Report steps for passed tests' },
-      TESTOMATIO_STACK_PASSED: { description: 'Report stack for passed tests' },
-      TESTOMATIO_STACK_ARTIFACTS: { description: 'Stack artifacts in report' },
-      TESTOMATIO_STACK_FILTER: { description: 'Filter stack traces' },
-      TESTOMATIO_REQUEST_TIMEOUT: { description: 'Request timeout in milliseconds' },
+      TESTOMATIO_EXCLUDE_SKIPPED: { description: 'Exclude skipped tests from report' },
+      TESTOMATIO_FILENAME: { description: 'HTML report filename' },
+      TESTOMATIO_HTML_FILENAME: { description: 'HTML report filename' },
+      TESTOMATIO_HTML_REPORT_FOLDER: { description: 'Folder for HTML report' },
+      TESTOMATIO_HTML_REPORT_SAVE: { description: 'Save HTML report' },
+      TESTOMATIO_INTERCEPT_CONSOLE_LOGS: { description: 'Intercept console logs' },
+      TESTOMATIO_MARK_DETACHED: { description: 'Mark tests as detached' },
       TESTOMATIO_MAX_REQUEST_FAILURES: { description: 'Max request failures' },
       TESTOMATIO_MAX_REQUEST_FAILURES_COUNT: { description: 'Max request failures count' },
       TESTOMATIO_MAX_REQUEST_RETRIES_WITHIN_TIME_SECONDS: { description: 'Max retries within time period' },
-      TESTOMATIO_INTERCEPT_CONSOLE_LOGS: { description: 'Intercept console logs' },
+      TESTOMATIO_NO_STEPS: { description: 'Disable steps reporting' },
       TESTOMATIO_NO_TIMESTAMP: { description: 'Remove timestamps from logs' },
-      TESTOMATIO_DEBUG: { description: 'Enable debug mode' },
-      TESTOMATIO_DISABLE_BATCH_UPLOAD: { description: 'Disable batch upload' },
-      TESTOMATIO_MARK_DETACHED: { description: 'Mark tests as detached' },
-      TESTOMATIO_HTML_REPORT_SAVE: { description: 'Save HTML report' },
-      TESTOMATIO_HTML_REPORT_FOLDER: { description: 'Folder for HTML report' },
-      TESTOMATIO_HTML_FILENAME: { description: 'HTML report filename' },
+      TESTOMATIO_PROCEED: { description: 'Proceed even if tests fail' },
+      TESTOMATIO_PUBLISH: { description: 'Publish results to Testomat.io' },
+      TESTOMATIO_REQUEST_TIMEOUT: { description: 'Request timeout in milliseconds' },
+      TESTOMATIO_RUN: { description: 'Run ID to report tests to' },
+      TESTOMATIO_RUNGROUP_TITLE: { description: 'Title for run group' },
+      TESTOMATIO_SHARED_RUN: { description: 'Share run for parallel execution' },
+      TESTOMATIO_SHARED_RUN_TIMEOUT: { description: 'Timeout for shared run (in seconds)' },
+      TESTOMATIO_STACK_ARTIFACTS: { description: 'Stack artifacts in report' },
+      TESTOMATIO_STACK_FILTER: { description: 'Filter stack traces' },
+      TESTOMATIO_STACK_PASSED: { description: 'Report stack for passed tests' },
+      TESTOMATIO_STEPS_PASSED: { description: 'Report steps for passed tests' },
+      TESTOMATIO_SUITE: { description: 'Suite ID for new tests' },
+      TESTOMATIO_TOKEN: { description: 'API Token (alias for TESTOMATIO)' },
+      TESTOMATIO_TITLE: { description: 'Title for the test run' },
       TESTOMATIO_URL: { description: 'Testomat.io URL (custom instance)' },
+      TESTOMATIO_WORKDIR: { description: 'Working directory for relative paths' },
     },
     s3: {
-      S3_BUCKET: { description: 'S3 bucket name' },
-      S3_REGION: { description: 'S3 region' },
-      S3_ENDPOINT: { description: 'S3 endpoint URL' },
-      S3_KEY: { description: 'S3 access key' },
-      S3_SECRET: { description: 'S3 secret key' },
       S3_ACCESS_KEY_ID: { description: 'S3 access key ID' },
+      S3_BUCKET: { description: 'S3 bucket name' },
+      S3_ENDPOINT: { description: 'S3 endpoint URL' },
+      S3_FORCE_PATH_STYLE: { description: 'S3 force path style' },
+      S3_KEY: { description: 'S3 access key' },
+      S3_PREFIX: { description: 'S3 key prefix' },
+      S3_REGION: { description: 'S3 region' },
+      S3_SECRET: { description: 'S3 secret key' },
       S3_SECRET_ACCESS_KEY: { description: 'S3 secret access key' },
       S3_SESSION_TOKEN: { description: 'S3 session token' },
-      S3_FORCE_PATH_STYLE: { description: 'S3 force path style' },
-      S3_PREFIX: { description: 'S3 key prefix' },
     },
   };
 
@@ -1106,49 +999,171 @@ function getHardcodedEnvVars() {
   ]);
 
   const envVars = {
-    testomatio: {},
-    s3: {},
+    testomatio: processEnvironmentVariables(allVars.testomatio, sensitiveVars),
+    s3: processEnvironmentVariables(allVars.s3, sensitiveVars),
   };
 
-  for (const [key, config] of Object.entries(allVars.testomatio)) {
-    const value = process.env[key];
-    const isSensitive = sensitiveVars.has(key);
-
-    if (isSensitive) {
-      if (value !== undefined) {
-        envVars.testomatio[key] = { value: '***', description: config.description, isSet: true, isSensitive: true };
-      } else {
-        envVars.testomatio[key] = { value: '', description: config.description, isSet: false, isSensitive: true };
-      }
-    } else {
-      if (value !== undefined) {
-        envVars.testomatio[key] = { value, description: config.description, isSet: true };
-      } else {
-        envVars.testomatio[key] = { value: '', description: config.description, isSet: false };
-      }
-    }
-  }
-
-  for (const [key, config] of Object.entries(allVars.s3)) {
-    const value = process.env[key];
-    const isSensitive = sensitiveVars.has(key);
-
-    if (isSensitive) {
-      if (value !== undefined) {
-        envVars.s3[key] = { value: '***', description: config.description, isSet: true, isSensitive: true };
-      } else {
-        envVars.s3[key] = { value: '', description: config.description, isSet: false, isSensitive: true };
-      }
-    } else {
-      if (value !== undefined) {
-        envVars.s3[key] = { value, description: config.description, isSet: true };
-      } else {
-        envVars.s3[key] = { value: '', description: config.description, isSet: false };
-      }
-    }
-  }
-
   return envVars;
+}
+
+/**
+ * Prepares test steps for HTML report display
+ * @param {object} test - Test object
+ * @param {Array} stepsTree - Steps tree from logs
+ * @param {Array} allStepLines - All step lines from message/logs/stack
+ * @param {string} fallbackStepsText - Fallback steps text
+ */
+function prepareTestStepsForReport(test, stepsTree, allStepLines, fallbackStepsText) {
+  if (Array.isArray(test.steps) && test.steps.length) {
+    const userSteps = filterUserStepsTree(test.steps);
+    test.stepsArray = userSteps;
+
+    if (userSteps.length) {
+      test.steps = userSteps
+        .map(s => formatStep(s))
+        .flat()
+        .join('\n');
+    } else if (stepsTree) {
+      test.stepsArray = stepsTree;
+      test.steps = stepsTree.map(s => formatStep(s)).flat().join('\n');
+    } else if (fallbackStepsText) {
+      test.stepsArray = allStepLines.map(t => ({ category: 'user', title: t, duration: 0 }));
+      test.steps = fallbackStepsText;
+    } else {
+      test.steps = '';
+      test.stepsArray = [];
+    }
+  } else if (stepsTree) {
+    test.stepsArray = stepsTree;
+    test.steps = stepsTree.map(s => formatStep(s)).flat().join('\n');
+  } else if (fallbackStepsText) {
+    test.stepsArray = allStepLines.map(t => ({ category: 'user', title: t, duration: 0 }));
+    test.steps = fallbackStepsText;
+  } else if (typeof test.steps === 'string' && test.steps.trim()) {
+    test.stepsArray = [];
+    test.steps = String(test.steps).replace(ansiRegExp(), '').trim();
+  } else {
+    test.steps = '';
+    test.stepsArray = [];
+  }
+}
+
+/**
+ * Normalizes artifacts from different sources into a unified format
+ * @param {object} test - Test object with artifacts
+ * @returns {Array} - Normalized artifacts array with trace files filtered out
+ */
+function normalizeArtifacts(test) {
+  test.artifacts = test.artifacts || [];
+  test.meta = test.meta || {};
+
+  const allArtifacts = [
+    ...(test.artifacts || []),
+    ...(test.meta?.attachments || []),
+    ...(test.manuallyAttachedArtifacts || []),
+    ...(test.files || []),
+    ...(test.meta?.manuallyAttachedArtifacts || []),
+  ];
+
+  return allArtifacts
+    .map(artifact => {
+      if (typeof artifact === 'string') {
+        const abs = path.isAbsolute(artifact) ? artifact : path.resolve(process.cwd(), artifact);
+        const href = artifact.startsWith('file://') ? artifact : fileUrl(abs, { resolve: true });
+        const base = path.basename(abs);
+
+        return {
+          name: base,
+          title: base,
+          path: href,
+          fsPath: abs,
+          relativePath: artifact,
+        };
+      }
+
+      if (artifact?.path) {
+        const raw = String(artifact.path);
+        const isFileUrl = raw.startsWith('file://');
+        const abs = isFileUrl ? null : path.isAbsolute(raw) ? raw : path.resolve(process.cwd(), raw);
+        const href = isFileUrl ? raw : fileUrl(abs, { resolve: true });
+        const base = abs ? path.basename(abs) : artifact.name || artifact.title || 'attachment';
+
+        return {
+          ...artifact,
+          name: artifact.name || artifact.title || base,
+          title: artifact.title || artifact.name || base,
+          path: href,
+          fsPath: abs || artifact.fsPath || null,
+          relativePath: artifact.relativePath || raw,
+        };
+      }
+
+      return artifact;
+    })
+    .filter(Boolean)
+    .filter(artifact => {
+      const isTrace = (artifact.title === 'trace' || artifact.name === 'trace') &&
+        (artifact.type === 'application/zip' ||
+        artifact.path?.endsWith('.zip') ||
+        artifact.relativePath?.endsWith('.zip'));
+      return !isTrace;
+    });
+}
+
+/**
+ * Loads trace files from test.files and converts them to base64 data URLs
+ * @param {object} test - Test object with files array
+ */
+function loadTracesFromFiles(test) {
+  if (!test.traces && test.files && Array.isArray(test.files) && test.files.length > 0) {
+    const traceFiles = test.files.filter(f =>
+      f.path &&
+      f.path.trim().length > 0 &&
+      (f.title === 'trace' || f.name === 'trace') &&
+      (f.type === 'application/zip' || f.path.endsWith('.zip'))
+    );
+
+    if (traceFiles.length > 0) {
+      const traceDataList = [];
+      traceFiles.forEach(f => {
+        if (!fs.existsSync(f.path)) {
+          console.warn(`Trace file not found: ${f.path}`);
+          return;
+        }
+
+        try {
+          const fileBuffer = fs.readFileSync(f.path, null);
+
+          if (!fileBuffer || fileBuffer.length === 0) {
+            console.warn(`Empty trace file: ${f.path}`);
+            return;
+          }
+          const base64 = fileBuffer.toString('base64');
+
+          let filename = 'trace.zip';
+          try {
+            filename = path.basename(f.path);
+          } catch (e) {
+            console.warn(`Could not extract filename from ${f.path}, using default`);
+          }
+
+          const dataUrl = `data:application/zip;base64,${base64}`;
+
+          traceDataList.push({
+            dataUrl,
+            name: filename
+          });
+
+        } catch (e) {
+          console.error(`Failed to convert trace to base64: ${f.path}`, e.message);
+        }
+      });
+
+      if (traceDataList.length > 0) {
+        test.traces = traceDataList;
+      }
+    }
+  }
 }
 
 export default HtmlPipe;

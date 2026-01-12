@@ -160,7 +160,7 @@ export interface TestData {
   test_id?: string;
 
   /** The status of the test (passed, failed, skipped, etc.) */
-  status?: string;
+  status?: 'passed' | 'failed' | 'skipped';
 
   /** An array of artifacts associated with the test case (screenshots, videos, traces, etc.) */
   artifacts?: ArtifactData[];
@@ -204,34 +204,31 @@ export interface TestData {
   manuallyAttachedArtifacts?: (string | { path: string; type: string })[];
 
   /** Meta information (key: value) */
-  meta?: { [key: string]: any } & {
-    /** Attachments array */
-    attachments?: any[];
-    /** Traces data */
-    traces?: any;
-    /** Console logs */
-    console?: any;
-    /** Standard output */
-    stdout?: any;
-    /** Standard error */
-    stderr?: any;
-    /** Logs */
-    logs?: any;
-    /** Retry count */
-    retryCount?: number;
-    /** Is flaky test */
-    isFlaky?: boolean;
-    /** Attempts array */
-    attempts?: any[];
-    /** Retries array */
-    retries?: any[];
-  };
+  meta?: { [key: string]: any } | {};
 
   /** Links array (e.g. [{test: 'TEST-123'}, {label: 'smoke'}]) */
   links?: object[];
 
   /** Whether to overwrite status of this test to avoid saving as retry (defaults to false) */
   overwrite?: boolean;
+}
+
+/**
+ * Extended test data for HTML reporter.
+ */
+export interface HtmlTestData extends TestData {
+  meta?: { [key: string]: any } & {
+    attachments?: any[];
+    traces?: any;
+    console?: any;
+    stdout?: any;
+    stderr?: any;
+    logs?: any;
+    retryCount?: number;
+    isFlaky?: boolean;
+    attempts?: any[];
+    retries?: any[];
+  };
 }
 
 /**

@@ -101,7 +101,7 @@ class VitestReporter {
    *
    * @param {VitestTest} test
    *
-   * @returns {TestData & {status: string}}
+   * @returns {TestData & {status: 'passed' | 'failed' | 'skipped'}}
    */
   #getDataFromTest(test) {
     return {
@@ -109,6 +109,7 @@ class VitestReporter {
       file: test.file.name,
       logs: test.logs ? transformLogsToString(test.logs) : '',
       meta: test.meta,
+      // @ts-ignore - STATUS values are string literals but type system sees them as string
       status: getTestStatus(test),
       suite_title: test.suite.name || test.file?.name,
       test_id: getTestomatIdFromTestTitle(test.name),
