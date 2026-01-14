@@ -7,7 +7,7 @@ yarn-error.log*
 lerna-debug.log*
 # package-lock.json
 
-
+sample_allure/
 tests/adapter/cucumber/node_modules
 
 # Diagnostic reports (https://nodejs.org/api/report.html)

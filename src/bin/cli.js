@@ -6,6 +6,7 @@ import { glob } from 'glob';
 import createDebugMessages from 'debug';
 import TestomatClient from '../client.js';
 import XmlReader from '../xmlReader.js';
+import AllureReader from '../allureReader.js';
 import { APP_PREFIX, STATUS } from '../constants.js';
 import { cleanLatestRunId, getPackageVersion, applyFilter } from '../utils/utils.js';
 import { config } from '../config.js';
@@ -116,15 +117,14 @@ program
 
         debug(`Execution pattern: "${pattern}"`);
 
-        if(opts.filterList) {
+        if (opts.filterList) {
           console.log(APP_PREFIX, pc.blue(`Matched test/suite IDs: ${tests.join(', ')}`));
           console.log(APP_PREFIX, pc.green(`Full Running Command: ${filteredCommand}`));
           return;
         }
-        
+
         command = filteredCommand;
-      } 
-      catch (err) {
+      } catch (err) {
         console.log(APP_PREFIX, err.message || err);
         return;
       }
@@ -232,6 +232,40 @@ program
       await runReader.uploadData();
     } catch (err) {
       console.log(APP_PREFIX, 'Error updating status, skipping...', err);
+    }
+
+    if (timeoutTimer) clearTimeout(timeoutTimer);
+  });
+
+program
+  .command('allure')
+  .description('Parse Allure result files and upload to Testomat.io')
+  .argument('<pattern>', 'Allure result directory pattern')
+  .option('-d, --dir <dir>', 'Project directory')
+  .option('--timelimit <time>', 'default time limit in seconds to kill a stuck process')
+  .option('--with-package', 'Keep full package path in file names (default: strip package prefix)')
+  .action(async (pattern, opts) => {
+    const runReader = new AllureReader({ withPackage: opts.withPackage });
+
+    let timeoutTimer;
+    if (opts.timelimit) {
+      timeoutTimer = setTimeout(
+        () => {
+          console.log(
+            `⚠️  Reached timeout of ${opts.timelimit}s. Exiting... (Exit code is 0 to not fail the pipeline)`,
+          );
+          process.exit(0);
+        },
+        parseInt(opts.timelimit, 10) * 1000,
+      );
+    }
+
+    try {
+      await runReader.parse(pattern);
+      await runReader.createRun();
+      await runReader.uploadData();
+    } catch (err) {
+      console.log(APP_PREFIX, 'Error uploading Allure results:', err);
     }
 
     if (timeoutTimer) clearTimeout(timeoutTimer);
