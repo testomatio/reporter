@@ -142,23 +142,6 @@ npx @testomatio/reporter allure allure-results
 # Automatic cloud report with history, PR comments, analytics
 ```
 
-## Links and Labels
-
-Allure labels are mapped as follows:
-
-| Allure Label | Becomes |
-|--------------|---------|
-| `epic` | Link: `{ label: "epic:Value" }` |
-| `feature` | Link: `{ label: "feature:Value" }` |
-| `suite` | Suite title |
-| `package` | Used for file path (required for file detection) |
-| `language` | Meta field (also used for code parsing) |
-| `host` | Meta field |
-| `thread` | Meta field |
-| `framework` | Meta field |
-| `story` | Meta field |
-| Other labels | Meta field (key-value) |
-
 ## Debugging
 
 Enable debug mode to see detailed information:
