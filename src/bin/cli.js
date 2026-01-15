@@ -130,6 +130,7 @@ program
       }
     }
 
+    // just create a run (wich tests which match filters) without executing tests
     if (!command || !command.split) {
       const createRunParams = {};
       if (title) {
