@@ -301,9 +301,10 @@ class AllureReader {
 
   extractMeta(result) {
     const labels = result.labels || [];
-    // Exclude suite, package, epic, feature from meta (they're handled separately)
-    // epic and feature are sent as links instead
-    const excludedLabels = ['suite', 'package', 'parentSuite', 'subSuite', 'testClass', 'testMethod', 'epic', 'feature'];
+    const excludedLabels = [
+      'suite', 'package', 'parentSuite', 'subSuite',
+      'testClass', 'testMethod', 'epic', 'feature',
+    ];
 
     const meta = {};
     labels.forEach(label => {
@@ -414,7 +415,8 @@ class AllureReader {
 
     if (finalTest.status === 'passed') {
       finalTest.status = 'failed';
-      finalTest.message = `Test passed after ${failedAttempts.length} retries. Previous failures:\n${finalTest.message}`;
+      const retryMsg = `Test passed after ${failedAttempts.length} retries. Previous failures:\n`;
+      finalTest.message = retryMsg + finalTest.message;
     }
 
     return finalTest;
