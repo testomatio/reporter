@@ -79,22 +79,17 @@ program
   .command('run')
   .alias('test')
   .description('Run tests with the specified command')
-  .argument('<command>', 'Test runner command')
+  .argument('[command]', 'Test runner command')
   .option('--filter <filter>', 'Additional execution filter')
   .option('--filter-list <filter>', 'Get a list of all tests by filter before running')
   .option('--kind <type>', 'Specify run type: automated, manual, or mixed')
   .action(async (command, opts) => {
     const apiKey = process.env['INPUT_TESTOMATIO-KEY'] || config.TESTOMATIO;
     const title = process.env.TESTOMATIO_TITLE;
-
-    if (!command || !command.split) {
-      console.log(APP_PREFIX, `No command provided. Use -c option to launch a test runner.`);
-      return process.exit(255);
-    }
-
     const client = new TestomatClient({ apiKey, title });
 
     if (opts.filter || opts.filterList) {
+      console.log(APP_PREFIX,'Filtering tests...');
       // Example of use: npx @testomatio/reporter run "npx jest" --filter "testomatio:tag-name=frontend"
       // Example of use: npx @testomatio/reporter run "npx jest" --filter "coverage:file=coverage.yml"
       // Example of use: npx @testomatio/reporter run "npx jest" --filter-list "coverage:file=coverage.yml"
@@ -102,6 +97,9 @@ program
       const pipeOptions = optsArray.join(':');
 
       const prepareRunParams = { pipe, pipeOptions };
+      if (opts.filterList) {
+        client.pipeStore.filterList = true;
+      }
 
       try {
         const tests = await client.prepareRun(prepareRunParams);
@@ -118,16 +116,44 @@ program
 
         if(opts.filterList) {
           console.log(APP_PREFIX, pc.blue(`Matched test/suite IDs: ${tests.join(', ')}`));
-          console.log(APP_PREFIX, pc.green(`Full Running Command: ${filteredCommand}`));
+          if (command) console.log(APP_PREFIX, pc.green(`Full Running Command: ${filteredCommand}`));
           return;
         }
-        
-        command = filteredCommand;
-      } 
+
+        if (command && command.split) {
+          command = filteredCommand;
+        }
+      }
       catch (err) {
         console.log(APP_PREFIX, err.message || err);
         return;
       }
+    }
+
+    // just create a run (wich tests which match filters) without executing tests
+    if (!command || !command.split) {
+      const createRunParams = {};
+      if (title) {
+        createRunParams.title = title;
+      }
+      if (opts.kind) {
+        createRunParams.kind = opts.kind;
+      }
+
+      if (apiKey) {
+        await client.createRun(createRunParams);
+        const runId = process.env.TESTOMATIO_RUN || process.env.runId;
+        if (client.pipeStore.runUrl) console.log(APP_PREFIX, `📊 Report URL: ${pc.magenta(client.pipeStore.runUrl)}`);
+
+        if (opts.kind !== 'manual') {
+          console.log(APP_PREFIX, `No command passed, so you need to run tests yourself:`);
+          console.log(APP_PREFIX, `TESTOMATIO_RUN=${runId} <command>`);
+        }
+      } else {
+        console.log(APP_PREFIX, '⚠️  No API key provided. Cannot create run without TESTOMATIO key.');
+        process.exit(1);
+      }
+      return process.exit(0);
     }
 
     console.log(APP_PREFIX, `🚀 Running`, pc.green(command));

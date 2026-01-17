@@ -142,6 +142,20 @@ class GitHubPipe {
       });
 
     let body = summary;
+    const coverageConfiguration = this.store?.coverageConfiguration;
+    const isManualRun = this.store?.runKind === 'manual';
+    if (isManualRun && coverageConfiguration) {
+      const testsCount = coverageConfiguration.tests?.length || 0;
+      const suitesCount = coverageConfiguration.suites?.length || 0;
+      body += '\n\n<details>\n<summary><h3>🧭 Coverage Scope</h3></summary>\n\n';
+      if (!testsCount && !suitesCount) {
+        body += '- No tests were affected, run disabled\n';
+      } else {
+        body += `- Suites: ${suitesCount}\n`;
+        body += `- Tests: ${testsCount}\n`;
+      }
+      body += '\n</details>';
+    }
 
     if (failures.length) {
       body += `\n<details>\n<summary><h3>🟥 Failures (${failures.length})</h4></summary>\n\n${failures.join('\n')}\n`;
