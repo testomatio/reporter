@@ -8,7 +8,7 @@ import {
   foundedTestLog,
   readLatestRunId,
   transformEnvVarToBoolean,
-  getGitCommitSha
+  getGitCommitSha,
 } from '../utils/utils.js';
 import { parseFilterParams, generateFilterRequestParams, setS3Credentials } from '../utils/pipe_utils.js';
 import { config } from '../config.js';
@@ -530,15 +530,16 @@ function printCreateIssue() {
     console.log(
       APP_PREFIX,
       'There was an error reporting to Testomat.io.\n',
-      pc.yellow('If you think this is a bug please create an issue: https://github.com/testomatio/reporter/issues/new.'),
+      pc.yellow(
+        'If you think this is a bug please create an issue: https://github.com/testomatio/reporter/issues/new.',
+      ),
       pc.yellow('Provide the logs from above'),
     );
   });
 }
 
 function logFailedResponse(error) {
-  let responseBody = stringify(error.response.data ??
-    error.response ?? error, { pretty: true });
+  let responseBody = stringify(error.response.data ?? error.response ?? error, { pretty: true });
   if (!responseBody) responseBody = '<empty>';
   responseBody = hideTestomatioToken(responseBody);
 
@@ -554,7 +555,6 @@ function logFailedResponse(error) {
   message += `\n${pc.bold('request: ')}${pc.gray(requestBody)}\n`;
   console.log(message);
 
-
   if (error.response?.data?.message?.includes('could not be matched')) {
     this.hasUnmatchedTests = true;
   }
@@ -562,20 +562,19 @@ function logFailedResponse(error) {
 
 /**
  * Removes Testomatio token from string data
- * 
- * @param {string} data 
+ *
+ * @param {string} data
  * @returns {string}
  */
 function hideTestomatioToken(data) {
-  return data.replace(/"api_key": "[^"]+"/g, '"api_key": "<hidden>"').
-    replace(/"(tstmt_[^"]+)"/g, 'tstmt_***');
+  return data.replace(/"api_key": "[^"]+"/g, '"api_key": "<hidden>"').replace(/"(tstmt_[^"]+)"/g, 'tstmt_***');
 }
 
 /**
  * Stringifies provided data
- * 
+ *
  * @param {any} anything
- * @param {{ pretty: boolean }} opts 
+ * @param {{ pretty: boolean }} opts
  * @returns {string}
  */
 function stringify(anything, opts = { pretty: false }) {
