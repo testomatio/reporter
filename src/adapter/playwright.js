@@ -303,10 +303,9 @@ function getTestContextName(test) {
   return `${test._requireFile || ''}_${test.title}`;
 }
 
-
 /**
  * Fetches links from stdout. Returns links and filtered stdout (without data containing markers)
- * 
+ *
  * @param {(string | Buffer)[]} stdout
  * @returns {{ links: { [key: 'test' | 'jira']: string }[], stdout: (string | Buffer)[] }}
  */
@@ -342,10 +341,15 @@ function fetchLinksFromLogs(stdout) {
             const jsonStr = line.split(marker.key)[1];
             // test ids or jira ids
             const ids = JSON.parse(jsonStr);
-            // filter non-truthy ids
-            links.push(...ids.filter(id => !!id).map(id => ({
-              [marker.type]: id
-            })));
+            links.push(
+              ...ids
+                // filter non-truthy ids
+                .filter(id => !!id)
+                .map(id => ({
+                  // marker type is either 'test' or 'jira'
+                  [marker.type]: id,
+                })),
+            );
           } catch (e) {
             debug('Error parsing links from string:', line, '\n', e);
           }
