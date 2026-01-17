@@ -115,7 +115,7 @@ import { linkTest } from '@testomatio/reporter';
 linkTest('T12345678');
 
 // Link to multiple manual test cases
-linkTest(['T12345678', 'T87654321', 'T11223344']);
+linkTest('T12345678', 'T87654321', 'T11223344');
 ```
 
 ## Example: Login Feature
@@ -138,7 +138,7 @@ import { linkTest } from '@testomatio/reporter';
 test.describe('Authentication', () => {
   test('user login functionality', async ({ page }) => {
     // Link this automated test to related manual test cases
-    linkTest(['T12345678', 'T87654321', 'T11223344', 'T55667788', 'T99887766']);
+    linkTest('T12345678', 'T87654321', 'T11223344', 'T55667788', 'T99887766');
 
     // Your test implementation here
     await page.goto('/login');
@@ -158,7 +158,7 @@ Feature('Authentication');
 
 Scenario('user login functionality', ({ I }) => {
   // Link this automated test to related manual test cases
-  linkTest(['T12345678', 'T87654321', 'T11223344', 'T55667788', 'T99887766']);
+  linkTest('T12345678', 'T87654321', 'T11223344', 'T55667788', 'T99887766');
 
   // Your test implementation here
   I.amOnPage('/login');
