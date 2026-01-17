@@ -549,10 +549,17 @@ function logFailedResponse(error) {
 
   let message = pc.yellow('\n⚠️ Request to Testomat.io failed:\n');
   message += pc.bold(`${pc.red(statusCode)} ${method} ${url}\n`);
-  message += `\n${pc.bold('response: ')}${pc.gray(responseBody)}\n`;
+  message += `\t${pc.bold('response: ')}${pc.gray(responseBody)}\n`;
 
-  const requestBody = hideTestomatioToken(stringify(error.response.config.data, { pretty: true }));
-  message += `\n${pc.bold('request: ')}${pc.gray(requestBody)}\n`;
+  const requestBody = hideTestomatioToken(stringify(error.response.config.data));
+  if (process.env.DEBUG || process.env.TESTOMATIO_DEBUG) {
+    message += `\t${pc.bold('request: ')}${pc.gray(requestBody)}\n`;
+  } else {
+    const requestBodyCut = requestBody.slice(0, 1000);
+    message += `\t${pc.bold('request: ')}${pc.gray(`${requestBodyCut}.....`)}\n`;
+    message += '\trequest body is cut, run with TESTOMATIO_DEBUG=1 to see full body\n';
+  }
+
   console.log(message);
 
   if (error.response?.data?.message?.includes('could not be matched')) {
