@@ -333,12 +333,19 @@ function fetchLinksFromLogs(stdout) {
 
     const newEntryLines = [];
     entry.split('\n').forEach(line => {
+      line = line.trim();
       let hasMarker = false;
       for (const marker of markers) {
         if (line.includes(marker.key)) {
           hasMarker = true;
           try {
-            const jsonStr = line.split(marker.key)[1];
+            const rawJson = line.split(marker.key)[1]?.trim();
+            if (!rawJson) continue;
+
+            // smart JSON extraction: take until the last ']', otherwise take the whole string
+            const lastBracketIndex = rawJson.lastIndexOf(']');
+            const jsonStr = lastBracketIndex !== -1 ? rawJson.substring(0, lastBracketIndex + 1) : rawJson;
+
             // test ids or jira ids
             const ids = JSON.parse(jsonStr);
             links.push(
@@ -355,7 +362,7 @@ function fetchLinksFromLogs(stdout) {
           }
         }
       }
-      if (!hasMarker) {
+      if (!hasMarker && line) {
         newEntryLines.push(line);
       }
     });
@@ -372,4 +379,4 @@ function fetchLinksFromLogs(stdout) {
 }
 
 export default PlaywrightReporter;
-export { extractTags };
+export { extractTags, fetchLinksFromLogs };
