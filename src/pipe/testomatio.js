@@ -518,19 +518,19 @@ class TestomatioPipe {
   }
 
   #logFailedResponse(error) {
-    let responseBody = stringify(error.response.data ?? error.response ?? error, { pretty: true });
+    let responseBody = stringify(error.response?.data ?? error.response ?? error, { pretty: true });
     if (!responseBody) responseBody = '<empty>';
     responseBody = hideTestomatioToken(responseBody);
 
-    const statusCode = error.status || error.code || error.response.status || '<unknown status code>';
-    const method = error.response.config.method || '<unknown method>';
-    const url = error.response.config.url || '<unknown url>';
+    const statusCode = error.status || error.code || error.response?.status || '<unknown status code>';
+    const method = error.response?.config.method || '<unknown method>';
+    const url = error.response?.config.url || '<unknown url>';
 
     let message = pc.yellow('\n⚠️ Request to Testomat.io failed:\n');
     message += pc.bold(`${pc.red(statusCode)} ${method} ${url}\n`);
     message += `\t${pc.bold('response: ')}${pc.gray(responseBody)}\n`;
 
-    const requestBody = hideTestomatioToken(stringify(error.response.config.data));
+    const requestBody = hideTestomatioToken(stringify(error.response?.config?.data));
     if (process.env.DEBUG || process.env.TESTOMATIO_DEBUG) {
       message += `\t${pc.bold('request: ')}${pc.gray(requestBody)}\n`;
     } else {
