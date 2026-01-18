@@ -151,7 +151,9 @@ test('multiple tags test', { tag: ['@smoke', '@critical'] }, async ({ page }) =>
           const { testEntries } = await runTagsTest('options-tags.spec.js');
 
           const regressionTest = testEntries.find(entry => entry.testId && entry.testId.title === 'regression test');
-          const multipleTagsTest = testEntries.find(entry => entry.testId && entry.testId.title === 'multiple tags test');
+          const multipleTagsTest = testEntries.find(
+            entry => entry.testId && entry.testId.title === 'multiple tags test',
+          );
 
           expect(regressionTest).to.exist;
           expect(multipleTagsTest).to.exist;

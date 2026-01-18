@@ -20,7 +20,7 @@
   "author": "Testomat.io",
   "license": "MIT",
   "devDependencies": {
-    "@playwright/test": "^1.40.0"
+    "@playwright/test": "^1.57.0"
   },
   "dependencies": {}
 }
