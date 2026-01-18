@@ -1,4 +1,4 @@
-import pc from 'picocolors';
+import createDebugMessages from 'debug';
 import crypto from 'crypto';
 import os from 'os';
 import path from 'path';
@@ -10,8 +10,10 @@ import { getTestomatIdFromTestTitle, fileSystem } from '../utils/utils.js';
 import { services } from '../services/index.js';
 import { dataStorage } from '../data-storage.js';
 import { extensionMap } from '../utils/constants.js';
+import pc from 'picocolors';
 
 const reportTestPromises = [];
+const debug = createDebugMessages('@testomatio/reporter:adapter-playwright');
 
 class PlaywrightReporter {
   constructor(config = {}) {
@@ -55,13 +57,26 @@ class PlaywrightReporter {
     const tags = extractTags(test);
 
     const fullTestTitle = getTestContextName(test);
+
     let logs = '';
-    if (result.stderr.length || result.stdout.length) {
-      logs = `\n\n${pc.bold('Logs:')}\n${pc.red(result.stderr.join(''))}\n${result.stdout.join('')}`;
+    // get links along with filtered logs (liks related logs removed)
+    const { stdout: filteredStdout, links } = fetchLinksFromLogs(result.stdout);
+    if (filteredStdout?.length || result.stderr?.length) {
+      logs = `\n\n${pc.bold('Logs:')}\n${pc.red(result.stderr.join(''))}\n${filteredStdout.join('')}`;
     }
+
+    /*
+      All services fucntions work different for Playwright.
+      We don't have access to test title (as result, to test id) when calling this functions inside a test.
+      Thus, when user calls services functions inside a test, we just log this data to console.
+      Playwright intercepts the console.log on it's end and we just get this data from it.
+      Thus, we have a tiny drawback: all data from services functions inside a test will be logged to console.
+      And this requires a condition to be added for each service function – if its Playwright, then log to console.
+
+      "get" method of services will not return data for Playwright, we should parse stdout.
+    */
     const manuallyAttachedArtifacts = services.artifacts.get(fullTestTitle);
     const testMeta = services.keyValues.get(fullTestTitle);
-    const links = services.links.get(fullTestTitle);
     const rid = test.id || test.testId || uuidv4();
 
     /**
@@ -288,5 +303,80 @@ function getTestContextName(test) {
   return `${test._requireFile || ''}_${test.title}`;
 }
 
+/**
+ * Fetches links from stdout. Returns links and filtered stdout (without data containing markers)
+ *
+ * @param {(string | Buffer)[]} stdout
+ * @returns {{ links: { [key: 'test' | 'jira']: string }[], stdout: (string | Buffer)[] }}
+ */
+function fetchLinksFromLogs(stdout) {
+  const links = [];
+
+  const markers = [
+    { key: '[TESTOMATIO-LINK-TESTS]', type: 'test' },
+    { key: '[TESTOMATIO-LINK-JIRA]', type: 'jira' },
+  ];
+
+  const filteredStdout = [];
+
+  stdout.forEach(entry => {
+    if (typeof entry !== 'string') {
+      filteredStdout.push(entry);
+      return;
+    }
+
+    // check if entry contains any of markers
+    if (!markers.some(m => entry.includes(m.key))) {
+      filteredStdout.push(entry);
+      return;
+    }
+
+    const newEntryLines = [];
+    entry.split('\n').forEach(line => {
+      line = line.trim();
+      let hasMarker = false;
+      for (const marker of markers) {
+        if (line.includes(marker.key)) {
+          hasMarker = true;
+          try {
+            const rawJson = line.split(marker.key)[1]?.trim();
+            if (!rawJson) continue;
+
+            // smart JSON extraction: take until the last ']', otherwise take the whole string
+            const lastBracketIndex = rawJson.lastIndexOf(']');
+            const jsonStr = lastBracketIndex !== -1 ? rawJson.substring(0, lastBracketIndex + 1) : rawJson;
+
+            // test ids or jira ids
+            const ids = JSON.parse(jsonStr);
+            links.push(
+              ...ids
+                // filter non-truthy ids
+                .filter(id => !!id)
+                .map(id => ({
+                  // marker type is either 'test' or 'jira'
+                  [marker.type]: id,
+                })),
+            );
+          } catch (e) {
+            debug('Error parsing links from string:', line, '\n', e);
+          }
+        }
+      }
+      if (!hasMarker && line) {
+        newEntryLines.push(line);
+      }
+    });
+
+    if (newEntryLines.length) {
+      filteredStdout.push(newEntryLines.join('\n'));
+    }
+  });
+
+  return {
+    stdout: filteredStdout,
+    links,
+  };
+}
+
 export default PlaywrightReporter;
-export { extractTags };
+export { extractTags, fetchLinksFromLogs };

@@ -30,7 +30,7 @@ class LinkStorage {
   /**
    * Returns links array for the test
    * @param {*} context testId or test context from test runner
-   * @returns {object[]} links array, e.g. [{test: 'TEST-123'}, {jira: 'JIRA-456'}]
+   * @returns {{[key: 'test' | 'jira']: string}[]} links array, e.g. [{test: 'TEST-123'}, {jira: 'JIRA-456'}]
    */
   get(context = null) {
     const linksList = dataStorage.getData('links', context);

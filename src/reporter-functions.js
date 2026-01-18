@@ -76,6 +76,10 @@ function setLabel(key, value = null) {
  * @returns {void}
  */
 function linkTest(...testIds) {
+  if (isPlaywright) {
+    console.log(`[TESTOMATIO-LINK-TESTS] ${JSON.stringify(testIds)}`);
+    return;
+  }
   const links = testIds.map(testId => ({ test: testId }));
   services.links.put(links);
 }
@@ -86,6 +90,10 @@ function linkTest(...testIds) {
  * @returns {void}
  */
 function linkJira(...jiraIds) {
+  if (isPlaywright) {
+    console.log(`[TESTOMATIO-LINK-JIRA] ${JSON.stringify(jiraIds)}`);
+    return;
+  }
   const links = jiraIds.map(jiraId => ({ jira: jiraId }));
   services.links.put(links);
 }
