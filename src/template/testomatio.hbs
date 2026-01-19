@@ -71,6 +71,7 @@
             border-radius: 20px;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             overflow: hidden;
+            overflow-y: auto;
         }
 
         .header {
@@ -181,6 +182,7 @@
             border-radius: var(--border-radius);
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             min-height: 400px;
+            overflow: visible !important;
         }
 
         .chart-section {
@@ -191,6 +193,20 @@
         #testChart {
             width: 100% !important;
             max-width: 100% !important;
+        }
+
+        /* Google Charts tooltip stabilization */
+        #testChart > div > div[style*="position: absolute"] {
+            pointer-events: none !important;
+            will-change: transform, opacity !important;
+            backface-visibility: hidden !important;
+            transform: translateZ(0) !important;
+        }
+
+        .google-visualization-tooltip {
+            pointer-events: none !important;
+            opacity: 1 !important;
+            transition: none !important;
         }
 
         .stats-info {
@@ -2259,22 +2275,26 @@
             const screenWidth = window.innerWidth;
             let chartHeight = 350;
             let chartAreaHeight = '80%';
+            let chartAreaWidth = '95%';
             let pieSliceFontSize = 12;
             let legendFontSize = 12;
 
             if (screenWidth < 480) {
                 chartHeight = 180;
                 chartAreaHeight = '70%';
+                chartAreaWidth = '90%';
                 pieSliceFontSize = 9;
                 legendFontSize = 9;
             } else if (screenWidth < 768) {
                 chartHeight = 220;
                 chartAreaHeight = '75%';
+                chartAreaWidth = '92%';
                 pieSliceFontSize = 10;
                 legendFontSize = 10;
             } else if (screenWidth < 1024) {
                 chartHeight = 260;
                 chartAreaHeight = '75%';
+                chartAreaWidth = '94%';
                 pieSliceFontSize = 11;
                 legendFontSize = 11;
             }
@@ -2287,7 +2307,13 @@
                 : ['#10b981', '#ef4444', '#f59e0b'],
                 legend: { position: 'bottom', alignment: 'center' },
                 height: chartHeight,
-                chartArea: { left: 10, top: 20, width: '100%', height: chartAreaHeight },
+                width: '100%',
+                chartArea: {
+                    left: '5%',
+                    top: 20,
+                    width: chartAreaWidth,
+                    height: chartAreaHeight
+                },
                 pieSliceTextStyle: {
                     fontSize: pieSliceFontSize
                 },
@@ -2301,10 +2327,22 @@
                 },
                 titleTextStyle: {
                     fontSize: screenWidth < 768 ? 14 : 16
+                },
+                enableInteractivity: true,
+                sliceVisibilityThreshold: 0,
+                tooltip: {
+                    trigger: 'hover',
+                    showColorCode: true
                 }
             };
 
             const chart = new google.visualization.PieChart(document.getElementById('testChart'));
+
+            google.visualization.events.addListener(chart, 'ready', function() {
+                const chartContainer = document.getElementById('testChart');
+                chartContainer.style.overflow = 'visible';
+            });
+
             chart.draw(data, options);
         }
 
@@ -2590,7 +2628,7 @@
                             <div class="step-number">${stepNumber}</div>
                             <div class="step-content">
                                 <p class="step-text">${step.title || 'Untitled step'}</p>
-                                ${category ? `<div class="step-category">${category}</div>` : ''}
+                                ${category && category !== 'user' ? `<div class="step-category">${category}</div>` : ''}
                                 <div class="step-time">
                                     Step ${stepNumber}
                                     ${duration > 0 ? `<span class="step-duration"><i class="fas fa-clock"></i> ${formatDuration(duration)}</span>` : ''}
@@ -2627,7 +2665,7 @@
 
         function createStepHtml(text, number, status = null, category = null) {
             const statusClass = status || 'passed';
-            const categoryText = category ? `<div class="step-category">${category}</div>` : '';
+            const categoryText = category && category !== 'user' ? `<div class="step-category">${category}</div>` : '';
             const durationIcon = status ? `<div class="step-duration"><i class="fas fa-clock"></i> auto</div>` : '';
 
             return `<div class="step-item">
