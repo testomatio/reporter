@@ -179,12 +179,16 @@ class TestomatioPipe {
       });
 
       const results = await Promise.all(promises);
-      const allTests = [...new Set(results.flat())];
+      const allIds = [...new Set(results.flat())];
 
-      if (allTests.length > 0) {
-        foundedTestLog(APP_PREFIX, allTests);
-        this.store.filterConfiguration = { tests: allTests };
-        return allTests;
+      if (allIds.length > 0) {
+        foundedTestLog(APP_PREFIX, allIds);
+
+        const tests = allIds.filter(id => !id.startsWith('S'));
+        const suites = allIds.filter(id => id.startsWith('S'));
+        this.store.filterConfiguration = { tests, suites };
+
+        return allIds;
       }
 
       console.log(APP_PREFIX, `⛔  No tests found for filters: ${opts}`);
@@ -239,11 +243,14 @@ class TestomatioPipe {
       ...(coverageConfiguration?.tests?.map(id => id.replace(/^T/, '')) || []),
       ...(filterConfiguration?.tests?.map(id => id.replace(/^@?T?/, '')) || []),
     ];
-    const suites = coverageConfiguration?.suites?.map(id => id.replace(/^S/, '')) || [];
+    const suites = [
+      ...(coverageConfiguration?.suites?.map(id => id.replace(/^S/, '')) || []),
+      ...(filterConfiguration?.suites?.map(id => id.replace(/^S/, '')) || []),
+    ];
 
     if (tests.length || suites.length) {
       description = this.store?.coverageDescription || null;
-      configuration = { tests: [...new Set(tests)], suites };
+      configuration = { tests: [...new Set(tests)], suites: [...new Set(suites)] };
     }
     const runParams = Object.fromEntries(
       Object.entries({
