@@ -1,61 +1,52 @@
 import { expect } from 'chai';
-import { parseFilterParams, updateFilterType, generateFilterRequestParams } from '../../../src/utils/pipe_utils.js';
+import { parseFilterParams, generateFilterRequestParams } from '../../../src/utils/pipe_utils.js';
 
 describe('testing utils/pipe_utils.js functions', () => {
-  describe('updateFilterType function', () => {
-    it('should return "tag" when input is "tag-name"', () => {
-      const result = updateFilterType('tag-name');
-      expect(result).to.equal('tag');
-    });
-
-    it('should return "plan" when input is "plan-id"', () => {
-      const result = updateFilterType('plan-id');
-      expect(result).to.equal('plan');
-    });
-
-    it('should return "label" when input is "label"', () => {
-      const result = updateFilterType('label');
-      expect(result).to.equal('label');
-    });
-
-    it('should return undefined when input is an unsupported type', () => {
-      const result = updateFilterType('unsupported-type');
-      expect(result).to.be.undefined;
-    });
-
-    it('should return undefined when input is an empty string', () => {
-      const result = updateFilterType('');
-      expect(result).to.be.undefined;
-    });
-  });
-
   describe('parseFilterParams function', () => {
-    it('should parse "tag-name" input correctly', () => {
-      const input = 'tag-name=123';
+    it('should parse single filter correctly', () => {
+      const input = 'tag=123';
       const result = parseFilterParams(input);
-      expect(result).to.deep.equal({ type: 'tag', id: '123' });
-    });
-    it('should parse "plan-id" input correctly', () => {
-      const input = 'plan-id=456';
-      const result = parseFilterParams(input);
-      expect(result).to.deep.equal({ type: 'plan', id: '456' });
+      expect(result).to.deep.equal([{ type: 'tag', id: '123' }]);
     });
 
-    it('should parse "label" input correctly', () => {
-      const input = 'label=789';
+    it('should parse multiple filters correctly', () => {
+      const input = 'tag=smoke,suite=login';
       const result = parseFilterParams(input);
-      expect(result).to.deep.equal({ type: 'label', id: '789' });
+      expect(result).to.deep.equal([
+        { type: 'tag', id: 'smoke' },
+        { type: 'suite', id: 'login' },
+      ]);
     });
 
-    it('should handle unsupported type correctly', () => {
-      const input = 'unsupported-type=abc';
+    it('should handle filter with equals in value', () => {
+      const input = 'label=key=value';
       const result = parseFilterParams(input);
-      expect(result).to.be.undefined;
+      expect(result).to.deep.equal([{ type: 'label', id: 'key=value' }]);
     });
 
-    it('should handle undefined input correctly', () => {
-      const result = parseFilterParams('plan-id=');
-      expect(result).to.deep.equal({ type: 'plan', id: '' });
+    it('should return empty array for empty input', () => {
+      const result = parseFilterParams('');
+      expect(result).to.deep.equal([]);
+    });
+
+    it('should return empty array for undefined input', () => {
+      const result = parseFilterParams(undefined);
+      expect(result).to.deep.equal([]);
+    });
+
+    it('should skip invalid pairs without equals sign', () => {
+      const input = 'tag=123,invalid,suite=456';
+      const result = parseFilterParams(input);
+      expect(result).to.deep.equal([
+        { type: 'tag', id: '123' },
+        { type: 'suite', id: '456' },
+      ]);
+    });
+
+    it('should lowercase type', () => {
+      const input = 'TAG=123';
+      const result = parseFilterParams(input);
+      expect(result).to.deep.equal([{ type: 'tag', id: '123' }]);
     });
   });
 

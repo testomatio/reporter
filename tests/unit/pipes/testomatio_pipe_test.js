@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import ServerMock from 'mock-http-server';
 import TestomatioPipe from '../../../src/pipe/testomatio.js';
-import { parseFilterParams, updateFilterType, generateFilterRequestParams } from '../../../src/utils/pipe_utils.js';
+import { parseFilterParams, generateFilterRequestParams } from '../../../src/utils/pipe_utils.js';
 import { config } from '../../adapter/config/index.js';
 
 const { host, port, TESTOMATIO_URL, TESTOMATIO } = config;
@@ -41,61 +41,33 @@ describe('TestomatioPipe', () => {
   });
 
   describe('pipe utils functions', () => {
-    describe('updateFilterType', () => {
-      it('should convert plan-id to plan', () => {
-        const result = updateFilterType('plan-id');
-        expect(result).to.equal('plan');
-      });
-
-      it('should convert tag-name to tag', () => {
-        const result = updateFilterType('tag-name');
-        expect(result).to.equal('tag');
-      });
-
-      it('should convert label to label', () => {
-        const result = updateFilterType('label');
-        expect(result).to.equal('label');
-      });
-
-      it('should convert jira-ticket to jira', () => {
-        const result = updateFilterType('jira-ticket');
-        expect(result).to.equal('jira');
-      });
-
-      it('should handle case insensitive input', () => {
-        expect(updateFilterType('PLAN-ID')).to.equal('plan');
-        expect(updateFilterType('Plan-Id')).to.equal('plan');
-      });
-
-      it('should return undefined for invalid filter type', () => {
-        const result = updateFilterType('invalid-type');
-        expect(result).to.be.undefined;
-      });
-    });
-
     describe('parseFilterParams', () => {
-      it('should parse plan-id filter correctly', () => {
-        const result = parseFilterParams('plan-id=b62f3170');
-        expect(result).to.deep.equal({
-          type: 'plan',
-          id: 'b62f3170',
-        });
+      it('should parse plan filter correctly', () => {
+        const result = parseFilterParams('plan=b62f3170');
+        expect(result).to.deep.equal([{ type: 'plan', id: 'b62f3170' }]);
       });
 
-      it('should parse tag-name filter correctly', () => {
-        const result = parseFilterParams('tag-name=smoke');
-        expect(result).to.deep.equal({
-          type: 'tag',
-          id: 'smoke',
-        });
+      it('should parse tag filter correctly', () => {
+        const result = parseFilterParams('tag=smoke');
+        expect(result).to.deep.equal([{ type: 'tag', id: 'smoke' }]);
+      });
+
+      it('should parse multiple filters correctly', () => {
+        const result = parseFilterParams('tag=smoke,suite=login');
+        expect(result).to.deep.equal([
+          { type: 'tag', id: 'smoke' },
+          { type: 'suite', id: 'login' },
+        ]);
       });
 
       it('should handle complex IDs with special characters', () => {
-        const result = parseFilterParams('plan-id=test-plan-123-abc');
-        expect(result).to.deep.equal({
-          type: 'plan',
-          id: 'test-plan-123-abc',
-        });
+        const result = parseFilterParams('plan=test-plan-123-abc');
+        expect(result).to.deep.equal([{ type: 'plan', id: 'test-plan-123-abc' }]);
+      });
+
+      it('should lowercase filter types', () => {
+        const result = parseFilterParams('TAG=smoke');
+        expect(result).to.deep.equal([{ type: 'tag', id: 'smoke' }]);
       });
     });
 
@@ -148,11 +120,10 @@ describe('TestomatioPipe', () => {
   });
 
   describe('prepareRun', () => {
-    it('should make correct API call for plan-id filter', async () => {
+    it('should make correct API call for plan filter', async () => {
       const planId = 'b62f3170';
       const expectedTests = ['test1', 'test2', 'test3'];
 
-      // Mock the API response
       server.on({
         method: 'GET',
         path: '/api/test_grep',
@@ -165,12 +136,12 @@ describe('TestomatioPipe', () => {
         },
       });
 
-      const result = await testomatioPipe.prepareRun(`plan-id=${planId}`);
+      const result = await testomatioPipe.prepareRun(`plan=${planId}`);
 
       expect(result).to.deep.equal(expectedTests);
     });
 
-    it('should make correct API call for tag-name filter', async () => {
+    it('should make correct API call for tag filter', async () => {
       const tagName = 'smoke';
       const expectedTests = ['smokeTest1', 'smokeTest2'];
 
@@ -186,12 +157,12 @@ describe('TestomatioPipe', () => {
         },
       });
 
-      const result = await testomatioPipe.prepareRun(`tag-name=${tagName}`);
+      const result = await testomatioPipe.prepareRun(`tag=${tagName}`);
 
       expect(result).to.deep.equal(expectedTests);
     });
 
-    it('should return undefined when no tests found', async () => {
+    it('should return empty array when no tests found', async () => {
       server.on({
         method: 'GET',
         path: '/api/test_grep',
@@ -204,12 +175,12 @@ describe('TestomatioPipe', () => {
         },
       });
 
-      const result = await testomatioPipe.prepareRun('plan-id=nonexistent');
+      const result = await testomatioPipe.prepareRun('plan=nonexistent');
 
-      expect(result).to.be.undefined;
+      expect(result).to.deep.equal([]);
     });
 
-    it('should return undefined when API returns null tests', async () => {
+    it('should return empty array when API returns null tests', async () => {
       server.on({
         method: 'GET',
         path: '/api/test_grep',
@@ -222,12 +193,12 @@ describe('TestomatioPipe', () => {
         },
       });
 
-      const result = await testomatioPipe.prepareRun('plan-id=test');
+      const result = await testomatioPipe.prepareRun('plan=test');
 
-      expect(result).to.be.undefined;
+      expect(result).to.deep.equal([]);
     });
 
-    it('should handle API errors gracefully', async () => {
+    it('should return empty array on API errors', async () => {
       server.on({
         method: 'GET',
         path: '/api/test_grep',
@@ -240,9 +211,9 @@ describe('TestomatioPipe', () => {
         },
       });
 
-      const result = await testomatioPipe.prepareRun('plan-id=test');
+      const result = await testomatioPipe.prepareRun('plan=test');
 
-      expect(result).to.be.undefined;
+      expect(result).to.deep.equal([]);
     });
 
     it('should return empty array when pipe is disabled', async () => {
@@ -280,14 +251,13 @@ describe('TestomatioPipe', () => {
         delay: 0,
       });
 
-      // Spy on the actual HTTP request to verify parameters
       const originalRequest = testomatioPipe.client.request;
       testomatioPipe.client.request = async function (config) {
         receivedQuery = config.params;
         return originalRequest.call(this, config);
       };
 
-      await testomatioPipe.prepareRun(`plan-id=${planId}`);
+      await testomatioPipe.prepareRun(`plan=${planId}`);
 
       expect(receivedQuery).to.deep.equal({
         type: 'plan',
@@ -312,16 +282,15 @@ describe('TestomatioPipe', () => {
         },
       });
 
-      // Spy on the actual HTTP request to verify parameters
       const originalRequest = testomatioPipe.client.request;
       testomatioPipe.client.request = async function (config) {
         receivedQuery = config.params;
         return originalRequest.call(this, config);
       };
 
-      await testomatioPipe.prepareRun(`plan-id=${planId}`);
+      await testomatioPipe.prepareRun(`plan=${planId}`);
 
-      expect(receivedQuery.id).to.equal('plan%20with%20spaces%20%26%20symbols'); // Should be URL encoded
+      expect(receivedQuery.id).to.equal('plan%20with%20spaces%20%26%20symbols');
       expect(receivedQuery.type).to.equal('plan');
     });
   });
