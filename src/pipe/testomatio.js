@@ -262,6 +262,15 @@ class TestomatioPipe {
         responseType: 'json',
       });
       if (resp.data.artifacts) setS3Credentials(resp.data.artifacts);
+      if (resp.data.url) {
+        const respUrl = new URL(resp.data.url);
+        this.runUrl = `${this.url}${respUrl.pathname}`;
+        this.runPublicUrl = resp.data.public_url;
+        this.store.runUrl = this.runUrl;
+        this.store.runPublicUrl = this.runPublicUrl;
+        console.log(APP_PREFIX, '📊 Using existing run. Report ID:', this.runId);
+        console.log(APP_PREFIX, '📊 Report URL:', pc.magenta(this.runUrl));
+      }
       return;
     }
 
