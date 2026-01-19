@@ -2371,6 +2371,7 @@
             const hasTraces = test.traces && (typeof test.traces === 'string' ? test.traces.trim().length > 0 : test.traces.length > 0);
             const hasArtifacts = test.artifacts && test.artifacts.length > 0;
             const hasMetadata = test.meta && Object.keys(test.meta).length > 0;
+            const hasStack = statusClass === 'failed' && test.stack && (typeof test.stack === 'string' ? test.stack.trim().length > 0 : true);
             const attemptsCount = (test.retries && Array.isArray(test.retries.attempts)) ? test.retries.attempts.length : 0;
             const retryCount = Math.max(0, attemptsCount - 1);
             const isTodo = statusClass === 'todo';
@@ -2420,6 +2421,9 @@
                             <button class='test-tab' onclick='showTestTab(this, \"message\")'>
                                 <i class='fas fa-comment-dots'></i> Message
                             </button>
+                            ${hasStack ? `<button class='test-tab' onclick='showTestTab(this, \"stack\")'>
+                                <i class='fas fa-layer-group'></i> Stack
+                            </button>` : ''}
                             ${hasRetries ? `<button class='test-tab' onclick='showTestTab(this, \"retries\")'>
                                 <i class='fas fa-redo'></i> Retries
                             </button>` : ''}
@@ -2478,6 +2482,9 @@
                                 ${test.message || 'No message available'}
                             </div>
                         </div>
+                        ${hasStack ? `<div class='test-tab-content' data-tab='stack'>
+                            <div class='code-block'>${test.stack}</div>
+                        </div>` : ''}
                     `}
                     ${hasRetries ? `<div class='test-tab-content' data-tab='retries'>
                         <div class='retry-info'>

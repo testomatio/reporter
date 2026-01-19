@@ -78,6 +78,10 @@ class HtmlPipe {
   addTest(test) {
     if (!this.isEnabled) return;
 
+    if (test?.stack && typeof test.stack === 'string') {
+      test.stack = test.stack.replace(ansiRegExp(), '');
+    }
+
     const hasPayload =
       Boolean(test?.status) ||
       (Array.isArray(test?.files) && test.files.length) ||
