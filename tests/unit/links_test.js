@@ -32,6 +32,16 @@ describe('Link Functions', () => {
       expect(links).to.have.length(3);
       expect(links).to.deep.equal([{ test: 'TEST-123' }, { test: 'TEST-456' }, { test: 'TEST-789' }]);
     });
+
+    it('should store test links from array', () => {
+      const context = `test3-${testCounter}`;
+      services.setContext(context);
+      linkTest(['TEST-123', 'TEST-456']);
+
+      const links = services.links.get(context);
+      expect(links).to.have.length(2);
+      expect(links).to.deep.equal([{ test: 'TEST-123' }, { test: 'TEST-456' }]);
+    });
   });
 
   describe('linkJira', () => {
@@ -53,6 +63,16 @@ describe('Link Functions', () => {
       const links = services.links.get(context);
       expect(links).to.have.length(3);
       expect(links).to.deep.equal([{ jira: 'PROJ-123' }, { jira: 'PROJ-456' }, { jira: 'ISSUE-789' }]);
+    });
+
+    it('should store JIRA links from array', () => {
+      const context = `jira4-${testCounter}`;
+      services.setContext(context);
+      linkJira(['PROJ-123', 'PROJ-456']);
+
+      const links = services.links.get(context);
+      expect(links).to.have.length(2);
+      expect(links).to.deep.equal([{ jira: 'PROJ-123' }, { jira: 'PROJ-456' }]);
     });
 
     it('should handle various JIRA ID formats', () => {

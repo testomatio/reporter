@@ -1,5 +1,7 @@
+import { playwrightLogsMarkers } from './adapter/utils/playwright.js';
 import { isPlaywright } from './helpers.js';
 import { services } from './services/index.js';
+import pc from 'picocolors';
 
 /**
  * Stores path to file as artifact and uploads it to the S3 storage
@@ -8,7 +10,9 @@ import { services } from './services/index.js';
  * @returns {void}
  */
 function saveArtifact(data, context = null) {
-  showPlaywrightWarning('artifact', 'Playwright supports artifacts out of the box.');
+  if (isPlaywright)
+    console.warn(`[TESTOMATIO] 'artifact' function is not supported for Playwright. Playwright supports artifacts out of the box.`);
+
   if (!data) return;
   services.artifacts.put(data, context);
 }
@@ -41,67 +45,99 @@ function addStep(message, logs) {
 
 /**
  * Add key-value pair(s) to the test report
- * @param {{[key: string]: string} | string} keyValue - object { key: value } (multiple props allowed) or key (string)
- * @param {string|null} [value=null] - optional value when keyValue is a string
+ * @param {{[key: string]: string} | string} keyValue - object { key: value } (multiple props allowed) OR key (string)
+ * @param {string|undefined} [value=undefined] - optional value when keyValue is a string
  * @returns {void}
+ *
+ * @example
+ * meta('key', 'value');
+ * meta({ key: 'value' });
+ * meta({ key1: 'value1', key2: 'value2' });
  */
-function setKeyValue(keyValue, value = null) {
-  showPlaywrightWarning('meta', 'Use test annotations instead.');
-
+function setKeyValue(keyValue, value = undefined) {
+  // in this case keyValue acts as key (value passed as second argument)
   if (typeof keyValue === 'string') {
-    keyValue = { [keyValue]: value };
+    const key = keyValue;
+    keyValue = { [key]: value };
   }
+
+  if (isPlaywright) {
+    console.log(`${playwrightLogsMarkers.meta} ${JSON.stringify(keyValue)}`);
+    return;
+  }
+
+  // in this case keyValue is expected to be an object
   services.keyValues.put(keyValue);
 }
 
 /**
- * Add a single label to the test report
- * @param {string} key - label key (e.g. 'severity', 'feature', or just 'smoke' for labels without values)
- * @param {string|null} [value=null] - optional label value (e.g. 'high', 'login')
+ * Adds label(s) to the test
+ * @param {string|string[]|{[key: string]: string}} key - just a label or object with custom field name and value
+ * @param {string|null} [value=null] - optional label value (used when key is a string)
  * @returns {void}
+ *
+ * @example
+ * label('high');
+ * label('priority', 'high');
+ * label({priority: 'high'});
  */
 function setLabel(key, value = null) {
-  showPlaywrightWarning('label', 'Use test tag instead.');
-  if (Array.isArray(value)) {
-    return value.forEach(label => setLabel(key, label));
+  let labelsArr = [];
+
+  // process label('priority', 'high') and label('high'
+  if (typeof key === 'string') {
+    labelsArr = [value ? `${key}:${value}` : key];
+    // process label({priority: 'high'}), label({priority: 'high', scope: 'smoke'})
+  } else if (key !== null && typeof key === 'object') {
+    labelsArr = Object.entries(key).map(([key, value]) => `${key}:${value}`);
   }
-  const labelObject =
-    value !== null && value !== undefined && value !== '' ? { label: `${key}:${value}` } : { label: key };
-  services.links.put([labelObject]);
+
+  const labels = labelsArr.map(l => ({ label: l }));
+  if (isPlaywright) {
+    console.log(`${playwrightLogsMarkers.label} ${JSON.stringify(labels)}`);
+    return;
+  }
+  services.links.put(labels);
 }
 
 /**
  * Add link(s) to the test report
- * @param {...string} testIds - test IDs to link
+ * @param {...string | string[]} testIds - test IDs to link
  * @returns {void}
+ *
+ * @example
+ * linkTest('T11111111', 'T22222222')
+ * or
+ * linkTest(['T11111111', 'T22222222'])
  */
 function linkTest(...testIds) {
+  const testIdsArr = testIds.flat();
+  const links = testIdsArr.map(testId => ({ test: testId }));
   if (isPlaywright) {
-    console.log(`[TESTOMATIO-LINK-TESTS] ${JSON.stringify(testIds)}`);
+    console.log(`${playwrightLogsMarkers.linkTest} ${JSON.stringify(links)}`);
     return;
   }
-  const links = testIds.map(testId => ({ test: testId }));
   services.links.put(links);
 }
 
 /**
  * Add JIRA issue link(s) to the test report
- * @param {...string} jiraIds - JIRA issue IDs to link
+ * @param {...(string | string[])} jiraIds - JIRA issue IDs to link
  * @returns {void}
+ *
+ * @example
+ * linkJira('TICKET-1', 'TICKET-2')
+ * or
+ * linkJira(['TICKET-1', 'TICKET-2'])
  */
 function linkJira(...jiraIds) {
+  const jiraIdsArr = jiraIds.flat();
+  const links = jiraIdsArr.map(jiraId => ({ jira: jiraId }));
   if (isPlaywright) {
-    console.log(`[TESTOMATIO-LINK-JIRA] ${JSON.stringify(jiraIds)}`);
+    console.log(`${playwrightLogsMarkers.linkJira} ${JSON.stringify(links)}`);
     return;
   }
-  const links = jiraIds.map(jiraId => ({ jira: jiraId }));
   services.links.put(links);
-}
-
-function showPlaywrightWarning(functionName, recommendation) {
-  if (isPlaywright) {
-    console.warn(`[TESTOMATIO] '${functionName}' function is not supported for Playwright. ${recommendation}`);
-  }
 }
 
 export default {
