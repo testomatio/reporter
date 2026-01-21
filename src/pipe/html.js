@@ -201,10 +201,13 @@ class HtmlPipe {
       const messageFinal = cleanNoiseBlock(messageNoInlineLogs).trim();
       const logsFinal = cleanNoiseBlock(logsMerged).trim();
 
+      const hasStack = hasMeaningfulText(test.stack);
+
       const finalText = buildMessageForReport({
         status,
         messageRaw: messageFinal,
         logsText: logsFinal,
+        hasStack,
       });
 
       test.message = toHtmlSafe(finalText);
@@ -479,11 +482,14 @@ function hasMeaningfulText(value) {
   return typeof value === 'string' && value.trim().length > 0;
 }
 
-function buildMessageForReport({ status, messageRaw, logsText }) {
+function buildMessageForReport({ status, messageRaw, logsText, hasStack }) {
   const hasMsg = hasMeaningfulText(messageRaw);
   const hasLogs = hasMeaningfulText(logsText);
 
   if (status === 'failed') {
+    if (hasStack) {
+      return '';
+    }
     const parts = [];
     if (hasMsg) parts.push(messageRaw);
     if (hasLogs) parts.push(`--- Logs ---\n${logsText}`);
