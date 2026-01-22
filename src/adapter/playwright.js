@@ -43,6 +43,16 @@ class PlaywrightReporter {
 
     const { title } = test;
     const { error, duration } = result;
+    const pwAttachments = (result.attachments || []).filter(a => a.body || a.path);
+
+    const files = pwAttachments
+      .map(att => ({
+        path: this.#getArtifactPath(att),
+        title: att.name || title,
+        type: att.contentType,
+      }))
+      .filter(f => f.path);
+
     const suite_title = test.parent ? test.parent?.title : path.basename(test?.location?.file);
 
     const steps = [];
@@ -117,6 +127,7 @@ class PlaywrightReporter {
       logs,
       links,
       manuallyAttachedArtifacts,
+      files: files.length ? files : undefined,
       meta: {
         browser: project.browser,
         isMobile: project.isMobile,
@@ -135,7 +146,7 @@ class PlaywrightReporter {
     this.uploads.push({
       rid: `${rid}-${project.name}`,
       title: test.title,
-      files: result.attachments.filter(a => a.body || a.path),
+      files: pwAttachments,
       file: test.location?.file,
     });
     // remove empty uploads

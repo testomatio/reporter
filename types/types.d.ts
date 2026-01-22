@@ -159,6 +159,12 @@ export interface TestData {
   /** The unique identifier from Testomat.io of the test case. If provided, updates the existing test case with the given ID. */
   test_id?: string;
 
+  /** The status of the test (passed, failed, skipped, etc.) */
+  status?: 'passed' | 'failed' | 'skipped';
+
+  /** An array of artifacts associated with the test case (screenshots, videos, traces, etc.) */
+  artifacts?: ArtifactData[];
+
   /** An object representing an error that occurred during the execution of the test case. */
   error?: Error;
 
@@ -205,6 +211,24 @@ export interface TestData {
 
   /** Whether to overwrite status of this test to avoid saving as retry (defaults to false) */
   overwrite?: boolean;
+}
+
+/**
+ * Extended test data for HTML reporter.
+ */
+export interface HtmlTestData extends TestData {
+  meta?: { [key: string]: any } & {
+    attachments?: any[];
+    traces?: any;
+    console?: any;
+    stdout?: any;
+    stderr?: any;
+    logs?: any;
+    retryCount?: number;
+    isFlaky?: boolean;
+    attempts?: any[];
+    retries?: any[];
+  };
 }
 
 /**

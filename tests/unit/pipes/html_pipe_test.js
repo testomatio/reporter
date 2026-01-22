@@ -70,6 +70,23 @@ const DATA = {
       api_key: 'tstmt_gRqrhBUaVxTpezGpZjRmlahOeqcRBBbDMA1692050199',
       create: false,
     },
+    {
+      files: [],
+      steps: 'I.wait(5000)',
+      status: 'pending',
+      stack: 'Test is marked as todo',
+      meta: { todo: true },
+      example: null,
+      code: null,
+      title: 'Todo test implementation @T5d0e3198',
+      suite_title: 'Todo Tests @todo @S4g7d3054',
+      test_id: '5d0e3198',
+      message: 'Not implemented yet',
+      run_time: 0,
+      artifacts: [],
+      api_key: 'tstmt_gRqrhBUaVxTpezGpZjRmlahOeqcRBBbDMA1692050199',
+      create: false,
+    },
   ],
 };
 
@@ -121,10 +138,27 @@ describe('HTML report tests', () => {
     const document = dom.window.document;
     // if no runID & status
     expect(document.querySelector('title').textContent).to.include('Report Testomat.io');
+
     // Check that execution time is present (duration may vary)
-    const timeElement = document.querySelector('.statdesc__row > span');
-    expect(timeElement.textContent).to.match(/^\d+h \d+m \d+s \d+ms$/);
-    expect(document.querySelectorAll('.statdesc__row span')[2].textContent).to.include(getCurrentDate());
+    const statValueElements = document.querySelectorAll('.stat-value');
+    let foundDuration = false;
+    for (const el of statValueElements) {
+      if (el.textContent.match(/^\d+h \d+m \d+s \d+ms$/)) {
+        foundDuration = true;
+        break;
+      }
+    }
+    expect(foundDuration).to.be.true;
+
+    // Check execution date is present
+    let foundDate = false;
+    for (const el of statValueElements) {
+      if (el.textContent.includes(getCurrentDate())) {
+        foundDate = true;
+        break;
+      }
+    }
+    expect(foundDate).to.be.true;
   });
 
   it('should render test status counters correctly for all status types', () => {
@@ -132,44 +166,50 @@ describe('HTML report tests', () => {
     const dom = new JSDOM(htmlContent);
     const document = dom.window.document;
 
-    // Check that status filter buttons exist
-    const allTestsButton = document.querySelector('label[for="allTest"]');
-    const passedTestsButton = document.querySelector('label[for="passedTest"]');
-    const failedTestsButton = document.querySelector('label[for="failedTest"]');
-    const skippedTestsButton = document.querySelector('label[for="skippedTest"]');
+    // Check that status filter buttons exist (new structure uses data-filter)
+    const allTestsButton = document.querySelector('.filter-tab[data-filter="all"]');
+    const passedTestsButton = document.querySelector('.filter-tab[data-filter="passed"]');
+    const failedTestsButton = document.querySelector('.filter-tab[data-filter="failed"]');
+    const skippedTestsButton = document.querySelector('.filter-tab[data-filter="skipped"]');
+    const todoTestsButton = document.querySelector('.filter-tab[data-filter="todo"]');
 
     expect(allTestsButton).to.exist;
     expect(passedTestsButton).to.exist;
     expect(failedTestsButton).to.exist;
     expect(skippedTestsButton).to.exist;
+    expect(todoTestsButton).to.exist;
 
-    // Check that buttons have correct styling
-    expect(passedTestsButton.classList.contains('btn-passed')).to.be.true;
-    expect(failedTestsButton.classList.contains('btn-failed')).to.be.true;
-    expect(skippedTestsButton.classList.contains('btn-skipped')).to.be.true;
+    // Check that buttons have correct class
+    expect(passedTestsButton.classList.contains('filter-tab')).to.be.true;
+    expect(failedTestsButton.classList.contains('filter-tab')).to.be.true;
+    expect(skippedTestsButton.classList.contains('filter-tab')).to.be.true;
+    expect(todoTestsButton.classList.contains('filter-tab')).to.be.true;
 
     // Check button text content
     expect(passedTestsButton.textContent).to.include('Passed');
     expect(failedTestsButton.textContent).to.include('Failed');
     expect(skippedTestsButton.textContent).to.include('Skipped');
+    expect(todoTestsButton.textContent).to.include('Todo');
   });
 
   it('should contain JavaScript logic for processing different test statuses', () => {
     const htmlContent = fs.readFileSync(filepath, 'utf-8');
 
     // Check that the HTML contains JavaScript functions that handle different statuses
-    // Note: The JavaScript may be minified, so we check for the actual logic patterns
-    expect(htmlContent).to.include("category === 'passed'");
-    expect(htmlContent).to.include("category === 'skipped'");
-    expect(htmlContent).to.include('else {'); // This covers the failed case
+    // New template uses different logic with data-filter attributes
+    expect(htmlContent).to.include('data-filter');
+    expect(htmlContent).to.include("currentFilter = this.dataset.filter");
 
-    // Check for status-related CSS classes in JavaScript
-    expect(htmlContent).to.include("image.classList.add('passed')");
-    expect(htmlContent).to.include("image.classList.add('failed')");
-    expect(htmlContent).to.include("image.classList.add('skipped')");
+    // Check for filter functionality
+    expect(htmlContent).to.include('filterTests()');
+    expect(htmlContent).to.include("test.status.toLowerCase() === currentFilter");
 
-    // Check for status processing in content
-    expect(htmlContent).to.include('category.toUpperCase()');
+    // Check for status-related icons/classes
+    expect(htmlContent).to.include("getStatusIcon(status)");
+    expect(htmlContent).to.include("'passed': 'check'");
+    expect(htmlContent).to.include("'failed': 'times'");
+    expect(htmlContent).to.include("'skipped': 'forward'");
+    expect(htmlContent).to.include("'todo': 'circle'");
   });
 
   it('should include Google Charts data with test status distribution', () => {
@@ -179,18 +219,24 @@ describe('HTML report tests', () => {
     expect(htmlContent).to.include('google.charts.load');
     expect(htmlContent).to.include('google.visualization.arrayToDataTable');
 
-    // Check for test count variables - the actual values will be substituted by Handlebars
-    expect(htmlContent).to.include('passedTests =');
-    expect(htmlContent).to.include('failedTests =');
-    expect(htmlContent).to.include('skippedTests =');
+    // Check for test count variables - after Handlebars compilation they are numbers
+    expect(htmlContent).to.include('const passedTests =');
+    expect(htmlContent).to.include('const failedTests =');
+    expect(htmlContent).to.include('const skippedTests =');
+    expect(htmlContent).to.include('const todoTests =');
 
-    // Check for chart colors that correspond to status types
-    expect(htmlContent).to.include("'colors': ['#A9C7FF', '#75B583', '#FF6363', '#FFC350']");
+    // Check for chart colors (new template uses conditional colors based on todoTests)
+    expect(htmlContent).to.include("#10b981"); // Passed green
+    expect(htmlContent).to.include("#ef4444"); // Failed red
+    expect(htmlContent).to.include("#f59e0b"); // Skipped yellow
+    expect(htmlContent).to.include("#8b5cf6"); // Todo purple
 
-    // Check for chart data structure
-    expect(htmlContent).to.include("['Passed', passedTests]");
-    expect(htmlContent).to.include("['Failed', failedTests]");
-    expect(htmlContent).to.include("['Skipped', skippedTests]");
+    // Check for chart data structure in rendered HTML
+    expect(htmlContent).to.include("['Status', 'Count']");
+    expect(htmlContent).to.include("['Passed',");
+    expect(htmlContent).to.include("['Failed',");
+    expect(htmlContent).to.include("['Skipped',");
+    expect(htmlContent).to.include("['Todo',");
   });
 
   it('should handle test data properly for all status types', () => {
@@ -200,24 +246,26 @@ describe('HTML report tests', () => {
 
     // Execute the page JavaScript to test data processing
     const scriptElements = document.querySelectorAll('script');
-    let testEntriesScript = '';
+    let testDataScript = '';
 
     for (const script of scriptElements) {
-      if (script.textContent && script.textContent.includes('testEntries')) {
-        testEntriesScript = script.textContent;
+      if (script.textContent && script.textContent.includes('allTests')) {
+        testDataScript = script.textContent;
         break;
       }
     }
 
     // Check that the script contains the test data structure
-    expect(testEntriesScript).to.include('testEntries');
-    expect(testEntriesScript).to.include('totalTests');
+    expect(testDataScript).to.include('allTests');
+    expect(testDataScript).to.include('currentFilter');
+    expect(testDataScript).to.include('renderTests()');
 
     // Verify that status categories are defined
-    expect(testEntriesScript).to.include("'all'");
-    expect(testEntriesScript).to.include("'passed'");
-    expect(testEntriesScript).to.include("'failed'");
-    expect(testEntriesScript).to.include("'skipped'");
+    expect(testDataScript).to.include("'all'");
+    expect(testDataScript).to.include("'passed'");
+    expect(testDataScript).to.include("'failed'");
+    expect(testDataScript).to.include("'skipped'");
+    expect(testDataScript).to.include("'todo'");
   });
 
   it('should calculate correct test counts for each status type', () => {
@@ -226,15 +274,19 @@ describe('HTML report tests', () => {
     const document = dom.window.document;
 
     // Count expected test statuses from our test data
+    // Note: pending + meta.todo = todo status
     const expectedPassedCount = DATA.tests.filter(test => test.status === 'passed').length;
     const expectedFailedCount = DATA.tests.filter(test => test.status === 'failed').length;
     const expectedSkippedCount = DATA.tests.filter(test => test.status === 'skipped').length;
+    const expectedTodoCount = DATA.tests.filter(test =>
+      (test.status === 'pending' && test.meta?.todo) || test.status === 'todo'
+    ).length;
     const expectedTotalCount = DATA.tests.length;
 
     // Check that the total test count is displayed correctly in the stats section
-    const testStatElements = document.querySelectorAll('.statdesc__row span');
+    const statValueElements = document.querySelectorAll('.stat-value');
     let foundTestCount = false;
-    for (const element of testStatElements) {
+    for (const element of statValueElements) {
       if (element.textContent === expectedTotalCount.toString()) {
         foundTestCount = true;
         break;
@@ -242,18 +294,26 @@ describe('HTML report tests', () => {
     }
     expect(foundTestCount).to.be.true;
 
-    // Verify that the actual test counts in the HTML match our expectations
-    // The test counts are rendered as literal values in the JavaScript
-    expect(htmlContent).to.match(/passedTests =\s*1/);
-    expect(htmlContent).to.match(/failedTests =\s*1/);
-    expect(htmlContent).to.match(/skippedTests =\s*1/);
+    // Check filter tabs have correct counts (via id="countXXX" elements)
+    const countAll = document.getElementById('countAll');
+    const countPassed = document.getElementById('countPassed');
+    const countFailed = document.getElementById('countFailed');
+    const countSkipped = document.getElementById('countSkipped');
+    const countTodo = document.getElementById('countTodo');
+
+    expect(countAll).to.exist;
+    expect(countPassed).to.exist;
+    expect(countFailed).to.exist;
+    expect(countSkipped).to.exist;
+    expect(countTodo).to.exist;
 
     // Based on our test data, we should have:
-    // 1 passed test, 1 failed test, 1 skipped test
+    // 1 passed test, 1 failed test, 1 skipped test, 1 todo test
     expect(expectedPassedCount).to.equal(1);
     expect(expectedFailedCount).to.equal(1);
     expect(expectedSkippedCount).to.equal(1);
-    expect(expectedTotalCount).to.equal(3);
+    expect(expectedTodoCount).to.equal(1);
+    expect(expectedTotalCount).to.equal(4);
   });
 
   it('should render filter functionality for different test statuses', () => {
@@ -261,53 +321,52 @@ describe('HTML report tests', () => {
     const dom = new JSDOM(htmlContent);
     const document = dom.window.document;
 
-    // Check that radio inputs for filtering exist
-    const allTestRadio = document.querySelector('input[id="allTest"]');
-    const passedTestRadio = document.querySelector('input[id="passedTest"]');
-    const failedTestRadio = document.querySelector('input[id="failedTest"]');
-    const skippedTestRadio = document.querySelector('input[id="skippedTest"]');
+    // Check that filter buttons exist (new structure uses buttons with data-filter)
+    const allTestButton = document.querySelector('.filter-tab[data-filter="all"]');
+    const passedTestButton = document.querySelector('.filter-tab[data-filter="passed"]');
+    const failedTestButton = document.querySelector('.filter-tab[data-filter="failed"]');
+    const skippedTestButton = document.querySelector('.filter-tab[data-filter="skipped"]');
 
-    expect(allTestRadio).to.exist;
-    expect(passedTestRadio).to.exist;
-    expect(failedTestRadio).to.exist;
-    expect(skippedTestRadio).to.exist;
+    expect(allTestButton).to.exist;
+    expect(passedTestButton).to.exist;
+    expect(failedTestButton).to.exist;
+    expect(skippedTestButton).to.exist;
 
-    // Check that radio buttons have correct category attributes
-    expect(allTestRadio.getAttribute('category')).to.equal('all');
-    expect(passedTestRadio.getAttribute('category')).to.equal('passed');
-    expect(failedTestRadio.getAttribute('category')).to.equal('failed');
-    expect(skippedTestRadio.getAttribute('category')).to.equal('skipped');
+    // Check that buttons have correct data-filter attributes
+    expect(allTestButton.getAttribute('data-filter')).to.equal('all');
+    expect(passedTestButton.getAttribute('data-filter')).to.equal('passed');
+    expect(failedTestButton.getAttribute('data-filter')).to.equal('failed');
+    expect(skippedTestButton.getAttribute('data-filter')).to.equal('skipped');
 
-    // Check that the 'all' filter is selected by default
-    expect(allTestRadio.hasAttribute('checked')).to.be.true;
+    // Check that the 'all' filter is active by default
+    expect(allTestButton.classList.contains('active')).to.be.true;
 
     // Check that filtering JavaScript functions exist
-    expect(htmlContent).to.include('showBlockForCategory');
-    expect(htmlContent).to.include("category = input.getAttribute('category')");
+    expect(htmlContent).to.include('filterTests()');
+    expect(htmlContent).to.include('renderTests()');
   });
 
   it('should include proper status styling and visual indicators', () => {
     const htmlContent = fs.readFileSync(filepath, 'utf-8');
 
-    // Check for status-specific CSS styling
-    expect(htmlContent).to.include('.btn-passed');
-    expect(htmlContent).to.include('.btn-failed');
-    expect(htmlContent).to.include('.btn-skipped');
+    // Check for status-specific CSS styling (new template uses different classes)
+    expect(htmlContent).to.include('.filter-tab');
+    expect(htmlContent).to.include('.status-passed');
+    expect(htmlContent).to.include('.status-failed');
+    expect(htmlContent).to.include('.status-skipped');
 
-    // Check for status-specific colors
-    expect(htmlContent).to.include('#75B583'); // Passed color (green)
-    expect(htmlContent).to.include('#FF6363'); // Failed color (red)
-    expect(htmlContent).to.include('#FFC350'); // Skipped color (yellow/orange)
+    // Check for status-specific colors (new color scheme)
+    expect(htmlContent).to.include('#10b981'); // Passed color (green)
+    expect(htmlContent).to.include('#ef4444'); // Failed color (red)
+    expect(htmlContent).to.include('#f59e0b'); // Skipped color (yellow/orange)
 
     // Check for hover states
-    expect(htmlContent).to.include('.btn-passed:hover');
-    expect(htmlContent).to.include('.btn-failed:hover');
-    expect(htmlContent).to.include('.btn-skipped:hover');
+    expect(htmlContent).to.include('.filter-tab:hover');
+    expect(htmlContent).to.include('.filter-tab.active');
 
-    // Check for checked states
-    expect(htmlContent).to.include('.passedTest:checked');
-    expect(htmlContent).to.include('.failedTest:checked');
-    expect(htmlContent).to.include('.skippedTest:checked');
+    // Check for status badge classes
+    expect(htmlContent).to.include('.status-badge');
+    expect(htmlContent).to.include('.test-status-icon');
   });
 
   it('should verify that all test data from different statuses is properly processed', () => {
@@ -317,20 +376,26 @@ describe('HTML report tests', () => {
     expect(htmlContent).to.include('New TEST #1 item @T50e82737'); // passed test
     expect(htmlContent).to.include('Create a new todo TEST #2 item @T5b8d1186'); // failed test
     expect(htmlContent).to.include('Skipped test for conditional feature @T5c9d2187'); // skipped test
+    expect(htmlContent).to.include('Todo test implementation @T5d0e3198'); // todo test (pending + meta.todo)
 
     // Check that suite titles are included
     expect(htmlContent).to.include('Create Tasks @step:01 @story:12 @S2f5c1942');
     expect(htmlContent).to.include('Suite 2 @smoke @story:13 @S2f5c1942');
     expect(htmlContent).to.include('Feature Tests @feature @S3f6c2943');
+    expect(htmlContent).to.include('Todo Tests @todo @S4g7d3054');
 
     // Verify the test data structure includes exactly 1 test per status
     const passedTestsFromData = DATA.tests.filter(test => test.status === 'passed');
     const failedTestsFromData = DATA.tests.filter(test => test.status === 'failed');
     const skippedTestsFromData = DATA.tests.filter(test => test.status === 'skipped');
+    const todoTestsFromData = DATA.tests.filter(test =>
+      (test.status === 'pending' && test.meta?.todo) || test.status === 'todo'
+    );
 
     expect(passedTestsFromData).to.have.length(1);
     expect(failedTestsFromData).to.have.length(1);
     expect(skippedTestsFromData).to.have.length(1);
+    expect(todoTestsFromData).to.have.length(1);
   });
 });
 
