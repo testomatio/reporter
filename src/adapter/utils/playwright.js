@@ -48,15 +48,28 @@ export function fetchLinksFromLogs(stdout) {
         if (line.includes(marker.key)) {
           hasMarker = true;
           try {
-            const rawData = line.split(marker.key)[1]?.trim();
+            let rawData = line.split(marker.key)[1]?.trim();
             if (!rawData) continue;
 
             let data;
             try {
               data = JSON.parse(rawData);
             } catch (e) {
-              // Fallback: treat raw data as single element array
-              data = [rawData];
+              // Try to extract JSON from the beginning of the string (to handle trailing text)
+              const jsonMatch = rawData.match(/^\s*(\[.*?\]|\{.*?\})/);
+              if (jsonMatch) {
+                try {
+                  data = JSON.parse(jsonMatch[1]);
+                } catch (jsonError) {
+                  // If JSON extraction fails, skip this entry
+                  debug('Error parsing links from string:', line, '\n', jsonError);
+                  continue;
+                }
+              } else {
+                // No JSON found, skip this entry
+                debug('No valid JSON found in:', line);
+                continue;
+              }
             }
 
             if (marker.type === 'meta') {
@@ -68,10 +81,17 @@ export function fetchLinksFromLogs(stdout) {
                 ...ids
                   // filter non-truthy ids
                   .filter(id => !!id)
-                  .map(id => ({
-                    // marker type is either 'test' or 'jira' or 'label'
-                    [marker.type]: id,
-                  })),
+                  .map(id => {
+                    // If id is already an object with the marker type key, return it as is
+                    if (typeof id === 'object' && id !== null && marker.type in id) {
+                      return id;
+                    }
+                    // Otherwise, wrap it with the marker type key
+                    return {
+                      // marker type is either 'test' or 'jira' or 'label'
+                      [marker.type]: id,
+                    };
+                  }),
               );
             }
           } catch (e) {

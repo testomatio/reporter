@@ -4,7 +4,7 @@ import { fetchLinksFromLogs } from '../../src/adapter/playwright.js';
 describe('Playwright Link Parsing (fetchLinksFromLogs)', () => {
   it('should extract test links from standard log format', () => {
     const stdout = [
-      '[TESTOMATIO-LINK-TESTS] ["T12345678", "T87654321"]\n'
+      '[TESTOMATIO-LINK-TEST] ["T12345678", "T87654321"]\n'
     ];
     const { links, stdout: filtered } = fetchLinksFromLogs(stdout);
 
@@ -28,7 +28,7 @@ describe('Playwright Link Parsing (fetchLinksFromLogs)', () => {
 
   it('should handle multiple markers in different lines of the same entry', () => {
     const stdout = [
-      'some prefix\n[TESTOMATIO-LINK-TESTS] ["T1"]\n[TESTOMATIO-LINK-JIRA] ["J1"]\nsome suffix'
+      'some prefix\n[TESTOMATIO-LINK-TEST] ["T1"]\n[TESTOMATIO-LINK-JIRA] ["J1"]\nsome suffix'
     ];
     const { links, stdout: filtered } = fetchLinksFromLogs(stdout);
 
@@ -41,7 +41,7 @@ describe('Playwright Link Parsing (fetchLinksFromLogs)', () => {
 
   it('should be robust against trailing text after JSON array', () => {
     const stdout = [
-      '[TESTOMATIO-LINK-TESTS] ["T123"] extra text here\n'
+      '[TESTOMATIO-LINK-TEST] ["T123"] extra text here\n'
     ];
     const { links, stdout: filtered } = fetchLinksFromLogs(stdout);
 
@@ -52,7 +52,7 @@ describe('Playwright Link Parsing (fetchLinksFromLogs)', () => {
 
   it('should handle markers with leading text on the same line', () => {
     const stdout = [
-      'Logged something before [TESTOMATIO-LINK-TESTS] ["T456"]\n'
+      'Logged something before [TESTOMATIO-LINK-TEST] ["T456"]\n'
     ];
     const { links, stdout: filtered } = fetchLinksFromLogs(stdout);
 
@@ -66,8 +66,8 @@ describe('Playwright Link Parsing (fetchLinksFromLogs)', () => {
 
   it('should skip invalid JSON gracefully', () => {
     const stdout = [
-      '[TESTOMATIO-LINK-TESTS] invalid-json-here\n',
-      '[TESTOMATIO-LINK-TESTS] ["ValidTID"]\n'
+      '[TESTOMATIO-LINK-TEST] invalid-json-here\n',
+      '[TESTOMATIO-LINK-TEST] ["ValidTID"]\n'
     ];
     const { links, stdout: filtered } = fetchLinksFromLogs(stdout);
 

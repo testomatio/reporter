@@ -72,8 +72,8 @@ function setKeyValue(keyValue, value = undefined) {
 
 /**
  * Adds label(s) to the test
- * @param {string|string[]|{[key: string]: string}} key - just a label or object with custom field name and value
- * @param {string|null} [value=null] - optional label value (used when key is a string)
+ * @param {string | {[key: string]: string}} key - just label OR custom field name OR object with custom field name and value
+ * @param {string | null} [value=null] - optional label value (of custom field value) (used when key is a string)
  * @returns {void}
  *
  * @example
