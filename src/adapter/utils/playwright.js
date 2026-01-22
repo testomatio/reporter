@@ -12,7 +12,11 @@ export const playwrightLogsMarkers = {
  * Fetches links from stdout. Returns links and filtered stdout (without data containing markers)
  *
  * @param {(string | Buffer)[]} stdout
- * @returns {{ links: { [key: 'test' | 'jira' | 'label']: string }[], meta: { [key: string]: any }, stdout: (string | Buffer)[] }}
+ * @returns {{
+ *   links: { [key: 'test' | 'jira' | 'label']: string }[],
+ *   meta: { [key: string]: any },
+ *   stdout: (string | Buffer)[]
+ * }}
  */
 export function fetchLinksFromLogs(stdout) {
   const links = [];
@@ -48,7 +52,7 @@ export function fetchLinksFromLogs(stdout) {
         if (line.includes(marker.key)) {
           hasMarker = true;
           try {
-            let rawData = line.split(marker.key)[1]?.trim();
+            const rawData = line.split(marker.key)[1]?.trim();
             if (!rawData) continue;
 
             let data;

@@ -11,7 +11,8 @@ import pc from 'picocolors';
  */
 function saveArtifact(data, context = null) {
   if (isPlaywright)
-    console.warn(`[TESTOMATIO] 'artifact' function is not supported for Playwright. Playwright supports artifacts out of the box.`);
+    console.warn(`[TESTOMATIO] 'artifact' function is not supported for Playwright
+   Playwright supports artifacts out of the box.`);
 
   if (!data) return;
   services.artifacts.put(data, context);
@@ -72,8 +73,11 @@ function setKeyValue(keyValue, value = undefined) {
 
 /**
  * Adds label(s) to the test
- * @param {string | {[key: string]: string}} key - just label OR custom field name OR object with custom field name and value
- * @param {string | null} [value=null] - optional label value (of custom field value) (used when key is a string)
+ * @param {string | {
+ * [key: string]: string}
+ * } key - just label OR custom field name OR object with custom field name and value
+ * @param {string | null} [value=null] - optional label value (of custom field value)
+ * (used when key is a string)
  * @returns {void}
  *
  * @example
