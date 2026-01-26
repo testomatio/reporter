@@ -3,7 +3,7 @@ import reporterFunctions from '../../src/reporter-functions.js';
 import { services } from '../../src/services/index.js';
 import { dataStorage } from '../../src/data-storage.js';
 
-const { linkTest, linkJira, label } = reporterFunctions;
+const { linkTest, linkJira, label, keyValue: meta } = reporterFunctions;
 
 describe('Link Functions', () => {
   let testCounter = 0;
@@ -32,6 +32,16 @@ describe('Link Functions', () => {
       expect(links).to.have.length(3);
       expect(links).to.deep.equal([{ test: 'TEST-123' }, { test: 'TEST-456' }, { test: 'TEST-789' }]);
     });
+
+    it('should store test links from array', () => {
+      const context = `test3-${testCounter}`;
+      services.setContext(context);
+      linkTest(['TEST-123', 'TEST-456']);
+
+      const links = services.links.get(context);
+      expect(links).to.have.length(2);
+      expect(links).to.deep.equal([{ test: 'TEST-123' }, { test: 'TEST-456' }]);
+    });
   });
 
   describe('linkJira', () => {
@@ -53,6 +63,16 @@ describe('Link Functions', () => {
       const links = services.links.get(context);
       expect(links).to.have.length(3);
       expect(links).to.deep.equal([{ jira: 'PROJ-123' }, { jira: 'PROJ-456' }, { jira: 'ISSUE-789' }]);
+    });
+
+    it('should store JIRA links from array', () => {
+      const context = `jira4-${testCounter}`;
+      services.setContext(context);
+      linkJira(['PROJ-123', 'PROJ-456']);
+
+      const links = services.links.get(context);
+      expect(links).to.have.length(2);
+      expect(links).to.deep.equal([{ jira: 'PROJ-123' }, { jira: 'PROJ-456' }]);
     });
 
     it('should handle various JIRA ID formats', () => {
@@ -85,6 +105,78 @@ describe('Link Functions', () => {
       const links = services.links.get(context);
       expect(links).to.have.length(1);
       expect(links[0]).to.deep.equal({ label: 'severity:high' });
+    });
+
+    it('should store labels from object with single key-value', () => {
+      const context = `label3-${testCounter}`;
+      services.setContext(context);
+      label({ severity: 'high' });
+
+      const links = services.links.get(context);
+      expect(links).to.have.length(1);
+      expect(links[0]).to.deep.equal({ label: 'severity:high' });
+    });
+
+    it('should store labels from object with multiple key-values', () => {
+      const context = `label4-${testCounter}`;
+      services.setContext(context);
+      label({ severity: 'high', priority: 'critical' });
+
+      const links = services.links.get(context);
+      expect(links).to.have.length(2);
+      expect(links[0]).to.deep.equal({ label: 'severity:high' });
+      expect(links[1]).to.deep.equal({ label: 'priority:critical' });
+    });
+
+    it('should store labels from object with only keys (no values)', () => {
+      const context = `label5-${testCounter}`;
+      services.setContext(context);
+      label({ smoke: '', suite: 'auth' });
+
+      const links = services.links.get(context);
+      expect(links).to.have.length(2);
+      expect(links[0]).to.deep.equal({ label: 'smoke:' });
+      expect(links[1]).to.deep.equal({ label: 'suite:auth' });
+    });
+  });
+
+  describe('meta (keyValue)', () => {
+    it('should store meta with key-value pair', () => {
+      const context = `meta1-${testCounter}`;
+      services.setContext(context);
+      meta('build', '123');
+
+      const keyValueData = services.keyValues.get(context);
+      expect(keyValueData).to.deep.equal({ build: '123' });
+    });
+
+    it('should store meta with object containing multiple values', () => {
+      const context = `meta2-${testCounter}`;
+      services.setContext(context);
+      meta({ build: '123', env: 'staging' });
+
+      const keyValueData = services.keyValues.get(context);
+      expect(keyValueData).to.deep.equal({ build: '123', env: 'staging' });
+    });
+
+    it('should merge multiple meta calls', () => {
+      const context = `meta3-${testCounter}`;
+      services.setContext(context);
+      meta({ build: '123' });
+      meta({ env: 'staging' });
+
+      const keyValueData = services.keyValues.get(context);
+      expect(keyValueData).to.deep.equal({ build: '123', env: 'staging' });
+    });
+
+    it('should overwrite existing meta keys', () => {
+      const context = `meta4-${testCounter}`;
+      services.setContext(context);
+      meta({ build: '123' });
+      meta({ build: '456' });
+
+      const keyValueData = services.keyValues.get(context);
+      expect(keyValueData).to.deep.equal({ build: '456' });
     });
   });
 

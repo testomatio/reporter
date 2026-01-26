@@ -15,7 +15,7 @@ import { filesize as prettyBytes } from 'filesize';
 import dotenv from 'dotenv';
 import Replay from '../replay.js';
 
-const debug = createDebugMessages('@testomatio/reporter:xml-cli');
+const debug = createDebugMessages('@testomatio/reporter:cli');
 const version = getPackageVersion();
 console.log(pc.cyan(pc.bold(` 🤩 Testomat.io Reporter v${version}`)));
 const program = new Command();

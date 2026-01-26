@@ -28,22 +28,22 @@ declare module '@testomatio/reporter' {
 
   /**
    * Add a single label to the test report
-   * @param key - label key (e.g. 'severity', 'feature', or just 'smoke' for labels without values)
-   * @param value - optional label value (e.g. 'high', 'login')
+   * @param {string | {[key: string]: string}} key - label key (e.g. 'severity', 'feature', or just 'smoke' for labels without values)
+   * @param {string | null} [value=null] - optional label value (of custom field value) (used when key is a string)
    */
-  export function label(key: string, value?: string | null): void;
+  export function label(key: string | { [key: string]: string }, value?: string | null): void;
 
   /**
    * Add link(s) to the test report
    * @param testIds - test IDs to link
    */
-  export function linkTest(...testIds: string[]): void;
+  export function linkTest(...testIds: (string | string[])[]): void;
 
   /**
    * Add JIRA issue link(s) to the test report
    * @param jiraIds - JIRA issue IDs to link
    */
-  export function linkJira(...jiraIds: string[]): void;
+  export function linkJira(...jiraIds: (string | string[])[]): void;
 
   /**
    * Logger service for intercepting and managing logs
