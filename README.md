@@ -13,7 +13,7 @@ Testomat.io Reporter (this npm package) supports:
 - 🔎 [Stack traces](./docs/stacktrace.md) and error messages
 - 🐙 [GitHub](./docs/pipes/github.md), [GitLab](./docs/pipes/gitlab.md) & [Bitbucket](./docs/pipes/bitbucket.md) integration
 - 🚅 Realtime reports
-- 🗃️ Other test frameworks supported via [JUnit XML](./docs/junit.md) with [XML import configuration](./docs/xml-imports.md)
+- 🗃️ Other test frameworks supported via [JUnit XML](./docs/junit.md)
 - 🚶‍♀️ Steps _(work in progress)_
 - 📄 [Logger](./docs/logger.md) _(work in progress, supports Jest for now)_
 - ☁️ Custom properties and metadata _(work in progress)_
@@ -63,11 +63,11 @@ yarn add @testomatio/reporter --dev
 ### 1️⃣ Attach Reporter to the Test Runner
 
 |                                                 |                                               |                                                           |
-| ----------------------------------------------- | --------------------------------------------- | --------------------------------------------------------- |
-| [Playwright](./docs/frameworks.md#playwright)   | [CodeceptJS](./docs/frameworks.md#CodeceptJS) | [Cypress](./docs/frameworks.md#Cypress)                   |
-| [Jest](./docs/frameworks.md#Jest)               | [Mocha](./docs/frameworks.md#Mocha)           | [WebDriverIO](./docs/frameworks.md#WebDriverIO)           |
-| [TestCafe](./docs/frameworks.md#TestCafe)       | [Detox](./docs/frameworks.md#Detox)           | [Codeception](https://github.com/testomatio/php-reporter) |
-| [Newman (Postman)](./docs/frameworks.md#Newman) | [JUnit](./docs/junit.md#junit)                | [NUnit](./docs/junit.md#nunit)                            |
+|-------------------------------------------------|-----------------------------------------------|-----------------------------------------------------------|
+| [Playwright](./docs/frameworks.md#playwright)   | [CodeceptJS](./docs/frameworks.md#codeceptjs) | [Cypress](./docs/frameworks.md#cypress)                   |
+| [Jest](./docs/frameworks.md#jest)               | [Mocha](./docs/frameworks.md#mocha)           | [WebDriverIO](./docs/frameworks.md#webdriverIO)           |
+| [TestCafe](./docs/frameworks.md#testcafe)       | [Detox](./docs/frameworks.md#detox)           | [Codeception](https://github.com/testomatio/php-reporter) |
+| [Newman (Postman)](./docs/frameworks.md#newman) | [JUnit](./docs/junit.md#junit)                | [NUnit](./docs/junit.md#nunit)                            |
 | [PyTest](./docs/junit.md#pytest)                | [PHPUnit](./docs/junit.md#phpunit)            | [Protractor](./docs/frameworks.md#protractor)             |
 
 or **any [other via JUnit](./docs/junit.md)** report....
@@ -103,7 +103,7 @@ With our reporter, you can:
 * Visualize data on successful and failed tests, including statistics and error details.
 * Quickly share reports with your team members or stakeholders.
 
-![HTML report](./docs/images/html_reporter_example.gif)
+![HTML report](./docs/images/html-reporter-example.gif)
 
 Learn more about generating HTML reports [here](./docs/pipes/html.md)
 
