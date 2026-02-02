@@ -583,7 +583,7 @@ function printCreateIssue() {
  * @returns {string}
  */
 function hideTestomatioToken(data) {
-  return data.replace(/"api_key": "[^"]+"/g, '"api_key": "<hidden>"').replace(/"(tstmt_[^"]+)"/g, 'tstmt_***');
+  return data.replace(/"api_key": "[^"]+"/g, '"api_key": "<hidden>"').replace(/"(tstmt_[^"]+)"/g, '"tstmt_***"');
 }
 
 /**
