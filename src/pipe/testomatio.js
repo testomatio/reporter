@@ -26,7 +26,7 @@ if (process.env.TESTOMATIO_RUN) process.env.runId = process.env.TESTOMATIO_RUN;
 class TestomatioPipe {
   constructor(params, store) {
     this.batch = {
-      isEnabled: params?.isBatchEnabled ?? !process.env.TESTOMATIO_DISABLE_BATCH_UPLOAD ?? true,
+      isEnabled: params?.isBatchEnabled ?? !process.env.TESTOMATIO_DISABLE_BATCH_UPLOAD,
       intervalFunction: null, // will be created in createRun by setInterval function
       intervalTime: 5000, // how often tests are sent
       tests: [], // array of tests in batch

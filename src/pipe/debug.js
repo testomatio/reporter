@@ -15,7 +15,7 @@ export class DebugPipe {
     this.isEnabled = !!process.env.TESTOMATIO_DEBUG || !!process.env.DEBUG;
     if (this.isEnabled) {
       this.batch = {
-        isEnabled: this.params.isBatchEnabled ?? !process.env.TESTOMATIO_DISABLE_BATCH_UPLOAD ?? true,
+        isEnabled: this.params.isBatchEnabled ?? !process.env.TESTOMATIO_DISABLE_BATCH_UPLOAD,
         intervalFunction: null,
         intervalTime: 5000,
         tests: [],

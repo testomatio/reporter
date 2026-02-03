@@ -44,6 +44,9 @@
     "strip-ansi": "7.1.0",
     "uuid": "^9.0.0"
   },
+  "overrides": {
+    "fast-xml-parser": "^5.3.4"
+  },
   "files": [
     "bin",
     "lib",
