@@ -95,6 +95,8 @@ S3_ENDPOINT=
 
 To disable publishing of artifacts use `TESTOMATIO_DISABLE_ARTIFACTS=1` environment variable.
 
+To disable ACLs (Access Control Lists) for artifacts upload (e.g. for simple buckets or GCS) use `TESTOMATIO_S3_NO_ACL=1` environment variable.
+
 Examples of upload configuration defined in environment variables are displayed below.
 
 ## Providers
@@ -219,7 +221,6 @@ Please note, that you need to enable [Use Private URLs for Test Artifacts](https
 
 - **Cloudflare Dashboard:** [https://dash.cloudflare.com/](https://dash.cloudflare.com/)
 - **Steps:**
-
   - Navigate to the **R2** section and select the option to create a new bucket.
   - Choose a unique name and a region for the bucket.
 
@@ -231,7 +232,6 @@ Please note, that you need to enable [Use Private URLs for Test Artifacts](https
 
 - **Purpose:** To ensure secure access to the bucket.
 - **Steps:**
-
   - Go to the access management or API section.
   - Generate a new API key with read/write permissions.
   - Save and verify the generated key.
@@ -278,7 +278,6 @@ Example for Playwright trace policy settings
 
 - **Overview:** Integration with R2 streamlines testing and data management.
 - **Configuration:**
-
   - In the Testomatio panel, enter the API keys and bucket address.
   - Configure the paths and access parameters as required.
 

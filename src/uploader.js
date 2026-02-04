@@ -38,6 +38,7 @@ export class S3Uploader {
       'TESTOMATIO_DISABLE_ARTIFACTS',
       'TESTOMATIO_PRIVATE_ARTIFACTS',
       'TESTOMATIO_ARTIFACT_MAX_SIZE_MB',
+      'TESTOMATIO_S3_NO_ACL',
     ];
   }
 
@@ -97,7 +98,7 @@ export class S3Uploader {
    * @returns
    */
   async #uploadToS3(Body, Key, file) {
-    const { S3_BUCKET, TESTOMATIO_PRIVATE_ARTIFACTS } = this.getConfig();
+    const { S3_BUCKET, TESTOMATIO_PRIVATE_ARTIFACTS, TESTOMATIO_S3_NO_ACL } = this.getConfig();
     const ACL = TESTOMATIO_PRIVATE_ARTIFACTS ? 'private' : 'public-read';
 
     if (!S3_BUCKET || !Body) {
@@ -118,23 +119,50 @@ export class S3Uploader {
       Key,
       Body,
     };
-    // disable ACL for I AM roles
-    if (!s3Config.credentials.sessionToken) {
+    // disable ACL for I AM roles, GCS (doesn't support x-amz-acl header), and if explicitly set
+    const isGCS = s3Config.endpoint && s3Config.endpoint.includes('storage.googleapis.com');
+    if (!s3Config.credentials.sessionToken && !TESTOMATIO_S3_NO_ACL && !isGCS) {
       params.ACL = ACL;
     }
 
     try {
-      const upload = new Upload({ client: s3, params });
-
-      const link = await this.getS3LocationLink(upload);
-      this.successfulUploads.push({ path: file.path, size: file.size, link });
-      debug(`📤 Uploaded artifact. File: ${file.path}, size: ${prettyBytes(file.size || 0)}, link: ${link}`);
-      return link;
+      return await this.#tryUpload({ s3, params, file });
     } catch (e) {
+      // if upload failed, try to upload without ACL
+      // "Invalid argument" is returned when ACL is not supported (Bucket Owner Enforced)
+      if (
+        params.ACL &&
+        (e.name === 'InvalidArgument' || e.name === 'AccessDenied' || e.message?.includes('Invalid argument'))
+      ) {
+        debug(`Upload failed with ACL '${params.ACL}'. Retrying without ACL...`);
+        delete params.ACL;
+        try {
+          return await this.#tryUpload({ s3, params, file, isRetry: true });
+        } catch (e2) {
+          debug('Retry upload failed:', e2);
+        }
+      }
+
       this.failedUploads.push({ path: file.path, size: file.size });
       debug('S3 uploading error:', e);
-      console.log(APP_PREFIX, 'Upload failed:', e.message, '\nConfig:\n', this.getMaskedConfig());
+      console.log(
+        APP_PREFIX,
+        'Upload failed:',
+        e.message,
+        `\nFile:\n ${file.path}, size: ${prettyBytes(file.size || 0)}`,
+        '\nConfig:\n',
+        this.getMaskedConfig(),
+      );
     }
+  }
+
+  async #tryUpload({ s3, params, file, isRetry = false }) {
+    const upload = new Upload({ client: s3, params });
+    const link = await this.getS3LocationLink(upload);
+    this.successfulUploads.push({ path: file.path, size: file.size, link });
+    const msg = isRetry ? '(Retry) ' : '';
+    debug(`📤 ${msg}Uploaded artifact. File: ${file.path}, size: ${prettyBytes(file.size || 0)}, link: ${link}`);
+    return link;
   }
 
   /**
