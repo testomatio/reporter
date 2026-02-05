@@ -529,6 +529,55 @@ class XmlReader {
     return run;
   }
 
+  /**
+   * Calculate the approximate size of data in bytes (JSON stringified length)
+   * @param {Object} data - Data to measure
+   * @returns {number} Size in bytes
+   */
+  #estimateDataSize(data) {
+    return JSON.stringify(data).length;
+  }
+
+  /**
+   * Split tests array into chunks based on test count and data size
+   * @param {Array} tests - Array of tests to split
+   * @param {Object} options - Chunking options
+   * @param {number} [options.maxTests=50] - Maximum tests per chunk
+   * @param {number} [options.maxSizeBytes=5242880] - Maximum chunk size in bytes (5MB)
+   * @returns {Array<Array>} Array of test chunks
+   */
+  #splitTestsIntoChunks(tests, options = {}) {
+    const { maxTests = 50, maxSizeBytes = 5 * 1024 * 1024 } = options;
+
+    const chunks = [];
+    let currentChunk = [];
+    let currentChunkSize = 0;
+
+    for (const test of tests) {
+      const testSize = this.#estimateDataSize(test);
+
+      const wouldExceedTestCount = currentChunk.length >= maxTests;
+      const wouldExceedSize = currentChunkSize + testSize > maxSizeBytes;
+
+      if (wouldExceedTestCount || wouldExceedSize) {
+        if (currentChunk.length > 0) {
+          chunks.push(currentChunk);
+        }
+        currentChunk = [];
+        currentChunkSize = 0;
+      }
+
+      currentChunk.push(test);
+      currentChunkSize += testSize;
+    }
+
+    if (currentChunk.length > 0) {
+      chunks.push(currentChunk);
+    }
+
+    return chunks;
+  }
+
   async uploadData() {
     await this.uploadArtifacts();
     this.calculateStats();
@@ -537,18 +586,65 @@ class XmlReader {
     this.formatErrors();
     this.formatTests();
 
-    const dataString = {
-      ...this.stats,
+    this.pipes = this.pipes || (await this.pipesPromise);
+
+    if (!this.tests || !Array.isArray(this.tests) || this.tests.length === 0) {
+      const dataString = {
+        ...this.stats,
+        api_key: this.requestParams.apiKey,
+        status: 'finished',
+        duration: this.stats.duration,
+        tests: this.tests,
+      };
+      debug('Uploading data (no tests to chunk)', dataString);
+      return Promise.all(this.pipes.map(p => p.finishRun(dataString)));
+    }
+
+    const maxTests = parseInt(process.env.TESTOMATIO_CHUNK_MAX_TESTS || '50', 10);
+    const maxSizeMB = parseInt(process.env.TESTOMATIO_CHUNK_MAX_SIZE_MB || '5', 10);
+    const maxSizeBytes = maxSizeMB * 1024 * 1024;
+
+    const testChunks = this.#splitTestsIntoChunks(this.tests, {
+      maxTests,
+      maxSizeBytes,
+    });
+
+    const totalChunks = testChunks.length;
+    const totalTests = this.tests.length;
+
+    debug(`Split ${totalTests} tests into ${totalChunks} chunks (max ${maxTests} tests, ${maxSizeMB}MB per chunk)`);
+
+    let uploadedTests = 0;
+    for (let i = 0; i < testChunks.length; i++) {
+      const chunk = testChunks[i];
+      const chunkNum = i + 1;
+      const chunkSizeKB = Math.round(this.#estimateDataSize(chunk) / 1024);
+
+      console.log(
+        APP_PREFIX,
+        `📦 Uploading chunk ${chunkNum}/${totalChunks} (${chunk.length} tests, ${chunkSizeKB}KB)`,
+      );
+
+      const chunkData = {
+        api_key: this.requestParams.apiKey,
+        tests: chunk,
+      };
+      await Promise.all(this.pipes.map(p => p.finishRun(chunkData)));
+
+      uploadedTests += chunk.length;
+      debug(`Uploaded ${uploadedTests}/${totalTests} tests`);
+    }
+
+    console.log(APP_PREFIX, `✅ Successfully uploaded ${uploadedTests} tests in ${totalChunks} chunks`);
+
+    const finishData = {
       api_key: this.requestParams.apiKey,
       status: 'finished',
       duration: this.stats.duration,
-      tests: this.tests,
     };
 
-    debug('Uploading data', dataString);
-
-    this.pipes = this.pipes || (await this.pipesPromise);
-    return Promise.all(this.pipes.map(p => p.finishRun(dataString)));
+    debug('Finishing run with status:', finishData.status);
+    return Promise.all(this.pipes.map(p => p.finishRun(finishData)));
   }
 
   async _finishRun() {
