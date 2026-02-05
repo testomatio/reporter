@@ -601,7 +601,7 @@ class XmlReader {
     }
 
     const maxTests = parseInt(process.env.TESTOMATIO_CHUNK_MAX_TESTS || '50', 10);
-    const maxSizeMB = parseInt(process.env.TESTOMATIO_CHUNK_MAX_SIZE_MB || '5', 10);
+    const maxSizeMB = parseFloat(process.env.TESTOMATIO_CHUNK_MAX_SIZE_MB || '5');
     const maxSizeBytes = maxSizeMB * 1024 * 1024;
 
     const testChunks = this.#splitTestsIntoChunks(this.tests, {
@@ -641,6 +641,7 @@ class XmlReader {
       api_key: this.requestParams.apiKey,
       status: 'finished',
       duration: this.stats.duration,
+      detach: this.requestParams.detach,
     };
 
     debug('Finishing run with status:', finishData.status);
