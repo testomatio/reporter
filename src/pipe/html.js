@@ -433,9 +433,11 @@ class HtmlPipe {
    */
   #saveTestToWorkerFile(test) {
     try {
+      const runId = this.store.runId || process.env.TESTOMATIO_RUN || `run-${Date.now()}`;
+      const safeRunId = String(runId).replace(/[^a-zA-Z0-9_-]/g, '_');
       const workerId = process.env.WORKER_ID || 'unknown';
       const tempDir = os.tmpdir();
-      const workerFile = path.join(tempDir, `testomatio-html-worker-${workerId}.jsonl`);
+      const workerFile = path.join(tempDir, `testomatio-html-worker-${safeRunId}-${workerId}.jsonl`);
 
       const testLine = JSON.stringify(test) + '\n';
       fs.appendFileSync(workerFile, testLine, 'utf-8');
@@ -449,9 +451,11 @@ class HtmlPipe {
    */
   #loadTestsFromWorkerFiles() {
     try {
+      const runId = this.store.runId || process.env.TESTOMATIO_RUN || `run-${Date.now()}`;
+      const safeRunId = String(runId).replace(/[^a-zA-Z0-9_-]/g, '_');
       const tempDir = os.tmpdir();
       const workerFiles = fs.readdirSync(tempDir)
-        .filter(f => f.startsWith('testomatio-html-worker-') && f.endsWith('.jsonl'))
+        .filter(f => f.startsWith(`testomatio-html-worker-${safeRunId}-`) && f.endsWith('.jsonl'))
         .map(f => path.join(tempDir, f));
 
       if (workerFiles.length === 0) {

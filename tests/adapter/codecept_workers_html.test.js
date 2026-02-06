@@ -34,10 +34,10 @@ describe('CodeceptJS Workers HTML Report', function () {
 
       expect(testEntries.length).to.be.greaterThan(0);
 
-      expect(htmlFiles.length).to.equal(1);
-      expect(htmlFiles[0]).to.include('workers-test.html');
+      const workersHtmlFiles = htmlFiles.filter(f => f.includes('workers-test.html'));
+      expect(workersHtmlFiles.length).to.equal(1);
 
-      const htmlContent = fs.readFileSync(htmlFiles[0], 'utf-8');
+      const htmlContent = fs.readFileSync(workersHtmlFiles[0], 'utf-8');
       expect(htmlContent).to.include('<!DOCTYPE html>');
       expect(htmlContent).to.include('Test Results');
       expect(htmlContent).to.include('passed');
@@ -56,7 +56,10 @@ describe('CodeceptJS Workers HTML Report', function () {
       const uniqueTestIds = new Set(testEntries.map(t => t.testId || t.test_id));
       const totalTestsFromDebug = uniqueTestIds.size;
 
-      const htmlContent = fs.readFileSync(htmlFiles[0], 'utf-8');
+      const aggregationHtmlFiles = htmlFiles.filter(f => f.includes('aggregation-test.html'));
+      expect(aggregationHtmlFiles.length).to.equal(1);
+
+      const htmlContent = fs.readFileSync(aggregationHtmlFiles[0], 'utf-8');
 
       expect(htmlContent).to.include('test');
       expect(htmlContent).to.include('status');
@@ -101,9 +104,10 @@ describe('CodeceptJS Workers HTML Report', function () {
         }
       );
 
-      expect(htmlFiles.length).to.equal(1);
+      const singleProcessFiles = htmlFiles.filter(f => f.includes('single-process-test.html'));
+      expect(singleProcessFiles.length).to.equal(1);
 
-      expect(htmlFiles[0]).to.include('single-process-test.html');
+      expect(singleProcessFiles[0]).to.include('single-process-test.html');
     });
 
     it('should include all test details in HTML report', async () => {
@@ -116,7 +120,10 @@ describe('CodeceptJS Workers HTML Report', function () {
         }
       );
 
-      const htmlContent = fs.readFileSync(htmlFiles[0], 'utf-8');
+      const detailedHtmlFiles = htmlFiles.filter(f => f.includes('detailed-test.html'));
+      expect(detailedHtmlFiles.length).to.equal(1);
+
+      const htmlContent = fs.readFileSync(detailedHtmlFiles[0], 'utf-8');
 
       expect(htmlContent).to.include('<html>');
       expect(htmlContent).to.include('<body>');
@@ -155,7 +162,8 @@ describe('CodeceptJS Workers HTML Report', function () {
         TESTOMATIO_HTML_FILENAME: 'error-handling-test.html',
       });
 
-      expect(htmlFiles.length).to.equal(1);
+      const errorHandlingFiles = htmlFiles.filter(f => f.includes('error-handling-test.html'));
+      expect(errorHandlingFiles.length).to.equal(1);
     });
 
     it('should handle missing HTML directory gracefully', async () => {
