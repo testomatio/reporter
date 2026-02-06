@@ -1,5 +1,8 @@
 import createDebugMessages from 'debug';
 import pc from 'picocolors';
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
 import TestomatClient from '../client.js';
 import { STATUS, APP_PREFIX, TESTOMAT_TMP_STORAGE_DIR } from '../constants.js';
 import { getTestomatIdFromTestTitle, truncate, fileSystem } from '../utils/utils.js';
@@ -28,8 +31,8 @@ const HOOK_EXECUTION_ORDER = {
   POST_TEST: ['AfterHook', 'AfterSuiteHook'],
 };
 
-// codeceptjs workers are self-contained
-dataStorage.isFileStorage = false;
+// Track if we're in workers mode
+let isWorkersMode = false;
 
 const DATA_REGEXP = /[|\s]+?(\{".*\}|\[.*\])/;
 
@@ -85,6 +88,17 @@ function CodeceptReporter(config) {
   let currentHook = null;
 
   event.dispatcher.on(event.workers.before, () => {
+    isWorkersMode = true;
+    dataStorage.isFileStorage = true;
+
+    const markerFile = path.join(os.tmpdir(), 'testomatio-main-process.marker');
+    try {
+      fs.writeFileSync(markerFile, Date.now().toString());
+      debug('Workers mode: enabled file storage and created main process marker');
+    } catch (err) {
+      debug('Warning: Could not create marker file:', err.message);
+    }
+
     recorder.add('Creating new run', async () => {
       await client.createRun();
       process.env.TESTOMATIO_RUN = client.runId;
@@ -93,8 +107,23 @@ function CodeceptReporter(config) {
     });
   });
 
-  event.dispatcher.on(event.workers.after, () => {
-    client.updateRunStatus('finished');
+  event.dispatcher.on(event.workers.after, async () => {
+    debug('Workers finished, finalizing run...');
+    try {
+      const pipes = await client.pipes;
+      await Promise.all(pipes.map(p => p.finishRun({})));
+      await client.updateRunStatus('finished');
+    } finally {
+      const markerFile = path.join(os.tmpdir(), 'testomatio-main-process.marker');
+      try {
+        if (fs.existsSync(markerFile)) {
+          fs.unlinkSync(markerFile);
+          debug('Removed main process marker file');
+        }
+      } catch (err) {
+        debug('Warning: Could not remove marker file:', err.message);
+      }
+    }
   });
 
   // Listening to events
@@ -171,6 +200,10 @@ function CodeceptReporter(config) {
   });
 
   event.dispatcher.on(event.all.result, async result => {
+    if (isWorkersMode) {
+      debug('Workers mode: skipping event.all.result to prevent duplicate finishRun calls');
+      return;
+    }
     debug('waiting for all tests to be reported');
     // all tests were reported and we can upload videos
     await Promise.all(reportTestPromises);

@@ -21,6 +21,24 @@ export class CodeceptTestRunner {
     });
   }
 
+  cleanupWorkerFiles() {
+    const workerFiles = fs.readdirSync(os.tmpdir()).filter(f => f.startsWith('testomatio-html-worker-'));
+    workerFiles.forEach(f => {
+      try {
+        fs.unlinkSync(path.join(os.tmpdir(), f));
+      } catch (e) {}
+    });
+  }
+
+  cleanupMarkerFile() {
+    const markerFile = path.join(os.tmpdir(), 'testomatio-main-process.marker');
+    try {
+      if (fs.existsSync(markerFile)) {
+        fs.unlinkSync(markerFile);
+      }
+    } catch (e) {}
+  }
+
   async run(testConfig = {}, extraEnv = {}) {
     this.cleanupDebugFiles();
     let cmd;
@@ -77,12 +95,16 @@ export class CodeceptTestRunner {
 
   async runWorkers(testConfig = {}, extraEnv = {}) {
     this.cleanupDebugFiles();
+    this.cleanupWorkerFiles();
+    this.cleanupMarkerFile();
+
     let cmd = `npx codeceptjs run-workers 2`;
     if (typeof testConfig === 'object') {
       const { grep = null, tags = null } = testConfig;
       if (grep) cmd += ` --grep "${grep}"`;
       if (tags) cmd += ` --grep "${tags}"`;
     }
+
     let stdout, stderr;
     try {
       const result = await execAsync(cmd, {
@@ -100,15 +122,19 @@ export class CodeceptTestRunner {
       stdout = error.stdout || '';
       stderr = error.stderr || '';
     }
+
     await new Promise(resolve => setTimeout(resolve, 1000));
+
     const debugFiles = fs
       .readdirSync(os.tmpdir())
       .filter(f => f.startsWith('testomatio.debug.') && f.endsWith('.json'))
       .map(f => path.join(os.tmpdir(), f))
       .filter(f => fs.existsSync(f));
+
     if (debugFiles.length === 0) {
       throw new Error('Debug file not found');
     }
+
     let debugData = [];
     for (const debugFile of debugFiles) {
       try {
@@ -122,15 +148,29 @@ export class CodeceptTestRunner {
       } catch (e) {}
     }
     const testEntries = debugData.filter(entry => entry.action === 'addTest');
-    return { stdout, stderr, debugData, testEntries };
+
+    let htmlFiles = [];
+    const htmlReportFolder = extraEnv.TESTOMATIO_HTML_REPORT_FOLDER || 'html-report';
+
+    const htmlDir = path.join(this.exampleDir, htmlReportFolder);
+    if (fs.existsSync(htmlDir)) {
+      const files = fs.readdirSync(htmlDir).filter(f => f.endsWith('.html'));
+      htmlFiles = files.map(f => path.join(htmlDir, f));
+    }
+
+    return { stdout, stderr, debugData, testEntries, htmlFiles };
   }
 
   setupTestEnvironment() {
     this.cleanupDebugFiles();
+    this.cleanupWorkerFiles();
+    this.cleanupMarkerFile();
   }
 
   cleanupTestEnvironment() {
     this.cleanupDebugFiles();
+    this.cleanupWorkerFiles();
+    this.cleanupMarkerFile();
   }
 }
 

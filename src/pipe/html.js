@@ -2,6 +2,7 @@ import createDebugMessages from 'debug';
 import merge from 'lodash.merge';
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import pc from 'picocolors';
 import handlebars from 'handlebars';
 import fileUrl from 'file-url';
@@ -94,6 +95,15 @@ class HtmlPipe {
 
     if (!hasPayload) return;
 
+    const markerFile = path.join(os.tmpdir(), 'testomatio-main-process.marker');
+    const isWorkersMode = process.env.RUNS_WITH_WORKERS;
+    const isMainProcess = fs.existsSync(markerFile);
+
+    if (isWorkersMode && !isMainProcess) {
+      this.#saveTestToWorkerFile(test);
+      return;
+    }
+
     const index = this.tests.findIndex(t => isSameTest(t, test));
     if (index >= 0) {
       this.tests[index] = merge(this.tests[index], test);
@@ -105,6 +115,21 @@ class HtmlPipe {
 
   async finishRun(runParams) {
     if (!this.isEnabled) return;
+
+    // Skip HTML generation in worker processes (only generate in main process)
+    // Detect worker by checking if marker file exists AND we're in workers mode
+    const markerFile = path.join(os.tmpdir(), 'testomatio-main-process.marker');
+    const isWorkersMode = process.env.RUNS_WITH_WORKERS;
+    const isMainProcess = fs.existsSync(markerFile);
+
+    if (isWorkersMode && !isMainProcess) {
+      debug('HTML Pipe: Running in worker process, skipping HTML generation (will be generated in main process)');
+      return;
+    }
+
+    if (isWorkersMode && isMainProcess) {
+      this.#loadTestsFromWorkerFiles();
+    }
 
     if (this.isHtml) {
       // GENERATE HTML reports based on the results data
@@ -400,6 +425,75 @@ class HtmlPipe {
     handlebars.registerHelper('ObjectLength', obj => {
       return Object.keys(obj).length;
     });
+  }
+
+  /**
+   * Saves test data to a worker-specific temp file
+   * @param {object} test - Test object to save
+   */
+  #saveTestToWorkerFile(test) {
+    try {
+      const workerId = process.env.WORKER_ID || 'unknown';
+      const tempDir = os.tmpdir();
+      const workerFile = path.join(tempDir, `testomatio-html-worker-${workerId}.jsonl`);
+
+      const testLine = JSON.stringify(test) + '\n';
+      fs.appendFileSync(workerFile, testLine, 'utf-8');
+    } catch (err) {
+      debug(`Error saving test to worker file: ${err.message}`);
+    }
+  }
+
+  /**
+   * Loads test data from all worker temp files
+   */
+  #loadTestsFromWorkerFiles() {
+    try {
+      const tempDir = os.tmpdir();
+      const workerFiles = fs.readdirSync(tempDir)
+        .filter(f => f.startsWith('testomatio-html-worker-') && f.endsWith('.jsonl'))
+        .map(f => path.join(tempDir, f));
+
+      if (workerFiles.length === 0) {
+        debug('No worker test files found');
+        return;
+      }
+
+      debug(`Found ${workerFiles.length} worker test file(s)`);
+
+      for (const workerFile of workerFiles) {
+        try {
+          const content = fs.readFileSync(workerFile, 'utf-8');
+          const lines = content.trim().split('\n').filter(line => line.trim());
+
+          for (const line of lines) {
+            try {
+              const test = JSON.parse(line);
+              const index = this.tests.findIndex(t => isSameTest(t, test));
+              if (index >= 0) {
+                this.tests[index] = merge(this.tests[index], test);
+              } else {
+                this.tests.push(test);
+              }
+            } catch (parseErr) {
+              debug(`Error parsing test from worker file: ${parseErr.message}`);
+            }
+          }
+
+          try {
+            fs.unlinkSync(workerFile);
+          } catch (unlinkErr) {
+            debug(`Warning: Could not delete worker file ${workerFile}: ${unlinkErr.message}`);
+          }
+        } catch (readErr) {
+          debug(`Error reading worker file ${workerFile}: ${readErr.message}`);
+        }
+      }
+
+      debug(`Loaded ${this.tests.length} total test(s) from workers`);
+    } catch (err) {
+      debug(`Error loading worker test files: ${err.message}`);
+    }
   }
 
   toString() {
