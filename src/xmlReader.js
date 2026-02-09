@@ -534,32 +534,31 @@ class XmlReader {
    * @param {Object} data - Data to measure
    * @returns {number} Size in bytes
    */
-  #estimateDataSize(data) {
-    return JSON.stringify(data).length;
+  #getObjectSize(data) {
+    const body = JSON.stringify(data);
+    return new TextEncoder().encode(body).length;
   }
 
   /**
-   * Split tests array into chunks based on test count and data size
+   * Split tests array into chunks based on data size
    * @param {Array} tests - Array of tests to split
    * @param {Object} options - Chunking options
-   * @param {number} [options.maxTests=50] - Maximum tests per chunk
-   * @param {number} [options.maxSizeBytes=5242880] - Maximum chunk size in bytes (5MB)
+   * @param {number} [options.maxSizeBytes=1048576] - Maximum chunk size in bytes (1MB)
    * @returns {Array<Array>} Array of test chunks
    */
-  #splitTestsIntoChunks(tests, options = {}) {
-    const { maxTests = 50, maxSizeBytes = 5 * 1024 * 1024 } = options;
+  #splitTestsIntoChunks(tests, options = { maxSizeBytes: 1 * 1024 * 1024 }) {
+    const { maxSizeBytes } = options;
 
     const chunks = [];
     let currentChunk = [];
     let currentChunkSize = 0;
 
     for (const test of tests) {
-      const testSize = this.#estimateDataSize(test);
+      const testSize = this.#getObjectSize(test);
 
-      const wouldExceedTestCount = currentChunk.length >= maxTests;
       const wouldExceedSize = currentChunkSize + testSize > maxSizeBytes;
 
-      if (wouldExceedTestCount || wouldExceedSize) {
+      if (wouldExceedSize) {
         if (currentChunk.length > 0) {
           chunks.push(currentChunk);
         }
@@ -600,34 +599,31 @@ class XmlReader {
       return Promise.all(this.pipes.map(p => p.finishRun(dataString)));
     }
 
-    const maxTests = parseInt(process.env.TESTOMATIO_CHUNK_MAX_TESTS || '50', 10);
-    const maxSizeMB = parseFloat(process.env.TESTOMATIO_CHUNK_MAX_SIZE_MB || '5');
-    const maxSizeBytes = maxSizeMB * 1024 * 1024;
+    const maxSizeBytes = 1 * 1024 * 1024;
 
     const testChunks = this.#splitTestsIntoChunks(this.tests, {
-      maxTests,
       maxSizeBytes,
     });
 
     const totalChunks = testChunks.length;
     const totalTests = this.tests.length;
 
-    debug(`Split ${totalTests} tests into ${totalChunks} chunks (max ${maxTests} tests, ${maxSizeMB}MB per chunk)`);
+    debug(`Split ${totalTests} tests into ${totalChunks} chunks (max 1MB per chunk)`);
 
     let uploadedTests = 0;
     for (let i = 0; i < testChunks.length; i++) {
       const chunk = testChunks[i];
       const chunkNum = i + 1;
-      const chunkSizeKB = Math.round(this.#estimateDataSize(chunk) / 1024);
 
       console.log(
         APP_PREFIX,
-        `📦 Uploading chunk ${chunkNum}/${totalChunks} (${chunk.length} tests, ${chunkSizeKB}KB)`,
+        `📦 Uploading chunk ${chunkNum}/${totalChunks} (${chunk.length} tests)`,
       );
 
       const chunkData = {
         api_key: this.requestParams.apiKey,
         tests: chunk,
+        skipFinish: true,
       };
       await Promise.all(this.pipes.map(p => p.finishRun(chunkData)));
 

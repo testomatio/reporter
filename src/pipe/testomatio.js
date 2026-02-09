@@ -441,7 +441,7 @@ class TestomatioPipe {
   }
 
   /**
-   * @param {import('../../types/types.js').RunData} params
+   * @param {import('../../types/types.js').RunData & { skipFinish?: boolean }} params
    * @returns
    */
   async finishRun(params) {
@@ -466,13 +466,14 @@ class TestomatioPipe {
       console.warn(`${APP_PREFIX} ${errorMessage}`);
     }
 
-    const { status } = params;
+    const { status, skipFinish } = params;
 
     let status_event;
-
-    if (status === STATUS.FINISHED) status_event = 'finish';
-    if (status === STATUS.PASSED) status_event = 'pass';
-    if (status === STATUS.FAILED) status_event = 'fail';
+    if (!skipFinish && status) {
+      if (status === STATUS.FINISHED) status_event = 'finish';
+      if (status === STATUS.PASSED) status_event = 'pass';
+      if (status === STATUS.FAILED) status_event = 'fail';
+    }
 
     try {
       if (this.runId && !this.proceed) {

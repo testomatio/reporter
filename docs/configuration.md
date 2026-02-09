@@ -52,38 +52,6 @@ Example:
 TESTOMATIO_DISABLE_BATCH_UPLOAD=true <actual run command>
 ```
 
-#### `TESTOMATIO_CHUNK_MAX_TESTS`
-
-**XML Reports Only**
-
-Sets the maximum number of tests to include in each chunk when uploading XML reports. Large XML files are automatically split into chunks to avoid timeout errors. Tests are sent in batches using this limit. Default is 50 tests per chunk.
-
-Example:
-
-```
-TESTOMATIO={API_KEY} TESTOMATIO_CHUNK_MAX_TESTS=100 npx @testomatio/reporter xml "tests/**/*.xml"
-```
-
-#### `TESTOMATIO_CHUNK_MAX_SIZE_MB`
-
-**XML Reports Only**
-
-Sets the maximum size limit in megabytes for each chunk when uploading XML reports. A new chunk is created when adding a test would exceed this size limit. Default is 5MB per chunk.
-
-Example:
-
-```
-TESTOMATIO={API_KEY} TESTOMATIO_CHUNK_MAX_SIZE_MB=10 npx @testomatio/reporter xml "tests/**/*.xml"
-```
-
-You can combine both variables for optimal chunking:
-
-```
-TESTOMATIO={API_KEY} TESTOMATIO_CHUNK_MAX_TESTS=100 TESTOMATIO_CHUNK_MAX_SIZE_MB=10 npx @testomatio/reporter xml "tests/**/*.xml"
-```
-
-This will create chunks with up to 100 tests OR 10MB in size, whichever limit is reached first.
-
 #### `TESTOMATIO_ENV`
 
 Specify environments to run the tests.
