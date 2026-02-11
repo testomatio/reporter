@@ -25,6 +25,7 @@ const STATUS = {
   SKIPPED: 'skipped',
   FINISHED: 'finished',
 };
+
 // html pipe var
 const HTML_REPORT = {
   FOLDER: 'html-report',

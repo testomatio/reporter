@@ -140,7 +140,7 @@ class Client {
   /**
    * Updates test status and its data
    *
-   * @param {string|undefined} status
+   * @param {'passed' | 'failed' | 'skipped' | undefined} status
    * @param {TestData} [testData]
    * @returns {Promise<PipeResult[]>}
    */
@@ -179,6 +179,7 @@ class Client {
       manuallyAttachedArtifacts,
       overwrite,
       tags,
+      timeline,
     } = testData;
     let { message = '', meta = {} } = testData;
 
@@ -252,6 +253,7 @@ class Client {
     const relativeFile = file ? path.relative(workspaceDir, file) : file;
     const rootSuiteId = validateSuiteId(process.env.TESTOMATIO_SUITE);
 
+    /** @type {TestData} */
     const data = {
       rid,
       files,
@@ -268,6 +270,7 @@ class Client {
       message,
       run_time: typeof time === 'number' ? time : parseFloat(time),
       timestamp,
+      timeline,
       artifacts,
       meta,
       links,
@@ -382,9 +385,8 @@ class Client {
         }
 
         if (this.uploader.skippedUploads.length || this.uploader.failedUploads.length) {
-          const command = `TESTOMATIO=<your_api_key> TESTOMATIO_RUN=${
-            this.runId
-          } npx @testomatio/reporter upload-artifacts`;
+          const command = `TESTOMATIO=<your_api_key> TESTOMATIO_RUN=${this.runId
+            } npx @testomatio/reporter upload-artifacts`;
           const numberOfNotUploadedArtifacts = this.uploader.skippedUploads.length + this.uploader.failedUploads.length;
           console.log(
             APP_PREFIX,

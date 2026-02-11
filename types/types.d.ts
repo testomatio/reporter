@@ -171,6 +171,9 @@ export interface TestData {
   /** The time it took to execute the test case, in milliseconds. */
   time?: number;
 
+  /** The time it took to execute the test case, in milliseconds. */
+  run_time?: number;
+
   /** Timestamp when the test was reported, in microseconds since Unix epoch. */
   timestamp?: number;
 
@@ -211,6 +214,9 @@ export interface TestData {
 
   /** Whether to overwrite status of this test to avoid saving as retry (defaults to false) */
   overwrite?: boolean;
+
+  /** Timeline information for test execution */
+  timeline?: Timeline;
 }
 
 /**
@@ -316,6 +322,23 @@ interface Step {
   error?: any;
 }
 
+/**
+ * Timeline information for test execution
+ */
+export interface Timeline {
+  /** Test start timestamp in microseconds since Unix epoch */
+  timestamp_start: number;
+
+  /** Test finish timestamp in microseconds since Unix epoch */
+  timestamp_finish: number;
+
+  /** Worker identifier for parallel test execution */
+  worker_id?: number;
+
+  /** Project name (for frameworks supporting multiple projects, e.g., Playwright) */
+  project?: string;
+}
+
 declare global {
   namespace NodeJS {
     interface Global {
@@ -385,5 +408,5 @@ export type {
   Suite as VitestSuite,
   Test as VitestTest,
   File as VitestTestFile,
-  TestLogs as VitestTestLogs,
+  TestLogs as VitestTestLogs
 } from './vitest.types';

@@ -33,12 +33,28 @@ class PlaywrightReporter {
   onTestBegin(testInfo) {
     const fullTestTitle = getTestContextName(testInfo);
     dataStorage.setContext(fullTestTitle);
+    // Store test start time for timeline tracking
+    testInfo._testomatioStartTime = Date.now();
   }
 
   onTestEnd(test, result) {
     // test.parent.project().__projectId
 
     if (!this.client) return;
+
+    // Calculate timeline data
+    const timestampStart = test._testomatioStartTime
+      ? test._testomatioStartTime * 1000 // convert to microseconds
+      : undefined;
+    const timestampFinish = Date.now() * 1000; // convert to microseconds
+
+    // Get worker index from test (available in parallel execution)
+
+    /** @type {number | undefined} */
+    const workerIndex = result.workerIndex;
+    // Get project name as additional identifier
+    // (cause the same test could be run in different projects within the same worker)
+    const projectName = test.parent.project().name;
 
     const { title } = test;
     const { error, duration } = result;
@@ -141,6 +157,14 @@ class PlaywrightReporter {
         }, {}),
       },
       file: test.location?.file,
+      timeline: timestampStart
+        ? {
+          timestamp_start: timestampStart,
+          timestamp_finish: timestampFinish,
+          worker_id: workerIndex,
+          project: projectName,
+        }
+        : undefined,
     });
 
     this.uploads.push({
