@@ -525,6 +525,7 @@ class TestomatioPipe {
 
   #disablePipe() {
     this.isEnabled = false;
+    this.apiKey = null;
 
     // clear interval function, otherwise the proccess will continue indefinitely
     if (this.batch.intervalFunction) {
