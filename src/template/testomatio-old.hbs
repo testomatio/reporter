@@ -1,0 +1,1421 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8' />
+    <meta
+      name='viewport'
+      content='width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0'
+    />
+    <meta http-equiv='X-UA-Compatible' content='ie=edge' />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <link
+      href='https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css'
+      rel='stylesheet'
+      integrity='sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC'
+      crossorigin='anonymous'
+    />
+    <link
+      rel='stylesheet'
+      href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css'
+      integrity='sha512-SzlrxWUlpfuzQ+pcUCosxcglQRNAq/DZjVsC0lE40xsADsfeQoEypE+enwcOiGjk/bSuGGKHEyjSoQ1zVisanQ=='
+      crossorigin='anonymous'
+      referrerpolicy='no-referrer'
+    />
+    {{#if runId}}
+      <title>Report #{{runId}} - Testomat.io</title>
+    {{else}}
+      <title>Report Testomat.io</title>
+    {{/if}}
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+            font-family: "Inter", sans-serif;
+        }
+
+        header,
+        div,
+        p,
+        form,
+        input,
+        a,
+        span,
+        button {
+            box-sizing: border-box;
+        }
+        img {
+            width: 100%;
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+        p, span {
+            font-weight: 400;
+            font-size: 14px;
+            color: grey;
+            margin: 0;
+        }
+        .report {
+            padding-top: 15px;
+        }
+        .level_1 {
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ABABAB;
+            padding-bottom: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header__point {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 15px;
+        }
+        .header__point_red {
+            background: red;
+        }
+        .header__block {
+            display: flex;
+            align-items: center;
+        }
+        .header__case {
+            display: flex;
+            align-items: center;
+            margin-right: 15px;
+        }
+        .header__case p {
+            margin-right: 7px;
+        }
+        .header__case span {
+            color: black;
+        }
+        .header__block button {
+            margin-left: 15px;
+        }
+        .header__type {
+            font-size: 15px;
+            font-weight: 600;
+            background: #CA95FF;
+            color: #FFF;
+            border-radius: 5px;
+            padding: 5px 35px;
+            margin-right: 15px;
+        }
+        .btn {
+            box-shadow:none!important;
+        }
+        .btn-report {
+            text-decoration: none;
+            font-weight: 600;
+            background: #CA95FF;
+            color: #FFF!important;
+            border-radius: 5px;
+            padding: 9px 37px;
+            font-size: 15px;
+        }
+        .run-style {
+            color: #5D5C5D;
+        }
+        .run-span {
+            font-weight: 800!important;
+            color: #5D5C5D!important;
+        }
+        .btn-report:hover {
+            background: #B468FF;
+        }
+        .border-none {
+            border: none;
+        }
+        .level_4 {
+            height: 53px!important;
+        }
+        .inputSearch:focus {
+            box-shadow: none;
+            border: 1px solid black!important;
+            background: #FFF!important;
+            border-radius: 3px;
+        }
+        .btn-all {
+            border: 1px solid #A0CAFF!important;
+        }
+        .btn-passed {
+            border: 1px solid #75B583!important;
+        }
+        .btn-failed {
+            border: 1px solid #FF6363!important;
+        }
+        .btn-skipped {
+            border: 1px solid #FFC350!important;
+        }
+        .btn-all:hover,
+        .btn-all:focus {
+            color: #A0CAFF!important;
+            background: #FFF!important;
+            border: 1px solid #A0CAFF!important;
+            font-weight: 700!important;
+        }
+        .btn-all:hover span,
+        .btn-all:focus span {
+            color: #A0CAFF!important;
+            font-weight: 700!important;
+        }
+        .allTest:checked + .btn-all span {
+            color: #A0CAFF!important;
+        }
+        .allTest:checked + .btn-all {
+            color:#A0CAFF!important;
+            background: #FFF!important;
+            border: 1px solid #A0CAFF!important;
+            font-weight: 700!important;
+        }
+        .btn-passed:hover,
+        .btn-passed:focus {
+            color: #75B583!important;
+            border: 1px solid #75B583!important;
+            background: #FFF!important;
+            font-weight: 700!important;
+        }
+        .btn-passed:hover span,
+        .btn-passed:focus span {
+            color: #75B583!important;
+            font-weight: 700!important;
+        }
+        .passedTest:checked + .btn-passed span {
+            color: #75B583!important;
+            font-weight: 700!important;
+        }
+        .passedTest:checked + .btn-passed {
+            color: #75B583!important;
+            border: 1px solid #75B583!important;
+            background: #FFF!important;
+            font-weight: 700!important;
+        }
+        .btn-failed:hover,
+        .btn-failed:focus {
+            color: #FF6363!important;
+            border: 1px solid #FF6363!important;
+            background: #FFF!important;
+            font-weight: 700!important;
+        }
+        .btn-failed:hover span,
+        .btn-failed:focus span {
+            color: #FF6363!important;
+            font-weight: 700!important;
+        }
+        .failedTest:checked + .btn-failed span {
+            color: #FF6363!important;
+            font-weight: 700!important;
+        }
+        .failedTest:checked + .btn-failed {
+            color: #FF6363!important;
+            border: 1px solid #FF6363!important;
+            background: #FFF!important;
+            font-weight: 700!important;
+        }
+        .btn-skipped:hover,
+        .btn-skipped:focus {
+            color: #FFC350!important;
+            border: 1px solid #FFC350!important;
+            background: #FFF!important;
+            font-weight: 700!important;
+        }
+        .btn-skipped:hover span,
+        .btn-skipped:focus span {
+            color: #FFC350!important;
+            font-weight: 700!important;
+        }
+        .skippedTest:checked + .btn-skipped span {
+            color: #FFC350!important;
+            font-weight: 700!important;
+        }
+        .skippedTest:checked + .btn-skipped {
+            color: #FFC350!important;
+            border: 1px solid #FFC350!important;
+            background: #FFF!important;
+            font-weight: 700!important;
+        }
+        .passed {
+            color: #75B583;
+        }
+        .failed {
+            color: #FF6363;
+        }
+        .skipped {
+            color: #FFC350;
+        }
+        .testWrapp {
+            margin-top: 45px;
+        }
+        .fa-arrow-right {
+            display: none!important;
+        }
+        .header__type:hover {
+            background: #B468FF;
+        }
+        .header__case i {
+            color: grey;
+            margin-right: 5px;
+        }
+        .title {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .title p {
+            color: #262523;
+            font-size: 15px;
+            font-weight: 500;
+            margin-right: 5px;
+        }
+        .statright {
+            display: flex;
+        }
+        .statdesc {
+            display: flex;
+            flex-direction: column;
+        }
+        .statdesc__row {
+            padding: 15px 25px;
+            display: flex;
+            border-radius: 5px;
+        }
+        .statdesc__row_first {
+            width: 150px;
+        }
+        .statdesc__row:nth-child(odd) {
+            background: #F6FAFF;
+        }
+        .statdesc__row p,
+        .statdesc__row span {
+            font-weight: semi-bold;
+            font-size: 11px;
+        }
+        .statdesc {
+            width: 100%;
+        }
+        .statstatus {
+            display: flex;
+            align-items: center;
+        }
+        .statstatus p {
+            font-weight: bold;
+        }
+        .statstatus div {
+            font-weight: bold;
+        }
+        .statstatus_failed div {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .statstatus_failed p {
+            color: red;
+            text-transform: uppercase;
+        }
+        .statstatus_failed div {
+            background: red;
+        }
+        .statstatus_passed div {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+            text-transform: uppercase;
+        }
+        .statstatus_passed div {
+            background: green;
+        }
+        .statstatus_passed p {
+            color: green;
+            text-transform: uppercase;
+        }
+        .statstatus_skipped div{
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+            text-transform: uppercase;
+        }
+        .statstatus_skipped div {
+            background: yellow;
+        }
+        .statstatus_skipped p {
+            color: yellow;
+            text-transform: uppercase;
+        }
+        .fa-magnifying-glass {
+            font-size: 24px;
+            color: gray;
+        }
+        .numTest {
+            font-weight: 500;
+            font-size: 16px;
+            color: #0D6EFD;
+        }
+        .testitem {
+            border: 1px solid grey;
+            border-radius: 3px;
+            margin-bottom: 15px;
+        }
+        .testitem__top {
+            width: 100%;
+            display: flex;
+            background: #F6FAFF;
+            padding: 15px 13px 15px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            justify-content: space-between;
+        }
+        .testitem__icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            margin-right: 5px;
+        }
+        .testitem__ico {
+            font-size: 18px;
+        }
+        .testitem__name {
+            font-weight: 700;
+            color: black;
+            font-size: 16px;
+        }
+        .testitem__body {
+            display: flex;
+            background-color: #FFF;
+            margin-top: 10px;
+        }
+        .testitem__menu {
+            display: flex;
+            flex-direction: column;
+            padding: 21px 51px 21px 51px;
+        }
+        .testitem__mitem {
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            color: #808080;
+            width: 170px;
+            height: 65px;
+            text-align: center;
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+        .testitem__mitem_active {
+            background: #F6FAFF;
+            color: #4D4C4C;
+            font-weight: 700;
+        }
+        .testitem__case {
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+        }
+        .testitem__title {
+            font-size: 18px;
+            color: black;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-decoration: underline;
+        }
+        .testitem__block p {
+            font-size: 14px;
+            white-space: pre-line;
+        }
+        .test__empty__list {
+            margin-bottom: 10px;
+            color: grey;
+        }
+        .testitem__content {
+            width: 92%;
+        }
+        /* Pagination component styles*/
+        .page-link {
+            color: black;
+            background-color: #F6FAFF;
+            padding: 7px 19px;
+            font-weight: 600;
+            border-radius: 3px;
+        }
+        .page-link:hover {
+            color: black;
+        }
+        .form-select {
+            background-color:#F6FAFF;
+        }
+        .form-select:focus {
+            border-color: #ADADAD;
+            box-shadow: 0 0 0 0.25rem rgb(67 71 78 / 25%);
+        }
+        .page-item:not(:first-child) {
+            margin-left: 15px;
+        }
+        .page-item.active .page-link {
+            background: #F6FAFF;
+            border: 2px solid #4384FE;
+            color: black;
+        }
+        .noData {
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            justify-content: center;
+            margin-bottom: 150px;
+        }
+        .noDataText {
+            font-weight: 600;
+            font-size: 20px;
+            color: #A1A1A1;
+        }
+    </style>
+</head>
+
+<body class='bg-gray-50 pt-6 px-4 lg:pt-4 lg:px-40 h-full;'>
+    <section class='report' id='report'>
+        <div class='container'>
+            <!-- top -->
+            <div class='row level_1'>
+                <div class='col-12'>
+                    <div class='header'>
+                        <div class='header__block'>
+                            <p class='header__type'>
+                                automated job
+                            </p>
+                        </div>
+                        <div class='header__block'>
+                        {{#if runId}}
+                            <div class='header__case run-style'>
+                            <p>Run</p>
+                            <span class='run-span'><strong>#</strong>{{runId}}</span>
+                            </div>
+                        {{/if}}
+                        </div>
+                        <div class='header__block'>
+                        {{#if runUrl}}
+                            <a href='{{runUrl}}' target='_blank' class='btn-report'>
+                                Full Report
+                            </a>
+                            {{else}}
+                            <button class='btn-report border-none' disabled>
+                                Full Report
+                            </button>
+                        {{/if}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- top -->
+
+            <div class='row level_2'>
+                <div class='col-12'>
+                    <div class='title'>
+                        <p>Testomatio Run Information</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Schedule and information -->
+            <div class='row level_3'>
+                <div class='col-6'>
+                    <div class='statleft'>
+                        <div id='graff'></div>
+                    </div>
+                </div>
+            <div class='col-6'>
+                <div class='statright'>
+                <div class='statdesc'>
+                    <!-- 1 -->
+                    <div class='statdesc__row'>
+                    <div class='statdesc__row_first'>
+                        <p>Status</p>
+                    </div>
+                    <div class='statstatus statstatus_{{status}}'>
+                        <div></div>
+                        <p>{{status}}</p>
+                    </div>
+                    </div>
+                    <!-- 1 -->
+                    <!-- 1 -->
+                    <div class='statdesc__row'>
+                    <div class='statdesc__row_first'>
+                        <p>Execution Duration</p>
+                    </div>
+                    <span>{{executionTime}}</span>
+                    </div>
+                    <!-- 1 -->
+                    <!-- 1 -->
+                    <div class='statdesc__row'>
+                    <div class='statdesc__row_first'>
+                        <p>Tests</p>
+                    </div>
+                    <span>{{tests.length}}</span>
+                    </div>
+                    <!-- 1 -->
+                    <!-- 1 -->
+                    <div class='statdesc__row'>
+                    <div class='statdesc__row_first'>
+                        <p>Start Execution Date</p>
+                    </div>
+                    <span>{{executionDate}}</span>
+                    </div>
+                    <!-- 1 -->
+                </div>
+                </div>
+            </div>
+            </div>
+            <!-- Schedule and information -->
+            <div class='row level_4'>
+                <div class='col-12'>
+                    <div class='input-group' style='position:relative;width:100%;margin-top:45px'>
+                        <div class='input-group-prepend' style='position:absolute;z-index:1;border:none;left:20px'>
+                            <span class='hover-search input-group-text' id='basic-addon1' style='height:54px;background:#F6FAFF;border:none'>
+                                <i class='fa-solid fa-magnifying-glass' style='color:#474646;font-size:30px'></i>
+                            </span>
+                        </div>
+                        <input
+                            type='text'
+                            style='border:none;height:54px;background:#F6FAFF;font-weight:600;font-size:15px;'
+                            class='form-control inputSearch'
+                            aria-label='Search'
+                            aria-describedby='basic-addon1'
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <div class='row'>
+                <div class='col-12 d-flex justify-content-start' style='margin-top:100px;'>
+                    <div class='btn-group menuTests' role='group' aria-label='Basic radio toggle button group'>
+                        <input
+                            type='radio'
+                            class='btn-check allTest'
+                            name='groupTest'
+                            id='allTest'
+                            autocomplete='off'
+                            category='all'
+                            checked
+                        />
+
+                        <label class='btn btn-all' for='allTest' style='padding:9px;margin-right:8px;background:#A0CAFF;color:#fff;border:none;text-align:center;border-radius:3px;font-weight:600;font-size:12px;width:83px;height:37px'>All
+                            <span style='color:#fff;font-weight:600;font-size:12px;' class='numTest numAll' name='numTest' lcategory='all'>0</span>
+                        </label>
+
+                        <input
+                            type='radio'
+                            class='btn-check passedTest'
+                            name='groupTest'
+                            id='passedTest'
+                            autocomplete='off'
+                            category='passed'
+                        />
+
+                        <label class='btn btn-passed' for='passedTest' style='padding:9px;background:#75B583;color:#fff;border:none;text-align:center;border-radius:3px;font-weight:600;font-size:12px;width:83px;height:37px'>Passed
+                            <span style='color:#fff;font-weight:600;font-size:12px;' class='numTest numPassed' name='numTest' lcategory='passed'>0</span>
+                        </label>
+
+                        <input
+                            type='radio'
+                            class='btn-check failedTest'
+                            name='groupTest'
+                            id='failedTest'
+                            autocomplete='off'
+                            category='failed'
+                        />
+
+                        <label class='btn btn-failed' for='failedTest' style='padding:9px;margin-left:9px;background:#FF6363;color:#fff;border:none;text-align:center;border-radius:3px;font-weight:600;font-size:12px;width:83px;height:37px'>Failed
+                            <span style='color:#fff;font-weight:600;font-size:12px;' class='numTest numFailed' name='numTest' lcategory='failed'>0</span>
+                        </label>
+
+                        <input
+                            type='radio'
+                            class='btn-check skippedTest'
+                            name='groupTest'
+                            id='skippedTest'
+                            autocomplete='off'
+                            category='skipped'
+                        />
+                        
+                        <label class='btn btn-skipped' for='skippedTest' style='padding:9px;margin-left:9px;background:#FFC350;color:#fff;border:none;text-align:center;border-radius:3px;font-weight:600;font-size:12px;width:83px;height:37px'>Skipped
+                            <span style='color:#fff;font-weight:600;font-size:12px;' class='numTest numSkipped' name='numTest' lcategory='skipped'>0</span>
+                        </label>
+                    </div>
+                </div>
+            </div>                
+
+            <div class="row level_5">
+                <div class="col-12">
+                    {{#if tests.length}}
+                    <!-- TOP pagination & select components -->
+                    <div class="d-flex justify-content-between" style="height: 40px;margin-top:45px">
+                        <nav id="pagination">
+                            <ul class="pagination">
+                            </ul>
+                        </nav>
+                        {{ selectComponent }}
+                    </div>
+                    <!-- Test data section -->
+                    <div class="testWrapp">
+                        {{#each tests}}
+                            <div class="testitem d-none" name="testitem" type="dummy" category="false">
+                                <div class="testitem__top">
+                                    <div class='d-flex'>
+                                        <div class="testitem__icon">
+                                            <i class="fa-solid fa-circle-chevron-right testitem__ico testitem__ico_right ml-2"></i>
+                                            <i class="fa-solid fa-circle-chevron-down d-none testitem__ico testitem__ico_down ml-2"></i>
+                                        </div>
+                                        <p class="testitem__name">Test</p>
+                                    </div>
+
+                                    <svg class='folderSvg' width="17" height="17" style='margin-right:20px;margin-top: 3px' viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M16.6161 1.64526H9.84355C9.62419 1.64526 9.43226 1.64526 9.2129 1.9743L8.85645 2.46784H0.85C0.383871 2.46784 0 2.90655 0 3.37268V14.1485C0 14.6146 0.383871 15.0807 0.85 15.0807H16.15C16.6161 15.0807 17 14.6146 17 14.1485V5.81301V3.4001V1.9743C17 1.78236 16.8355 1.64526 16.6161 1.64526Z" fill="#6D6D6D"/>
+                                        <path d="M16.6435 12.7227C16.8629 12.5582 17 12.3114 17 12.0372V5.81301V3.4001V1.9743C17 1.78236 16.8355 1.64526 16.6161 1.64526H9.84355C9.62419 1.64526 9.43226 1.64526 9.2129 1.9743L8.85645 2.46784H0.85C0.41129 2.46784 0.0548387 2.8243 0 3.23559L16.6435 12.7227Z" fill="#565656"/>
+                                        <path d="M0.575806 3.56445L16.6435 12.6677C16.8629 12.5032 17 12.3112 17 12.037V5.81284V4.27736L15.9581 3.56445H0.575806Z" fill="#474646"/>
+                                        <path d="M15.629 3.56445H1.37097V13.9838H15.629V3.56445Z" fill="white"/>
+                                        <path d="M15.629 3.56445H8.77417V13.9838H15.629V3.56445Z" fill="#EFEFEF"/>
+                                        <path d="M17 14.5323C17 14.9984 16.6161 15.3549 16.15 15.3549H0.85C0.383871 15.3549 0 14.9984 0 14.5323L0.274194 5.84039C0.274194 5.37426 0.658064 4.93555 1.12419 4.93555H15.9032C16.3694 4.93555 16.7532 5.37426 16.7532 5.84039L17 14.5323Z" fill="#A1A1A1"/>
+                                        <path d="M16.8903 14.9437L0.329032 5.53882C0.274194 5.6485 0.274194 5.78559 0.274194 5.89527L0 14.5324C0 14.9985 0.383871 15.3549 0.85 15.3549H16.15C16.4516 15.3549 16.7258 15.1904 16.8903 14.9437Z" fill="#565656"/>
+                                        <path d="M6.77259 13.2161C6.71775 13.2161 6.63549 13.1887 6.55323 13.1613C6.41613 13.1064 6.30646 12.9693 6.30646 12.8048V7.67739C6.30646 7.54029 6.41613 7.37577 6.55323 7.32093C6.69033 7.2661 6.85484 7.2661 6.99194 7.34835L10.4742 9.92577C10.5839 10.008 10.6387 10.1177 10.6387 10.2548C10.6387 10.3919 10.5839 10.5016 10.4742 10.5838L6.99194 13.1613C6.9371 13.2161 6.85484 13.2161 6.77259 13.2161Z" fill="white"/>
+                                    </svg>
+                                </div>
+
+                                <div class="testitem__body d-none">
+                                    <div class='testitem__menu'>
+                                        <span type='steps' class='testitem__mitem testitem__mitem_active'>Steps
+                                            <i class='fa-solid fa-arrow-right'></i></span>
+                                        <span type='status' class='testitem__mitem'>Status
+                                            <i class='fa-solid fa-arrow-right'></i></span>
+                                        <span type='message' class='testitem__mitem'>Message
+                                            <i class='fa-solid fa-arrow-right'></i></span>
+                                        <span type='files' class='testitem__mitem'>Files <i class='fa-solid fa-arrow-right'></i></span>
+                                    </div>
+
+                                    <div class="testitem__content">
+                                        <!-- 1 -->
+                                        <div class="testitem__case" type="steps">
+                                            <div class="testitem__block">
+                                                <span>...</span>
+                                            </div>
+                                        </div>
+                                        <!-- 1 -->
+
+                                        <!-- 2 -->
+                                        <div class='testitem__case d-none' type='status'>
+                                            <div class='testitem__block'>
+                                                <span>...</span>
+                                            </div>
+                                        </div>
+                                        <!-- 2 -->
+
+                                        <!-- 3 -->
+                                        <div class='testitem__case d-none' type='message'>
+                                            <div class='testitem__block'>
+                                                <span>...</span>
+                                            </div>
+                                        </div>
+                                        <!-- 3 -->
+
+                                        <!-- 4 -->
+                                        <div class='testitem__case d-none' type='files'>
+                                            <div class='testitem__block'>
+                                                <span>...</span>
+                                            </div>
+                                        </div>
+                                        <!-- 4 -->
+                                    </div>
+                                </div>
+                            </div>
+                        {{/each}}
+                    </div>
+                    <!-- BOTTOM pagination & select components -->
+                    <nav class="mt-2">
+                        <ul class="pagination">
+                        </ul>
+                    </nav>
+                    {{else}}
+                        <!-- No tests found section -->
+                        {{ emptyDataComponent }}
+                    {{/if}}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+        // Load google charts
+        google.charts.load('current', {'packages':['corechart']});
+        google.charts.setOnLoadCallback(drawChart);
+
+        // Draw the chart and set the chart values
+        function drawChart() {
+            let data = {};
+            const passedTests = {{ getTestsByStatus tests "PASSED" }};
+            const failedTests = {{ getTestsByStatus tests "FAILED" }};
+            const skippedTests = {{ getTestsByStatus tests "SKIPPED" }};
+
+            if (passedTests === 0 && failedTests === 0 && skippedTests === 0) {
+                data = google.visualization.arrayToDataTable([
+                    ['Task', 'Tests'],
+                    ['No Tests', 1]
+                ])
+            }
+            else {
+                data = google.visualization.arrayToDataTable([
+                    ['Task', 'Tests'],
+                    ['No Tests', 0],
+                    ['Passed', passedTests],
+                    ['Failed', failedTests],
+                    ['Skipped', skippedTests],
+                ]);
+            }    
+            // Optional: add a title and set the width and height of the chart
+            const options = {
+                'title': '',
+                'width': 550,
+                'height': 300,
+                'colors': ['#A9C7FF', '#75B583', '#FF6363', '#FFC350'],
+                'legend': 'bottom',
+                'is3D': true
+            };        
+            // Display the chart inside the <div> element with id="piechart"
+            const chart = new google.visualization.PieChart(document.getElementById('graff'));
+            chart.draw(data, options);
+        }
+
+        // processing and adding test data to the template
+        function addOneTest(category,testData = {}){
+            const { suite_title, title, steps, message, files } = testData;
+            // collapse - expand block            
+            const clone = createClone(category, suite_title, title);
+            const testitem__top = clone.querySelector('.testitem__top');
+
+            setTestItemContent(clone, steps, category, message, files);
+            addCollapseExpandListener(testitem__top);
+            initializeMenu(clone);
+        }
+
+        function createClone(category, suite_title, title) {
+            const page = document.querySelector('.report');
+            const wrapp = page.querySelector('.testWrapp');
+            const dummy = wrapp.querySelector('div[name="testitem"][type="dummy"]');
+            const clone = dummy.cloneNode(true);
+
+            clone.setAttribute('type', 'clone');
+            clone.setAttribute('category', category);
+            clone.classList.remove('d-none');
+            wrapp.append(clone);
+
+            const testitem__name = clone.querySelector('.testitem__name');
+            testitem__name.innerHTML = suite_title ? suite_title + " - " + title : title;
+
+            return clone;
+        }
+
+        function setTestItemContent(clone, steps, category, message, files) {
+            const body = clone.querySelector('.testitem__body'),
+                top = clone.querySelector('.testitem__top'),
+                image = top.querySelector('.testitem__icon'),
+                folderSvg = top.querySelector('.folderSvg');
+
+            if(category === 'passed') {
+                image.classList.add('passed');
+            }
+            else if(category === 'skipped') {
+                image.classList.add('skipped');
+            }
+            else {
+                image.classList.add('failed');
+            }
+
+            const content = body.querySelector('.testitem__content'),
+                content_error = content.querySelector('div[type="steps"]').querySelector('span'),
+                content_status = content.querySelector('div[type="status"]').querySelector('span'),
+                content_message = content.querySelector('div[type="message"]').querySelector('span'),
+                content_files = content.querySelector('div[type="files"]').querySelector('span');
+
+            content_error.innerHTML = steps;
+            content_status.innerHTML = category.toUpperCase();
+            content_message.innerHTML = message;
+            //if no file - empty message, else - files
+            if (files.includes("This test has no files")){
+                content_files.innerHTML = files
+                folderSvg.classList.add('d-none');
+            }
+            else {
+                addFilesToContent(content_files, files);
+            }
+        }
+
+        function addFilesToContent(content_files, files) {
+            const filesList = document.createElement('div');
+
+            filesList.classList.add('d-flex', 'flex-wrap', 'flex-column');
+            content_files.innerHTML = "";
+
+            if (Array.isArray(files) && files.length > 0) {
+                for (let i = 0; i < files.length; i += 2) {
+                    const filePairContainer = document.createElement('div');
+                    filePairContainer.classList.add('d-flex', 'mb-3', 'justify-content-around');
+
+                    for (let j = i; j < i + 2 && j < files.length; j++) {
+                        const file = files[j];
+                        const fileItemContainer = createFileItemContainer(file);
+                        filePairContainer.appendChild(fileItemContainer);
+                    }
+
+                    filesList.appendChild(filePairContainer);
+                }
+
+                content_files.appendChild(filesList);
+            }
+        }
+
+        function createFileItemContainer(file) {
+            let fileIcon;
+
+            const filepath = file?.path || file;
+            const fileName = createFileName(file);
+            const fileItemContainer = document.createElement('div');
+            const fileExtension = filepath.split('.').pop().toLowerCase();
+
+            fileItemContainer.classList.add('d-flex', 'flex-column', 'align-items-center', 'mr-3');
+
+            switch (fileExtension) {
+                case 'jpg':
+                case 'jpeg':
+                case 'png':
+                case 'gif':
+                    fileIcon = createImagePreview(file);
+                    break;
+                case 'zip':
+                    const svgZipCode =
+                        `<svg width="95" height="94" viewBox="0 0 95 94" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                         <rect x="0.5" width="94" height="94" fill="url(#pattern0)"/>
+                         <defs>
+                         <pattern id="pattern0" patternContentUnits="objectBoundingBox" width="1" height="1">
+                         <use xlink:href="#image0_212_109" transform="scale(0.01)"/>
+                         </pattern>
+                         <image id="image0_212_109" width="100" height="100" xlink:href="data:image/png;base64,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"/>
+                         </defs>
+                         </svg>`;
+                    fileIcon = createFileIcon(file,svgZipCode);
+                    break;
+                case 'mp4':
+                case 'avi':
+                case 'mov':
+                case 'webm':
+                    const svgVideoCode =
+                        `<svg width="95" height="95" viewBox="0 0 95 95" fill="none" xmlns="http://www.w3.org/2000/svg">
+                         <g clip-path="url(#clip0_212_104)">
+                         <path d="M35.75 27.4702V67.5298L65.125 47.5L35.75 27.4702ZM39.6667 34.8844L58.1729 47.5L39.6667 60.1156V34.8844ZM4.41666 12.25V82.75H90.5833V12.25H4.41666ZM86.6667 78.8333H8.33333V16.1667H86.6667V78.8333Z" fill="#474646"/>
+                         </g>
+                         <defs>
+                         <clipPath id="clip0_212_104">
+                         <rect width="94" height="94" fill="white" transform="translate(0.5 0.5)"/>
+                         </clipPath>
+                         </defs>
+                         </svg>`;
+                    fileIcon = createFileIcon(file, svgVideoCode);
+                    break;
+                default:
+                    const svgFileCode =
+                        `<svg width="95" height="94" viewBox="0 0 95 94" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                         <rect x="0.5" width="94" height="94" fill="url(#pattern0)"/>
+                         <defs>
+                         <pattern id="pattern0" patternContentUnits="objectBoundingBox" width="1" height="1">
+                         <use xlink:href="#image0_212_112" transform="scale(0.01)"/>
+                         </pattern>
+                         <image id="image0_212_112" width="100" height="100" xlink:href="data:image/png;base64,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"/>
+                         </defs>
+                         </svg>`;
+                    fileIcon = createFileIcon(file, svgFileCode);
+            }
+            
+            fileItemContainer.appendChild(fileIcon);
+            fileItemContainer.appendChild(fileName);
+
+            return fileItemContainer;
+        }
+
+        function createImagePreview(file) {
+            //TODO: consider using "../${file}", maybe we should get full paths when generating artifacts in Mocha!
+            const filepath = file?.path || `../${file}`;
+            const imagePreview = document.createElement('img');
+            // component styles
+            imagePreview.src = filepath;
+            imagePreview.alt = 'Image Preview';
+            imagePreview.style.maxWidth = '200px';
+            imagePreview.style.height = '150px';
+            imagePreview.style.cursor = 'pointer';
+
+            imagePreview.addEventListener('click', () => {
+                window.open(filepath, '_blank');
+            });
+
+            return imagePreview;
+        }
+
+        function createFileIcon(file, svg) {
+            //TODO: consider using "../${file}", maybe we should get full paths when generating artifacts in Mocha!
+            const filepath = file?.path || `../${file}`;
+            const fileIcon = document.createElement('div');
+            // component styles
+            fileIcon.innerHTML = svg;
+            fileIcon.style.width = '150px';
+            fileIcon.style.height = '150px';
+            fileIcon.style.cursor = 'pointer';
+            fileIcon.style.textAlign = 'center';
+
+            fileIcon.addEventListener('click', () => {
+                window.open(filepath, '_blank');
+            });
+
+            return fileIcon;
+        }
+
+        function createFileName(file) {
+            //TODO: consider using "../${file}", maybe we should get full paths when generating artifacts in Mocha!
+            const filepath = file?.path || `../${file}`;
+            const fileName = document.createElement('div');
+            // component styles
+            fileName.style.fontSize = '14px';
+            fileName.style.marginTop = '10px';
+            fileName.style.cursor = 'pointer';
+
+            fileName.textContent = filepath.split('/').pop();
+
+            fileName.addEventListener('click', () => {
+                window.open(filepath, '_blank');
+            });
+
+            return fileName;
+        }
+
+        function addCollapseExpandListener(testitem__top) {
+            testitem__top.addEventListener("click", function () {
+                collapse_expand(testitem__top);
+            });
+        }
+
+        function collapse_expand(top) {
+            const block = top.closest('.testitem');
+            const icon = top.querySelector('.testitem__icon');
+            const testitem__ico_right = icon.querySelector('.testitem__ico_right');
+            const testitem__ico_down = icon.querySelector('.testitem__ico_down');
+            const body = block.querySelector('.testitem__body');
+
+            if (body.classList.contains('d-none')) {
+                body.classList.remove('d-none');
+                testitem__ico_right.classList.add('d-none');
+                testitem__ico_down.classList.remove('d-none');
+            } 
+            else {
+                body.classList.add('d-none');
+                testitem__ico_down.classList.add('d-none');
+                testitem__ico_right.classList.remove('d-none');
+            }
+        }
+
+        function initializeMenu(clone) {
+            const menu = clone.querySelector('.testitem__menu');
+            const item = menu.querySelectorAll('.testitem__mitem');
+
+            for (let i = 0; i < item.length; i++) {
+                item[i].addEventListener('click', function () {
+                    show_content(item[i])
+                })
+            }
+        }
+
+        function show_content(elem) {
+            removeAddActive(elem);
+
+            const body = elem.closest('.testitem__body');
+            const content = body.querySelector('.testitem__content');
+            const blocks = content.querySelectorAll('.testitem__case');
+
+            for (let i = 0; i < blocks.length; i++) {
+                blocks[i].classList.add('d-none');
+            }
+
+            const type = elem.getAttribute('type');
+            const show_elem = content.querySelector('div[type="' + type + '"]');
+
+            show_elem.classList.remove('d-none');
+        }
+
+        function removeAddActive(elem) {
+            const menu = elem.closest('.testitem__menu');
+            const item = menu.querySelectorAll('.testitem__mitem');
+
+            for (let i = 0; i < item.length; i++) {
+                item[i].classList.remove('testitem__mitem_active');
+            }
+            elem.classList.add('testitem__mitem_active');
+        }
+
+        // GET test data
+        const testEntries = {{{ pageDispleyElements tests }}};
+        const allEntries = testEntries['totalTests'];
+
+        if (allEntries.length === 0) {
+            const searchEl = document.querySelector('.input-group');
+            const radioEl = document.querySelector('.menuTests');
+
+            searchEl.classList.add('d-none');
+            radioEl.classList.add('d-none');
+        } 
+        else {
+            function search(array, testEntries) {
+                const handleSearch = (input) => {
+                    const value = input.value.trim().toLowerCase();
+                    const select = document.querySelector('.form-select');
+                    const pagination = document.querySelectorAll('nav');
+
+                    if (value) {
+                        select.classList.add('d-none');
+                        pagination.forEach(item => item.classList.add('d-none'));
+                    } 
+                    else {
+                        select.classList.remove('d-none');
+                        pagination.forEach(item => item.classList.remove('d-none'));
+
+                        remove(array);
+
+                        const paginationCount = select.value;
+                        const category = select.getAttribute('status');
+                        
+                        if (testEntries[category][paginationCount][0]) {
+                            add(testEntries[category][paginationCount][0]);
+                        }
+                    }
+
+                    remove(array);
+
+                    const filteredTests = array.filter(test => test.title.toLowerCase().includes(value) || test.suite_title.toLowerCase().includes(value));
+
+                    const existingNoDataElement = document.querySelector('.noResults');
+
+                    if (filteredTests.length === 0) {
+                        if (!existingNoDataElement) {
+                            const testElement = document.createElement('div');
+                            testElement.classList.add('noData', 'noResults');
+                            testElement.innerHTML = 
+                            `<div class='noData'>
+                                <svg width="185" height="185" viewBox="0 0 370 370" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <g clip-path="url(#clip0_215_375)">
+                                <path opacity="0.1" d="M185 369.998C287.173 369.998 370.001 287.171 370.001 184.999C370.001 82.8268 287.173 0 185 0C82.8274 0 0 82.8268 0 184.999C0 287.171 82.8274 369.998 185 369.998Z" fill="#A9C7FF"/>
+                                <path d="M104.96 129.507C105.629 128.757 106.439 128.147 107.344 127.71C108.249 127.273 109.231 127.019 110.234 126.961C111.237 126.904 112.242 127.045 113.191 127.376C114.14 127.707 115.014 128.221 115.764 128.89L140.183 150.67L129.997 162.091L105.577 140.311C104.827 139.642 104.216 138.832 103.779 137.927C103.342 137.022 103.088 136.04 103.031 135.037C102.974 134.034 103.114 133.029 103.446 132.08C103.777 131.132 104.291 130.257 104.96 129.507Z" fill="white"/>
+                                <path d="M130.056 163.157L105.074 140.874C104.25 140.139 103.579 139.249 103.099 138.255C102.619 137.261 102.34 136.182 102.277 135.079C102.214 133.977 102.368 132.873 102.732 131.831C103.096 130.788 103.661 129.828 104.396 129.004C105.131 128.18 106.021 127.508 107.015 127.028C108.009 126.548 109.088 126.269 110.191 126.206C111.293 126.143 112.397 126.298 113.439 126.661C114.482 127.025 115.443 127.59 116.267 128.325L141.251 150.608L130.056 163.157ZM110.677 127.703C110.544 127.703 110.409 127.707 110.275 127.714C108.913 127.792 107.605 128.273 106.516 129.094C105.427 129.916 104.607 131.042 104.158 132.329C103.709 133.617 103.652 135.01 103.994 136.33C104.336 137.65 105.062 138.84 106.08 139.747L129.936 161.024L139.117 150.731L115.261 129.454C114.002 128.325 112.371 127.701 110.68 127.703H110.677Z" fill="#474646"/>
+                                <path d="M240 162.09L229.814 150.669L254.234 128.89C255.748 127.539 257.737 126.845 259.763 126.961C261.789 127.076 263.686 127.992 265.037 129.507C266.388 131.021 267.082 133.01 266.966 135.036C266.85 137.062 265.935 138.96 264.42 140.31L240 162.09Z" fill="white"/>
+                                <path d="M239.942 163.157L228.749 150.608L253.733 128.325C255.397 126.841 257.583 126.079 259.809 126.206C262.035 126.333 264.12 127.34 265.604 129.004C267.088 130.668 267.851 132.853 267.723 135.079C267.596 137.306 266.59 139.39 264.926 140.874L239.942 163.157ZM230.883 150.73L240.064 161.023L263.92 139.747C264.596 139.144 265.146 138.414 265.54 137.599C265.934 136.783 266.163 135.898 266.214 134.994C266.266 134.09 266.139 133.185 265.841 132.329C265.543 131.474 265.079 130.686 264.476 130.011C263.873 129.335 263.143 128.784 262.328 128.391C261.512 127.997 260.627 127.768 259.723 127.716C258.819 127.664 257.913 127.791 257.058 128.09C256.203 128.388 255.415 128.852 254.739 129.454L230.883 150.73Z" fill="#474646"/>
+                                <path d="M250.171 176.257C255.618 200.379 263.075 215.898 259.362 224.811C257.41 229.495 253.403 233.424 246.771 233.424C236.433 233.424 236.433 221.232 226.095 221.232C215.756 221.232 215.758 233.424 205.42 233.424C195.083 233.424 195.084 221.232 184.748 221.232C174.411 221.232 174.411 233.424 164.074 233.424C153.737 233.424 153.738 221.232 143.401 221.232C133.065 221.232 133.066 233.424 122.731 233.424C116.595 233.424 113.126 229.81 110.926 225.633C105.639 215.6 117.96 193.521 122.731 174.051C128.002 152.536 127.558 125.739 128.265 109.576C129.629 78.4083 153.554 53.0876 184.755 53.0876C215.955 53.0876 238.971 78.4613 241.244 109.576C242.469 126.351 245.184 154.176 250.171 176.257Z" fill="white"/>
+                                <path d="M246.771 234.186C241.249 234.186 238.506 230.95 235.852 227.818C233.311 224.822 230.911 221.992 226.095 221.992C221.278 221.992 218.882 224.822 216.339 227.818C213.685 230.948 210.942 234.186 205.42 234.186C199.899 234.186 197.156 230.95 194.503 227.818C191.962 224.822 189.562 221.992 184.748 221.992C179.933 221.992 177.535 224.822 174.992 227.818C172.339 230.948 169.596 234.186 164.074 234.186C158.552 234.186 155.808 230.95 153.16 227.822C150.619 224.825 148.219 221.995 143.404 221.995C138.589 221.995 136.191 224.825 133.65 227.822C130.998 230.951 128.255 234.189 122.734 234.189C117.243 234.189 113.161 231.508 110.254 225.992C106.568 218.996 110.995 206.627 115.683 193.534C118.011 187.03 120.416 180.305 121.994 173.874C126.21 156.668 126.743 136.45 127.172 120.204C127.272 116.362 127.368 112.732 127.51 109.548C128.186 94.1198 134.32 79.7607 144.785 69.1146C149.986 63.7845 156.204 59.5527 163.071 56.6697C169.937 53.7867 177.313 52.3113 184.76 52.3308C192.159 52.3133 199.486 53.7933 206.298 56.6817C213.11 59.5701 219.267 63.8071 224.399 69.1377C234.622 79.6633 240.876 94.0076 242.01 109.526C243.102 124.489 245.712 153.033 250.92 176.094C252.686 183.916 254.663 190.825 256.407 196.921C260.048 209.651 262.679 218.848 260.069 225.109C258.652 228.498 255.046 234.186 246.771 234.186ZM226.095 220.47C231.617 220.47 234.361 223.705 237.014 226.837C239.556 229.834 241.956 232.664 246.771 232.664C254.162 232.664 257.391 227.561 258.658 224.519C261.062 218.751 258.489 209.769 254.935 197.338C253.188 191.222 251.203 184.292 249.428 176.428C244.198 153.268 241.58 124.639 240.484 109.635C238.161 77.833 214.203 53.8517 184.754 53.8517C154.874 53.8517 130.395 78.3441 129.024 109.612C128.885 112.782 128.789 116.406 128.686 120.241C128.278 135.699 127.72 156.869 123.465 174.234C121.871 180.742 119.45 187.505 117.109 194.046C112.538 206.815 108.22 218.877 111.594 225.28C114.212 230.248 117.853 232.662 122.725 232.662C127.54 232.662 129.938 229.832 132.48 226.836C135.132 223.706 137.875 220.468 143.396 220.468C148.916 220.468 151.661 223.704 154.313 226.836C156.854 229.832 159.253 232.662 164.068 232.662C168.884 232.662 171.284 229.832 173.824 226.836C176.478 223.706 179.221 220.468 184.742 220.468C190.263 220.468 193.007 223.704 195.659 226.836C198.2 229.832 200.599 232.662 205.415 232.662C210.23 232.662 212.63 229.832 215.171 226.836C217.83 223.708 220.573 220.47 226.095 220.47Z" fill="#474646"/>
+                                <path d="M163.527 113.221C166.986 113.221 169.789 110.418 169.789 106.96C169.789 103.501 166.986 100.698 163.527 100.698C160.069 100.698 157.266 103.501 157.266 106.96C157.266 110.418 160.069 113.221 163.527 113.221Z" fill="#474646"/>
+                                <path d="M206.465 113.221C209.923 113.221 212.726 110.418 212.726 106.96C212.726 103.501 209.923 100.698 206.465 100.698C203.006 100.698 200.203 103.501 200.203 106.96C200.203 110.418 203.006 113.221 206.465 113.221Z" fill="#474646"/>
+                                <path d="M196.211 123.859C196.573 123.859 196.93 123.938 197.256 124.093C197.583 124.247 197.871 124.473 198.1 124.752C198.329 125.032 198.492 125.36 198.578 125.71C198.665 126.061 198.672 126.427 198.599 126.781C197.256 133.059 191.677 137.005 184.998 137.005C178.319 137.005 172.74 133.061 171.397 126.781C171.324 126.427 171.331 126.061 171.418 125.71C171.504 125.359 171.668 125.032 171.896 124.752C172.125 124.472 172.413 124.247 172.74 124.093C173.067 123.938 173.424 123.858 173.785 123.859H196.211Z" fill="white"/>
+                                <path d="M184.997 137.767C177.802 137.767 172.037 133.416 170.652 126.94C170.553 126.479 170.559 126.002 170.67 125.543C170.78 125.085 170.992 124.657 171.29 124.292C171.59 123.919 171.97 123.618 172.402 123.412C172.834 123.206 173.306 123.099 173.785 123.1H196.212C196.691 123.099 197.164 123.206 197.595 123.412C198.027 123.618 198.407 123.919 198.707 124.292C199.005 124.657 199.217 125.085 199.327 125.543C199.438 126.002 199.444 126.479 199.345 126.94C197.958 133.416 192.192 137.767 184.997 137.767ZM173.784 124.621C173.532 124.621 173.284 124.677 173.057 124.786C172.83 124.894 172.631 125.052 172.473 125.248C172.318 125.437 172.208 125.659 172.151 125.897C172.093 126.135 172.09 126.382 172.141 126.622C173.371 132.377 178.537 136.243 184.996 136.243C191.455 136.243 196.621 132.377 197.852 126.622C197.903 126.382 197.899 126.135 197.842 125.897C197.784 125.659 197.674 125.437 197.519 125.248C197.361 125.052 197.162 124.894 196.935 124.786C196.708 124.677 196.46 124.621 196.209 124.621H173.784Z" fill="#474646"/>
+                                <path d="M332.184 297.095C298.385 341.408 245.033 370 185.003 370C124.973 370 71.6211 341.408 37.8223 297.095C76.4052 282.579 128.135 273.704 185.003 273.704C241.872 273.704 293.598 282.579 332.184 297.095Z" fill="#A9C7FF"/>
+                                <path d="M347.711 96.8905L252.766 96.4848C252.766 80.628 261.697 77.5062 271.192 74.931C280.687 72.3558 284.959 54.9269 301.458 53.9351C311.202 53.3491 316.312 55.8566 320.544 59.0855C320.549 59.0911 320.549 59.0967 320.555 59.0967C331.158 70.5047 340.281 83.2025 347.711 96.8905Z" fill="white"/>
+                                <path d="M76.8801 214.712L2.43035 215.033C1.15867 207.26 0.386967 199.413 0.119995 191.541C16.4277 189.231 14.7598 176.27 34.2344 177.448C48.6825 178.316 52.4355 193.581 60.7471 195.835C69.0587 198.089 76.8801 200.83 76.8801 214.712Z" fill="white"/>
+                                </g>
+                                <defs>
+                                <clipPath id="clip0_215_375">
+                                <rect width="370" height="370" fill="white"/>
+                                </clipPath>
+                                </defs>
+                                </svg>
+
+                                <div class='noDataText'>NO SEARCH RESULTS</div>
+                            </div>`;
+                            document.querySelector('.testWrapp').appendChild(testElement);
+                        }
+                    } 
+                    else {
+                        const paginationCount = select.value;
+                        const category = select.getAttribute('status');
+
+                        if (existingNoDataElement) {
+                            existingNoDataElement.remove();
+                        }
+
+                        if (testEntries[category][paginationCount][0]) {
+                            add(filteredTests);
+                            if (!value) {
+                                remove(filteredTests);
+                                add(testEntries[category][paginationCount][0]);
+                            }
+                        } 
+                        else {
+                            if (value) {
+                                add(filteredTests);
+                            }
+                            else {
+                                if (!existingNoDataElement) {
+                                    const testElement = document.createElement('div');
+
+                                    select.classList.add('d-none');                                    
+                                    testElement.classList.add('noData', 'noResults');
+                                    testElement.innerHTML = 'NO RESULTS';
+                                    document.querySelector('.testWrapp').appendChild(testElement);
+                                }
+                            }
+                        }
+                    }
+                };
+
+                const inputSearch = document.querySelector('.report .inputSearch');
+                inputSearch.addEventListener('input', () => handleSearch(inputSearch));
+            }
+
+            function radioMenuStart(){
+                function showBlockForCategory(input){
+                    const searchEl = document.querySelector('.input-group'),
+                        element = document.querySelector('.form-select')
+                    let category = 'all';
+
+                    remove(testEntries[category][0][0]);
+
+                    category = input.getAttribute('category');
+                    element.setAttribute('status', category);
+
+                    const pagination = document.querySelectorAll('nav');
+                    pagination.forEach(item => item.classList.add('d-none'));
+
+                    let inputEl = document.querySelector('.inputSearch');
+                    inputEl.value = '';
+                    
+                    pagination.forEach(item => item.classList.remove('d-none'));
+
+                    displayPagination(testEntries,element.value,category);
+
+                    if(testEntries[category][0][0]){
+                        element.classList.remove('d-none');
+                        const existingNoDataElement = document.querySelector('.noResults');
+
+                        if (existingNoDataElement) {
+                            existingNoDataElement.remove();
+                        }
+
+                        searchEl.classList.remove('d-none');
+                        add(testEntries[category][element.value][0]);
+                    }
+                    else {
+                        element.classList.add('d-none');
+                        const existingNoDataElement = document.querySelector('.noResults');
+
+                        if (existingNoDataElement) {
+                            existingNoDataElement.remove();
+                        }
+
+                        const testElement = document.createElement('div');
+                        testElement.classList.add('noData');
+                        testElement.classList.add('noResults');
+                        testElement.innerHTML = 'NO RESULTS';
+                        searchEl.classList.add('d-none');
+
+                        const testWrapp = document.querySelector('.testWrapp');
+                        testWrapp.appendChild(testElement);
+                    }
+                }
+
+                const page = document.querySelector('.report');
+                const menuTests = page.querySelector('.menuTests');
+                const items = menuTests.querySelectorAll('input[name="groupTest"]');
+
+                for(let i=0; i<items.length; i++){
+                    items[i].addEventListener('change',function(){
+                        showBlockForCategory(items[i])
+                    })
+                }
+            }
+
+            radioMenuStart();
+
+            search(allEntries, testEntries);
+
+            const radioCount = (allEntries) => {
+                const allRadio = document.querySelectorAll('.numTest');
+
+                allRadio.forEach((radio) => {
+                    const attribute = radio.getAttribute('lcategory');
+
+                    switch (attribute) {
+                        case 'all':
+                            radio.innerHTML = allEntries.length;
+                            break;
+                        case 'passed':
+                            const passedCount = allEntries.filter(test => test.status === 'passed').length;
+                            radio.innerHTML = passedCount;
+                            break;
+                        case 'failed':
+                            const failedCount = allEntries.filter(test => test.status === 'failed').length;
+                            radio.innerHTML = failedCount;
+                            break;
+                        case 'skipped':
+                            const skippedCount = allEntries.filter(test => test.status === 'skipped').length;
+                            radio.innerHTML = skippedCount;
+                            break;
+                        default: // no default action for now
+                    }
+                });
+            }
+
+            radioCount(allEntries);
+
+            function removeTest(category) {
+                const page = document.querySelector('.report');
+                const wrapp = page.querySelector('.testWrapp');
+                const clones = wrapp.querySelectorAll('div[name="testitem"][type="clone"]');
+
+                clones.forEach((clone) => {
+                    if (clone.getAttribute('category') === category) clone.remove();
+                });
+            }
+
+            const add = (array) => {
+                for (let i = 0; i < array.length; i++) {
+                    const status = array[i].status;
+                    addOneTest(status, array[i]);
+                }
+            }
+
+            const remove = (array) => {
+                for (let i = 0; i < array.length; i++) {
+                    const status = array[i].status;
+                    removeTest(status, array[i]);
+                }
+            }
+
+            add(testEntries['all'][0][0]);
+
+            const selectElement = document.querySelector('.form-select');
+
+            selectElement.setAttribute('status', 'all');
+
+            selectElement.addEventListener('change', function() {
+                let value = 0;
+                const category = selectElement.getAttribute('status');
+
+                remove(testEntries[category][value][0]);
+                value = parseInt(this.value);
+                add(testEntries[category][value][0]);
+
+                displayPagination(testEntries, value, category);
+            });
+
+            const displayPagination = (testEntries, index, category) => {
+                let totalPages = testEntries[category][index].length;
+                let currentPage = 1;
+
+                function createPagination() {
+                    const paginationContainers = document.querySelectorAll('.pagination');
+                    paginationContainers.forEach((paginationContainer) => {
+                        paginationContainer.innerHTML = '';
+
+                        let startPage = 1;
+                        let endPage = totalPages;
+                        if (totalPages > 10) {
+                            if (currentPage > 5) {
+                                startPage = currentPage - 1;
+                                endPage = currentPage + 1;
+                            } 
+                            else {
+                                endPage = 5;
+                            }
+                        }
+
+                        if (startPage > 1) {
+                            const startEllipsis = document.createElement('li');
+
+                            startEllipsis.classList.add('page-item');
+                            startEllipsis.innerHTML = '<a class="page-link" href="#pagination">...</a>';
+                            startEllipsis.addEventListener('click', () => {
+                                remove(testEntries[category][index][currentPage - 1]);
+                                currentPage = 1;
+                                add(testEntries[category][index][currentPage - 1]);
+                                createPagination();
+                            });
+
+                            paginationContainer.appendChild(startEllipsis);
+                        }
+
+                        for (let i = startPage; i <= endPage; i++) {
+                            if (i <= totalPages) {
+                                const pageButton = document.createElement('li');
+                                pageButton.classList.add('page-item');
+
+                                if (i === currentPage) {
+                                    pageButton.classList.add('active');
+                                }
+
+                                pageButton.innerHTML = `<a class="page-link" href="#pagination">${i}</a>`;
+                                pageButton.addEventListener('click', () => {
+                                    remove(testEntries[category][index][currentPage - 1]);
+                                    currentPage = i;
+                                    add(testEntries[category][index][currentPage - 1]);
+                                    createPagination();
+                                });
+
+                                paginationContainer.appendChild(pageButton);
+                            }
+                        }
+
+                        if (endPage < totalPages) {
+                            const endEllipsis = document.createElement('li');
+                            
+                            endEllipsis.classList.add('page-item');
+                            endEllipsis.innerHTML = '<a class="page-link" href="#pagination">...</a>';
+                            endEllipsis.addEventListener('click', () => {
+                                remove(testEntries[category][index][currentPage - 1]);
+                                currentPage = totalPages;
+                                add(testEntries[category][index][currentPage - 1]);
+                                createPagination();
+                            });
+
+                            paginationContainer.appendChild(endEllipsis);
+                        }
+
+                        if (currentPage > 1) {
+                            const prevButton = document.createElement('li');
+
+                            prevButton.classList.add('page-item');
+                            prevButton.innerHTML = '<a class="page-link" href="#pagination">Previous</a>';
+                            prevButton.addEventListener('click', () => {
+                                remove(testEntries[category][index][currentPage - 1]);
+                                currentPage--;
+                                add(testEntries[category][index][currentPage - 1]);
+                                createPagination();
+                            });
+
+                            paginationContainer.insertBefore(prevButton, paginationContainer.firstChild);
+                        }
+                        if (currentPage < totalPages) {
+                            const nextButton = document.createElement('li');
+
+                            nextButton.classList.add('page-item');
+                            nextButton.innerHTML = '<a class="page-link" href="#pagination">Next</a>';
+                            nextButton.addEventListener('click', () => {
+                                remove(testEntries[category][index][currentPage - 1]);
+                                currentPage++;
+                                add(testEntries[category][index][currentPage - 1]);
+                                createPagination();
+                            });
+
+                            paginationContainer.appendChild(nextButton);
+                        }
+                    });
+                }
+                createPagination();
+            }
+            displayPagination(testEntries, 0, 'all');
+        }
+    </script>
+</body>
+</html>

@@ -194,5 +194,4 @@ describe('Playwright Adapter Tests', function () {
       expect(testEntries.length).to.be.greaterThan(1);
     });
   });
-
 });

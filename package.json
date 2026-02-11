@@ -1,6 +1,6 @@
 {
   "name": "@testomatio/reporter",
-  "version": "2.5.2",
+  "version": "2.6.2",
   "description": "Testomatio Reporter Client",
   "engines": {
     "node": ">=18"
@@ -24,7 +24,7 @@
     "csv-writer": "^1.6.0",
     "debug": "4.3.4",
     "dotenv": "^16.0.1",
-    "fast-xml-parser": "^4.4.1",
+    "fast-xml-parser": "^5.3.4",
     "file-url": "3.0.0",
     "filesize": "^10.1.6",
     "gaxios": ">=6.0 || >=7.0.0-rc.4 || <8",
@@ -43,6 +43,9 @@
     "promise-retry": "^2.0.1",
     "strip-ansi": "7.1.0",
     "uuid": "^9.0.0"
+  },
+  "overrides": {
+    "fast-xml-parser": "^5.3.4"
   },
   "files": [
     "bin",

@@ -7,10 +7,10 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.release.target_commitish }}
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v4
         with:
           node-version: 16
       - run: npm ci

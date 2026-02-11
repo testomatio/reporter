@@ -117,6 +117,7 @@ If you provide a --filter value that does not start with either `testomatio:` or
 the reporter will stop execution and print a clear error message.
 
 Example of wrong command:
+
 ```bash
 npx @testomatio/reporter run "npx jest" --filter "tcoverage:file=coverage.yml"
 ```

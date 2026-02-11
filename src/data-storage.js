@@ -139,6 +139,7 @@ class DataStorage {
         const testDataAsText = fs.readFileSync(filepath, 'utf-8');
         if (testDataAsText) debug('<=', dataType, 'file', context, testDataAsText);
         const testDataArr = testDataAsText?.split(os.EOL) || [];
+        debug('<=', dataType, 'file', context, testDataArr);
         return testDataArr;
       }
       // debug(`No ${this.dataType} data for ${context} in <file> storage`);
