@@ -232,7 +232,7 @@ describe('TestomatioPipe', () => {
         method: 'GET',
         path: '/api/test_grep',
         reply: {
-          status: 501,
+          status: 500,
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({
             error: 'Internal server error',
