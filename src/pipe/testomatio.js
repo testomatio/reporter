@@ -87,16 +87,10 @@ class TestomatioPipe {
         httpMethodsToRetry: ['GET', 'PUT', 'HEAD', 'OPTIONS', 'DELETE', 'POST'],
         shouldRetry: error => {
           if (!error.response) return false;
-          switch (error.response?.status) {
-            case 400: // Bad request (probably wrong API key)
-            case 404: // Test not matched
-            case 429: // Rate limit exceeded
-            case 500: // Internal server error
-              return false;
-            default:
-              break;
-          }
-          return error.response?.status >= 401; // Retry on 401+ and 5xx
+          // no need to retry on 4xx errors, because they caused by user mistake, thus retrying will not help
+          // 500 could also be related to both user or server mistake, but decided not to retry for now
+          // this code code be changed to retry 500 too if needed
+          return error.response?.status >= 500; // Retry only on server errors
         },
       },
     });
