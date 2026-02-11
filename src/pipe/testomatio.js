@@ -90,7 +90,7 @@ class TestomatioPipe {
           // no need to retry on 4xx errors, because they caused by user mistake, thus retrying will not help
           // 500 could also be related to both user or server mistake, but decided not to retry for now
           // this code code be changed to retry 500 too if needed
-          return error.response?.status >= 500; // Retry only on server errors
+          return error.response?.status >= 501; // Retry only on server errors
         },
       },
     });
