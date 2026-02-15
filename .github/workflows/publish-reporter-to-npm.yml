@@ -4,7 +4,7 @@ on:
     types: [published]
 
 permissions:
-  contents: read
+  contents: write
   id-token: write
 
 jobs:
@@ -58,5 +58,3 @@ jobs:
       - name: commit version to package.json (only for not beta release)
         run: git push
         if: contains(github.event.release.tag_name, 'beta') == false
-        env:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
