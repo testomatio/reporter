@@ -408,5 +408,5 @@ export type {
   Suite as VitestSuite,
   Test as VitestTest,
   File as VitestTestFile,
-  TestLogs as VitestTestLogs
+  TestLogs as VitestTestLogs,
 } from './vitest.types';

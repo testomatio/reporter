@@ -89,7 +89,7 @@ program
     const client = new TestomatClient({ apiKey, title });
 
     if (opts.filter || opts.filterList) {
-      console.log(APP_PREFIX,'Filtering tests...');
+      console.log(APP_PREFIX, 'Filtering tests...');
       // Example of use: npx @testomatio/reporter run "npx jest" --filter "testomatio:tag-name=frontend"
       // Example of use: npx @testomatio/reporter run "npx jest" --filter "coverage:file=coverage.yml"
       // Example of use: npx @testomatio/reporter run "npx jest" --filter-list "coverage:file=coverage.yml"
@@ -114,7 +114,7 @@ program
 
         debug(`Execution pattern: "${pattern}"`);
 
-        if(opts.filterList) {
+        if (opts.filterList) {
           console.log(APP_PREFIX, pc.blue(`Matched test/suite IDs: ${tests.join(', ')}`));
           if (command) console.log(APP_PREFIX, pc.green(`Full Running Command: ${filteredCommand}`));
           return;
@@ -123,8 +123,7 @@ program
         if (command && command.split) {
           command = filteredCommand;
         }
-      }
-      catch (err) {
+      } catch (err) {
         console.log(APP_PREFIX, err.message || err);
         return;
       }

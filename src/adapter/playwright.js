@@ -159,11 +159,11 @@ class PlaywrightReporter {
       file: test.location?.file,
       timeline: timestampStart
         ? {
-          timestamp_start: timestampStart,
-          timestamp_finish: timestampFinish,
-          worker_id: workerIndex,
-          project: projectName,
-        }
+            timestamp_start: timestampStart,
+            timestamp_finish: timestampFinish,
+            worker_id: workerIndex,
+            project: projectName,
+          }
         : undefined,
     });
 

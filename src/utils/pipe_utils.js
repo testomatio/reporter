@@ -62,7 +62,7 @@ function generateFilterRequestParams(params) {
 function parseFilterParams(opts) {
   const [type, ...idParts] = opts.split('=');
   const id = idParts.join('=');
-  
+
   const validType = updateFilterType(type);
 
   if (!validType) return undefined;
@@ -161,12 +161,12 @@ function parsePipeOptions(optionsStr) {
   return options;
 }
 
-export { 
-  updateFilterType, 
-  parseFilterParams, 
-  generateFilterRequestParams, 
-  setS3Credentials, 
-  statusEmoji, 
+export {
+  updateFilterType,
+  parseFilterParams,
+  generateFilterRequestParams,
+  setS3Credentials,
+  statusEmoji,
   fullName,
-  parsePipeOptions
+  parsePipeOptions,
 };
