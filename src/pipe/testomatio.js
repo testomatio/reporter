@@ -294,6 +294,7 @@ class TestomatioPipe {
       const errorText = err.response?.data?.message || err.message;
       debug('Error creating run', err);
       console.log(errorText || err);
+      if (err.response?.status === 403) this.#disablePipe();
       if (!this.apiKey) console.error('Testomat.io API key is not set');
       if (!this.apiKey?.startsWith('tstmt')) console.error('Testomat.io API key is invalid');
 
@@ -347,6 +348,7 @@ class TestomatioPipe {
         maxContentLength: Infinity,
       })
       .catch(err => {
+        if (err.response?.status === 403) this.#disablePipe();
         this.requestFailures++;
         this.notReportedTestsCount++;
         if (err.response) {
@@ -397,6 +399,7 @@ class TestomatioPipe {
         maxContentLength: Infinity,
       })
       .catch(err => {
+        if (err.response?.status === 403) this.#disablePipe();
         this.requestFailures++;
         this.notReportedTestsCount += testsToSend.length;
         if (err.response) {
@@ -518,6 +521,19 @@ class TestomatioPipe {
       printCreateIssue();
     }
     debug('Run finished');
+  }
+
+  #disablePipe() {
+    this.isEnabled = false;
+    this.apiKey = null;
+
+    // clear interval function, otherwise the proccess will continue indefinitely
+    if (this.batch.intervalFunction) {
+      clearInterval(this.batch.intervalFunction);
+      this.batch.intervalFunction = null;
+      this.batch.isEnabled = false;
+    }              
+    this.batch.tests = [];
   }
 
   #logFailedResponse(error) {
