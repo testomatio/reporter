@@ -3257,7 +3257,10 @@
                 });
             });
 
-            
+            setTimeout(() => {
+                renderTests();
+            }, 100);
+
             const searchInput = document.getElementById('searchInput');
             searchInput.addEventListener('input', function() {
                 searchTerm = this.value.trim();

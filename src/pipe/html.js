@@ -8,6 +8,8 @@ import fileUrl from 'file-url';
 import { fileSystem, isSameTest, ansiRegExp, formatStep } from '../utils/utils.js';
 import { HTML_REPORT } from '../constants.js';
 import { fileURLToPath } from 'node:url';
+import { isMainThread } from 'worker_threads';
+import os from 'os';
 
 const debug = createDebugMessages('@testomatio/reporter:pipe:html');
 
@@ -94,6 +96,16 @@ class HtmlPipe {
 
     if (!hasPayload) return;
 
+    if (typeof isMainThread !== 'undefined' && !isMainThread) {
+      const runId = this.store.runId || process.env.TESTOMATIO_RUN || `run-${Date.now()}`;
+      const safeRunId = String(runId).replace(/[^a-zA-Z0-9_-]/g, '_');
+      const workerId = `wt-${process.pid}`;
+      const tempDir = os.tmpdir();
+      const workerFile = path.join(tempDir, `testomatio-html-worker-${safeRunId}-${workerId}.jsonl`);
+      fs.appendFileSync(workerFile, JSON.stringify(test) + '\n', 'utf-8');
+      return;
+    }
+
     const index = this.tests.findIndex(t => isSameTest(t, test));
     if (index >= 0) {
       this.tests[index] = merge(this.tests[index], test);
@@ -105,6 +117,38 @@ class HtmlPipe {
 
   async finishRun(runParams) {
     if (!this.isEnabled) return;
+
+    if (typeof isMainThread !== 'undefined' && !isMainThread) {
+      return;
+    }
+
+    try {
+      const tempDir = os.tmpdir();
+      const workerFiles = fs.readdirSync(tempDir)
+        .filter(f => f.startsWith('testomatio-html-worker-') && f.endsWith('.jsonl'))
+        .map(f => path.join(tempDir, f));
+
+      for (const workerFile of workerFiles) {
+        const content = fs.readFileSync(workerFile, 'utf-8');
+        const lines = content.trim().split('\n').filter(line => line.trim());
+        for (const line of lines) {
+          try {
+            const test = JSON.parse(line);
+            const index = this.tests.findIndex(t => isSameTest(t, test));
+            if (index >= 0) {
+              this.tests[index] = merge(this.tests[index], test);
+            } else {
+              this.tests.push(test);
+            }
+          } catch (parseErr) {
+            // Skip invalid JSON lines
+          }
+        }
+        fs.unlinkSync(workerFile);
+      }
+    } catch (err) {
+      // No worker files or error loading - continue normally
+    }
 
     if (this.isHtml) {
       // GENERATE HTML reports based on the results data
