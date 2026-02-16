@@ -615,10 +615,12 @@ class XmlReader {
       const chunk = testChunks[i];
       const chunkNum = i + 1;
 
-      console.log(
-        APP_PREFIX,
-        `📦 Uploading chunk ${chunkNum}/${totalChunks} (${chunk.length} tests)`,
-      );
+      if (totalChunks > 1) {
+        console.log(
+          APP_PREFIX,
+          `📦 Uploading chunk ${chunkNum}/${totalChunks} (${chunk.length} tests)`,
+        );
+      }
 
       const chunkData = {
         api_key: this.requestParams.apiKey,
@@ -631,7 +633,11 @@ class XmlReader {
       debug(`Uploaded ${uploadedTests}/${totalTests} tests`);
     }
 
-    console.log(APP_PREFIX, `✅ Successfully uploaded ${uploadedTests} tests in ${totalChunks} chunks`);
+    if (totalChunks > 1) {
+      console.log(APP_PREFIX, `✅ Successfully uploaded ${uploadedTests} tests in ${totalChunks} chunks`);
+    } else {
+      console.log(APP_PREFIX, `✅ Successfully uploaded ${uploadedTests} tests`);
+    }
 
     const finishData = {
       api_key: this.requestParams.apiKey,
