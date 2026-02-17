@@ -262,6 +262,22 @@ components:
         duration:
           type: number
           description: The duration of the step in seconds
+        log:
+          type: string
+          description: Log output for the step (max 250 chars)
+          maxLength: 250
+        screenshot:
+          type: string
+          format: uri
+          description: URL to the screenshot for this step
+        status:
+          type: string
+          enum:
+            - passed
+            - failed
+            - none
+            - custom
+          description: The status of the step
         steps:
           type: array
           items:
