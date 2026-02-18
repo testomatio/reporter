@@ -4,6 +4,10 @@ import { getTestomatIdFromTestTitle, fileSystem } from '../utils/utils.js';
 import { services } from '../services/index.js';
 import { TESTOMAT_TMP_STORAGE_DIR } from '../constants.js';
 import { stringToMD5Hash } from '../data-storage.js';
+import * as parser from '@babel/parser';
+import _traverse from '@babel/traverse';
+import * as fs from 'fs';
+import * as path from 'path';
 
 class WebdriverReporter extends WDIOReporter {
   constructor(options) {
@@ -15,6 +19,9 @@ class WebdriverReporter extends WDIOReporter {
     this._addTestPromises = [];
 
     this._isSynchronising = false;
+
+    // Track hook failures with their suites
+    this.hookFailures = {};
 
     // run is created by cli, if enabling the row below, it mat lead to multiple runs being created
     // thus, need to check if process.env.runId is set and/or add more checks to avoid creating multiple runs
@@ -46,6 +53,65 @@ class WebdriverReporter extends WDIOReporter {
     fileSystem.clearDir(TESTOMAT_TMP_STORAGE_DIR);
   }
 
+  onHookEnd(hook) {
+    // Check if this is a before each hook that failed
+    const isBeforeEach = hook.title && hook.title.includes('before each');
+
+    if (isBeforeEach && hook.errors && hook.errors.length > 0) {
+      if (!this.hookFailures[hook.parent]) {
+        this.hookFailures[hook.parent] = {
+          error: hook.errors[0],
+          suiteTitle: hook.parent,
+        };
+      }
+    }
+  }
+
+  async onSuiteEnd(suiteOrScenario) {
+    // Handle hook failures for regular suites
+    if (suiteOrScenario.type !== 'scenario') {
+      if (this.hookFailures[suiteOrScenario.fullTitle]) {
+        const { error, suiteTitle } = this.hookFailures[suiteOrScenario.fullTitle];
+
+        const allTestTitles = extractTestsFromSpecFile(suiteOrScenario.file);
+
+        const ranTestTitles = new Set((suiteOrScenario.tests || []).map(t => t.title));
+
+        for (const testTitle of allTestTitles) {
+          if (!ranTestTitles.has(testTitle)) {
+            await this.client.addTestRun('failed', {
+              error,
+              suite_title: suiteTitle,
+              title: testTitle,
+              test_id: getTestomatIdFromTestTitle(testTitle),
+              time: 0,
+            });
+          }
+        }
+
+        if (suiteOrScenario.tests) {
+          for (const test of suiteOrScenario.tests) {
+            if (!test.state || test.state === 'skipped' || test.state === 'pending') {
+              await this.client.addTestRun('failed', {
+                error,
+                suite_title: suiteTitle,
+                title: test.title,
+                test_id: getTestomatIdFromTestTitle(test.title),
+                time: 0,
+              });
+            }
+          }
+        }
+
+        delete this.hookFailures[suiteOrScenario.fullTitle];
+      }
+    }
+
+    if (suiteOrScenario.type === 'scenario') {
+      this._addTestPromises.push(this.addBddScenario(suiteOrScenario));
+    }
+  }
+
   onTestStart(test) {
     services.setContext(test.fullTitle);
   }
@@ -60,13 +126,6 @@ class WebdriverReporter extends WDIOReporter {
     test.logs = logs;
 
     this._addTestPromises.push(this.addTest(test));
-  }
-
-  // wdio-cucumber does not trigger onTestEnd hook, thus, using this one
-  onSuiteEnd(scerario) {
-    if (scerario.type === 'scenario') {
-      this._addTestPromises.push(this.addBddScenario(scerario));
-    }
   }
 
   async addTest(test) {
@@ -128,6 +187,45 @@ class WebdriverReporter extends WDIOReporter {
       file: scenario.file,
       // filesBuffers: screenshotsBuffers,
     });
+  }
+}
+
+/**
+ * Extract all test titles from a spec file using AST parsing
+ * @param {string} filePath - Path to the test file
+ * @returns {string[]} Array of test titles
+ */
+function extractTestsFromSpecFile(filePath) {
+  try {
+    if (!fs.existsSync(filePath)) {
+      return [];
+    }
+
+    const code = fs.readFileSync(filePath, 'utf-8');
+    const ast = parser.parse(code, {
+      sourceType: 'module',
+      plugins: ['typescript', 'jsx'],
+    });
+
+    const tests = [];
+
+    _traverse(ast, {
+      CallExpression(path) {
+        if (
+          path.node.callee.type === 'Identifier' &&
+          path.node.callee.name === 'it' &&
+          path.node.arguments.length >= 1 &&
+          path.node.arguments[0].type === 'StringLiteral'
+        ) {
+          tests.push(path.node.arguments[0].value);
+        }
+      },
+    });
+
+    return tests;
+  } catch (error) {
+    console.error('[TESTOMATIO] Error parsing spec file:', error.message);
+    return [];
   }
 }
 

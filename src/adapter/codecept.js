@@ -133,7 +133,7 @@ function CodeceptReporter(config) {
 
   // mark as failed all tests inside the failed hook
   event.dispatcher.on(event.hook.failed, hook => {
-    if (hook.name !== 'BeforeSuiteHook') return;
+    if (hook.name !== 'BeforeSuiteHook' && hook.name !== 'BeforeHook') return;
     const suite = hook.runnable.parent;
 
     if (!suite) return;
