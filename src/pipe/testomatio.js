@@ -87,16 +87,10 @@ class TestomatioPipe {
         httpMethodsToRetry: ['GET', 'PUT', 'HEAD', 'OPTIONS', 'DELETE', 'POST'],
         shouldRetry: error => {
           if (!error.response) return false;
-          switch (error.response?.status) {
-            case 400: // Bad request (probably wrong API key)
-            case 404: // Test not matched
-            case 429: // Rate limit exceeded
-            case 500: // Internal server error
-              return false;
-            default:
-              break;
-          }
-          return error.response?.status >= 401; // Retry on 401+ and 5xx
+          // no need to retry on 4xx errors, because they caused by user mistake, thus retrying will not help
+          // 500 could also be related to both user or server mistake, but decided not to retry for now
+          // this code code be changed to retry 500 too if needed
+          return error.response?.status >= 501; // Retry only on server errors
         },
       },
     });
@@ -300,6 +294,7 @@ class TestomatioPipe {
       const errorText = err.response?.data?.message || err.message;
       debug('Error creating run', err);
       console.log(errorText || err);
+      if (err.response?.status === 403) this.#disablePipe();
       if (!this.apiKey) console.error('Testomat.io API key is not set');
       if (!this.apiKey?.startsWith('tstmt')) console.error('Testomat.io API key is invalid');
 
@@ -353,6 +348,7 @@ class TestomatioPipe {
         maxContentLength: Infinity,
       })
       .catch(err => {
+        if (err.response?.status === 403) this.#disablePipe();
         this.requestFailures++;
         this.notReportedTestsCount++;
         if (err.response) {
@@ -403,6 +399,7 @@ class TestomatioPipe {
         maxContentLength: Infinity,
       })
       .catch(err => {
+        if (err.response?.status === 403) this.#disablePipe();
         this.requestFailures++;
         this.notReportedTestsCount += testsToSend.length;
         if (err.response) {
@@ -524,6 +521,19 @@ class TestomatioPipe {
       printCreateIssue();
     }
     debug('Run finished');
+  }
+
+  #disablePipe() {
+    this.isEnabled = false;
+    this.apiKey = null;
+
+    // clear interval function, otherwise the proccess will continue indefinitely
+    if (this.batch.intervalFunction) {
+      clearInterval(this.batch.intervalFunction);
+      this.batch.intervalFunction = null;
+      this.batch.isEnabled = false;
+    }              
+    this.batch.tests = [];
   }
 
   #logFailedResponse(error) {
