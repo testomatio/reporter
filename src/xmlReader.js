@@ -619,6 +619,9 @@ class XmlReader {
 
     this.pipes = this.pipes || (await this.pipesPromise);
 
+    // Create run before uploading chunks to ensure runId is set
+    await this.createRun();
+
     if (!this.tests || !Array.isArray(this.tests) || this.tests.length === 0) {
       const dataString = {
         ...this.stats,
