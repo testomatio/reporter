@@ -75,28 +75,30 @@ class WebdriverReporter extends WDIOReporter {
 
         const allTestTitles = extractTestsFromSpecFile(suiteOrScenario.file);
 
-        const ranTestTitles = new Set((suiteOrScenario.tests || []).map(t => t.title));
+        const allTestsCount = allTestTitles.length;
+        const ranTestsCount = (suiteOrScenario.tests || []).length;
 
-        for (const testTitle of allTestTitles) {
-          if (!ranTestTitles.has(testTitle)) {
-            await this.client.addTestRun('failed', {
-              error,
-              suite_title: suiteTitle,
-              title: testTitle,
-              test_id: getTestomatIdFromTestTitle(testTitle),
-              time: 0,
-            });
-          }
+        for (let i = ranTestsCount; i < allTestsCount; i++) {
+          const testTitle = allTestTitles[i];
+          await this.client.addTestRun('failed', {
+            error,
+            suite_title: suiteTitle,
+            title: testTitle,
+            test_id: getTestomatIdFromTestTitle(testTitle),
+            time: 0,
+          });
         }
 
         if (suiteOrScenario.tests) {
-          for (const test of suiteOrScenario.tests) {
+          for (let i = 0; i < suiteOrScenario.tests.length; i++) {
+            const test = suiteOrScenario.tests[i];
             if (!test.state || test.state === 'skipped' || test.state === 'pending') {
+              const testTitle = allTestTitles[i] || test.title;
               await this.client.addTestRun('failed', {
                 error,
                 suite_title: suiteTitle,
-                title: test.title,
-                test_id: getTestomatIdFromTestTitle(test.title),
+                title: testTitle,
+                test_id: getTestomatIdFromTestTitle(testTitle),
                 time: 0,
               });
             }
