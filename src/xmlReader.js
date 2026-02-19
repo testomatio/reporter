@@ -512,6 +512,38 @@ class XmlReader {
     }
   }
 
+  /**
+   * Upload a chunk of tests to Testomatio using POST /api/reporter/${runId}/testrun
+   * @param {Object} pipe - The pipe instance to upload to
+   * @param {Array} tests - Array of tests to upload
+   * @param {number} chunkIndex - Index of the chunk (for logging)
+   */
+  async #uploadTestChunk(pipe, tests, chunkIndex) {
+    if (!pipe.isEnabled || !pipe.runId) return;
+
+    const chunkData = {
+      api_key: this.requestParams.apiKey,
+      tests: tests,
+      batch_index: chunkIndex,
+    };
+
+    debug(`Uploading chunk ${chunkIndex} with ${tests.length} tests`);
+
+    return pipe.client
+      .request({
+        method: 'POST',
+        url: `/api/reporter/${pipe.runId}/testrun`,
+        data: chunkData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        maxContentLength: Infinity,
+      })
+      .catch(err => {
+        console.log(APP_PREFIX, "Report couldn't be processed", err);
+      });
+  }
+
   async createRun() {
     const runParams = {
       api_key: this.requestParams.apiKey,
@@ -622,12 +654,7 @@ class XmlReader {
         );
       }
 
-      const chunkData = {
-        api_key: this.requestParams.apiKey,
-        tests: chunk,
-        skipFinish: true,
-      };
-      await Promise.all(this.pipes.map(p => p.finishRun(chunkData)));
+      await Promise.all(this.pipes.map(p => this.#uploadTestChunk(p, chunk, i + 1)));
 
       uploadedTests += chunk.length;
       debug(`Uploaded ${uploadedTests}/${totalTests} tests`);
