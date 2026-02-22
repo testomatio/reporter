@@ -119,8 +119,8 @@ export class S3Uploader {
       Key,
       Body,
     };
-    // disable ACL for I AM roles
-    // for GCS or unique configurations that don't support ACL, use TESTOMATIO_S3_NO_ACL env var
+    // disable ACL for IAM roles or GCS (GCS doesn't support x-amz-acl header)
+    // to precent potential issues, forece setting TESTOMATIO_S3_NO_ACL env var too in such case
     const isGCS = s3Config.endpoint && s3Config.endpoint.includes('storage.googleapis.com');
     if (!s3Config.credentials.sessionToken && !TESTOMATIO_S3_NO_ACL && !isGCS) {
       params.ACL = ACL;
