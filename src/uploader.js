@@ -119,30 +119,20 @@ export class S3Uploader {
       Key,
       Body,
     };
-    // disable ACL for I AM roles, GCS (doesn't support x-amz-acl header), and if explicitly set
+    // disable ACL for I AM roles
+    // for GCS or unique configurations that don't support ACL, use TESTOMATIO_S3_NO_ACL env var
     const isGCS = s3Config.endpoint && s3Config.endpoint.includes('storage.googleapis.com');
     if (!s3Config.credentials.sessionToken && !TESTOMATIO_S3_NO_ACL && !isGCS) {
       params.ACL = ACL;
     }
 
     try {
-      return await this.#tryUpload({ s3, params, file });
+      const upload = new Upload({ client: s3, params });
+      const link = await this.getS3LocationLink(upload);
+      this.successfulUploads.push({ path: file.path, size: file.size, link });
+      debug(`📤 Uploaded artifact. File: ${file.path}, size: ${prettyBytes(file.size || 0)}, link: ${link}`);
+      return link;
     } catch (e) {
-      // if upload failed, try to upload without ACL
-      // "Invalid argument" is returned when ACL is not supported (Bucket Owner Enforced)
-      if (
-        params.ACL &&
-        (e.name === 'InvalidArgument' || e.name === 'AccessDenied' || e.message?.includes('Invalid argument'))
-      ) {
-        debug(`Upload failed with ACL '${params.ACL}'. Retrying without ACL...`);
-        delete params.ACL;
-        try {
-          return await this.#tryUpload({ s3, params, file, isRetry: true });
-        } catch (e2) {
-          debug('Retry upload failed:', e2);
-        }
-      }
-
       this.failedUploads.push({ path: file.path, size: file.size });
       debug('S3 uploading error:', e);
       console.log(
@@ -154,15 +144,6 @@ export class S3Uploader {
         this.getMaskedConfig(),
       );
     }
-  }
-
-  async #tryUpload({ s3, params, file, isRetry = false }) {
-    const upload = new Upload({ client: s3, params });
-    const link = await this.getS3LocationLink(upload);
-    this.successfulUploads.push({ path: file.path, size: file.size, link });
-    const msg = isRetry ? '(Retry) ' : '';
-    debug(`📤 ${msg}Uploaded artifact. File: ${file.path}, size: ${prettyBytes(file.size || 0)}, link: ${link}`);
-    return link;
   }
 
   /**
