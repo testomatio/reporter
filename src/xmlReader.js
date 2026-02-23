@@ -522,7 +522,6 @@ class XmlReader {
     if (!pipe.isEnabled || !pipe.runId) return;
 
     const chunkData = {
-      api_key: this.requestParams.apiKey,
       tests: tests,
       batch_index: chunkIndex,
     };
@@ -533,14 +532,17 @@ class XmlReader {
       .request({
         method: 'POST',
         url: `/api/reporter/${pipe.runId}/testrun`,
-        data: chunkData,
+        data: {
+          api_key: this.requestParams.apiKey,
+          ...chunkData,
+        },
         headers: {
           'Content-Type': 'application/json',
         },
         maxContentLength: Infinity,
       })
       .catch(err => {
-        console.log(APP_PREFIX, "Report couldn't be processed", err);
+        console.log(APP_PREFIX, 'Test executions uploading failed', err);
       });
   }
 
@@ -574,12 +576,10 @@ class XmlReader {
   /**
    * Split tests array into chunks based on data size
    * @param {Array} tests - Array of tests to split
-   * @param {Object} options - Chunking options
-   * @param {number} [options.maxSizeBytes=1048576] - Maximum chunk size in bytes (1MB)
    * @returns {Array<Array>} Array of test chunks
    */
-  #splitTestsIntoChunks(tests, options = { maxSizeBytes: 1 * 1024 * 1024 }) {
-    const { maxSizeBytes } = options;
+  #splitTestsIntoChunks(tests) {
+    const maxSizeBytes = 1 * 1024 * 1024;
 
     const chunks = [];
     let currentChunk = [];
@@ -634,11 +634,7 @@ class XmlReader {
       return Promise.all(this.pipes.map(p => p.finishRun(dataString)));
     }
 
-    const maxSizeBytes = 1 * 1024 * 1024;
-
-    const testChunks = this.#splitTestsIntoChunks(this.tests, {
-      maxSizeBytes,
-    });
+    const testChunks = this.#splitTestsIntoChunks(this.tests);
 
     const totalChunks = testChunks.length;
     const totalTests = this.tests.length;
@@ -651,10 +647,7 @@ class XmlReader {
       const chunkNum = i + 1;
 
       if (totalChunks > 1) {
-        console.log(
-          APP_PREFIX,
-          `📦 Uploading chunk ${chunkNum}/${totalChunks} (${chunk.length} tests)`,
-        );
+        debug(`Uploading chunk ${chunkNum}/${totalChunks} (${chunk.length} tests)`);
       }
 
       await Promise.all(this.pipes.map(p => this.#uploadTestChunk(p, chunk, i + 1)));
