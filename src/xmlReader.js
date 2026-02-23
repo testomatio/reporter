@@ -512,40 +512,6 @@ class XmlReader {
     }
   }
 
-  /**
-   * Upload a chunk of tests to Testomatio using POST /api/reporter/${runId}/testrun
-   * @param {Object} pipe - The pipe instance to upload to
-   * @param {Array} tests - Array of tests to upload
-   * @param {number} chunkIndex - Index of the chunk (for logging)
-   */
-  async #uploadTestChunk(pipe, tests, chunkIndex) {
-    if (!pipe.isEnabled || !pipe.runId) return;
-
-    const chunkData = {
-      tests: tests,
-      batch_index: chunkIndex,
-    };
-
-    debug(`Uploading chunk ${chunkIndex} with ${tests.length} tests`);
-
-    return pipe.client
-      .request({
-        method: 'POST',
-        url: `/api/reporter/${pipe.runId}/testrun`,
-        data: {
-          api_key: this.requestParams.apiKey,
-          ...chunkData,
-        },
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        maxContentLength: Infinity,
-      })
-      .catch(err => {
-        console.log(APP_PREFIX, 'Test executions uploading failed', err);
-      });
-  }
-
   async createRun() {
     const runParams = {
       api_key: this.requestParams.apiKey,
@@ -619,19 +585,18 @@ class XmlReader {
 
     this.pipes = this.pipes || (await this.pipesPromise);
 
-    // Create run before uploading chunks to ensure runId is set
+    // Create run before uploading tests to ensure runId is set
     await this.createRun();
 
     if (!this.tests || !Array.isArray(this.tests) || this.tests.length === 0) {
-      const dataString = {
-        ...this.stats,
+      debug('No tests to upload, finishing run');
+      const finishData = {
         api_key: this.requestParams.apiKey,
         status: 'finished',
         duration: this.stats.duration,
-        tests: this.tests,
+        detach: this.requestParams.detach,
       };
-      debug('Uploading data (no tests to chunk)', dataString);
-      return Promise.all(this.pipes.map(p => p.finishRun(dataString)));
+      return Promise.all(this.pipes.map(p => p.finishRun(finishData)));
     }
 
     const testChunks = this.#splitTestsIntoChunks(this.tests);
@@ -650,7 +615,11 @@ class XmlReader {
         debug(`Uploading chunk ${chunkNum}/${totalChunks} (${chunk.length} tests)`);
       }
 
-      await Promise.all(this.pipes.map(p => this.#uploadTestChunk(p, chunk, i + 1)));
+      for (const test of chunk) {
+        await Promise.all(this.pipes.map(p => p.addTest(test)));
+      }
+
+      await Promise.all(this.pipes.map(p => p.sync()));
 
       uploadedTests += chunk.length;
       debug(`Uploaded ${uploadedTests}/${totalTests} tests`);
