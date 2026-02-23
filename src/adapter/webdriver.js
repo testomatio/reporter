@@ -4,10 +4,6 @@ import { getTestomatIdFromTestTitle, fileSystem } from '../utils/utils.js';
 import { services } from '../services/index.js';
 import { TESTOMAT_TMP_STORAGE_DIR } from '../constants.js';
 import { stringToMD5Hash } from '../data-storage.js';
-import * as parser from '@babel/parser';
-import _traverse from '@babel/traverse';
-import * as fs from 'fs';
-import * as path from 'path';
 
 class WebdriverReporter extends WDIOReporter {
   constructor(options) {
@@ -20,8 +16,11 @@ class WebdriverReporter extends WDIOReporter {
 
     this._isSynchronising = false;
 
-    // Track hook failures with their suites
-    this.hookFailures = {};
+    // Optional hooks enhancer for beforeEach failure handling
+    this.hooksEnhancer = null;
+    if (options?.enableHooksEnhancer) {
+      this._initializeHooksEnhancer();
+    }
 
     // run is created by cli, if enabling the row below, it mat lead to multiple runs being created
     // thus, need to check if process.env.runId is set and/or add more checks to avoid creating multiple runs
@@ -30,6 +29,26 @@ class WebdriverReporter extends WDIOReporter {
 
   get isSynchronised() {
     return this._isSynchronising === false;
+  }
+
+  /**
+   * Initialize the hooks enhancer
+   * @private
+   */
+  async _initializeHooksEnhancer() {
+    try {
+      // Dynamic require to avoid hard dependency
+      // @ts-ignore - Optional package, types may not be available
+      const { createHooksEnhancer } = require('@testomatio/webdriver-hooks-enhancer');
+      this.hooksEnhancer = createHooksEnhancer(this);
+      console.log('[TESTOMATIO] WebdriverIO Hooks Enhancer enabled');
+    } catch (error) {
+      console.warn(
+        '[TESTOMATIO] Could not enable WebdriverIO Hooks Enhancer.',
+        'Install @testomatio/webdriver-hooks-enhancer to use this feature:',
+        error.message
+      );
+    }
   }
 
   /**
@@ -54,61 +73,23 @@ class WebdriverReporter extends WDIOReporter {
   }
 
   onHookEnd(hook) {
-    // Check if this is a before each hook that failed
-    const isBeforeEach = hook.title && hook.title.includes('before each');
-
-    if (isBeforeEach && hook.errors && hook.errors.length > 0) {
-      if (!this.hookFailures[hook.parent]) {
-        this.hookFailures[hook.parent] = {
-          error: hook.errors[0],
-          suiteTitle: hook.parent,
-        };
-      }
+    // Hooks enhancer will handle this if enabled
+    if (this.hooksEnhancer) {
+      this.hooksEnhancer.trackHookFailure(hook);
     }
   }
 
   async onSuiteEnd(suiteOrScenario) {
-    // Handle hook failures for regular suites
-    if (suiteOrScenario.type !== 'scenario') {
-      if (this.hookFailures[suiteOrScenario.fullTitle]) {
-        const { error, suiteTitle } = this.hookFailures[suiteOrScenario.fullTitle];
-
-        const allTestTitles = extractTestsFromSpecFile(suiteOrScenario.file);
-
-        const allTestsCount = allTestTitles.length;
-        const ranTestsCount = (suiteOrScenario.tests || []).length;
-
-        for (let i = ranTestsCount; i < allTestsCount; i++) {
-          const testTitle = allTestTitles[i];
-          await this.client.addTestRun('failed', {
-            error,
-            suite_title: suiteTitle,
-            title: testTitle,
-            test_id: getTestomatIdFromTestTitle(testTitle),
-            time: 0,
-          });
-        }
-
-        if (suiteOrScenario.tests) {
-          for (let i = 0; i < suiteOrScenario.tests.length; i++) {
-            const test = suiteOrScenario.tests[i];
-            if (!test.state || test.state === 'skipped' || test.state === 'pending') {
-              const testTitle = allTestTitles[i] || test.title;
-              await this.client.addTestRun('failed', {
-                error,
-                suite_title: suiteTitle,
-                title: testTitle,
-                test_id: getTestomatIdFromTestTitle(testTitle),
-                time: 0,
-              });
-            }
-          }
-        }
-
-        delete this.hookFailures[suiteOrScenario.fullTitle];
-      }
+    // Handle hook failures for regular suites using enhancer
+    if (this.hooksEnhancer && suiteOrScenario.type !== 'scenario') {
+      await this.hooksEnhancer.handleSuiteEnd(
+        suiteOrScenario,
+        this.client,
+        getTestomatIdFromTestTitle
+      );
     }
 
+    // Handle BDD scenarios (cucumber)
     if (suiteOrScenario.type === 'scenario') {
       this._addTestPromises.push(this.addBddScenario(suiteOrScenario));
     }
@@ -189,45 +170,6 @@ class WebdriverReporter extends WDIOReporter {
       file: scenario.file,
       // filesBuffers: screenshotsBuffers,
     });
-  }
-}
-
-/**
- * Extract all test titles from a spec file using AST parsing
- * @param {string} filePath - Path to the test file
- * @returns {string[]} Array of test titles
- */
-function extractTestsFromSpecFile(filePath) {
-  try {
-    if (!fs.existsSync(filePath)) {
-      return [];
-    }
-
-    const code = fs.readFileSync(filePath, 'utf-8');
-    const ast = parser.parse(code, {
-      sourceType: 'module',
-      plugins: ['typescript', 'jsx'],
-    });
-
-    const tests = [];
-
-    _traverse(ast, {
-      CallExpression(path) {
-        if (
-          path.node.callee.type === 'Identifier' &&
-          path.node.callee.name === 'it' &&
-          path.node.arguments.length >= 1 &&
-          path.node.arguments[0].type === 'StringLiteral'
-        ) {
-          tests.push(path.node.arguments[0].value);
-        }
-      },
-    });
-
-    return tests;
-  } catch (error) {
-    console.error('[TESTOMATIO] Error parsing spec file:', error.message);
-    return [];
   }
 }
 
