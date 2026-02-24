@@ -37,20 +37,21 @@ class WebdriverHooksEnhancer {
       if (this.hookFailures[suiteOrScenario.fullTitle]) {
         const { error, suiteTitle } = this.hookFailures[suiteOrScenario.fullTitle];
 
-        const allTestTitles = this.extractTestsFromSpecFile(suiteOrScenario.file);
+        const allTests = this.extractTestsFromSpecFile(suiteOrScenario.file);
 
-        const allTestsCount = allTestTitles.length;
+        const allTestsCount = allTests.length;
         const ranTestsCount = (suiteOrScenario.tests || []).length;
 
         // Report tests that didn't run due to hook failure
         for (let i = ranTestsCount; i < allTestsCount; i++) {
-          const testTitle = allTestTitles[i];
+          const test = allTests[i];
           await client.addTestRun('failed', {
             error,
             suite_title: suiteTitle,
-            title: testTitle,
-            test_id: getTestomatIdFromTestTitle(testTitle),
+            title: test.title,
+            test_id: getTestomatIdFromTestTitle(test.title),
             time: 0,
+            links: test.links || [],
           });
         }
 
@@ -58,13 +59,14 @@ class WebdriverHooksEnhancer {
           for (let i = 0; i < suiteOrScenario.tests.length; i++) {
             const test = suiteOrScenario.tests[i];
             if (!test.state || test.state === 'skipped' || test.state === 'pending') {
-              const testTitle = allTestTitles[i] || test.title;
+              const testInfo = allTests[i] || { title: test.title, links: [] };
               await client.addTestRun('failed', {
                 error,
                 suite_title: suiteTitle,
-                title: testTitle,
-                test_id: getTestomatIdFromTestTitle(testTitle),
+                title: testInfo.title,
+                test_id: getTestomatIdFromTestTitle(testInfo.title),
                 time: 0,
+                links: testInfo.links || [],
               });
             }
           }
@@ -77,6 +79,7 @@ class WebdriverHooksEnhancer {
 
   /**
    * Extract all test titles from a spec file using AST parsing
+   * Also extracts linkTest, linkJira, and label calls from test bodies
    */
   extractTestsFromSpecFile(filePath) {
     try {
@@ -91,6 +94,7 @@ class WebdriverHooksEnhancer {
       });
 
       const tests = [];
+      const self = this;
 
       _traverse(ast, {
         CallExpression(path) {
@@ -100,14 +104,24 @@ class WebdriverHooksEnhancer {
             path.node.arguments.length >= 1
           ) {
             const firstArg = path.node.arguments[0];
+            let testTitle = '';
 
             if (firstArg.type === 'StringLiteral') {
-              tests.push(firstArg.value);
+              testTitle = firstArg.value;
             }
             else if (firstArg.type === 'TemplateLiteral') {
               const parts = firstArg.quasis.map(q => q.value.raw);
-              tests.push(`\`${parts.join('${...}')}\``);
+              testTitle = `\`${parts.join('${...}')}\``;
             }
+
+            if (!testTitle) return;
+
+            const links = self.extractLinksFromTest(path);
+
+            tests.push({
+              title: testTitle,
+              links: links
+            });
           }
         },
       });
@@ -117,6 +131,62 @@ class WebdriverHooksEnhancer {
       console.error('[TESTOMATIO] Error parsing spec file:', error.message);
       return [];
     }
+  }
+
+  /**
+   * Extract linkTest, linkJira, and label calls from a test body
+   */
+  extractLinksFromTest(testPath) {
+    const links = [];
+
+    if (testPath.node.arguments.length < 2) return links;
+
+    const bodyPath = testPath.get('arguments.1');
+    if (!bodyPath.isFunctionExpression() && !bodyPath.isArrowFunctionExpression()) {
+      return links;
+    }
+
+    bodyPath.traverse({
+      CallExpression(innerPath) {
+        const callee = innerPath.node.callee;
+
+        if (callee.type === 'Identifier') {
+          const funcName = callee.name;
+
+          if (funcName === 'linkTest' || funcName === 'linkJira' || funcName === 'label') {
+            const args = innerPath.node.arguments;
+
+            for (const arg of args) {
+              let values = [];
+
+              if (arg.type === 'StringLiteral') {
+                values.push(arg.value);
+              }
+
+              else if (arg.type === 'ArrayExpression') {
+                for (const element of arg.elements) {
+                  if (element.type === 'StringLiteral') {
+                    values.push(element.value);
+                  }
+                }
+              }
+
+              for (const value of values) {
+                if (funcName === 'linkTest') {
+                  links.push({ test: value });
+                } else if (funcName === 'linkJira') {
+                  links.push({ jira: value });
+                } else if (funcName === 'label') {
+                  links.push({ label: value });
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+
+    return links;
   }
 }
 
