@@ -37,9 +37,15 @@ class WebdriverReporter extends WDIOReporter {
    */
   async _initializeHooksEnhancer() {
     try {
-      // Dynamic require to avoid hard dependency
-      // @ts-ignore - Optional package, types may not be available
-      const { createHooksEnhancer } = require('@testomatio/webdriver-hooks-enhancer');
+      // Dynamic import to avoid hard dependency
+      // Resolve package path from the project's node_modules
+      const { createRequire } = await import('module');
+      const projectRequire = createRequire(process.cwd() + '/package.json');
+      // Import the hooks enhancer package
+      const packagePath = projectRequire.resolve('@testomatio/webdriver-hooks-enhancer');
+      const hooksEnhancerModule = await import(packagePath);
+      const { createHooksEnhancer } = hooksEnhancerModule;
+      
       this.hooksEnhancer = createHooksEnhancer(this);
       console.log('[TESTOMATIO] WebdriverIO Hooks Enhancer enabled');
     } catch (error) {
