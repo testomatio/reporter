@@ -4,9 +4,9 @@
  * Tracks and reports all tests as failed when beforeEach hook fails
  */
 
-import * as parser from '@babel/parser';
-import _traverse from '@babel/traverse';
-import * as fs from 'fs';
+const parser = require('@babel/parser');
+const _traverse = require('@babel/traverse').default;
+const fs = require('fs');
 
 class WebdriverHooksEnhancer {
   constructor() {
@@ -190,12 +190,10 @@ class WebdriverHooksEnhancer {
   }
 }
 
-export default WebdriverHooksEnhancer;
-
 /**
  * Create and setup the enhancer for WebdriverReporter
  */
-export function createHooksEnhancer(reporter) {
+function createHooksEnhancer(reporter) {
   const enhancer = new WebdriverHooksEnhancer();
 
   const originalOnHookEnd = reporter.onHookEnd?.bind(reporter);
@@ -221,3 +219,5 @@ export function createHooksEnhancer(reporter) {
 
   return enhancer;
 }
+
+module.exports = { createHooksEnhancer, WebdriverHooksEnhancer };

@@ -4,7 +4,6 @@
   "description": "Enhanced WebdriverIO hook failure handling for Testomatio reporter",
   "main": "index.js",
   "types": "index.d.ts",
-  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
