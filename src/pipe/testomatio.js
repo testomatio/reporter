@@ -295,9 +295,7 @@ class TestomatioPipe {
       const errorText = err.response?.data?.message || err.message;
       debug('Error creating run', err);
       console.log(APP_PREFIX, errorText || err);
-      if (err.response?.status === 403) {
-        this.#disablePipe();
-      }
+      if (err.response?.status === 403) this.#disablePipe();
 
       this.#logFailedResponse(err);
 
