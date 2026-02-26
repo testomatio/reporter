@@ -29,6 +29,9 @@ function MochaReporter(runner, opts) {
 
   const client = new TestomatClient({ apiKey });
 
+  // Track hook failures
+  const hookFailures = new Map();
+
   runner.on(EVENT_RUN_BEGIN, () => {
     client.createRun();
 
@@ -40,7 +43,33 @@ function MochaReporter(runner, opts) {
     services.setContext(suite.fullTitle());
   });
 
-  runner.on(EVENT_SUITE_END, async () => {
+  runner.on(EVENT_SUITE_END, async suite => {
+    if (hookFailures.has(suite.fullTitle())) {
+      const { error, suiteTitle } = hookFailures.get(suite.fullTitle());
+
+      for (const test of suite.tests) {
+        if (test.state === 'pending' || !test.state) {
+          const testId = getTestomatIdFromTestTitle(test.title);
+          const artifacts = services.artifacts.get(test.fullTitle());
+          const keyValues = services.keyValues.get(test.fullTitle());
+          const links = services.links.get(test.fullTitle());
+
+          client.addTestRun(STATUS.FAILED, {
+            error,
+            suite_title: suiteTitle || suite.title,
+            file: suite.file,
+            test_id: testId,
+            title: test.title,
+            code: process.env.TESTOMATIO_UPDATE_CODE ? test.body.toString() : '',
+            time: 0,
+            manuallyAttachedArtifacts: artifacts,
+            meta: keyValues,
+            links,
+          });
+        }
+      }
+    }
+
     services.setContext(null);
   });
 
@@ -101,6 +130,17 @@ function MochaReporter(runner, opts) {
   runner.on(EVENT_TEST_FAIL, async (test, err) => {
     failures += 1;
     console.log(pc.bold(pc.red('✖')), test.fullTitle(), pc.gray(err.message));
+
+    const isHookFailure = test.title.includes('before each') || test.title.includes('after each');
+
+    if (isHookFailure && test.parent) {
+      hookFailures.set(test.parent.fullTitle(), {
+        error: err,
+        suiteTitle: getSuiteTitle(test),
+      });
+      return;
+    }
+
     const testId = getTestomatIdFromTestTitle(test.title);
 
     const logs = getTestLogs(test);
