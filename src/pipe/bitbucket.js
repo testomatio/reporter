@@ -205,6 +205,11 @@ export class BitbucketPipe {
     }
   }
 
+  async sync() {
+    // BitbucketPipe doesn't buffer tests, so sync is a no-op
+    // Reserved for future use if needed
+  }
+
   toString() {
     return 'Bitbucket Reporter';
   }

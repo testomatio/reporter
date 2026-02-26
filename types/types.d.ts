@@ -290,6 +290,9 @@ export interface Pipe {
   /** adds a test to the current run */
   addTest(test: TestData): any;
 
+  /** syncs / flushes buffered data (e.g., uploads batched tests) */
+  sync(): Promise<void>;
+
   /** ends the run */
   finishRun(runParams: RunData): Promise<void>;
 

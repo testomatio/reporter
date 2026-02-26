@@ -438,6 +438,15 @@ class TestomatioPipe {
   }
 
   /**
+   * Syncs / flushes buffered tests by uploading them as a batch
+   * This is used to manually trigger batch upload (e.g., after all tests are added)
+   */
+  async sync() {
+    if (!this.isEnabled) return;
+    await this.#batchUpload();
+  }
+
+  /**
    * @param {import('../../types/types.js').RunData} params
    * @returns
    */

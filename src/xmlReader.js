@@ -529,6 +529,52 @@ class XmlReader {
     return run;
   }
 
+  /**
+   * Calculate the approximate size of data in bytes (JSON stringified length)
+   * @param {Object} data - Data to measure
+   * @returns {number} Size in bytes
+   */
+  #getObjectSize(data) {
+    const body = JSON.stringify(data);
+    return new TextEncoder().encode(body).length;
+  }
+
+  /**
+   * Split tests array into chunks based on data size
+   * @param {Array} tests - Array of tests to split
+   * @returns {Array<Array>} Array of test chunks
+   */
+  #splitTestsIntoChunks(tests) {
+    const maxSizeBytes = 1 * 1024 * 1024;
+
+    const chunks = [];
+    let currentChunk = [];
+    let currentChunkSize = 0;
+
+    for (const test of tests) {
+      const testSize = this.#getObjectSize(test);
+
+      const wouldExceedSize = currentChunkSize + testSize > maxSizeBytes;
+
+      if (wouldExceedSize) {
+        if (currentChunk.length > 0) {
+          chunks.push(currentChunk);
+        }
+        currentChunk = [];
+        currentChunkSize = 0;
+      }
+
+      currentChunk.push(test);
+      currentChunkSize += testSize;
+    }
+
+    if (currentChunk.length > 0) {
+      chunks.push(currentChunk);
+    }
+
+    return chunks;
+  }
+
   async uploadData() {
     await this.uploadArtifacts();
     this.calculateStats();
@@ -537,18 +583,63 @@ class XmlReader {
     this.formatErrors();
     this.formatTests();
 
-    const dataString = {
-      ...this.stats,
+    this.pipes = this.pipes || (await this.pipesPromise);
+
+    // Create run before uploading tests to ensure runId is set
+    await this.createRun();
+
+    if (!this.tests || !Array.isArray(this.tests) || this.tests.length === 0) {
+      debug('No tests to upload, finishing run');
+      const finishData = {
+        api_key: this.requestParams.apiKey,
+        status: 'finished',
+        duration: this.stats.duration,
+        detach: this.requestParams.detach,
+      };
+      return Promise.all(this.pipes.map(p => p.finishRun(finishData)));
+    }
+
+    const testChunks = this.#splitTestsIntoChunks(this.tests);
+
+    const totalChunks = testChunks.length;
+    const totalTests = this.tests.length;
+
+    debug(`Split ${totalTests} tests into ${totalChunks} chunks (max 1MB per chunk)`);
+
+    let uploadedTests = 0;
+    for (let i = 0; i < testChunks.length; i++) {
+      const chunk = testChunks[i];
+      const chunkNum = i + 1;
+
+      if (totalChunks > 1) {
+        debug(`Uploading chunk ${chunkNum}/${totalChunks} (${chunk.length} tests)`);
+      }
+
+      for (const test of chunk) {
+        await Promise.all(this.pipes.map(p => p.addTest(test)));
+      }
+
+      await Promise.all(this.pipes.map(p => p.sync()));
+
+      uploadedTests += chunk.length;
+      debug(`Uploaded ${uploadedTests}/${totalTests} tests`);
+    }
+
+    if (totalChunks > 1) {
+      console.log(APP_PREFIX, `✅ Successfully uploaded ${uploadedTests} tests in ${totalChunks} chunks`);
+    } else {
+      console.log(APP_PREFIX, `✅ Successfully uploaded ${uploadedTests} tests`);
+    }
+
+    const finishData = {
       api_key: this.requestParams.apiKey,
       status: 'finished',
       duration: this.stats.duration,
-      tests: this.tests,
+      detach: this.requestParams.detach,
     };
 
-    debug('Uploading data', dataString);
-
-    this.pipes = this.pipes || (await this.pipesPromise);
-    return Promise.all(this.pipes.map(p => p.finishRun(dataString)));
+    debug('Finishing run with status:', finishData.status);
+    return Promise.all(this.pipes.map(p => p.finishRun(finishData)));
   }
 
   async _finishRun() {
