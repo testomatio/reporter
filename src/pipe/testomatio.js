@@ -556,11 +556,13 @@ class TestomatioPipe {
     message += `\t${pc.bold('response: ')}${pc.gray(responseBody)}\n`;
 
     const requestBody = hideTestomatioToken(stringify(error.response?.config?.data));
-    if (process.env.DEBUG || process.env.TESTOMATIO_DEBUG) {
+    if (process.env.DEBUG || process.env.TESTOMATIO_DEBUG || requestBody.length < 1000) {
+      // full body
       message += `\t${pc.bold('request: ')}${pc.gray(requestBody)}\n`;
     } else {
+      // cut body
       const requestBodyCut = requestBody.slice(0, 1000);
-      message += `\t${pc.bold('request: ')}${pc.gray(`${requestBodyCut}.....`)}\n`;
+      message += `\t${pc.bold('request: ')}${pc.gray(`${requestBodyCut}...`)}\n`;
       message += '\trequest body is cut, run with TESTOMATIO_DEBUG=1 to see full body\n';
     }
 
