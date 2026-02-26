@@ -291,13 +291,13 @@ class TestomatioPipe {
       process.env.runId = this.runId;
       debug('Run created', this.runId);
     } catch (err) {
+      if (!this.apiKey) console.error('Testomat.io API key is not set');
       const errorText = err.response?.data?.message || err.message;
       debug('Error creating run', err);
       console.log(APP_PREFIX, errorText || err);
       if (err.response?.status === 403) {
         this.#disablePipe();
       }
-      if (!this.apiKey) console.error('Testomat.io API key is not set');
 
       this.#logFailedResponse(err);
 
@@ -546,7 +546,7 @@ class TestomatioPipe {
     const method = error.response?.config?.method || '<unknown method>';
     const url = String(error.response?.config?.url || '<unknown url>');
 
-    let message = pc.yellow('\n⚠️ Request to Testomat.io failed:\n');
+    let message = pc.yellow('⚠️ Request to Testomat.io failed:\n');
     message += pc.bold(`${pc.red(statusCode)} ${method} ${pc.gray(url)}\n`);
 
     if (statusCode === 403) {
