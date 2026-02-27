@@ -3,7 +3,7 @@ import os from 'os';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
-import { APP_PREFIX, STATUS as Status, TESTOMAT_TMP_STORAGE_DIR } from '../constants.js';
+import { STATUS as Status, TESTOMAT_TMP_STORAGE_DIR } from '../constants.js';
 import TestomatioClient from '../client.js';
 import { getTestomatIdFromTestTitle, fileSystem } from '../utils/utils.js';
 import { services } from '../services/index.js';
@@ -11,6 +11,7 @@ import { dataStorage } from '../data-storage.js';
 import { extensionMap } from '../utils/constants.js';
 import pc from 'picocolors';
 import { fetchLinksFromLogs } from './utils/playwright.js';
+import { log } from '../utils/log.js';
 
 const reportTestPromises = [];
 
@@ -179,7 +180,7 @@ class PlaywrightReporter {
     await Promise.all(reportTestPromises);
 
     if (this.uploads.length) {
-      if (this.client.uploader.isEnabled) console.log(APP_PREFIX, `🎞️  Uploading ${this.uploads.length} files...`);
+      if (this.client.uploader.isEnabled) log.info( `🎞️  Uploading ${this.uploads.length} files...`);
 
       const promises = [];
 

@@ -21,6 +21,7 @@ import { pipesFactory } from './pipe/index.js';
 import adapterFactory from './junit-adapter/index.js';
 import { config } from './config.js';
 import { S3Uploader } from './uploader.js';
+import { log } from './utils/log.js';
 
 // @ts-ignore this line will be removed in compiled code, because __dirname is defined in commonjs
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -86,7 +87,7 @@ class XmlReader {
     // @ts-ignore
     const packageJsonPath = path.resolve(__dirname, '..', 'package.json');
     this.version = JSON.parse(fs.readFileSync(packageJsonPath).toString()).version;
-    console.log(APP_PREFIX, `Testomatio Reporter v${this.version}`);
+    log.info( `Testomatio Reporter v${this.version}`);
   }
 
   connectAdapter() {
@@ -508,7 +509,7 @@ class XmlReader {
 
       const runId = this.runId || this.store.runId || Date.now().toString();
       test.artifacts = await Promise.all(files.map(f => this.uploader.uploadFileByPath(f, [runId, path.basename(f)])));
-      console.log(APP_PREFIX, `🗄️ Uploaded ${pc.bold(`${files.length} artifacts`)} for test ${test.title}`);
+      log.info( `🗄️ Uploaded ${pc.bold(`${files.length} artifacts`)} for test ${test.title}`);
     }
   }
 
@@ -626,9 +627,9 @@ class XmlReader {
     }
 
     if (totalChunks > 1) {
-      console.log(APP_PREFIX, `✅ Successfully uploaded ${uploadedTests} tests in ${totalChunks} chunks`);
+      log.info( `✅ Successfully uploaded ${uploadedTests} tests in ${totalChunks} chunks`);
     } else {
-      console.log(APP_PREFIX, `✅ Successfully uploaded ${uploadedTests} tests`);
+      log.info( `✅ Successfully uploaded ${uploadedTests} tests`);
     }
 
     const finishData = {

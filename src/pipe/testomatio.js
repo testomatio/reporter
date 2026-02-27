@@ -12,6 +12,7 @@ import {
 } from '../utils/utils.js';
 import { parseFilterParams, generateFilterRequestParams, setS3Credentials } from '../utils/pipe_utils.js';
 import { config } from '../config.js';
+import { log } from '../utils/log.js';
 
 const debug = createDebugMessages('@testomatio/reporter:pipe:testomatio');
 
@@ -65,10 +66,10 @@ class TestomatioPipe {
       const sha = getGitCommitSha();
       if (sha) {
         this.title = `Shared Run - ${sha}`;
-        console.log(APP_PREFIX, `🔄 Auto-generated title for shared run: ${this.title}`);
+        log.info(`🔄 Auto-generated title for shared run: ${this.title}`);
       } else {
-        console.log(APP_PREFIX, pc.red('Failed to resolve git commit SHA for shared run title.'));
-        console.log(APP_PREFIX, 'Please run the tests inside a Git repository or set TESTOMATIO_TITLE explicitly.');
+        log.warn(pc.red('Failed to resolve git commit SHA for shared run title.'),
+          'Please run the tests inside a Git repository or set TESTOMATIO_TITLE explicitly.');
       }
     }
     this.groupTitle = params.groupTitle || process.env.TESTOMATIO_RUNGROUP_TITLE;
@@ -106,7 +107,7 @@ class TestomatioPipe {
 
     if (!isValidUrl(this.url.trim())) {
       this.isEnabled = false;
-      console.error(APP_PREFIX, pc.red(`Error creating report on Testomat.io, report url '${this.url}' is invalid`));
+      log.error(pc.red(`Error creating report on Testomat.io, report url '${this.url}' is invalid`));
     }
   }
 
@@ -177,9 +178,9 @@ class TestomatioPipe {
         return resp.data.tests;
       }
 
-      console.log(APP_PREFIX, `⛔  No tests found for your --filter --> ${type}=${id}`);
+      log.warn(`⛔  No tests found for your --filter --> ${type}=${id}`);
     } catch (err) {
-      console.error(APP_PREFIX, `🚩 Error getting Testomat.io test grepList: ${err}`);
+      log.error(`🚩 Error getting Testomat.io test grepList: ${err}`);
     }
   }
 
@@ -262,8 +263,8 @@ class TestomatioPipe {
         this.runPublicUrl = resp.data.public_url;
         this.store.runUrl = this.runUrl;
         this.store.runPublicUrl = this.runPublicUrl;
-        console.log(APP_PREFIX, '📊 Using existing run. Report ID:', this.runId);
-        console.log(APP_PREFIX, '📊 Report URL:', pc.magenta(this.runUrl));
+        log.info('📊 Using existing run. Report ID:', this.runId);
+        log.info('📊 Report URL:', pc.magenta(this.runUrl));
       }
       return;
     }
@@ -287,7 +288,7 @@ class TestomatioPipe {
       this.store.runUrl = this.runUrl;
       this.store.runPublicUrl = this.runPublicUrl;
       this.store.runId = this.runId;
-      console.log(APP_PREFIX, '📊 Report created. Report ID:', this.runId);
+      log.info('📊 Report created. Report ID:', this.runId);
       process.env.runId = this.runId;
       debug('Run created', this.runId);
     } catch (err) {
@@ -355,7 +356,7 @@ class TestomatioPipe {
           this.#logFailedResponse(err);
           printCreateIssue();
         } else {
-          console.log(APP_PREFIX, pc.blue(data?.title || ''), "Report couldn't be processed", err);
+          log.info(pc.blue(data?.title || ''), "Report couldn't be processed", err);
         }
       });
   };
@@ -406,7 +407,7 @@ class TestomatioPipe {
           this.#logFailedResponse(err);
           printCreateIssue();
         } else {
-          console.log(APP_PREFIX, "Report couldn't be processed", err);
+          log.info("Report couldn't be processed", err);
         }
       });
   };
@@ -420,7 +421,7 @@ class TestomatioPipe {
 
     this.runId = this.runId || process.env.runId || this.store.runId || readLatestRunId();
     if (!this.runId) {
-      console.warn(APP_PREFIX, pc.red('Run ID is not set, skipping test reporting'));
+      log.warn(pc.red('Run ID is not set, skipping test reporting'));
       return;
     }
 
@@ -495,21 +496,21 @@ class TestomatioPipe {
         });
 
         if (this.runUrl) {
-          console.log(APP_PREFIX, '📊 Report Saved. Report URL:', pc.magenta(this.runUrl));
+          log.warn('📊 Report URL:', pc.magenta(this.runUrl));
         }
         if (this.runPublicUrl) {
-          console.log(APP_PREFIX, '🌟 Public URL:', pc.magenta(this.runPublicUrl));
+          log.info('🌟 Public URL:', pc.magenta(this.runPublicUrl));
         }
       }
       if (this.runUrl && this.proceed) {
         const notFinishedMessage = pc.yellow(pc.bold('Run was not finished because of $TESTOMATIO_PROCEED'));
-        console.log(APP_PREFIX, `📊 ${notFinishedMessage}. Report URL: ${pc.magenta(this.runUrl)}`);
-        console.log(APP_PREFIX, `🛬 Run to finish it: TESTOMATIO_RUN=${this.runId} npx @testomatio/reporter finish`);
+        log.warn(`📊 ${notFinishedMessage}. Report URL: ${pc.magenta(this.runUrl)}`);
+        log.warn(`🛬 Run to finish it: TESTOMATIO_RUN=${this.runId} npx @testomatio/reporter finish`);
       }
 
       if (this.hasUnmatchedTests) {
         console.log('');
-        console.log(APP_PREFIX, pc.yellow(pc.bold('⚠️ Some reported tests were not found in Testomat.io project')));
+        log.warn(pc.yellow(pc.bold('⚠️ Some reported tests were not found in Testomat.io project')));
         console.log(
           APP_PREFIX,
           `If you use Testomat.io as a reporter only, please re-run tests using ${pc.bold('TESTOMATIO_CREATE=1')}`,
@@ -518,14 +519,14 @@ class TestomatioPipe {
           APP_PREFIX,
           `But to keep your tests consistent it is recommended to ${pc.bold('import tests first')}`,
         );
-        console.log(APP_PREFIX, 'If tests were imported but still not matched, assign test IDs to your tests.');
-        console.log(APP_PREFIX, 'You can do that automatically via command line tools:');
-        console.log(APP_PREFIX, pc.bold('npx check-tests ... --update-ids'), 'See: https://bit.ly/js-update-ids');
-        console.log(APP_PREFIX, 'or for Cucumber:');
-        console.log(APP_PREFIX, pc.bold('npx check-cucumber ... --update-ids'), 'See: https://bit.ly/bdd-update-ids');
+        log.info('If tests were imported but still not matched, assign test IDs to your tests.',
+          'You can do that automatically via command line tools:',
+          pc.bold('npx check-tests ... --update-ids'), 'See: https://bit.ly/js-update-ids',
+          'or for Cucumber:',
+          pc.bold('npx check-cucumber ... --update-ids'), 'See: https://bit.ly/bdd-update-ids');
       }
     } catch (err) {
-      console.log(APP_PREFIX, 'Error updating status, skipping...', err);
+      log.info('Error updating status, skipping...', err);
       if (process.env.DEBUG || process.env.TESTOMATIO_DEBUG) this.#logFailedResponse(err);
       printCreateIssue();
     }
@@ -541,7 +542,7 @@ class TestomatioPipe {
       clearInterval(this.batch.intervalFunction);
       this.batch.intervalFunction = null;
       this.batch.isEnabled = false;
-    }              
+    }
     this.batch.tests = [];
   }
 

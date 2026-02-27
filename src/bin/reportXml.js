@@ -3,11 +3,10 @@ import { Command } from 'commander';
 import pc from 'picocolors';
 import { glob } from 'glob';
 import createDebugMessages from 'debug';
-import { APP_PREFIX } from '../constants.js';
 import XmlReader from '../xmlReader.js';
 import { getPackageVersion } from '../utils/utils.js';
 import dotenv from 'dotenv';
-import path from 'path';
+import { log } from '../utils/log.js';
 
 const version = getPackageVersion();
 
@@ -28,7 +27,7 @@ program
     }
     let { javaTests, lang } = opts;
     if (opts.envFile) {
-      console.log(APP_PREFIX, 'Loading env file:', opts.envFile);
+      log.info( 'Loading env file:', opts.envFile);
       debug('Loading env file: %s', opts.envFile);
       dotenv.config({ path: opts.envFile });
     }
@@ -40,13 +39,13 @@ program
     });
     const files = glob.sync(pattern, { cwd: opts.dir || process.cwd() });
     if (!files.length) {
-      console.log(APP_PREFIX, `Report can't be created. No XML files found 😥`);
+      log.info( `Report can't be created. No XML files found 😥`);
       process.exitCode = 1;
       return;
     }
 
     for (const file of files) {
-      console.log(APP_PREFIX, `Parsed ${file}`);
+      log.info( `Parsed ${file}`);
       runReader.parse(file);
     }
 
@@ -67,7 +66,7 @@ program
       await runReader.createRun();
       await runReader.uploadData();
     } catch (err) {
-      console.log(APP_PREFIX, 'Error updating status, skipping...', err);
+      log.info( 'Error updating status, skipping...', err);
     }
 
     if (timeoutTimer) clearTimeout(timeoutTimer);

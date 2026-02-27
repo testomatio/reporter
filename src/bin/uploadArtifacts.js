@@ -4,11 +4,11 @@ import { Command } from 'commander';
 import pc from 'picocolors';
 import createDebugMessages from 'debug';
 import TestomatClient from '../client.js';
-import { APP_PREFIX } from '../constants.js';
 import { getPackageVersion } from '../utils/utils.js';
 import { config } from '../config.js';
 import { readLatestRunId } from '../utils/utils.js';
 import dotenv from 'dotenv';
+import { log } from '../utils/log.js';
 
 const debug = createDebugMessages('@testomatio/reporter:upload-cli');
 const version = getPackageVersion();
@@ -48,10 +48,10 @@ program
     if (!opts.force) testruns = testruns.filter(tr => !tr.uploaded);
 
     if (!testruns.length) {
-      console.log(APP_PREFIX, 'Total artifacts:', numTotalArtifacts);
+      log.info( 'Total artifacts:', numTotalArtifacts);
       if (numTotalArtifacts) {
-        console.log(APP_PREFIX, 'No new artifacts to upload');
-        console.log(APP_PREFIX, 'To re-upload artifacts run this command with --force flag');
+        log.info( 'No new artifacts to upload');
+        log.info( 'To re-upload artifacts run this command with --force flag');
       }
       process.exit(0);
     }
@@ -78,9 +78,9 @@ program
       });
     }
 
-    console.log(APP_PREFIX, client.uploader.successfulUploads.length, 'artifacts uploaded');
+    log.info( client.uploader.successfulUploads.length, 'artifacts uploaded');
     if (client.uploader.failedUploads.length) {
-      console.log(APP_PREFIX, client.uploader.failedUploads.length, 'artifacts failed to upload');
+      log.info( client.uploader.failedUploads.length, 'artifacts failed to upload');
     }
   });
 

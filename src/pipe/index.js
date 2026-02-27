@@ -1,7 +1,6 @@
 import fs from 'fs';
 import path from 'path';
 import pc from 'picocolors';
-import { APP_PREFIX } from '../constants.js';
 import TestomatioPipe from './testomatio.js';
 import GitHubPipe from './github.js';
 import GitLabPipe from './gitlab.js';
@@ -10,6 +9,7 @@ import HtmlPipe from './html.js';
 import CoveragePipe from './coverage.js';
 import { BitbucketPipe } from './bitbucket.js';
 import { DebugPipe } from './debug.js';
+import { log } from '../utils/log.js';
 
 export async function pipesFactory(params, opts) {
   const extraPipes = [];
@@ -29,14 +29,14 @@ export async function pipesFactory(params, opts) {
       try {
         PipeClass = await import(pipeDef);
       } catch (err) {
-        console.log(APP_PREFIX, `Can't load module Testomatio pipe module from ${pipeDef}`);
+        log.info(`Can't load module Testomatio pipe module from ${pipeDef}`);
         continue;
       }
 
       try {
         extraPipes.push(new PipeClass(params, opts));
       } catch (err) {
-        console.log(APP_PREFIX, `Can't instantiate Testomatio for ${pipeDef}`, err);
+        log.info(`Can't instantiate Testomatio for ${pipeDef}`, err);
         continue;
       }
     }
@@ -56,15 +56,13 @@ export async function pipesFactory(params, opts) {
 
   const pipesEnabled = pipes.filter(p => p.isEnabled);
 
-  console.log(
-    APP_PREFIX,
+  log.info(
     pc.cyan('Pipes:'),
     pc.cyan(pipesEnabled.map(p => p.toString()).join(', ') || 'No pipes enabled'),
   );
 
   if (!pipesEnabled.length) {
-    console.log(
-      APP_PREFIX,
+    log.info(
       pc.dim('If you want to use Testomatio reporter, pass your token as TESTOMATIO env variable'),
     );
   }

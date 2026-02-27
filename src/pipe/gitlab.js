@@ -7,6 +7,7 @@ import path from 'path';
 import { APP_PREFIX, testomatLogoURL } from '../constants.js';
 import { ansiRegExp, isSameTest } from '../utils/utils.js';
 import { statusEmoji, fullName } from '../utils/pipe_utils.js';
+import { log } from '../utils/log.js';
 
 const debug = createDebugMessages('@testomatio/reporter:pipe:gitlab');
 
@@ -183,7 +184,7 @@ class GitLabPipe {
       // eslint-disable-next-line max-len
       const commentURL = `${this.ENV.CI_PROJECT_URL}/-/merge_requests/${this.ENV.CI_MERGE_REQUEST_IID}#note_${commentID}`;
 
-      console.log(APP_PREFIX, pc.yellow('GitLab'), `Report created: ${pc.magenta(commentURL)}`);
+      log.info( pc.yellow('GitLab'), `Report created: ${pc.magenta(commentURL)}`);
     } catch (err) {
       console.error(
         APP_PREFIX,
