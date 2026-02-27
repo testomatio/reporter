@@ -1,16 +1,23 @@
 import { APP_PREFIX } from '../constants.js';
 
+/**
+ * Log levels for the Testomat.io reporter.
+ * A message is logged if its level is <= the current log level.
+ * @example
+ * TESTOMATIO_LOG_LEVEL=ERROR npx codeceptjs run  // Only errors
+ * TESTOMATIO_LOG_LEVEL=WARN npx codeceptjs run   // Warnings and errors
+ * TESTOMATIO_LOG_LEVEL=INFO npx codeceptjs run   // Info, warnings, errors (default)
+ */
 export const LOG_LEVELS = {
   ERROR: 0,
   WARN: 1,
   INFO: 2,
-  DEBUG: 3,
 };
 
 /**
- * Get the current log level from environment variable
- * Defaults to INFO (info, warn, and error messages)
- * @returns {number} - Numeric log level
+ * Get the current log level from TESTOMATIO_LOG_LEVEL environment variable.
+ * Defaults to INFO (info, warn, and error messages).
+ * @returns {number} Numeric log level (0-2)
  */
 export function getLogLevel() {
   const envLevel = process.env.TESTOMATIO_LOG_LEVEL?.toUpperCase();
@@ -18,17 +25,19 @@ export function getLogLevel() {
 }
 
 /**
- * Check if a message should be logged based on its level
- * A message is logged if its level is <= the current log level
- * @param {number} messageLevel - Message level
- * @returns {boolean}
+ * Check if a message should be logged based on its level.
+ * A message is logged if its level is <= the current log level,
+ * or if TESTOMATIO_DEBUG is set (for debugging with the debug package).
+ * @param {number} messageLevel - Message level (LOG_LEVELS value)
+ * @returns {boolean} True if the message should be logged
  */
 export function shouldLog(messageLevel) {
   return messageLevel <= getLogLevel() || !!process.env.TESTOMATIO_DEBUG;
 }
 
 /**
- * Log an info message with [TESTOMATIO] prefix
+ * Log an info message with [TESTOMATIO] prefix.
+ * Only logs when TESTOMATIO_LOG_LEVEL is INFO.
  * @param {...any} args - Arguments to log
  */
 export function info(...args) {
@@ -38,7 +47,8 @@ export function info(...args) {
 }
 
 /**
- * Log a warning message with [TESTOMATIO] prefix
+ * Log a warning message with [TESTOMATIO] prefix.
+ * Only logs when TESTOMATIO_LOG_LEVEL is WARN or INFO.
  * @param {...any} args - Arguments to log
  */
 export function warn(...args) {
@@ -48,7 +58,8 @@ export function warn(...args) {
 }
 
 /**
- * Log an error message with [TESTOMATIO] prefix
+ * Log an error message with [TESTOMATIO] prefix.
+ * Logs for all TESTOMATIO_LOG_LEVEL values.
  * @param {...any} args - Arguments to log
  */
 export function error(...args) {
@@ -58,25 +69,18 @@ export function error(...args) {
 }
 
 /**
- * Log a debug message with [TESTOMATIO] prefix
- * @param {...any} args - Arguments to log
- */
-export function debug(...args) {
-  if (shouldLog(LOG_LEVELS.DEBUG)) {
-    console.log(APP_PREFIX, ...args);
-  }
-}
-
-/**
- * Create an object with all logging functions
- * Can be used as: import { log } from './utils/log.js';
- * log.info('message');
+ * Logging utility for Testomat.io reporter.
+ * All messages are prefixed with [TESTOMATIO] and respect TESTOMATIO_LOG_LEVEL.
+ * @example
+ * import { log } from './utils/log.js';
+ * log.info('Test started');
+ * log.warn('This is a warning');
+ * log.error('Something went wrong');
  */
 export const log = {
   info,
   warn,
   error,
-  debug,
   getLogLevel,
   shouldLog,
   LOG_LEVELS,

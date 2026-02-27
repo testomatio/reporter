@@ -135,6 +135,7 @@ Bring this reporter on CI and never lose test results again!
 - 🔂 [Workflows](./docs/workflows.md)
 - 🖊️ [Logger](./docs/logger.md)
 - 🪲 [Debug File Format](./docs/debug-file-format.md)
+- 📊 [Control output logs](./docs/log-level.md)
 
 ## Development
 

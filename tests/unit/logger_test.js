@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { log, info, warn, error, debug, LOG_LEVELS } from '../../src/utils/log.js';
+import { log, info, warn, error, LOG_LEVELS } from '../../src/utils/log.js';
 
 describe('Logger Utility', () => {
   let originalEnv;
@@ -39,11 +39,6 @@ describe('Logger Utility', () => {
       expect(log.getLogLevel()).to.equal(LOG_LEVELS.INFO);
     });
 
-    it('should return DEBUG (3) when TESTOMATIO_LOG_LEVEL=DEBUG', () => {
-      process.env.TESTOMATIO_LOG_LEVEL = 'DEBUG';
-      expect(log.getLogLevel()).to.equal(LOG_LEVELS.DEBUG);
-    });
-
     it('should handle lowercase env var values', () => {
       process.env.TESTOMATIO_LOG_LEVEL = 'error';
       expect(log.getLogLevel()).to.equal(LOG_LEVELS.ERROR);
@@ -78,14 +73,6 @@ describe('Logger Utility', () => {
 
     it('should return true for ERROR message when log level is WARN', () => {
       process.env.TESTOMATIO_LOG_LEVEL = 'WARN';
-      expect(log.shouldLog(LOG_LEVELS.ERROR)).to.be.true;
-    });
-
-    it('should return true for all messages when log level is DEBUG', () => {
-      process.env.TESTOMATIO_LOG_LEVEL = 'DEBUG';
-      expect(log.shouldLog(LOG_LEVELS.DEBUG)).to.be.true;
-      expect(log.shouldLog(LOG_LEVELS.INFO)).to.be.true;
-      expect(log.shouldLog(LOG_LEVELS.WARN)).to.be.true;
       expect(log.shouldLog(LOG_LEVELS.ERROR)).to.be.true;
     });
   });
@@ -143,20 +130,6 @@ describe('Logger Utility', () => {
       expect(calls.length).to.equal(1);
       expect(calls[0][0]).to.include('[TESTOMATIO]');
       expect(calls[0][1]).to.equal('test message');
-    });
-
-    it('should log when TESTOMATIO_LOG_LEVEL=DEBUG', () => {
-      process.env.TESTOMATIO_LOG_LEVEL = 'DEBUG';
-      const calls = [];
-      const originalLog = console.log;
-      console.log = (...args) => {
-        calls.push(args);
-      };
-
-      info('test message');
-      console.log = originalLog;
-
-      expect(calls.length).to.equal(1);
     });
   });
 
@@ -255,95 +228,6 @@ describe('Logger Utility', () => {
 
       expect(calls.length).to.equal(1);
     });
-
-    it('should error when TESTOMATIO_LOG_LEVEL=DEBUG', () => {
-      process.env.TESTOMATIO_LOG_LEVEL = 'DEBUG';
-      const calls = [];
-      const originalError = console.error;
-      console.error = (...args) => {
-        calls.push(args);
-      };
-
-      error('test message');
-      console.error = originalError;
-
-      expect(calls.length).to.equal(1);
-    });
-  });
-
-  describe('debug() - DEBUG level messages', () => {
-    it('should not debug when TESTOMATIO_LOG_LEVEL=INFO', () => {
-      process.env.TESTOMATIO_LOG_LEVEL = 'INFO';
-      const spy = new Proxy(console, {
-        get(target, prop) {
-          if (prop === 'log') {
-            return () => {
-              throw new Error('console.log should not be called');
-            };
-          }
-          return target[prop];
-        },
-      });
-      const originalLog = console.log;
-      console.log = spy.log;
-
-      expect(() => debug('test message')).to.not.throw();
-      console.log = originalLog;
-    });
-
-    it('should not debug when TESTOMATIO_LOG_LEVEL=WARN', () => {
-      process.env.TESTOMATIO_LOG_LEVEL = 'WARN';
-      const spy = new Proxy(console, {
-        get(target, prop) {
-          if (prop === 'log') {
-            return () => {
-              throw new Error('console.log should not be called');
-            };
-          }
-          return target[prop];
-        },
-      });
-      const originalLog = console.log;
-      console.log = spy.log;
-
-      expect(() => debug('test message')).to.not.throw();
-      console.log = originalLog;
-    });
-
-    it('should not debug when TESTOMATIO_LOG_LEVEL=ERROR', () => {
-      process.env.TESTOMATIO_LOG_LEVEL = 'ERROR';
-      const spy = new Proxy(console, {
-        get(target, prop) {
-          if (prop === 'log') {
-            return () => {
-              throw new Error('console.log should not be called');
-            };
-          }
-          return target[prop];
-        },
-      });
-      const originalLog = console.log;
-      console.log = spy.log;
-
-      expect(() => debug('test message')).to.not.throw();
-      console.log = originalLog;
-    });
-
-    it('should debug when TESTOMATIO_LOG_LEVEL=DEBUG', () => {
-      process.env.TESTOMATIO_LOG_LEVEL = 'DEBUG';
-      const calls = [];
-      const originalLog = console.log;
-      console.log = (...args) => {
-        calls.push(args);
-      };
-
-      debug('test message');
-      console.log = originalLog;
-
-      expect(calls.length).to.equal(1);
-      expect(calls[0][0]).to.include('[TESTOMATIO]');
-      expect(calls[0][1]).to.equal('test message');
-    });
   });
 
   describe('LOG_LEVELS constant', () => {
@@ -351,12 +235,12 @@ describe('Logger Utility', () => {
       expect(LOG_LEVELS).to.have.property('ERROR', 0);
       expect(LOG_LEVELS).to.have.property('WARN', 1);
       expect(LOG_LEVELS).to.have.property('INFO', 2);
-      expect(LOG_LEVELS).to.have.property('DEBUG', 3);
     });
 
-    it('should not have SILENT or LOG levels', () => {
+    it('should not have SILENT, LOG, or DEBUG levels', () => {
       expect(LOG_LEVELS).to.not.have.property('SILENT');
       expect(LOG_LEVELS).to.not.have.property('LOG');
+      expect(LOG_LEVELS).to.not.have.property('DEBUG');
     });
   });
 });
