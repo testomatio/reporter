@@ -1,4 +1,4 @@
-# Log Level Control
+# Testomatio reporter output control
 
 Control the verbosity of `[TESTOMATIO]` prefixed messages using the `TESTOMATIO_LOG_LEVEL` environment variable.
 
