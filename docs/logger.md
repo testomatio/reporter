@@ -113,6 +113,17 @@ List of available options:
 - `prettyObjects` [boolean] - if true, objects will be printed on multiple lines (easier to read). Default: `false` (object are printed on one line)
 - `logLevel` [error, warn, log, info, debug, trace, verbose, all] - ignores messages below the log level set. Also could be set by `LOG_LEVEL` env variable. Default: `all`
 
+## Logs and Test Status
+
+By default, **logs are only sent to Testomatio for failed tests**. Passed tests do not include log messages in the report to reduce report size and improve performance.
+
+To enable logs for passed tests, set the `TESTOMATIO_STACK_PASSED` environment variable:
+
+```bash
+# Enable logs for passed tests
+TESTOMATIO_STACK_PASSED=1 npm test
+```
+
 ### Supported frameworks
 
 This feature is under development right now. List of supported frameworks:
