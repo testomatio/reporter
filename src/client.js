@@ -93,7 +93,7 @@ class Client {
       // const p = this.pipes.find(p => p.id === `${pipe.toLowerCase()}`); TODO: as future updates
 
       if (!p?.isEnabled) {
-        log.warn("🚫 No active pipes were found in the system. Execution aborted!");
+        log.warn('🚫 No active pipes were found in the system. Execution aborted!');
         return;
       }
 

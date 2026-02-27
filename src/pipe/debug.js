@@ -40,7 +40,7 @@ export class DebugPipe {
         debug('Failed to create symlink:', err.message);
       }
 
-      log.info( '🪲 Debug file created');
+      log.info('🪲 Debug file created');
       this.testomatioEnvVars = Object.keys(process.env)
         .filter(key => key.startsWith('TESTOMATIO_'))
         .reduce((acc, key) => {
@@ -115,7 +115,7 @@ export class DebugPipe {
     await this.sync();
     if (this.batch.intervalFunction) clearInterval(this.batch.intervalFunction);
     this.logToFile({ action: 'finishRun', params });
-    log.info( '🪲 Debug Saved to', this.logFilePath);
+    log.info('🪲 Debug Saved to', this.logFilePath);
   }
 
   async sync() {

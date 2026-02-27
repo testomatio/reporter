@@ -134,7 +134,7 @@ export class S3Uploader {
     } catch (e) {
       this.failedUploads.push({ path: file.path, size: file.size });
       debug('S3 uploading error:', e);
-      log.info( 'Upload failed:', e.message, '\nConfig:\n', this.getMaskedConfig());
+      log.info('Upload failed:', e.message, '\nConfig:\n', this.getMaskedConfig());
     }
   }
 
@@ -161,7 +161,7 @@ export class S3Uploader {
     const diffHours = diff / 1000 / 60 / 60;
     debug('Diff hours:', diffHours);
     if (diffHours > 3) {
-      log.info( "Artifacts file is too old, can't process artifacts. Please re-run the tests.");
+      log.info("Artifacts file is too old, can't process artifacts. Please re-run the tests.");
       return [];
     }
 

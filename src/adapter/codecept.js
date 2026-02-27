@@ -229,7 +229,7 @@ async function uploadAttachments(client, attachments, messagePrefix, attachmentT
   if (!attachments?.length) return;
 
   if (client.uploader.isEnabled) {
-    log.info( `Attachments: ${messagePrefix} ${attachments.length} ${attachmentType} ...`);
+    log.info(`Attachments: ${messagePrefix} ${attachments.length} ${attachmentType} ...`);
   }
 
   const promises = attachments.map(async attachment => {

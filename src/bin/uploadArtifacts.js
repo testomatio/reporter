@@ -48,10 +48,10 @@ program
     if (!opts.force) testruns = testruns.filter(tr => !tr.uploaded);
 
     if (!testruns.length) {
-      log.info( 'Total artifacts:', numTotalArtifacts);
+      log.info('Total artifacts:', numTotalArtifacts);
       if (numTotalArtifacts) {
-        log.info( 'No new artifacts to upload');
-        log.info( 'To re-upload artifacts run this command with --force flag');
+        log.info('No new artifacts to upload');
+        log.info('To re-upload artifacts run this command with --force flag');
       }
       process.exit(0);
     }
@@ -78,9 +78,9 @@ program
       });
     }
 
-    log.info( client.uploader.successfulUploads.length, 'artifacts uploaded');
+    log.info(client.uploader.successfulUploads.length, 'artifacts uploaded');
     if (client.uploader.failedUploads.length) {
-      log.info( client.uploader.failedUploads.length, 'artifacts failed to upload');
+      log.info(client.uploader.failedUploads.length, 'artifacts failed to upload');
     }
   });
 

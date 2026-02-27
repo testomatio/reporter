@@ -87,7 +87,7 @@ class XmlReader {
     // @ts-ignore
     const packageJsonPath = path.resolve(__dirname, '..', 'package.json');
     this.version = JSON.parse(fs.readFileSync(packageJsonPath).toString()).version;
-    log.info( `Testomatio Reporter v${this.version}`);
+    log.info(`Testomatio Reporter v${this.version}`);
   }
 
   connectAdapter() {
@@ -509,7 +509,7 @@ class XmlReader {
 
       const runId = this.runId || this.store.runId || Date.now().toString();
       test.artifacts = await Promise.all(files.map(f => this.uploader.uploadFileByPath(f, [runId, path.basename(f)])));
-      log.info( `🗄️ Uploaded ${pc.bold(`${files.length} artifacts`)} for test ${test.title}`);
+      log.info(`🗄️ Uploaded ${pc.bold(`${files.length} artifacts`)} for test ${test.title}`);
     }
   }
 
@@ -627,9 +627,9 @@ class XmlReader {
     }
 
     if (totalChunks > 1) {
-      log.info( `✅ Successfully uploaded ${uploadedTests} tests in ${totalChunks} chunks`);
+      log.info(`✅ Successfully uploaded ${uploadedTests} tests in ${totalChunks} chunks`);
     } else {
-      log.info( `✅ Successfully uploaded ${uploadedTests} tests`);
+      log.info(`✅ Successfully uploaded ${uploadedTests} tests`);
     }
 
     const finishData = {

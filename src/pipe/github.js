@@ -192,9 +192,9 @@ class GitHubPipe {
       debug('Comment URL:', url);
       this.store.githubUrl = url;
 
-      log.info( pc.yellow('GitHub'), `Report created: ${pc.magenta(url)}`);
+      log.info(pc.yellow('GitHub'), `Report created: ${pc.magenta(url)}`);
     } catch (err) {
-      log.info( pc.yellow('GitHub'), `Couldn't create GitHub report ${err}`);
+      log.info(pc.yellow('GitHub'), `Couldn't create GitHub report ${err}`);
     }
   }
 

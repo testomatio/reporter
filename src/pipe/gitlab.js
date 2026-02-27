@@ -184,7 +184,7 @@ class GitLabPipe {
       // eslint-disable-next-line max-len
       const commentURL = `${this.ENV.CI_PROJECT_URL}/-/merge_requests/${this.ENV.CI_MERGE_REQUEST_IID}#note_${commentID}`;
 
-      log.info( pc.yellow('GitLab'), `Report created: ${pc.magenta(commentURL)}`);
+      log.info(pc.yellow('GitLab'), `Report created: ${pc.magenta(commentURL)}`);
     } catch (err) {
       console.error(
         APP_PREFIX,

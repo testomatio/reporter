@@ -68,8 +68,10 @@ class TestomatioPipe {
         this.title = `Shared Run - ${sha}`;
         log.info(`🔄 Auto-generated title for shared run: ${this.title}`);
       } else {
-        log.warn(pc.red('Failed to resolve git commit SHA for shared run title.'),
-          'Please run the tests inside a Git repository or set TESTOMATIO_TITLE explicitly.');
+        log.warn(
+          pc.red('Failed to resolve git commit SHA for shared run title.'),
+          'Please run the tests inside a Git repository or set TESTOMATIO_TITLE explicitly.',
+        );
       }
     }
     this.groupTitle = params.groupTitle || process.env.TESTOMATIO_RUNGROUP_TITLE;
@@ -519,11 +521,15 @@ class TestomatioPipe {
           APP_PREFIX,
           `But to keep your tests consistent it is recommended to ${pc.bold('import tests first')}`,
         );
-        log.info('If tests were imported but still not matched, assign test IDs to your tests.',
+        log.info(
+          'If tests were imported but still not matched, assign test IDs to your tests.',
           'You can do that automatically via command line tools:',
-          pc.bold('npx check-tests ... --update-ids'), 'See: https://bit.ly/js-update-ids',
+          pc.bold('npx check-tests ... --update-ids'),
+          'See: https://bit.ly/js-update-ids',
           'or for Cucumber:',
-          pc.bold('npx check-cucumber ... --update-ids'), 'See: https://bit.ly/bdd-update-ids');
+          pc.bold('npx check-cucumber ... --update-ids'),
+          'See: https://bit.ly/bdd-update-ids',
+        );
       }
     } catch (err) {
       log.info('Error updating status, skipping...', err);

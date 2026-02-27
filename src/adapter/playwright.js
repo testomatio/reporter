@@ -180,7 +180,7 @@ class PlaywrightReporter {
     await Promise.all(reportTestPromises);
 
     if (this.uploads.length) {
-      if (this.client.uploader.isEnabled) log.info( `🎞️  Uploading ${this.uploads.length} files...`);
+      if (this.client.uploader.isEnabled) log.info(`🎞️ Uploading ${this.uploads.length} files...`);
 
       const promises = [];
 

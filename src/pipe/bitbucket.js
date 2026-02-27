@@ -194,7 +194,7 @@ export class BitbucketPipe {
       // eslint-disable-next-line max-len
       const commentURL = `https://bitbucket.org/${this.ENV.BITBUCKET_WORKSPACE}/${this.ENV.BITBUCKET_REPO_SLUG}/pull-requests/${this.ENV.BITBUCKET_PR_ID}#comment-${commentID}`;
 
-      log.info( pc.yellow('Bitbucket'), `Report created: ${pc.magenta(commentURL)}`);
+      log.info(pc.yellow('Bitbucket'), `Report created: ${pc.magenta(commentURL)}`);
     } catch (err) {
       console.error(
         APP_PREFIX,
