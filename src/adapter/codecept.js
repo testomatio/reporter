@@ -340,11 +340,11 @@ function getTestLogs(test) {
   // Contexts for each log section
   const suiteTitle = test.parent.fullTitle();
   const testTitle = test.fullTitle();
-  const beforeSuiteLogsArr = services.log.getLogs(`BeforeSuite ${suiteTitle}`);
-  const beforeLogsArr = services.log.getLogs(`Before ${testTitle}`);
-  const testLogsArr = services.log.getLogs(testTitle);
-  const afterLogsArr = services.log.getLogs(`After ${testTitle}`);
-  const afterSuiteLogsArr = services.log.getLogs(`AfterSuite ${suiteTitle}`);
+  const beforeSuiteLogsArr = services.logger.getLogs(`BeforeSuite ${suiteTitle}`);
+  const beforeLogsArr = services.logger.getLogs(`Before ${testTitle}`);
+  const testLogsArr = services.logger.getLogs(testTitle);
+  const afterLogsArr = services.logger.getLogs(`After ${testTitle}`);
+  const afterSuiteLogsArr = services.logger.getLogs(`AfterSuite ${suiteTitle}`);
 
   const beforeSuiteLogs = beforeSuiteLogsArr ? beforeSuiteLogsArr.join('\n').trim() : '';
   const beforeLogs = beforeLogsArr ? beforeLogsArr.join('\n').trim() : '';
