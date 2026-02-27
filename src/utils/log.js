@@ -24,7 +24,7 @@ export function getLogLevel() {
  * @returns {boolean}
  */
 export function shouldLog(messageLevel) {
-  return messageLevel <= getLogLevel();
+  return messageLevel <= getLogLevel() || !!process.env.TESTOMATIO_DEBUG;
 }
 
 /**
