@@ -5,12 +5,13 @@ import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import { APP_PREFIX, STATUS as Status, TESTOMAT_TMP_STORAGE_DIR } from '../constants.js';
 import TestomatioClient from '../client.js';
-import { getTestomatIdFromTestTitle, fileSystem } from '../utils/utils.js';
+import { getTestomatIdFromTestTitle, fileSystem, truncate } from '../utils/utils.js';
 import { services } from '../services/index.js';
 import { dataStorage } from '../data-storage.js';
 import { extensionMap } from '../utils/constants.js';
 import pc from 'picocolors';
 import { fetchLinksFromLogs } from './utils/playwright.js';
+import { formatStep, addStatusToStep, addScreenshotToStep } from './utils/step-formatter.js';
 
 const reportTestPromises = [];
 
@@ -35,7 +36,7 @@ class PlaywrightReporter {
     dataStorage.setContext(fullTestTitle);
   }
 
-  onTestEnd(test, result) {
+  async onTestEnd(test, result) {
     // test.parent.project().__projectId
 
     if (!this.client) return;
@@ -54,13 +55,28 @@ class PlaywrightReporter {
 
     const suite_title = test.parent ? test.parent?.title : path.basename(test?.location?.file);
 
-    const steps = [];
-    for (const step of result.steps) {
-      const appendedStep = appendStep(step);
-      if (appendedStep) {
-        steps.push(appendedStep);
-      }
-    }
+    const rid = test.id || test.testId || uuidv4();
+
+    /**
+     * @type {{
+     * browser?: string,
+     * dependencies: string[],
+     * isMobile?: boolean
+     * metadata: Record<string, any>,
+     * name: string,
+     * }}
+     */
+    const project = {
+      browser: test.parent.project().use.defaultBrowserType,
+      dependencies: test.parent.project().dependencies,
+      isMobile: test.parent.project().use.isMobile,
+      metadata: test.parent.project().metadata,
+      name: test.parent.project().name,
+    };
+
+    const steps = (await Promise.all(
+      result.steps.map(async step => await appendStep(step, 0, this.client, this.client.runId, `${rid}-${project.name}`))
+    )).filter(step => step !== null);
 
     // Extract and normalize tags
     const tags = extractTags(test);
@@ -86,24 +102,6 @@ class PlaywrightReporter {
     */
     const manuallyAttachedArtifacts = services.artifacts.get(fullTestTitle);
     const testMeta = services.keyValues.get(fullTestTitle);
-    const rid = test.id || test.testId || uuidv4();
-
-    /**
-     * @type {{
-     * browser?: string,
-     * dependencies: string[],
-     * isMobile?: boolean
-     * metadata: Record<string, any>,
-     * name: string,
-     * }}
-     */
-    const project = {
-      browser: test.parent.project().use.defaultBrowserType,
-      dependencies: test.parent.project().dependencies,
-      isMobile: test.parent.project().use.isMobile,
-      metadata: test.parent.project().metadata,
-      name: test.parent.project().name,
-    };
 
     let status = result.status;
     // process test.fail() annotation
@@ -224,7 +222,7 @@ function checkStatus(status) {
   );
 }
 
-function appendStep(step, shift = 0) {
+async function appendStep(step, shift = 0, client = null, runId = null, testRid = null) {
   // nesting too deep, ignore those steps
   if (shift >= 10) return;
 
@@ -242,26 +240,54 @@ function appendStep(step, shift = 0) {
       newCategory = 'framework';
   }
 
+  const resultStep = formatStep({
+    category: newCategory,
+    title: step.title,
+    duration: step.duration,
+  });
+
+  // Add status based on error
+  addStatusToStep(resultStep, step.error ? 'failed' : 'passed', step.error);
+
+  // Add error if present
+  if (step.error !== undefined) {
+    if (typeof step.error === 'object') {
+      resultStep.error = {
+        message: truncate(String(step.error.message || 'Step failed'), 250),
+        stack: truncate(String(step.error.stack || ''), 250),
+      };
+    } else {
+      resultStep.error = truncate(String(step.error), 250);
+    }
+  }
+
+  // Add log if present
+  if (step.log) {
+    resultStep.log = truncate(String(step.log), 250);
+  }
+
+  // Add screenshot from attachments (only if S3 is enabled)
+  if (client && client.uploader.isEnabled && step.attachments && step.attachments.length > 0) {
+    const screenshotAttachment = step.attachments.find(att =>
+      att.contentType === 'image/png' && att.name === 'screenshot'
+    );
+    if (screenshotAttachment && screenshotAttachment.path) {
+      const artifacts = { screenshot: screenshotAttachment.path };
+      await addScreenshotToStep(resultStep, artifacts, client.uploader, runId, testRid);
+    }
+  }
+
+  // Process nested steps
   const formattedSteps = [];
   for (const child of step.steps || []) {
-    const appendedChild = appendStep(child, shift + 2);
+    const appendedChild = await appendStep(child, shift + 2, client, runId, testRid);
     if (appendedChild) {
       formattedSteps.push(appendedChild);
     }
   }
 
-  const resultStep = {
-    category: newCategory,
-    title: step.title,
-    duration: step.duration,
-  };
-
   if (formattedSteps.length) {
     resultStep.steps = formattedSteps.filter(s => !!s);
-  }
-
-  if (step.error !== undefined) {
-    resultStep.error = step.error;
   }
 
   return resultStep;

@@ -255,20 +255,23 @@ components:
       properties:
         category:
           type: string
+          maxLength: 250
           description: The category of the step (framework, user, hook)
         title:
           type: string
+          maxLength: 250
           description: The title of the step
         duration:
           type: number
           description: The duration of the step in seconds
         log:
           type: string
-          description: Log output for the step (max 250 chars)
           maxLength: 250
+          description: Log output for the step
         screenshot:
           type: string
           format: uri
+          maxLength: 250
           description: URL to the screenshot for this step
         status:
           type: string

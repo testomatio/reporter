@@ -5,6 +5,7 @@ import { STATUS, APP_PREFIX, TESTOMAT_TMP_STORAGE_DIR } from '../constants.js';
 import { getTestomatIdFromTestTitle, truncate, fileSystem } from '../utils/utils.js';
 import { services } from '../services/index.js';
 import { dataStorage } from '../data-storage.js';
+import { formatStep, addStatusToStep, addScreenshotToStep } from './utils/step-formatter.js';
 import codeceptjs from 'codeceptjs';
 
 const debug = createDebugMessages('@testomatio/reporter:adapter:codeceptjs');
@@ -181,7 +182,7 @@ function CodeceptReporter(config) {
     client.updateRunStatus('finished');
   });
 
-  event.dispatcher.on(event.test.after, test => {
+  event.dispatcher.on(event.test.after, async test => {
     const { uid, tags, title, artifacts } = test.simplify();
     const error = test.err || null;
     failedTests.push(uid || title);
@@ -190,7 +191,7 @@ function CodeceptReporter(config) {
     const logs = getTestLogs(test);
     const manuallyAttachedArtifacts = services.artifacts.get(test.fullTitle());
     const keyValues = services.keyValues.get(test.fullTitle());
-    const stepHierarchy = buildUnifiedStepHierarchy(test.steps, hookSteps);
+    const stepHierarchy = await buildUnifiedStepHierarchy(test.steps, hookSteps, client, uid);
     const links = services.links.get(test.fullTitle());
 
     services.setContext(null);
@@ -372,37 +373,37 @@ function getTestLogs(test) {
 }
 
 // Build step hierarchy using CodeceptJS built-in methods
-function buildUnifiedStepHierarchy(steps, hookSteps) {
+async function buildUnifiedStepHierarchy(steps, hookSteps, client, testRid) {
   const hierarchy = [];
 
   // Add pre-test hooks
-  addHooksToHierarchy(hierarchy, hookSteps, HOOK_EXECUTION_ORDER.PRE_TEST);
+  await addHooksToHierarchy(hierarchy, hookSteps, HOOK_EXECUTION_ORDER.PRE_TEST, client, testRid);
 
   // Process test steps if they exist
   if (steps && steps.length > 0) {
-    processTestSteps(steps, hierarchy);
+    await processTestSteps(steps, hierarchy, client, testRid);
   }
 
   // Add post-test hooks
-  addHooksToHierarchy(hierarchy, hookSteps, HOOK_EXECUTION_ORDER.POST_TEST);
+  await addHooksToHierarchy(hierarchy, hookSteps, HOOK_EXECUTION_ORDER.POST_TEST, client, testRid);
 
   return hierarchy;
 }
 
-function addHooksToHierarchy(hierarchy, hookSteps, hookNames) {
+async function addHooksToHierarchy(hierarchy, hookSteps, hookNames, client, testRid) {
   for (const hookName of hookNames) {
     if (hookSteps.has(hookName)) {
-      const hookSection = createHookSection(hookName, hookSteps.get(hookName));
+      const hookSection = await createHookSection(hookName, hookSteps.get(hookName), client, testRid);
       if (hookSection) hierarchy.push(hookSection);
     }
   }
 }
 
-function processTestSteps(steps, hierarchy) {
+async function processTestSteps(steps, hierarchy, client, testRid) {
   const sectionMap = new Map();
 
   for (const step of steps) {
-    const formattedStep = formatCodeceptStep(step);
+    const formattedStep = await formatCodeceptStep(step, client, testRid);
     if (!formattedStep) continue;
 
     if (step.metaStep) {
@@ -434,7 +435,7 @@ function createSectionStep(metaStep) {
   };
 }
 
-function createHookSection(hookName, steps) {
+async function createHookSection(hookName, steps, client, testRid) {
   if (!steps || steps.length === 0) return null;
 
   const hookSection = {
@@ -445,7 +446,7 @@ function createHookSection(hookName, steps) {
   };
 
   for (const step of steps) {
-    const formattedStep = formatHookStep(step);
+    const formattedStep = await formatHookStep(step, client, testRid);
     if (formattedStep) {
       hookSection.steps.push(formattedStep);
       hookSection.duration += formattedStep.duration || 0;
@@ -460,31 +461,44 @@ function formatHookName(hookName) {
 }
 
 // Format CodeceptJS step using its built-in methods
-function formatCodeceptStep(step) {
+async function formatCodeceptStep(step, client, testRid) {
   if (!step) return null;
 
   const category = step.constructor.name === 'HelperStep' ? 'framework' : 'user';
-  const title = truncate(step); // Use built-in toString
-  const duration = step.duration || 0; // Use built-in duration
+  const title = truncate(String(step));
+  const duration = step.duration || 0;
 
-  const formattedStep = {
+  const formattedStep = formatStep({
     category,
     title,
     duration,
-  };
+  });
+
+  // Add status
+  addStatusToStep(formattedStep, step.status, step.err);
 
   // Add error if step failed
   if (step.status === 'failed' && step.err) {
     formattedStep.error = {
-      message: step.err.message || 'Step failed',
-      stack: step.err.stack || '',
+      message: truncate(String(step.err.message || 'Step failed'), 250),
+      stack: truncate(String(step.err.stack || ''), 250),
     };
+  }
+
+  // Add screenshot from artifacts (only if S3 is enabled)
+  if (client.uploader.isEnabled && step.artifacts) {
+    await addScreenshotToStep(formattedStep, step.artifacts, client.uploader, client.runId, testRid);
+  }
+
+  // Add log if present
+  if (step.log) {
+    formattedStep.log = truncate(String(step.log), 250);
   }
 
   return formattedStep;
 }
 
-function formatHookStep(step) {
+async function formatHookStep(step, client, testRid) {
   if (!step) return null;
 
   // For hook steps, construct title from available properties
@@ -492,17 +506,38 @@ function formatHookStep(step) {
   if (step.actor && step.name) {
     title = `${step.actor} ${step.name}`;
     if (step.args && step.args.length > 0) {
-      const argsStr = step.args.map(arg => truncate(JSON.stringify(arg))).join(', ');
+      const argsStr = step.args.map(arg => truncate(JSON.stringify(arg), 250)).join(', ');
       title += ` ${argsStr}`;
     }
   }
   title = truncate(title);
 
-  return {
+  const formattedStep = formatStep({
     category: 'hook',
     title,
     duration: step.duration || 0,
-  };
+  });
+
+  addStatusToStep(formattedStep, step.status, step.err);
+
+  if (step.status === 'failed' && step.err) {
+    formattedStep.error = {
+      message: truncate(String(step.err.message || 'Hook failed'), 250),
+      stack: truncate(String(step.err.stack || ''), 250),
+    };
+  }
+
+  // Add screenshot from artifacts
+  if (client.uploader.isEnabled && step.artifacts) {
+    await addScreenshotToStep(formattedStep, step.artifacts, client.uploader, client.runId, testRid);
+  }
+
+  // Add log if present
+  if (step.log) {
+    formattedStep.log = truncate(String(step.log), 250);
+  }
+
+  return formattedStep;
 }
 
 export { CodeceptReporter };
