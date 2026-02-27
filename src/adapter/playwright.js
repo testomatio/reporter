@@ -75,7 +75,13 @@ class PlaywrightReporter {
     };
 
     const steps = (await Promise.all(
-      result.steps.map(async step => await appendStep(step, 0, this.client, this.client.runId, `${rid}-${project.name}`))
+      result.steps.map(async step => await appendStep(
+        step, 
+        0, 
+        this.client, 
+        this.client.runId, 
+        `${rid}-${project.name}`
+      ))
     )).filter(step => step !== null);
 
     // Extract and normalize tags
