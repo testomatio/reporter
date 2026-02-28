@@ -268,6 +268,7 @@ Configuration for artifacts storage. Those variables can be obtained from Testom
 - `S3_REGION`: Your S3 region.
 - `S3_SECRET_ACCESS_KEY`: Your S3 secret access key.
 - `TESTOMATIO_PRIVATE_ARTIFACTS`: Store artifacts in a bucket privately.
+- `TESTOMATIO_S3_NO_ACL`: Disable ACL headers for S3 uploads. Use this for Google Cloud Storage, S3 buckets with "Bucket Owner Enforced" settings, or other configurations that don't support ACL headers.
 
 These variables are used to define how artifacts are uploaded:
 
