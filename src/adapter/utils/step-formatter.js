@@ -11,10 +11,6 @@ export function formatStep(step) {
     duration: step.duration || 0,
   };
 
-  if (step.status) {
-    formattedStep.status = truncate(String(step.status), 250);
-  }
-
   if (step.log) {
     formattedStep.log = truncate(String(step.log), 250);
   }
