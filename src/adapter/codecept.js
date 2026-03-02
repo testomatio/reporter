@@ -1,11 +1,11 @@
 import createDebugMessages from 'debug';
 import pc from 'picocolors';
 import TestomatClient from '../client.js';
-import { STATUS, APP_PREFIX, TESTOMAT_TMP_STORAGE_DIR } from '../constants.js';
+import { STATUS, APP_PREFIX, TESTOMAT_TMP_STORAGE_DIR, SCREENSHOTS_ON_STEPS } from '../constants.js';
 import { getTestomatIdFromTestTitle, truncate, fileSystem } from '../utils/utils.js';
 import { services } from '../services/index.js';
 import { dataStorage } from '../data-storage.js';
-import { formatStep, addStatusToStep, addScreenshotToStep } from './utils/step-formatter.js';
+import { formatStep, addStatusToStep, addArtifactsToStep } from './utils/step-formatter.js';
 import codeceptjs from 'codeceptjs';
 
 const debug = createDebugMessages('@testomatio/reporter:adapter:codeceptjs');
@@ -485,9 +485,9 @@ async function formatCodeceptStep(step, client, testRid) {
     };
   }
 
-  // Add screenshot from artifacts (only if S3 is enabled)
-  if (client.uploader.isEnabled && step.artifacts) {
-    await addScreenshotToStep(formattedStep, step.artifacts, client.uploader, client.runId, testRid);
+  // Add artifacts (only if S3 is enabled and screenshots on steps is enabled)
+  if (client.uploader.isEnabled && step.artifacts && SCREENSHOTS_ON_STEPS) {
+    await addArtifactsToStep(formattedStep, step.artifacts, client.uploader, client.runId, testRid);
   }
 
   // Add log if present
@@ -527,9 +527,9 @@ async function formatHookStep(step, client, testRid) {
     };
   }
 
-  // Add screenshot from artifacts
-  if (client.uploader.isEnabled && step.artifacts) {
-    await addScreenshotToStep(formattedStep, step.artifacts, client.uploader, client.runId, testRid);
+  // Add artifacts (only if S3 is enabled and screenshots on steps is enabled)
+  if (client.uploader.isEnabled && step.artifacts && SCREENSHOTS_ON_STEPS) {
+    await addArtifactsToStep(formattedStep, step.artifacts, client.uploader, client.runId, testRid);
   }
 
   // Add log if present

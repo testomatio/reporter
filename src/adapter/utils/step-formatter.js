@@ -13,7 +13,7 @@ import path from 'path';
  * - title: step name/description, truncated to 250 chars
  * - duration: step execution time in seconds
  * - log: optional log output, truncated to 250 chars
- * - screenshot: optional screenshot URL, truncated to 250 chars
+ * - artifacts: optional array of artifact URLs (screenshots), each truncated to 250 chars
  * - error: error details (message + stack) if step failed, each truncated to 250 chars
  * - steps: recursively formats nested steps
  *
@@ -24,11 +24,11 @@ import path from 'path';
  * @param {string} [step.title] - Step title/name
  * @param {number} [step.duration] - Step duration in seconds
  * @param {string} [step.log] - Log output for this step
- * @param {string} [step.screenshot] - URL or path to screenshot
+ * @param {string[]} [step.artifacts] - Array of artifact URLs (screenshots)
  * @param {string|Object} [step.error] - Error details - can be string or object with message/stack
  * @param {Object[]} [step.steps] - Array of nested child steps
- * @returns {Object} Formatted step object matching Testomat.io Step Schema with: 
- * category, title, duration, and optional log, screenshot, error, and steps fields
+ * @returns {Object} Formatted step object matching Testomat.io Step Schema with:
+ * category, title, duration, and optional log, artifacts, error, and steps fields
  *
  * @example
  * const rawStep = {
@@ -51,8 +51,8 @@ export function formatStep(step) {
     formattedStep.log = truncate(String(step.log), 250);
   }
 
-  if (step.screenshot) {
-    formattedStep.screenshot = truncate(String(step.screenshot), 250);
+  if (step.artifacts && Array.isArray(step.artifacts)) {
+    formattedStep.artifacts = step.artifacts.map(artifact => truncate(String(artifact), 250));
   }
 
   if (step.error) {
@@ -126,10 +126,10 @@ export function addStatusToStep(step, status, err) {
 }
 
 /**
- * Adds screenshot field to step
+ * Adds screenshot to step as artifacts array
  *
  * Extracts screenshot path from artifacts and uploads it to S3 storage.
- * The uploaded URL is then added to the step's screenshot field.
+ * The uploaded URL is then added to the step's artifacts array.
  *
  * Artifact format supports:
  * - Array format: [{ screenshot: '/path/to/screenshot.png' }]
@@ -144,32 +144,23 @@ export function addStatusToStep(step, status, err) {
  *
  * IMPORTANT: Only uploads when S3 uploader is enabled (uploader.isEnabled === true)
  *
- * @param {Object} step - Step object to add screenshot to (modified in place)
- * @param {string} [step.screenshot] - Existing screenshot URL (won't be overwritten if present)
+ * @param {Object} step - Step object to add artifacts to (modified in place)
+ * @param {string[]} [step.artifacts] - Existing artifacts array (won't be overwritten if present)
  * @param {Object|Object[]|null} artifacts - Artifacts from test framework
  * @param {Object} uploader - S3 uploader instance with uploadFileByPath method
  * @param {boolean} uploader.isEnabled - Whether S3 upload is enabled
  * @param {Function} uploader.uploadFileByPath - Async function to upload file: (path, keys) => Promise<string>
  * @param {string} runId - Test run ID for upload path
  * @param {string} testRid - Test/result ID for upload path
- * @returns {Promise<Object>} The same step object with screenshot field added (max 250 chars URL)
+ * @returns {Promise<Object>} The same step object with artifacts array added (max 250 chars URL)
  *
  * @example
  * const step = { title: 'Click button' };
  * const artifacts = { screenshot: '/tmp/screenshot.png' };
- * await addScreenshotToStep(step, artifacts, uploader, 'run123', 'test456');
- * // step.screenshot === 'https://s3.amazonaws.com/bucket/run123/test456/steps/screenshot.png'
- *
- * @example
- * const step2 = { title: 'Login' };
- * const artifacts2 = [
- *   { screenshot: '/tmp/login.png' },
- *   { video: '/tmp/login.mp4' }
- * ];
- * await addScreenshotToStep(step2, artifacts2, uploader, 'run123', 'test789');
- * // step2.screenshot === 'https://s3.amazonaws.com/bucket/run123/test789/steps/login.png'
+ * await addArtifactsToStep(step, artifacts, uploader, 'run123', 'test456');
+ * // step.artifacts === ['https://s3.amazonaws.com/bucket/run123/test456/steps/screenshot.png']
  */
-export async function addScreenshotToStep(step, artifacts, uploader, runId, testRid) {
+export async function addArtifactsToStep(step, artifacts, uploader, runId, testRid) {
   if (!artifacts) return step;
 
   let screenshotPath = null;
@@ -190,7 +181,7 @@ export async function addScreenshotToStep(step, artifacts, uploader, runId, test
     const uploadResult = await uploader.uploadFileByPath(screenshotPath, [runId, testRid, 'steps', filename]);
 
     if (uploadResult) {
-      step.screenshot = truncate(uploadResult, 250);
+      step.artifacts = [truncate(uploadResult, 250)];
     }
   }
 

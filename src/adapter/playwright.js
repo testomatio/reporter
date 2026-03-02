@@ -3,7 +3,7 @@ import os from 'os';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
-import { APP_PREFIX, STATUS as Status, TESTOMAT_TMP_STORAGE_DIR } from '../constants.js';
+import { APP_PREFIX, STATUS as Status, TESTOMAT_TMP_STORAGE_DIR, SCREENSHOTS_ON_STEPS } from '../constants.js';
 import TestomatioClient from '../client.js';
 import { getTestomatIdFromTestTitle, fileSystem, truncate } from '../utils/utils.js';
 import { services } from '../services/index.js';
@@ -11,7 +11,7 @@ import { dataStorage } from '../data-storage.js';
 import { extensionMap } from '../utils/constants.js';
 import pc from 'picocolors';
 import { fetchLinksFromLogs } from './utils/playwright.js';
-import { formatStep, addStatusToStep, addScreenshotToStep } from './utils/step-formatter.js';
+import { formatStep, addStatusToStep, addArtifactsToStep } from './utils/step-formatter.js';
 
 const reportTestPromises = [];
 
@@ -272,14 +272,14 @@ async function appendStep(step, shift = 0, client = null, runId = null, testRid 
     resultStep.log = truncate(String(step.log), 250);
   }
 
-  // Add screenshot from attachments (only if S3 is enabled)
-  if (client && client.uploader.isEnabled && step.attachments && step.attachments.length > 0) {
+  // Add artifacts from attachments (only if S3 is enabled and screenshots on steps is enabled)
+  if (client && client.uploader.isEnabled && step.attachments && step.attachments.length > 0 && SCREENSHOTS_ON_STEPS) {
     const screenshotAttachment = step.attachments.find(att =>
       att.contentType === 'image/png' && att.name === 'screenshot'
     );
     if (screenshotAttachment && screenshotAttachment.path) {
       const artifacts = { screenshot: screenshotAttachment.path };
-      await addScreenshotToStep(resultStep, artifacts, client.uploader, runId, testRid);
+      await addArtifactsToStep(resultStep, artifacts, client.uploader, runId, testRid);
     }
   }
 

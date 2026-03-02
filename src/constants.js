@@ -8,6 +8,7 @@ if (TESTOMATIO_REQUEST_TIMEOUT) {
   console.log(`${APP_PREFIX} Request timeout is set to ${TESTOMATIO_REQUEST_TIMEOUT / 1000}s`);
 }
 const AXIOS_TIMEOUT = TESTOMATIO_REQUEST_TIMEOUT || 20 * 1000;
+const SCREENSHOTS_ON_STEPS = process.env.TESTOMATIO_SCREENSHOTS_ON_STEPS !== 'false';
 
 const TESTOMAT_TMP_STORAGE_DIR = path.join(os.tmpdir(), 'testomatio_tmp');
 
@@ -50,4 +51,5 @@ export {
   AXIOS_TIMEOUT,
   testomatLogoURL,
   REPORTER_REQUEST_RETRIES,
+  SCREENSHOTS_ON_STEPS,
 };

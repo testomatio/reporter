@@ -268,11 +268,6 @@ components:
           type: string
           maxLength: 250
           description: Log output for the step
-        screenshot:
-          type: string
-          format: uri
-          maxLength: 250
-          description: URL to the screenshot for this step
         status:
           type: string
           enum:
@@ -281,6 +276,12 @@ components:
             - none
             - custom
           description: The status of the step
+        artifacts:
+          type: array
+          items:
+            type: string
+            format: uri
+          description: An array of artifact URLs (screenshots) for this step
         steps:
           type: array
           items:

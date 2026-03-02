@@ -244,6 +244,16 @@ Example:
 TESTOMATIO={API_KEY} TESTOMATIO_NO_STEPS=1 <actual run command>
 ```
 
+#### `TESTOMATIO_SCREENSHOTS_ON_STEPS`
+
+Enable or disable uploading screenshots for steps. By default, screenshots on steps are uploaded to S3 and attached to the step as artifacts. Set to `false` to disable.
+
+Example:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_SCREENSHOTS_ON_STEPS=false <actual run command>
+```
+
 #### `TESTOMATIO_TITLE`
 
 Set the report title.
