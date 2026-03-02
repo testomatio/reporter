@@ -54,58 +54,29 @@ function generateFilterRequestParams(params) {
 }
 
 /**
- * Parse filter parameters from a string in the format "type=id".
- * @param {string} opts - The input string containing the filter parameters.
- * @returns {Object} An object containing the parsed filter parameters.
- *                   The object has properties "type" and "id".
+ * Parse multiple filter parameters from a string in format "type1=id1,type2=id2".
+ * @param {string} opts - The input string containing filter parameters.
+ * @returns {Array<{type: string, id: string}>} Array of parsed filter objects.
  */
 function parseFilterParams(opts) {
-  const [type, ...idParts] = opts.split('=');
-  const id = idParts.join('=');
-  
-  const validType = updateFilterType(type);
+  if (!opts || typeof opts !== 'string') return [];
 
-  if (!validType) return undefined;
+  const filters = [];
+  const pairs = opts.split(',');
 
-  return {
-    type: validType,
-    id,
-  };
-}
+  for (const pair of pairs) {
+    const trimmed = pair.trim();
+    if (!trimmed || !trimmed.includes('=')) continue;
 
-/**
- * Update and validate the filter type.
- * @param {string} type - The original filter type.
- * @returns {string|undefined} The updated and validated filter type.
- *                            Returns undefined if the type is not valid.
- */
-function updateFilterType(type) {
-  if (!type || typeof type !== 'string') return;
+    const [type, ...idParts] = trimmed.split('=');
+    const id = idParts.join('=');
 
-  let typeLowerCase = type.toLowerCase();
-
-  const filterTypes = ['tag-name', 'plan', 'label', 'jira-ticket'];
-
-  if (typeLowerCase === 'plan-id') {
-    typeLowerCase = 'plan';
+    if (type && id) {
+      filters.push({ type: type.toLowerCase(), id });
+    }
   }
 
-  const filterApi = [
-    'tag',
-    'plan',
-    'label',
-    'jira',
-    // "ims-issue", //TODO: WIP
-  ];
-
-  if (!filterTypes.includes(typeLowerCase)) {
-    console.log(APP_PREFIX, `❗❗❗ Invalid filter: "${type}" start settings! Available option list: ${filterTypes}`);
-    return;
-  }
-
-  const index = filterTypes.indexOf(typeLowerCase);
-
-  return index !== -1 ? filterApi[index] : undefined;
+  return filters;
 }
 
 /**
@@ -161,12 +132,11 @@ function parsePipeOptions(optionsStr) {
   return options;
 }
 
-export { 
-  updateFilterType, 
-  parseFilterParams, 
-  generateFilterRequestParams, 
-  setS3Credentials, 
-  statusEmoji, 
+export {
+  parseFilterParams,
+  generateFilterRequestParams,
+  setS3Credentials,
+  statusEmoji,
   fullName,
   parsePipeOptions
 };

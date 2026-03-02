@@ -462,9 +462,21 @@ const fileSystem = {
   },
 };
 
-const foundedTestLog = (app, tests) => {
-  const n = tests.length;
+const foundedTestLog = (app, ids) => {
+  const isStringArray = ids.length > 0 && typeof ids[0] === 'string';
 
+  if (isStringArray) {
+    const suites = ids.filter(id => id.startsWith('S'));
+    const tests = ids.filter(id => !id.startsWith('S'));
+
+    const parts = [];
+    if (tests.length) parts.push(tests.length === 1 ? '1 test' : `${tests.length} tests`);
+    if (suites.length) parts.push(suites.length === 1 ? '1 suite' : `${suites.length} suites`);
+
+    return console.log(app, `✅ We found ${parts.join(' and ')} in Testomat.io!`);
+  }
+
+  const n = ids.length;
   return console.log(app, `✅ We found ${n === 1 ? 'one test' : `${n} tests`} in Testomat.io!`);
 };
 

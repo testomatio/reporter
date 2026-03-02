@@ -74,6 +74,7 @@ class TestomatioPipe {
     this.groupTitle = params.groupTitle || process.env.TESTOMATIO_RUNGROUP_TITLE;
     this.env = process.env.TESTOMATIO_ENV;
     this.label = process.env.TESTOMATIO_LABEL;
+    this.runConfiguration = {};
 
     // Create a new instance of gaxios with a custom config
     this.client = new Gaxios({
@@ -139,47 +140,56 @@ class TestomatioPipe {
 
   /**
    * Asynchronously prepares and retrieves the Testomat.io test grepList based on the provided options.
-   * @param {Object} opts - The options for preparing the test grepList.
+   * @param {string} opts - The options string for preparing the test grepList.
    * @returns {Promise<string[]>} - An array containing the retrieved
    * test grepList, or an empty array if no tests are found or the request is disabled.
-   * @throws {Error} - Throws an error if there was a problem while making the request.
    */
   async prepareRun(opts) {
     if (!this.isEnabled) return [];
 
-    const clearOptions = parseFilterParams(opts);
+    const filters = parseFilterParams(opts);
 
-    if (!clearOptions) {
+    if (!filters.length) {
       return [];
     }
 
-    const { type, id } = clearOptions;
-
     try {
-      const q = generateFilterRequestParams({
-        type,
-        id,
-        apiKey: this?.apiKey?.trim(),
+      const promises = filters.map(async ({ type, id }) => {
+        const q = generateFilterRequestParams({
+          type,
+          id,
+          apiKey: this?.apiKey?.trim(),
+        });
+
+        if (!q) return [];
+
+        const resp = await this.client.request({
+          method: 'GET',
+          url: '/api/test_grep',
+          ...q,
+        });
+
+        return Array.isArray(resp.data?.tests) ? resp.data.tests : [];
       });
 
-      if (!q) {
-        return [];
+      const results = await Promise.all(promises);
+      const allIds = [...new Set(results.flat())];
+
+      if (allIds.length > 0) {
+        foundedTestLog(APP_PREFIX, allIds);
+
+        const tests = allIds.filter(id => !id.startsWith('S'));
+        const suites = allIds.filter(id => id.startsWith('S'));
+        this.store.filterConfiguration = { tests, suites };
+
+        return allIds;
       }
 
-      const resp = await this.client.request({
-        method: 'GET',
-        url: '/api/test_grep',
-        ...q,
-      });
-
-      if (Array.isArray(resp.data?.tests) && resp.data?.tests?.length > 0) {
-        foundedTestLog(APP_PREFIX, resp.data.tests);
-        return resp.data.tests;
-      }
-
-      console.log(APP_PREFIX, `⛔  No tests found for your --filter --> ${type}=${id}`);
+      console.log(APP_PREFIX, `⛔  No tests found for filters: ${opts}`);
+      return [];
     } catch (err) {
       console.error(APP_PREFIX, `🚩 Error getting Testomat.io test grepList: ${err}`);
+      return [];
     }
   }
 
@@ -218,14 +228,23 @@ class TestomatioPipe {
     const accessEvent = process.env.TESTOMATIO_PUBLISH ? 'publish' : null;
 
     const coverageConfiguration = this.store?.coverageConfiguration;
+    const filterConfiguration = this.store?.filterConfiguration;
+
     let description = null;
     let configuration = null;
-    if (coverageConfiguration && (coverageConfiguration.tests?.length || coverageConfiguration.suites?.length)) {
+
+    const tests = [
+      ...(coverageConfiguration?.tests?.map(id => id.replace(/^T/, '')) || []),
+      ...(filterConfiguration?.tests?.map(id => id.replace(/^@?T?/, '')) || []),
+    ];
+    const suites = [
+      ...(coverageConfiguration?.suites?.map(id => id.replace(/^S/, '')) || []),
+      ...(filterConfiguration?.suites?.map(id => id.replace(/^S/, '')) || []),
+    ];
+
+    if (tests.length || suites.length) {
       description = this.store?.coverageDescription || null;
-      configuration = {
-        tests: coverageConfiguration.tests?.map(id => id.replace(/^T/, '')) || [],
-        suites: coverageConfiguration.suites?.map(id => id.replace(/^S/, '')) || [],
-      };
+      configuration = { tests: [...new Set(tests)], suites: [...new Set(suites)] };
     }
     const runParams = Object.fromEntries(
       Object.entries({
