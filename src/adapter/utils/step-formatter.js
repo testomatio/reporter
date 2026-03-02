@@ -27,7 +27,8 @@ import path from 'path';
  * @param {string} [step.screenshot] - URL or path to screenshot
  * @param {string|Object} [step.error] - Error details - can be string or object with message/stack
  * @param {Object[]} [step.steps] - Array of nested child steps
- * @returns {Object} Formatted step object matching Testomat.io Step Schema with category, title, duration, and optional log, screenshot, error, and steps fields
+ * @returns {Object} Formatted step object matching Testomat.io Step Schema with: 
+ * category, title, duration, and optional log, screenshot, error, and steps fields
  *
  * @example
  * const rawStep = {
