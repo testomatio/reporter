@@ -1,5 +1,32 @@
 import { truncate } from '../../utils/utils.js';
 import path from 'path';
+import crypto from 'crypto';
+import fs from 'fs';
+
+/**
+ * Generates a short unique filename from screenshot path
+ * If original filename is too long, uses hash-based name
+ *
+ * @param {string} screenshotPath - Path to screenshot file
+ * @returns {string} Short filename (max 80 chars)
+ */
+function generateShortFilename(screenshotPath) {
+  const originalFilename = path.basename(screenshotPath);
+
+  if (originalFilename.length < 40) {
+    return originalFilename;
+  }
+
+  const ext = path.extname(screenshotPath);
+
+  const hash = crypto
+    .createHash('sha256')
+    .update(screenshotPath)
+    .digest('hex')
+    .slice(0, 16);
+
+  return `screenshot_${hash}${ext}`;
+}
 
 /**
  * Formats a step object according to Testomat.io Step Schema
@@ -177,11 +204,20 @@ export async function addArtifactsToStep(step, artifacts, uploader, runId, testR
   }
 
   if (screenshotPath && uploader && runId && testRid) {
-    const filename = path.basename(screenshotPath);
+    if (!fs.existsSync(screenshotPath)) {
+      return step;
+    }
+
+    const filename = generateShortFilename(screenshotPath);
     const uploadResult = await uploader.uploadFileByPath(screenshotPath, [runId, testRid, 'steps', filename]);
 
     if (uploadResult) {
-      step.artifacts = [truncate(uploadResult, 250)];
+      const truncatedUrl = truncate(uploadResult, 250);
+      if (step.artifacts && Array.isArray(step.artifacts)) {
+        step.artifacts.push(truncatedUrl);
+      } else {
+        step.artifacts = [truncatedUrl];
+      }
     }
   }
 

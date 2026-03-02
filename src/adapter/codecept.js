@@ -191,8 +191,11 @@ function CodeceptReporter(config) {
     const logs = getTestLogs(test);
     const manuallyAttachedArtifacts = services.artifacts.get(test.fullTitle());
     const keyValues = services.keyValues.get(test.fullTitle());
-    const stepHierarchy = await buildUnifiedStepHierarchy(test.steps, hookSteps, client, uid);
     const links = services.links.get(test.fullTitle());
+    const screenshotOnFailPath = artifacts.screenshot || null;
+
+    // Build step hierarchy with screenshot from screenshotOnFail
+    const stepHierarchy = await buildUnifiedStepHierarchy(test.steps, hookSteps, client, uid, screenshotOnFailPath);
 
     services.setContext(null);
 
@@ -373,7 +376,7 @@ function getTestLogs(test) {
 }
 
 // Build step hierarchy using CodeceptJS built-in methods
-async function buildUnifiedStepHierarchy(steps, hookSteps, client, testRid) {
+async function buildUnifiedStepHierarchy(steps, hookSteps, client, testRid, screenshotOnFailPath = null) {
   const hierarchy = [];
 
   // Add pre-test hooks
@@ -381,7 +384,7 @@ async function buildUnifiedStepHierarchy(steps, hookSteps, client, testRid) {
 
   // Process test steps if they exist
   if (steps && steps.length > 0) {
-    await processTestSteps(steps, hierarchy, client, testRid);
+    await processTestSteps(steps, hierarchy, client, testRid, screenshotOnFailPath);
   }
 
   // Add post-test hooks
@@ -399,11 +402,18 @@ async function addHooksToHierarchy(hierarchy, hookSteps, hookNames, client, test
   }
 }
 
-async function processTestSteps(steps, hierarchy, client, testRid) {
+async function processTestSteps(steps, hierarchy, client, testRid, screenshotOnFailPath = null) {
   const sectionMap = new Map();
+  let screenshotAttached = false;
 
   for (const step of steps) {
-    const formattedStep = await formatCodeceptStep(step, client, testRid);
+    let stepScreenshotPath = null;
+    if (screenshotOnFailPath && !screenshotAttached && step.status === 'failed') {
+      stepScreenshotPath = screenshotOnFailPath;
+      screenshotAttached = true;
+    }
+
+    const formattedStep = await formatCodeceptStep(step, client, testRid, stepScreenshotPath);
     if (!formattedStep) continue;
 
     if (step.metaStep) {
@@ -461,7 +471,7 @@ function formatHookName(hookName) {
 }
 
 // Format CodeceptJS step using its built-in methods
-async function formatCodeceptStep(step, client, testRid) {
+async function formatCodeceptStep(step, client, testRid, screenshotOnFailPath = null) {
   if (!step) return null;
 
   const category = step.constructor.name === 'HelperStep' ? 'framework' : 'user';
@@ -488,6 +498,12 @@ async function formatCodeceptStep(step, client, testRid) {
   // Add artifacts (only if S3 is enabled and screenshots on steps is enabled)
   if (client.uploader.isEnabled && step.artifacts && SCREENSHOTS_ON_STEPS) {
     await addArtifactsToStep(formattedStep, step.artifacts, client.uploader, client.runId, testRid);
+  }
+
+  // Add screenshot from screenshotOnFail plugin
+  if (screenshotOnFailPath && SCREENSHOTS_ON_STEPS) {
+    const artifacts = { screenshot: screenshotOnFailPath };
+    await addArtifactsToStep(formattedStep, artifacts, client.uploader, client.runId, testRid);
   }
 
   // Add log if present
