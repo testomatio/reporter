@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 import { spawn } from 'node:child_process';
 import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { getPackageVersion } from '../utils/utils.js';
 import pc from 'picocolors';
 
-// Define __dirname - this will be replaced by build script with actual __dirname for CommonJS
-const __dirname = typeof globalThis.__dirname !== 'undefined' ? globalThis.__dirname : '.';
+const __dirname = dirname(fileURLToPath(import.meta.url));
 const cliPath = join(__dirname, 'cli.js');
 
 const version = getPackageVersion();
