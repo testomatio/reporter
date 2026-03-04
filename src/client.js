@@ -157,7 +157,10 @@ class Client {
             if (typeof artifact === 'string' && fs.existsSync(artifact)) {
               const filename = generateShortFilename(artifact);
               try {
-                const uploadResult = await this.uploader.uploadFileByPath(artifact, [runId, testRid, 'steps', filename]);
+                const uploadResult = await this.uploader.uploadFileByPath(
+                  artifact, 
+                  [runId, testRid, 'steps', filename]
+                );
                 if (uploadResult) {
                   uploadedArtifacts.push(uploadResult);
                 }
