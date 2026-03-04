@@ -248,6 +248,8 @@ TESTOMATIO={API_KEY} TESTOMATIO_NO_STEPS=1 <actual run command>
 
 Enable or disable uploading screenshots for steps. By default, screenshots on steps are uploaded to S3 and attached to the step as artifacts. Set to `false` to disable.
 
+Screenshots are uploaded only if the framework provides screenshot information for steps (e.g., Playwright captures screenshots during step execution, or CodeceptJS includes screenshot artifacts).
+
 Example:
 
 ```

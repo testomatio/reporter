@@ -10,7 +10,7 @@ import fs from 'fs';
  * @param {string} screenshotPath - Path to screenshot file
  * @returns {string} Short filename (max 80 chars)
  */
-function generateShortFilename(screenshotPath) {
+export function generateShortFilename(screenshotPath) {
   const originalFilename = path.basename(screenshotPath);
 
   if (originalFilename.length < 40) {
@@ -155,8 +155,8 @@ export function addStatusToStep(step, status, err) {
 /**
  * Adds screenshot to step as artifacts array
  *
- * Extracts screenshot path from artifacts and uploads it to S3 storage.
- * The uploaded URL is then added to the step's artifacts array.
+ * Extracts screenshot path from artifacts and adds it to the step's artifacts array.
+ * The actual upload will happen in the client's addTestRun method.
  *
  * Artifact format supports:
  * - Array format: [{ screenshot: '/path/to/screenshot.png' }]
@@ -167,27 +167,18 @@ export function addStatusToStep(step, status, err) {
  * - Object with screenshot property: { screenshot: { screenshot: '/path/to/file.png' } }
  * - Direct string path: { screenshot: '/path/to/file.png' }
  *
- * Upload path structure: [runId, testRid, 'steps', filename]
- *
- * IMPORTANT: Only uploads when S3 uploader is enabled (uploader.isEnabled === true)
- *
  * @param {Object} step - Step object to add artifacts to (modified in place)
  * @param {string[]} [step.artifacts] - Existing artifacts array (won't be overwritten if present)
  * @param {Object|Object[]|null} artifacts - Artifacts from test framework
- * @param {Object} uploader - S3 uploader instance with uploadFileByPath method
- * @param {boolean} uploader.isEnabled - Whether S3 upload is enabled
- * @param {Function} uploader.uploadFileByPath - Async function to upload file: (path, keys) => Promise<string>
- * @param {string} runId - Test run ID for upload path
- * @param {string} testRid - Test/result ID for upload path
- * @returns {Promise<Object>} The same step object with artifacts array added (max 250 chars URL)
+ * @returns {Object} The same step object with artifacts array added
  *
  * @example
  * const step = { title: 'Click button' };
  * const artifacts = { screenshot: '/tmp/screenshot.png' };
- * await addArtifactsToStep(step, artifacts, uploader, 'run123', 'test456');
- * // step.artifacts === ['https://s3.amazonaws.com/bucket/run123/test456/steps/screenshot.png']
+ * addArtifactsToStep(step, artifacts);
+ * // step.artifacts === ['/tmp/screenshot.png']
  */
-export async function addArtifactsToStep(step, artifacts, uploader, runId, testRid) {
+export function addArtifactsToStep(step, artifacts) {
   if (!artifacts) return step;
 
   let screenshotPath = null;
@@ -203,21 +194,12 @@ export async function addArtifactsToStep(step, artifacts, uploader, runId, testR
     screenshotPath = artifacts.screenshot;
   }
 
-  if (screenshotPath && uploader && runId && testRid) {
-    if (!fs.existsSync(screenshotPath)) {
-      return step;
-    }
-
-    const filename = generateShortFilename(screenshotPath);
-    const uploadResult = await uploader.uploadFileByPath(screenshotPath, [runId, testRid, 'steps', filename]);
-
-    if (uploadResult) {
-      const truncatedUrl = truncate(uploadResult, 250);
-      if (step.artifacts && Array.isArray(step.artifacts)) {
-        step.artifacts.push(truncatedUrl);
-      } else {
-        step.artifacts = [truncatedUrl];
-      }
+  if (screenshotPath && fs.existsSync(screenshotPath)) {
+    const truncatedPath = truncate(String(screenshotPath), 250);
+    if (step.artifacts && Array.isArray(step.artifacts)) {
+      step.artifacts.push(truncatedPath);
+    } else {
+      step.artifacts = [truncatedPath];
     }
   }
 

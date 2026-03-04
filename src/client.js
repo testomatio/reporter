@@ -1,13 +1,14 @@
 import createDebugMessages from 'debug';
 import fs from 'fs';
 import pc from 'picocolors';
-import { APP_PREFIX, STATUS } from './constants.js';
+import { APP_PREFIX, STATUS, SCREENSHOTS_ON_STEPS } from './constants.js';
 import { pipesFactory } from './pipe/index.js';
 import { glob } from 'glob';
 import path from 'path';
 import { fileURLToPath } from 'node:url';
 import { S3Uploader } from './uploader.js';
 import { readLatestRunId, storeRunId, validateSuiteId, transformEnvVarToBoolean } from './utils/utils.js';
+import { generateShortFilename } from './adapter/utils/step-formatter.js';
 import { filesize as prettyBytes } from 'filesize';
 import { formatLogs, formatError, stripColors } from './utils/log-formatter.js';
 
@@ -138,6 +139,50 @@ class Client {
   }
 
   /**
+   * Recursively uploads artifacts from steps
+   *
+   * @param {Object[]} steps - Array of step objects
+   * @param {string} runId - Test run ID
+   * @param {string} testRid - Test/result ID
+   * @returns {Promise<void>}
+   */
+  async uploadStepArtifacts(steps, runId, testRid) {
+    if (!steps || !Array.isArray(steps)) return;
+
+    try {
+      for (const step of steps) {
+        if (step.artifacts && Array.isArray(step.artifacts) && this.uploader.isEnabled && SCREENSHOTS_ON_STEPS) {
+          const uploadedArtifacts = [];
+          for (const artifact of step.artifacts) {
+            if (typeof artifact === 'string' && fs.existsSync(artifact)) {
+              const filename = generateShortFilename(artifact);
+              try {
+                const uploadResult = await this.uploader.uploadFileByPath(artifact, [runId, testRid, 'steps', filename]);
+                if (uploadResult) {
+                  uploadedArtifacts.push(uploadResult);
+                }
+              } catch (uploadErr) {
+                uploadedArtifacts.push(artifact);
+              }
+            } else {
+              uploadedArtifacts.push(artifact);
+            }
+          }
+          step.artifacts = uploadedArtifacts;
+        }
+
+        if (step.steps) {
+          await this.uploadStepArtifacts(step.steps, runId, testRid);
+        }
+      }
+
+    } catch (err) {
+      console.error(APP_PREFIX, 'Error in uploadStepArtifacts for testRid', testRid, ':', err);
+      throw err;
+    }
+  }
+
+  /**
    * Updates test status and its data
    *
    * @param {string|undefined} status
@@ -161,6 +206,15 @@ class Client {
      */
     const { rid, error = null, steps: originalSteps, title, suite_title } = testData;
     let steps = originalSteps;
+
+    // Upload artifacts from steps
+    if (steps && Array.isArray(steps) && this.uploader.isEnabled && SCREENSHOTS_ON_STEPS) {
+      try {
+        await this.uploadStepArtifacts(steps, this.runId, rid);
+      } catch (err) {
+        console.log(APP_PREFIX, 'Failed to upload step artifacts:', err);
+      }
+    }
 
     const uploadedFiles = [];
     const stackArtifactsEnabled = transformEnvVarToBoolean(process.env.TESTOMATIO_STACK_ARTIFACTS);

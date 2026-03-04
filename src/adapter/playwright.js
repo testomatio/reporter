@@ -74,15 +74,7 @@ class PlaywrightReporter {
       name: test.parent.project().name,
     };
 
-    const steps = (await Promise.all(
-      result.steps.map(async step => await appendStep(
-        step, 
-        0, 
-        this.client, 
-        this.client.runId, 
-        `${rid}-${project.name}`
-      ))
-    )).filter(step => step !== null);
+    const steps = result.steps.map(step => appendStep(step, 0)).filter(step => step !== null);
 
     // Extract and normalize tags
     const tags = extractTags(test);
@@ -228,7 +220,7 @@ function checkStatus(status) {
   );
 }
 
-async function appendStep(step, shift = 0, client = null, runId = null, testRid = null) {
+function appendStep(step, shift = 0) {
   // nesting too deep, ignore those steps
   if (shift >= 10) return;
 
@@ -259,7 +251,7 @@ async function appendStep(step, shift = 0, client = null, runId = null, testRid 
   if (step.error !== undefined) {
     if (typeof step.error === 'object') {
       resultStep.error = {
-        message: truncate(String(step.error.message || 'Step failed'), 250),
+        message: truncate(String(step.error.message), 250),
         stack: truncate(String(step.error.stack || ''), 250),
       };
     } else {
@@ -272,21 +264,21 @@ async function appendStep(step, shift = 0, client = null, runId = null, testRid 
     resultStep.log = truncate(String(step.log), 250);
   }
 
-  // Add artifacts from attachments (only if S3 is enabled and screenshots on steps is enabled)
-  if (client && client.uploader.isEnabled && step.attachments && step.attachments.length > 0 && SCREENSHOTS_ON_STEPS) {
+  // Add artifacts from attachments
+  if (step.attachments && step.attachments.length > 0 && SCREENSHOTS_ON_STEPS) {
     const screenshotAttachment = step.attachments.find(att =>
       att.contentType === 'image/png' && att.name === 'screenshot'
     );
     if (screenshotAttachment && screenshotAttachment.path) {
       const artifacts = { screenshot: screenshotAttachment.path };
-      await addArtifactsToStep(resultStep, artifacts, client.uploader, runId, testRid);
+      addArtifactsToStep(resultStep, artifacts);
     }
   }
 
   // Process nested steps
   const formattedSteps = [];
   for (const child of step.steps || []) {
-    const appendedChild = await appendStep(child, shift + 2, client, runId, testRid);
+    const appendedChild = appendStep(child, shift + 2);
     if (appendedChild) {
       formattedSteps.push(appendedChild);
     }
