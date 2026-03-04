@@ -192,6 +192,11 @@ class CoveragePipe { // or Changes for the future???
 
     async finishRun(runParams) {}
 
+    async sync() {
+        // CoveragePipe doesn't buffer tests, so sync is a no-op
+        // Reserved for future use if needed
+    }
+
     toString() {
         return 'Coverage Reporter';
     }

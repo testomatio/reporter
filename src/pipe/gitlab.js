@@ -195,6 +195,11 @@ class GitLabPipe {
     }
   }
 
+  async sync() {
+    // GitLabPipe doesn't buffer tests, so sync is a no-op
+    // Reserved for future use if needed
+  }
+
   toString() {
     return 'GitLab Reporter';
   }
