@@ -5,7 +5,8 @@ import { fileURLToPath } from 'node:url';
 import { getPackageVersion } from '../utils/utils.js';
 import pc from 'picocolors';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+// @ts-ignore
+const __dirname = typeof global.__dirname !== 'undefined' ? global.__dirname : dirname(fileURLToPath(import.meta.url));
 const cliPath = join(__dirname, 'cli.js');
 
 const version = getPackageVersion();
