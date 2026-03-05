@@ -212,7 +212,12 @@ function CodeceptReporter(config) {
     const aiTraceStepScreenshots = collectStepScreenshots(artifacts, logs);
 
     // Build step hierarchy with screenshot from screenshotOnFail
-    const stepHierarchy = buildUnifiedStepHierarchy(test.steps, hookSteps, screenshotOnFailPath, aiTraceStepScreenshots);
+    const stepHierarchy = buildUnifiedStepHierarchy(
+      test.steps, 
+      hookSteps, 
+      screenshotOnFailPath, 
+      aiTraceStepScreenshots
+    );
 
     services.setContext(null);
 
