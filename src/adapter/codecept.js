@@ -1,11 +1,13 @@
 import createDebugMessages from 'debug';
 import pc from 'picocolors';
+import fs from 'fs';
+import path from 'path';
 import TestomatClient from '../client.js';
 import { STATUS, APP_PREFIX, TESTOMAT_TMP_STORAGE_DIR, SCREENSHOTS_ON_STEPS } from '../constants.js';
 import { getTestomatIdFromTestTitle, truncate, fileSystem } from '../utils/utils.js';
 import { services } from '../services/index.js';
 import { dataStorage } from '../data-storage.js';
-import { formatStep, addStatusToStep, addArtifactsToStep } from './utils/step-formatter.js';
+import { formatStep, addStatusToStep, addArtifactsToStep, addArtifactPathToStep } from './utils/step-formatter.js';
 import codeceptjs from 'codeceptjs';
 
 const debug = createDebugMessages('@testomatio/reporter:adapter:codeceptjs');
@@ -49,6 +51,7 @@ function CodeceptReporter(config) {
   let videos = [];
   let traces = [];
   const reportTestPromises = [];
+  let isRunFinalized = false;
 
   const testTimeMap = {};
   const { apiKey } = config;
@@ -85,6 +88,19 @@ function CodeceptReporter(config) {
   const hookSteps = new Map();
   let currentHook = null;
 
+  const finalizeRun = async origin => {
+    if (isRunFinalized) return;
+    isRunFinalized = true;
+
+    debug(`finalizing run from ${origin}`);
+    debug('waiting for all tests to be reported');
+
+    await Promise.allSettled(reportTestPromises);
+    await uploadAttachments(client, videos, '🎞️ Uploading', 'video');
+    await uploadAttachments(client, traces, '📁 Uploading', 'trace');
+    await client.updateRunStatus('finished');
+  };
+
   event.dispatcher.on(event.workers.before, () => {
     recorder.add('Creating new run', async () => {
       await client.createRun();
@@ -95,7 +111,9 @@ function CodeceptReporter(config) {
   });
 
   event.dispatcher.on(event.workers.after, () => {
-    client.updateRunStatus('finished');
+    recorder.add('Finishing run', async () => {
+      await finalizeRun('workers.after');
+    });
   });
 
   // Listening to events
@@ -109,6 +127,8 @@ function CodeceptReporter(config) {
     });
     videos = [];
     traces = [];
+    isRunFinalized = false;
+    reportTestPromises.length = 0;
 
     if (!global.testomatioDataStore) global.testomatioDataStore = {};
   });
@@ -142,7 +162,7 @@ function CodeceptReporter(config) {
     const error = hook?.ctx?.currentTest?.err;
 
     for (const test of suite.tests) {
-      client.addTestRun('failed', {
+      const reportTestPromise = client.addTestRun('failed', {
         ...stripExampleFromTitle(test.title),
         rid: test.uid,
         test_id: getTestomatIdFromTestTitle(test.title),
@@ -150,6 +170,7 @@ function CodeceptReporter(config) {
         error,
         time: hook?.runnable?.duration,
       });
+      reportTestPromises.push(reportTestPromise);
     }
   });
 
@@ -171,15 +192,10 @@ function CodeceptReporter(config) {
     testTimeMap[test.uid] = Date.now();
   });
 
-  event.dispatcher.on(event.all.result, async result => {
-    debug('waiting for all tests to be reported');
-    // all tests were reported and we can upload videos
-    await Promise.all(reportTestPromises);
-
-    await uploadAttachments(client, videos, '🎞️ Uploading', 'video');
-    await uploadAttachments(client, traces, '📁 Uploading', 'trace');
-
-    client.updateRunStatus('finished');
+  event.dispatcher.on(event.all.after, () => {
+    recorder.add('Finishing run', async () => {
+      await finalizeRun('all.after');
+    });
   });
 
   event.dispatcher.on(event.test.after, test => {
@@ -193,13 +209,14 @@ function CodeceptReporter(config) {
     const keyValues = services.keyValues.get(test.fullTitle());
     const links = services.links.get(test.fullTitle());
     const screenshotOnFailPath = artifacts.screenshot || null;
+    const aiTraceStepScreenshots = collectStepScreenshots(artifacts, logs);
 
     // Build step hierarchy with screenshot from screenshotOnFail
-    const stepHierarchy = buildUnifiedStepHierarchy(test.steps, hookSteps, screenshotOnFailPath);
+    const stepHierarchy = buildUnifiedStepHierarchy(test.steps, hookSteps, screenshotOnFailPath, aiTraceStepScreenshots);
 
     services.setContext(null);
 
-    client.addTestRun(test.state, {
+    const reportTestPromise = client.addTestRun(test.state, {
       ...stripExampleFromTitle(title),
       rid: uid,
       test_id: getTestomatIdFromTestTitle(`${title} ${tags?.join(' ')}`),
@@ -214,6 +231,7 @@ function CodeceptReporter(config) {
       manuallyAttachedArtifacts,
       meta: { ...keyValues, ...test.meta },
     });
+    reportTestPromises.push(reportTestPromise);
 
     processArtifactsForUpload(artifacts, uid, title, videos, traces);
   });
@@ -376,7 +394,7 @@ function getTestLogs(test) {
 }
 
 // Build step hierarchy using CodeceptJS built-in methods
-function buildUnifiedStepHierarchy(steps, hookSteps, screenshotOnFailPath = null) {
+function buildUnifiedStepHierarchy(steps, hookSteps, screenshotOnFailPath = null, aiTraceStepScreenshots = []) {
   const hierarchy = [];
 
   // Add pre-test hooks
@@ -384,7 +402,7 @@ function buildUnifiedStepHierarchy(steps, hookSteps, screenshotOnFailPath = null
 
   // Process test steps if they exist
   if (steps && steps.length > 0) {
-    processTestSteps(steps, hierarchy, screenshotOnFailPath);
+    processTestSteps(steps, hierarchy, screenshotOnFailPath, aiTraceStepScreenshots);
   }
 
   // Add post-test hooks
@@ -402,9 +420,10 @@ function addHooksToHierarchy(hierarchy, hookSteps, hookNames) {
   }
 }
 
-function processTestSteps(steps, hierarchy, screenshotOnFailPath = null) {
+function processTestSteps(steps, hierarchy, screenshotOnFailPath = null, aiTraceStepScreenshots = []) {
   const sectionMap = new Map();
   let screenshotAttached = false;
+  let aiTraceScreenshotIndex = 0;
 
   for (const step of steps) {
     let stepScreenshotPath = null;
@@ -415,6 +434,14 @@ function processTestSteps(steps, hierarchy, screenshotOnFailPath = null) {
 
     const formattedStep = formatCodeceptStep(step, stepScreenshotPath);
     if (!formattedStep) continue;
+
+    if (SCREENSHOTS_ON_STEPS && (!formattedStep.artifacts || !formattedStep.artifacts.length)) {
+      const aiTraceScreenshotPath = aiTraceStepScreenshots[aiTraceScreenshotIndex];
+      if (aiTraceScreenshotPath) {
+        addArtifactPathToStep(formattedStep, aiTraceScreenshotPath);
+      }
+    }
+    aiTraceScreenshotIndex += 1;
 
     if (step.metaStep) {
       // Step belongs to a section (meta step)
@@ -433,6 +460,62 @@ function processTestSteps(steps, hierarchy, screenshotOnFailPath = null) {
       // Regular step
       hierarchy.push(formattedStep);
     }
+  }
+}
+
+/**
+ * Collects per-step screenshots with fallback strategy for CodeceptJS.
+ *
+ * Flow:
+ * 1) Primary source: parse `[Screenshot] ...` entries from test logs.
+ * 2) Fallback source: read screenshot files from aiTrace directory (`artifacts.aiTrace`).
+ * 3) Return ordered paths to map screenshots to steps by index.
+ *
+ * This is a resilience helper for cases where `step.artifacts` is empty
+ * but screenshots are still produced by plagins.
+ *
+ * @param {Object} artifacts - Test artifacts from `test.simplify()`
+ * @param {string} [logs=''] - Combined test logs
+ * @returns {string[]} Ordered list of screenshot paths
+ */
+function collectStepScreenshots(artifacts, logs = '') {
+  const screenshotsFromLogs = [];
+  if (logs && typeof logs === 'string') {
+    const pattern = /\[Screenshot\]\s+([^\r\n]+\.(?:png|jpe?g|webp|gif|bmp))/gi;
+    let match;
+    while ((match = pattern.exec(logs)) !== null) {
+      const rawPath = match[1].trim();
+      if (!rawPath) continue;
+
+      let normalizedPath = rawPath.replace(/^"+|"+$/g, '');
+      const hasDriveLetter = /^[A-Za-z]:[\\/]/.test(normalizedPath);
+      const hasRootOnly = /^[\\/]+/.test(normalizedPath) && !hasDriveLetter;
+      if (!path.isAbsolute(normalizedPath) || hasRootOnly) {
+        normalizedPath = normalizedPath.replace(/^[\\/]+/, '');
+        normalizedPath = path.join(process.cwd(), normalizedPath);
+      }
+      screenshotsFromLogs.push(normalizedPath);
+    }
+  }
+  if (screenshotsFromLogs.length) return Array.from(new Set(screenshotsFromLogs));
+
+  if (!artifacts || !artifacts.aiTrace) return [];
+
+  const aiTraceFile = String(artifacts.aiTrace);
+  const aiTracePath = path.isAbsolute(aiTraceFile) ? aiTraceFile : path.join(process.cwd(), aiTraceFile);
+  const aiTraceDir = path.dirname(aiTracePath);
+
+  if (!fs.existsSync(aiTraceDir)) return [];
+
+  try {
+    return fs
+      .readdirSync(aiTraceDir)
+      .filter(fileName => /^\d{4}_.+_screenshot\.(png|jpe?g|webp|gif|bmp)$/i.test(fileName))
+      .sort((a, b) => a.localeCompare(b))
+      .map(fileName => path.join(aiTraceDir, fileName));
+  } catch (err) {
+    debug('Failed to read screenshots:', err?.message || err);
+    return [];
   }
 }
 
@@ -502,8 +585,7 @@ function formatCodeceptStep(step, screenshotOnFailPath = null) {
 
   // Add screenshot from screenshotOnFail plugin
   if (screenshotOnFailPath && SCREENSHOTS_ON_STEPS) {
-    const artifacts = { screenshot: screenshotOnFailPath };
-    addArtifactsToStep(formattedStep, artifacts);
+    addArtifactPathToStep(formattedStep, screenshotOnFailPath);
   }
 
   // Add log if present

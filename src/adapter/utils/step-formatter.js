@@ -12,6 +12,7 @@ import fs from 'fs';
  */
 export function generateShortFilename(screenshotPath) {
   const originalFilename = path.basename(screenshotPath);
+  const stepPrefix = originalFilename.match(/^(\d{3,4}_)/)?.[1] || '';
 
   if (originalFilename.length < 40) {
     return originalFilename;
@@ -25,7 +26,7 @@ export function generateShortFilename(screenshotPath) {
     .digest('hex')
     .slice(0, 16);
 
-  return `screenshot_${hash}${ext}`;
+  return `${stepPrefix}screenshot_${hash}${ext}`;
 }
 
 /**
@@ -201,6 +202,30 @@ export function addArtifactsToStep(step, artifacts) {
     } else {
       step.artifacts = [truncatedPath];
     }
+  }
+
+  return step;
+}
+
+/**
+ * Appends one artifact path to a step.
+ *
+ * Unlike addArtifactsToStep, this helper accepts a direct path (or URL-like string)
+ * and does not check file existence, so callers can attach fallback artifacts
+ * collected from logs or async trace outputs.
+ *
+ * @param {Object} step - Step object to update (modified in place)
+ * @param {string} artifactPath - Artifact path to append
+ * @returns {Object} The same step object with updated artifacts
+ */
+export function addArtifactPathToStep(step, artifactPath) {
+  if (!step || !artifactPath) return step;
+
+  const truncatedPath = truncate(String(artifactPath), 250);
+  if (step.artifacts && Array.isArray(step.artifacts)) {
+    if (!step.artifacts.includes(truncatedPath)) step.artifacts.push(truncatedPath);
+  } else {
+    step.artifacts = [truncatedPath];
   }
 
   return step;

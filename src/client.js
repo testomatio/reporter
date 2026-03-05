@@ -7,7 +7,7 @@ import { glob } from 'glob';
 import path from 'path';
 import { fileURLToPath } from 'node:url';
 import { S3Uploader } from './uploader.js';
-import { readLatestRunId, storeRunId, validateSuiteId, transformEnvVarToBoolean } from './utils/utils.js';
+import { readLatestRunId, storeRunId, validateSuiteId, transformEnvVarToBoolean, isHttpUrl } from './utils/utils.js';
 import { generateShortFilename } from './adapter/utils/step-formatter.js';
 import { filesize as prettyBytes } from 'filesize';
 import { formatLogs, formatError, stripColors } from './utils/log-formatter.js';
@@ -154,7 +154,7 @@ class Client {
         if (step.artifacts && Array.isArray(step.artifacts) && this.uploader.isEnabled && SCREENSHOTS_ON_STEPS) {
           const uploadedArtifacts = [];
           for (const artifact of step.artifacts) {
-            if (typeof artifact === 'string' && fs.existsSync(artifact)) {
+            if (typeof artifact === 'string' && !isHttpUrl(artifact)) {
               const filename = generateShortFilename(artifact);
               try {
                 const uploadResult = await this.uploader.uploadFileByPath(
@@ -163,6 +163,8 @@ class Client {
                 );
                 if (uploadResult) {
                   uploadedArtifacts.push(uploadResult);
+                } else {
+                  uploadedArtifacts.push(artifact);
                 }
               } catch (uploadErr) {
                 uploadedArtifacts.push(artifact);
