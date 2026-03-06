@@ -1,6 +1,7 @@
 import pc from 'picocolors';
 import os from 'os';
 import path from 'path';
+import { transformEnvVarToBoolean } from './utils/utils.js';
 
 const APP_PREFIX = pc.gray('[TESTOMATIO]');
 const TESTOMATIO_REQUEST_TIMEOUT = parseInt(process.env.TESTOMATIO_REQUEST_TIMEOUT, 10);
@@ -8,7 +9,8 @@ if (TESTOMATIO_REQUEST_TIMEOUT) {
   console.log(`${APP_PREFIX} Request timeout is set to ${TESTOMATIO_REQUEST_TIMEOUT / 1000}s`);
 }
 const AXIOS_TIMEOUT = TESTOMATIO_REQUEST_TIMEOUT || 20 * 1000;
-const SCREENSHOTS_ON_STEPS = process.env.TESTOMATIO_SCREENSHOTS_ON_STEPS !== 'false';
+const SCREENSHOTS_ON_STEPS = process.env.TESTOMATIO_SCREENSHOTS_ON_STEPS == null
+  || transformEnvVarToBoolean(process.env.TESTOMATIO_SCREENSHOTS_ON_STEPS);
 
 const TESTOMAT_TMP_STORAGE_DIR = path.join(os.tmpdir(), 'testomatio_tmp');
 

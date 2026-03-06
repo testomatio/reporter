@@ -141,43 +141,48 @@ class Client {
   /**
    * Recursively uploads artifacts from steps
    *
-   * @param {Object[]} steps - Array of step objects
-   * @param {string} runId - Test run ID
+   * @param {*} steps - Steps payload (validated inside function)
    * @param {string} testRid - Test/result ID
    * @returns {Promise<void>}
    */
-  async uploadStepArtifacts(steps, runId, testRid) {
+  async uploadStepArtifacts(steps, testRid) {
     if (!steps || !Array.isArray(steps)) return;
+    if (!this.uploader.isEnabled || !SCREENSHOTS_ON_STEPS) return;
 
     try {
       for (const step of steps) {
-        if (step.artifacts && Array.isArray(step.artifacts) && this.uploader.isEnabled && SCREENSHOTS_ON_STEPS) {
-          const uploadedArtifacts = [];
-          for (const artifact of step.artifacts) {
-            if (typeof artifact === 'string' && !isHttpUrl(artifact)) {
-              const filename = generateShortFilename(artifact);
-              try {
-                const uploadResult = await this.uploader.uploadFileByPath(
-                  artifact, 
-                  [runId, testRid, 'steps', filename]
-                );
-                if (uploadResult) {
-                  uploadedArtifacts.push(uploadResult);
-                } else {
-                  uploadedArtifacts.push(artifact);
-                }
-              } catch (uploadErr) {
-                uploadedArtifacts.push(artifact);
-              }
-            } else {
-              uploadedArtifacts.push(artifact);
-            }
+        if (!(step.artifacts && Array.isArray(step.artifacts))) {
+          if (step.steps) {
+            await this.uploadStepArtifacts(step.steps, testRid);
           }
-          step.artifacts = uploadedArtifacts;
+          continue;
         }
 
+        const uploadedArtifacts = [];
+        for (const artifact of step.artifacts) {
+          if (typeof artifact === 'string' && !isHttpUrl(artifact)) {
+            const filename = generateShortFilename(artifact);
+            try {
+              const uploadResult = await this.uploader.uploadFileByPath(
+                artifact, 
+                [this.runId, testRid, 'steps', filename]
+              );
+              if (uploadResult) {
+                uploadedArtifacts.push(uploadResult);
+              } else {
+                uploadedArtifacts.push(artifact);
+              }
+            } catch (uploadErr) {
+              uploadedArtifacts.push(artifact);
+            }
+          } else {
+            uploadedArtifacts.push(artifact);
+          }
+        }
+        step.artifacts = uploadedArtifacts;
+
         if (step.steps) {
-          await this.uploadStepArtifacts(step.steps, runId, testRid);
+          await this.uploadStepArtifacts(step.steps, testRid);
         }
       }
 
@@ -213,12 +218,10 @@ class Client {
     let steps = originalSteps;
 
     // Upload artifacts from steps
-    if (steps && Array.isArray(steps) && this.uploader.isEnabled && SCREENSHOTS_ON_STEPS) {
-      try {
-        await this.uploadStepArtifacts(steps, this.runId, rid);
-      } catch (err) {
-        console.log(APP_PREFIX, 'Failed to upload step artifacts:', err);
-      }
+    try {
+      await this.uploadStepArtifacts(steps, rid);
+    } catch (err) {
+      console.log(APP_PREFIX, 'Failed to upload step artifacts:', err);
     }
 
     const uploadedFiles = [];
