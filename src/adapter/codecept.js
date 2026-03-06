@@ -1,7 +1,5 @@
 import createDebugMessages from 'debug';
 import pc from 'picocolors';
-import fs from 'fs';
-import path from 'path';
 import TestomatClient from '../client.js';
 import { STATUS, APP_PREFIX, TESTOMAT_TMP_STORAGE_DIR, SCREENSHOTS_ON_STEPS } from '../constants.js';
 import { getTestomatIdFromTestTitle, truncate, fileSystem } from '../utils/utils.js';
@@ -209,14 +207,12 @@ function CodeceptReporter(config) {
     const keyValues = services.keyValues.get(test.fullTitle());
     const links = services.links.get(test.fullTitle());
     const screenshotOnFailPath = artifacts.screenshot || null;
-    const aiTraceStepScreenshots = collectStepScreenshots(artifacts, logs);
 
     // Build step hierarchy with screenshot from screenshotOnFail
     const stepHierarchy = buildUnifiedStepHierarchy(
       test.steps, 
       hookSteps, 
-      screenshotOnFailPath, 
-      aiTraceStepScreenshots
+      screenshotOnFailPath
     );
 
     services.setContext(null);
@@ -399,7 +395,7 @@ function getTestLogs(test) {
 }
 
 // Build step hierarchy using CodeceptJS built-in methods
-function buildUnifiedStepHierarchy(steps, hookSteps, screenshotOnFailPath = null, aiTraceStepScreenshots = []) {
+function buildUnifiedStepHierarchy(steps, hookSteps, screenshotOnFailPath = null) {
   const hierarchy = [];
 
   // Add pre-test hooks
@@ -407,7 +403,7 @@ function buildUnifiedStepHierarchy(steps, hookSteps, screenshotOnFailPath = null
 
   // Process test steps if they exist
   if (steps && steps.length > 0) {
-    processTestSteps(steps, hierarchy, screenshotOnFailPath, aiTraceStepScreenshots);
+    processTestSteps(steps, hierarchy, screenshotOnFailPath);
   }
 
   // Add post-test hooks
@@ -425,10 +421,9 @@ function addHooksToHierarchy(hierarchy, hookSteps, hookNames) {
   }
 }
 
-function processTestSteps(steps, hierarchy, screenshotOnFailPath = null, aiTraceStepScreenshots = []) {
+function processTestSteps(steps, hierarchy, screenshotOnFailPath = null) {
   const sectionMap = new Map();
   let screenshotAttached = false;
-  let aiTraceScreenshotIndex = 0;
 
   for (const step of steps) {
     let stepScreenshotPath = null;
@@ -439,14 +434,6 @@ function processTestSteps(steps, hierarchy, screenshotOnFailPath = null, aiTrace
 
     const formattedStep = formatCodeceptStep(step, stepScreenshotPath);
     if (!formattedStep) continue;
-
-    if (SCREENSHOTS_ON_STEPS && (!formattedStep.artifacts || !formattedStep.artifacts.length)) {
-      const aiTraceScreenshotPath = aiTraceStepScreenshots[aiTraceScreenshotIndex];
-      if (aiTraceScreenshotPath) {
-        addArtifactPathToStep(formattedStep, aiTraceScreenshotPath);
-      }
-    }
-    aiTraceScreenshotIndex += 1;
 
     if (step.metaStep) {
       // Step belongs to a section (meta step)
@@ -465,62 +452,6 @@ function processTestSteps(steps, hierarchy, screenshotOnFailPath = null, aiTrace
       // Regular step
       hierarchy.push(formattedStep);
     }
-  }
-}
-
-/**
- * Collects per-step screenshots with fallback strategy for CodeceptJS.
- *
- * Flow:
- * 1) Primary source: parse `[Screenshot] ...` entries from test logs.
- * 2) Fallback source: read screenshot files from aiTrace directory (`artifacts.aiTrace`).
- * 3) Return ordered paths to map screenshots to steps by index.
- *
- * This is a resilience helper for cases where `step.artifacts` is empty
- * but screenshots are still produced by plagins.
- *
- * @param {Object} artifacts - Test artifacts from `test.simplify()`
- * @param {string} [logs=''] - Combined test logs
- * @returns {string[]} Ordered list of screenshot paths
- */
-function collectStepScreenshots(artifacts, logs = '') {
-  const screenshotsFromLogs = [];
-  if (logs && typeof logs === 'string') {
-    const pattern = /\[Screenshot\]\s+([^\r\n]+\.(?:png|jpe?g|webp|gif|bmp))/gi;
-    let match;
-    while ((match = pattern.exec(logs)) !== null) {
-      const rawPath = match[1].trim();
-      if (!rawPath) continue;
-
-      let normalizedPath = rawPath.replace(/^"+|"+$/g, '');
-      const hasDriveLetter = /^[A-Za-z]:[\\/]/.test(normalizedPath);
-      const hasRootOnly = /^[\\/]+/.test(normalizedPath) && !hasDriveLetter;
-      if (!path.isAbsolute(normalizedPath) || hasRootOnly) {
-        normalizedPath = normalizedPath.replace(/^[\\/]+/, '');
-        normalizedPath = path.join(process.cwd(), normalizedPath);
-      }
-      screenshotsFromLogs.push(normalizedPath);
-    }
-  }
-  if (screenshotsFromLogs.length) return Array.from(new Set(screenshotsFromLogs));
-
-  if (!artifacts || !artifacts.aiTrace) return [];
-
-  const aiTraceFile = String(artifacts.aiTrace);
-  const aiTracePath = path.isAbsolute(aiTraceFile) ? aiTraceFile : path.join(process.cwd(), aiTraceFile);
-  const aiTraceDir = path.dirname(aiTracePath);
-
-  if (!fs.existsSync(aiTraceDir)) return [];
-
-  try {
-    return fs
-      .readdirSync(aiTraceDir)
-      .filter(fileName => /^\d{4}_.+_screenshot\.(png|jpe?g|webp|gif|bmp)$/i.test(fileName))
-      .sort((a, b) => a.localeCompare(b))
-      .map(fileName => path.join(aiTraceDir, fileName));
-  } catch (err) {
-    debug('Failed to read screenshots:', err?.message || err);
-    return [];
   }
 }
 
