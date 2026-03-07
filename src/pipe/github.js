@@ -3,9 +3,10 @@ import path from 'path';
 import pc from 'picocolors';
 import humanizeDuration from 'humanize-duration';
 import merge from 'lodash.merge';
-import { APP_PREFIX, testomatLogoURL } from '../constants.js';
+import { testomatLogoURL } from '../constants.js';
 import { ansiRegExp, isSameTest } from '../utils/utils.js';
 import { statusEmoji, fullName } from '../utils/pipe_utils.js';
+import { log } from '../utils/log.js';
 
 const debug = createDebugMessages('@testomatio/reporter:pipe:github');
 
@@ -191,9 +192,9 @@ class GitHubPipe {
       debug('Comment URL:', url);
       this.store.githubUrl = url;
 
-      console.log(APP_PREFIX, pc.yellow('GitHub'), `Report created: ${pc.magenta(url)}`);
+      log.info(pc.yellow('GitHub'), `Report created: ${pc.magenta(url)}`);
     } catch (err) {
-      console.log(APP_PREFIX, pc.yellow('GitHub'), `Couldn't create GitHub report ${err}`);
+      log.info(pc.yellow('GitHub'), `Couldn't create GitHub report ${err}`);
     }
   }
 

@@ -141,10 +141,10 @@ components:
           type: boolean
           description: Whether to create a parallel run
       example:
-        title: "My Test Run"
-        env: "production"
-        group_title: "Release 1.0"
-        tags: ["smoke", "api"]
+        title: 'My Test Run'
+        env: 'production'
+        group_title: 'Release 1.0'
+        tags: ['smoke', 'api']
 
     UpdateRunData:
       type: object
@@ -176,7 +176,7 @@ components:
             $ref: '#/components/schemas/TestData'
           description: The details of each test
       example:
-        status_event: "finish"
+        status_event: 'finish'
         duration: 25.5
         tests_count: 10
         passed_count: 8
@@ -244,10 +244,10 @@ components:
           type: boolean
           description: Whether to overwrite previous status to avoid retry counters. Defaults to false
       example:
-        title: "Should login successfully"
-        status: "passed"
-        suite_title: "Authentication Tests"
-        test_id: "@Ta0b0c0d0"
+        title: 'Should login successfully'
+        status: 'passed'
+        suite_title: 'Authentication Tests'
+        test_id: '@Ta0b0c0d0'
         run_time: 0.5
 
     Step:
@@ -315,7 +315,7 @@ components:
             - test
           additionalProperties: false
           example:
-            test: "TEST-123"
+            test: 'TEST-123'
         - type: object
           properties:
             label:
@@ -325,7 +325,7 @@ components:
             - label
           additionalProperties: false
           example:
-            label: "smoke"
+            label: 'smoke'
         - type: object
           properties:
             jira:
@@ -335,4 +335,4 @@ components:
             - jira
           additionalProperties: false
           example:
-            jira: "PROJ-123"
+            jira: 'PROJ-123'

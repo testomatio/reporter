@@ -5,6 +5,7 @@ Enhanced WebdriverIO hook failure handling for Testomatio reporter.
 ## Problem
 
 When a `beforeEach` hook fails in WebdriverIO:
+
 - The hook fails and stops execution
 - Remaining tests in the suite are skipped
 - Skipped tests are NOT reported to Testomatio

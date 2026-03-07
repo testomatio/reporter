@@ -7,6 +7,7 @@ import { services } from '../services/index.js';
 import { dataStorage } from '../data-storage.js';
 import { formatStep, addStatusToStep, addArtifactsToStep, addArtifactPathToStep } from './utils/step-formatter.js';
 import codeceptjs from 'codeceptjs';
+import { log } from '../utils/log.js';
 
 const debug = createDebugMessages('@testomatio/reporter:adapter:codeceptjs');
 // @ts-ignore
@@ -252,7 +253,7 @@ async function uploadAttachments(client, attachments, messagePrefix, attachmentT
   if (!attachments?.length) return;
 
   if (client.uploader.isEnabled) {
-    console.log(APP_PREFIX, `Attachments: ${messagePrefix} ${attachments.length} ${attachmentType} ...`);
+    log.info(`Attachments: ${messagePrefix} ${attachments.length} ${attachmentType} ...`);
   }
 
   const promises = attachments.map(async attachment => {

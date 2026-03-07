@@ -45,7 +45,6 @@ TESTOMATIO=your-api-key TESTOMATIO_CREATE=1 TESTOMATIO_WORKDIR=/path/to/project 
 ## Test Files
 
 - **sample.spec.js**: Demonstrates various test annotations and scenarios including:
-
   - Passing test with issue annotation
   - Failing test with bug annotation
   - Test with multiple custom annotations

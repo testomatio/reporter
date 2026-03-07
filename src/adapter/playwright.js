@@ -12,6 +12,7 @@ import { extensionMap } from '../utils/constants.js';
 import pc from 'picocolors';
 import { fetchLinksFromLogs } from './utils/playwright.js';
 import { formatStep, addStatusToStep, addArtifactsToStep } from './utils/step-formatter.js';
+import { log } from '../utils/log.js';
 
 const reportTestPromises = [];
 
@@ -175,7 +176,7 @@ class PlaywrightReporter {
     await Promise.all(reportTestPromises);
 
     if (this.uploads.length) {
-      if (this.client.uploader.isEnabled) console.log(APP_PREFIX, `🎞️  Uploading ${this.uploads.length} files...`);
+      if (this.client.uploader.isEnabled) log.info(`🎞️ Uploading ${this.uploads.length} files...`);
 
       const promises = [];
 
