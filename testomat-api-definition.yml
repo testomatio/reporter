@@ -255,13 +255,33 @@ components:
       properties:
         category:
           type: string
+          maxLength: 250
           description: The category of the step (framework, user, hook)
         title:
           type: string
+          maxLength: 250
           description: The title of the step
         duration:
           type: number
           description: The duration of the step in seconds
+        log:
+          type: string
+          maxLength: 250
+          description: Log output for the step
+        status:
+          type: string
+          enum:
+            - passed
+            - failed
+            - none
+            - custom
+          description: The status of the step
+        artifacts:
+          type: array
+          items:
+            type: string
+            format: uri
+          description: An array of artifact URLs (screenshots) for this step
         steps:
           type: array
           items:

@@ -92,6 +92,19 @@ const isValidUrl = s => {
   }
 };
 
+/**
+ * Checks whether a value is an HTTP(S) URL.
+ *
+ * Used for artifact handling: if a step artifact is already a remote URL,
+ * it should not be uploaded again as a local file path.
+ *
+ * @param {*} value - Artifact value to validate
+ * @returns {boolean} true when value starts with http:// or https://
+ */
+const isHttpUrl = value => {
+  return /^https?:\/\//i.test(String(value || ''));
+};
+
 const fileMatchRegex = /file:(\/*)([A-Za-z]:[\\/].*?|\/.*?)\.(png|avi|webm|jpg|html|txt)/gi;
 
 const fetchFilesFromStackTrace = (stack = '', checkExists = true) => {
@@ -705,6 +718,7 @@ export {
   getGitCommitSha,
   getTestomatIdFromTestTitle,
   humanize,
+  isHttpUrl,
   isValidUrl,
   parseSuite,
   readLatestRunId,

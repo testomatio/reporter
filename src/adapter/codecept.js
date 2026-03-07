@@ -1,9 +1,11 @@
 import createDebugMessages from 'debug';
 import pc from 'picocolors';
 import TestomatClient from '../client.js';
+import { STATUS, APP_PREFIX, TESTOMAT_TMP_STORAGE_DIR, SCREENSHOTS_ON_STEPS } from '../constants.js';
 import { getTestomatIdFromTestTitle, truncate, fileSystem } from '../utils/utils.js';
 import { services } from '../services/index.js';
 import { dataStorage } from '../data-storage.js';
+import { formatStep, addStatusToStep, addArtifactsToStep, addArtifactPathToStep } from './utils/step-formatter.js';
 import codeceptjs from 'codeceptjs';
 import { log } from '../utils/log.js';
 
@@ -48,6 +50,7 @@ function CodeceptReporter(config) {
   let videos = [];
   let traces = [];
   const reportTestPromises = [];
+  let isRunFinalized = false;
 
   const testTimeMap = {};
   const { apiKey } = config;
@@ -84,6 +87,19 @@ function CodeceptReporter(config) {
   const hookSteps = new Map();
   let currentHook = null;
 
+  const finalizeRun = async origin => {
+    if (isRunFinalized) return;
+    isRunFinalized = true;
+
+    debug(`finalizing run from ${origin}`);
+    debug('waiting for all tests to be reported');
+
+    await Promise.allSettled(reportTestPromises);
+    await uploadAttachments(client, videos, '🎞️ Uploading', 'video');
+    await uploadAttachments(client, traces, '📁 Uploading', 'trace');
+    await client.updateRunStatus('finished');
+  };
+
   event.dispatcher.on(event.workers.before, () => {
     recorder.add('Creating new run', async () => {
       await client.createRun();
@@ -94,7 +110,9 @@ function CodeceptReporter(config) {
   });
 
   event.dispatcher.on(event.workers.after, () => {
-    client.updateRunStatus('finished');
+    recorder.add('Finishing run', async () => {
+      await finalizeRun('workers.after');
+    });
   });
 
   // Listening to events
@@ -108,6 +126,8 @@ function CodeceptReporter(config) {
     });
     videos = [];
     traces = [];
+    isRunFinalized = false;
+    reportTestPromises.length = 0;
 
     if (!global.testomatioDataStore) global.testomatioDataStore = {};
   });
@@ -141,7 +161,7 @@ function CodeceptReporter(config) {
     const error = hook?.ctx?.currentTest?.err;
 
     for (const test of suite.tests) {
-      client.addTestRun('failed', {
+      const reportTestPromise = client.addTestRun('failed', {
         ...stripExampleFromTitle(test.title),
         rid: test.uid,
         test_id: getTestomatIdFromTestTitle(test.title),
@@ -149,6 +169,7 @@ function CodeceptReporter(config) {
         error,
         time: hook?.runnable?.duration,
       });
+      reportTestPromises.push(reportTestPromise);
     }
   });
 
@@ -170,15 +191,10 @@ function CodeceptReporter(config) {
     testTimeMap[test.uid] = Date.now();
   });
 
-  event.dispatcher.on(event.all.result, async result => {
-    debug('waiting for all tests to be reported');
-    // all tests were reported and we can upload videos
-    await Promise.all(reportTestPromises);
-
-    await uploadAttachments(client, videos, '🎞️ Uploading', 'video');
-    await uploadAttachments(client, traces, '📁 Uploading', 'trace');
-
-    client.updateRunStatus('finished');
+  event.dispatcher.on(event.all.after, () => {
+    recorder.add('Finishing run', async () => {
+      await finalizeRun('all.after');
+    });
   });
 
   event.dispatcher.on(event.test.after, test => {
@@ -190,12 +206,19 @@ function CodeceptReporter(config) {
     const logs = getTestLogs(test);
     const manuallyAttachedArtifacts = services.artifacts.get(test.fullTitle());
     const keyValues = services.keyValues.get(test.fullTitle());
-    const stepHierarchy = buildUnifiedStepHierarchy(test.steps, hookSteps);
     const links = services.links.get(test.fullTitle());
+    const screenshotOnFailPath = artifacts.screenshot || null;
+
+    // Build step hierarchy with screenshot from screenshotOnFail
+    const stepHierarchy = buildUnifiedStepHierarchy(
+      test.steps, 
+      hookSteps, 
+      screenshotOnFailPath
+    );
 
     services.setContext(null);
 
-    client.addTestRun(test.state, {
+    const reportTestPromise = client.addTestRun(test.state, {
       ...stripExampleFromTitle(title),
       rid: uid,
       test_id: getTestomatIdFromTestTitle(`${title} ${tags?.join(' ')}`),
@@ -210,6 +233,7 @@ function CodeceptReporter(config) {
       manuallyAttachedArtifacts,
       meta: { ...keyValues, ...test.meta },
     });
+    reportTestPromises.push(reportTestPromise);
 
     processArtifactsForUpload(artifacts, uid, title, videos, traces);
   });
@@ -372,7 +396,7 @@ function getTestLogs(test) {
 }
 
 // Build step hierarchy using CodeceptJS built-in methods
-function buildUnifiedStepHierarchy(steps, hookSteps) {
+function buildUnifiedStepHierarchy(steps, hookSteps, screenshotOnFailPath = null) {
   const hierarchy = [];
 
   // Add pre-test hooks
@@ -380,7 +404,7 @@ function buildUnifiedStepHierarchy(steps, hookSteps) {
 
   // Process test steps if they exist
   if (steps && steps.length > 0) {
-    processTestSteps(steps, hierarchy);
+    processTestSteps(steps, hierarchy, screenshotOnFailPath);
   }
 
   // Add post-test hooks
@@ -398,11 +422,18 @@ function addHooksToHierarchy(hierarchy, hookSteps, hookNames) {
   }
 }
 
-function processTestSteps(steps, hierarchy) {
+function processTestSteps(steps, hierarchy, screenshotOnFailPath = null) {
   const sectionMap = new Map();
+  let screenshotAttached = false;
 
   for (const step of steps) {
-    const formattedStep = formatCodeceptStep(step);
+    let stepScreenshotPath = null;
+    if (screenshotOnFailPath && !screenshotAttached && step.status === 'failed') {
+      stepScreenshotPath = screenshotOnFailPath;
+      screenshotAttached = true;
+    }
+
+    const formattedStep = formatCodeceptStep(step, stepScreenshotPath);
     if (!formattedStep) continue;
 
     if (step.metaStep) {
@@ -460,25 +491,43 @@ function formatHookName(hookName) {
 }
 
 // Format CodeceptJS step using its built-in methods
-function formatCodeceptStep(step) {
+function formatCodeceptStep(step, screenshotOnFailPath = null) {
   if (!step) return null;
 
   const category = step.constructor.name === 'HelperStep' ? 'framework' : 'user';
-  const title = truncate(step); // Use built-in toString
-  const duration = step.duration || 0; // Use built-in duration
+  const title = truncate(String(step));
+  const duration = step.duration || 0;
 
-  const formattedStep = {
+  const formattedStep = formatStep({
     category,
     title,
     duration,
-  };
+  });
+
+  // Add status
+  addStatusToStep(formattedStep, step.status, step.err);
 
   // Add error if step failed
   if (step.status === 'failed' && step.err) {
     formattedStep.error = {
-      message: step.err.message || 'Step failed',
-      stack: step.err.stack || '',
+      message: truncate(String(step.err.message || 'Step failed'), 250),
+      stack: truncate(String(step.err.stack || ''), 250),
     };
+  }
+
+  // Add artifacts
+  if (step.artifacts && SCREENSHOTS_ON_STEPS) {
+    addArtifactsToStep(formattedStep, step.artifacts);
+  }
+
+  // Add screenshot from screenshotOnFail plugin
+  if (screenshotOnFailPath && SCREENSHOTS_ON_STEPS) {
+    addArtifactPathToStep(formattedStep, screenshotOnFailPath);
+  }
+
+  // Add log if present
+  if (step.log) {
+    formattedStep.log = truncate(String(step.log), 250);
   }
 
   return formattedStep;
@@ -492,17 +541,38 @@ function formatHookStep(step) {
   if (step.actor && step.name) {
     title = `${step.actor} ${step.name}`;
     if (step.args && step.args.length > 0) {
-      const argsStr = step.args.map(arg => truncate(JSON.stringify(arg))).join(', ');
+      const argsStr = step.args.map(arg => truncate(JSON.stringify(arg), 250)).join(', ');
       title += ` ${argsStr}`;
     }
   }
   title = truncate(title);
 
-  return {
+  const formattedStep = formatStep({
     category: 'hook',
     title,
     duration: step.duration || 0,
-  };
+  });
+
+  addStatusToStep(formattedStep, step.status, step.err);
+
+  if (step.status === 'failed' && step.err) {
+    formattedStep.error = {
+      message: truncate(String(step.err.message || 'Hook failed'), 250),
+      stack: truncate(String(step.err.stack || ''), 250),
+    };
+  }
+
+  // Add artifacts
+  if (step.artifacts && SCREENSHOTS_ON_STEPS) {
+    addArtifactsToStep(formattedStep, step.artifacts);
+  }
+
+  // Add log if present
+  if (step.log) {
+    formattedStep.log = truncate(String(step.log), 250);
+  }
+
+  return formattedStep;
 }
 
 export { CodeceptReporter };

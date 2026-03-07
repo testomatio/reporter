@@ -317,6 +317,9 @@ interface Step {
   duration: number;
   steps?: Step[];
   error?: any;
+  status?: string;
+  log?: string;
+  artifacts?: string[];
 }
 
 declare global {
