@@ -268,11 +268,14 @@ const testomatio = require('@testomatio/reporter/lib/adapter/webdriver');
 exports.config = {
   // ...
   reporters: [
-    [testomatio, {
-      apiKey: process.env.TESTOMATIO
-    }]
-  ]
-}
+    [
+      testomatio,
+      {
+        apiKey: process.env.TESTOMATIO,
+      },
+    ],
+  ],
+};
 ```
 
 For making screenshots on failed tests add the following hook to `wdio.conf.js`:
@@ -305,11 +308,14 @@ Enable in `wdio.conf.js`:
 
 ```javascript
 reporters: [
-  ['testomatio', {
-    apiKey: process.env.TESTOMATIO,
-    enableHooksEnhancer: true  // Enable enhanced hook handling
-  }]
-]
+  [
+    'testomatio',
+    {
+      apiKey: process.env.TESTOMATIO,
+      enableHooksEnhancer: true, // Enable enhanced hook handling
+    },
+  ],
+];
 ```
 
 This ensures that when a `beforeEach` hook fails, all tests in the suite are reported as failed (not just the first one).

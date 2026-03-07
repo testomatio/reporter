@@ -7,6 +7,7 @@ import humanizeDuration from 'humanize-duration';
 import merge from 'lodash.merge';
 import path from 'path';
 import createDebugMessages from 'debug';
+import { log } from '../utils/log.js';
 
 const debug = createDebugMessages('@testomatio/reporter:pipe:bitbucket');
 
@@ -193,7 +194,7 @@ export class BitbucketPipe {
       // eslint-disable-next-line max-len
       const commentURL = `https://bitbucket.org/${this.ENV.BITBUCKET_WORKSPACE}/${this.ENV.BITBUCKET_REPO_SLUG}/pull-requests/${this.ENV.BITBUCKET_PR_ID}#comment-${commentID}`;
 
-      console.log(APP_PREFIX, pc.yellow('Bitbucket'), `Report created: ${pc.magenta(commentURL)}`);
+      log.info(pc.yellow('Bitbucket'), `Report created: ${pc.magenta(commentURL)}`);
     } catch (err) {
       console.error(
         APP_PREFIX,

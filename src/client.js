@@ -10,6 +10,7 @@ import { S3Uploader } from './uploader.js';
 import { readLatestRunId, storeRunId, validateSuiteId, transformEnvVarToBoolean } from './utils/utils.js';
 import { filesize as prettyBytes } from 'filesize';
 import { formatLogs, formatError, stripColors } from './utils/log-formatter.js';
+import { log } from './utils/log.js';
 
 const debug = createDebugMessages('@testomatio/reporter:client');
 
@@ -40,7 +41,7 @@ class Client {
     const pathToPackageJSON = path.join(__dirname, '../package.json');
     try {
       this.version = JSON.parse(fs.readFileSync(pathToPackageJSON).toString()).version;
-      console.log(APP_PREFIX, `Testomatio Reporter v${this.version}`);
+      log.info(`Testomatio Reporter v${this.version}`);
     } catch (e) {
       // do nothing
     }
@@ -71,7 +72,7 @@ class Client {
 
     // ❗ Validation: pipe is required
     if (!pipe || !pipeOptions) {
-      console.warn(`❗ No valid pipe found in filter cmd. Expected format: <pipe>:<options>
+      log.warn(`❗ No valid pipe found in filter cmd. Expected format: <pipe>:<options>
       Examples:
         --filter "testomatio:tag-name=frontend"
         --filter "coverage:file=coverage.yml"
@@ -92,10 +93,7 @@ class Client {
       // const p = this.pipes.find(p => p.id === `${pipe.toLowerCase()}`); TODO: as future updates
 
       if (!p?.isEnabled) {
-        console.warn(
-          APP_PREFIX,
-          "🚫 No active pipes were found in the system. Execution aborted!"
-        );
+        log.warn('🚫 No active pipes were found in the system. Execution aborted!');
         return;
       }
 
@@ -107,7 +105,7 @@ class Client {
 
       return result;
     } catch (err) {
-      console.error(APP_PREFIX, err);
+      log.error(err);
     }
   }
 
@@ -125,7 +123,7 @@ class Client {
 
     this.queue = this.queue
       .then(() => Promise.all(this.pipes.map(p => p.createRun(params))))
-      .catch(err => console.log(APP_PREFIX, err))
+      .catch(err => log.info(err))
       .then(() => {
         const runId = this.pipeStore?.runId;
         if (runId) this.runId = runId;
@@ -286,7 +284,7 @@ class Client {
             const result = await pipe.addTest(data);
             return { pipe: pipe.toString(), result };
           } catch (err) {
-            console.log(APP_PREFIX, pipe.toString(), err);
+            log.info(pipe.toString(), err);
           }
         }),
       ),
@@ -341,10 +339,7 @@ class Client {
         }
 
         if (this.uploader.failedUploads.length) {
-          console.log(
-            APP_PREFIX,
-            `🗄️ ${this.uploader.failedUploads.length} artifacts 🔴${pc.bold('failed')} to upload`,
-          );
+          log.info(`🗄️ ${this.uploader.failedUploads.length} artifacts 🔴${pc.bold('failed')} to upload`);
           const failedUploads = this.uploader.failedUploads.map(file => ({
             relativePath: file.path.replace(process.cwd(), ''),
             sizePretty: file.size == null ? 'unknown' : prettyBytes(file.size, { round: 0 }).toString(),
@@ -362,11 +357,7 @@ class Client {
         }
 
         if (this.uploader.skippedUploads.length) {
-          console.log(
-            '\n',
-            APP_PREFIX,
-            `🗄️ ${pc.bold(this.uploader.skippedUploads.length)} artifacts uploading 🟡${pc.bold('skipped')}`,
-          );
+          log.info(`🗄️ ${pc.bold(this.uploader.skippedUploads.length)} artifacts uploading 🟡${pc.bold('skipped')}`);
           const skippedUploads = this.uploader.skippedUploads.map(file => ({
             relativePath: file.path.replace(process.cwd(), ''),
             sizePretty: file.size === null ? 'unknown' : prettyBytes(file.size, { round: 0 }).toString(),
@@ -386,14 +377,11 @@ class Client {
             this.runId
           } npx @testomatio/reporter upload-artifacts`;
           const numberOfNotUploadedArtifacts = this.uploader.skippedUploads.length + this.uploader.failedUploads.length;
-          console.log(
-            APP_PREFIX,
-            `${numberOfNotUploadedArtifacts} artifacts were not uploaded.
-            Run "${pc.magenta(command)}" with valid S3 credentials to upload skipped & failed artifacts`,
-          );
+          log.info(`${numberOfNotUploadedArtifacts} artifacts were not uploaded.
+            Run "${pc.magenta(command)}" with valid S3 credentials to upload skipped & failed artifacts`);
         }
       })
-      .catch(err => console.log(APP_PREFIX, err));
+      .catch(err => log.info(err));
 
     return this.queue;
   }

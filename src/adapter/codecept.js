@@ -1,11 +1,11 @@
 import createDebugMessages from 'debug';
 import pc from 'picocolors';
 import TestomatClient from '../client.js';
-import { STATUS, APP_PREFIX, TESTOMAT_TMP_STORAGE_DIR } from '../constants.js';
 import { getTestomatIdFromTestTitle, truncate, fileSystem } from '../utils/utils.js';
 import { services } from '../services/index.js';
 import { dataStorage } from '../data-storage.js';
 import codeceptjs from 'codeceptjs';
+import { log } from '../utils/log.js';
 
 const debug = createDebugMessages('@testomatio/reporter:adapter:codeceptjs');
 // @ts-ignore
@@ -229,7 +229,7 @@ async function uploadAttachments(client, attachments, messagePrefix, attachmentT
   if (!attachments?.length) return;
 
   if (client.uploader.isEnabled) {
-    console.log(APP_PREFIX, `Attachments: ${messagePrefix} ${attachments.length} ${attachmentType} ...`);
+    log.info(`Attachments: ${messagePrefix} ${attachments.length} ${attachmentType} ...`);
   }
 
   const promises = attachments.map(async attachment => {
