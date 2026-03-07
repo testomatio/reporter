@@ -120,7 +120,7 @@ class TestomatioPipe {
    */
   #formatData(data) {
     data.api_key = this.apiKey;
-    data.create = this.createNewTests;
+    if (data.create === undefined) data.create = this.createNewTests;
 
     // add test ID + run ID
     if (data.rid) data.rid = `${this.runId}-${data.rid}`;
