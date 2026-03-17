@@ -88,7 +88,9 @@ class VitestReporter {
    * @param {unknown[] | undefined} errors
    */
   async onTestRunEnd(testModules, errors) {
-    const files = (testModules || []).map(module => module && (/** @type {any} */ (module).task || module)).filter(Boolean);
+    const files = (testModules || [])
+      .map(module => module && (/** @type {any} */ (module).task || module))
+      .filter(Boolean);
     await this.onFinished(files, errors);
   }
 
