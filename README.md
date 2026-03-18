@@ -61,7 +61,7 @@ yarn add @testomatio/reporter --dev
 For Yarn 4 (Berry), use CLI wrapper package:
 
 ```
-yarn add @testomatio/reporter-cli --dev
+yarn add testomatio-reporter-cli --dev
 npx testomatio-reporter <command> [options]
 ```
 

@@ -13,7 +13,7 @@ npm install -g @testomatio/reporter
 For Yarn 4 (Berry), install and run CLI wrapper:
 
 ```bash
-yarn add -D @testomatio/reporter-cli
+yarn add -D testomatio-reporter-cli
 npx testomatio-reporter <command> [options]
 ```
 

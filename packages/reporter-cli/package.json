@@ -1,9 +1,10 @@
 {
-  "name": "@testomatio/reporter-cli",
+  "name": "testomatio-reporter-cli",
   "version": "0.0.1",
   "description": "Yarn Berry compatible CLI wrapper for @testomatio/reporter",
   "type": "module",
   "bin": {
+    "testomatio-reporter-cli": "./bin/cli.js",
     "testomatio-reporter": "./bin/cli.js",
     "reporter": "./bin/cli.js"
   },
