@@ -257,7 +257,7 @@ class Client {
       message = error?.message;
     }
 
-    let fullLogs = formatLogs({ error: errorFormatted, steps, logs: testData.logs });
+    let fullLogs = formatLogs({ error: errorFormatted, logs: testData.logs });
 
     if (stackArtifactsEnabled && fullLogs?.trim()?.length > 0) {
       uploadedFiles.push(
