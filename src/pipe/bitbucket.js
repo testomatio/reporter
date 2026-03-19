@@ -210,10 +210,13 @@ export class BitbucketPipe {
 
       log.info(pc.yellow('Bitbucket'), `Report created: ${pc.magenta(commentURL)}`);
     } catch (err) {
+      const isForbiddenError = `${err}`.includes('Forbidden') || `${err}`.includes('403');
       const scopeHint =
-        `${err}`.includes('Forbidden')
-        || `${err}`.includes('403')
-          ? '\nHint: use a token that can write PR comments (recommended: Repository Access Token with Pull requests: Write and Repository: Read) and run inside a pull-requests pipeline where BITBUCKET_PR_ID is available.'
+        isForbiddenError
+          ? '\nHint: use a token that can write PR comments '
+            + '(recommended: Repository Access Token with Pull requests: Write '
+            + 'and Repository: Read) and run inside a pull-requests pipeline '
+            + 'where BITBUCKET_PR_ID is available.'
           : '';
       console.error(
         APP_PREFIX,
