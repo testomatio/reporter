@@ -78,6 +78,20 @@ export class BitbucketPipe {
 
   async finishRun(runParams) {
     if (!this.isEnabled) return;
+    if (!this.ENV.BITBUCKET_PR_ID) {
+      log.warn(
+        pc.yellow('Bitbucket'),
+        'Skipping PR comment: BITBUCKET_PR_ID is not set. Run this pipe in a Bitbucket pull-requests pipeline.',
+      );
+      return;
+    }
+    if (!this.ENV.BITBUCKET_WORKSPACE || !this.ENV.BITBUCKET_REPO_SLUG) {
+      log.warn(
+        pc.yellow('Bitbucket'),
+        'Skipping PR comment: BITBUCKET_WORKSPACE or BITBUCKET_REPO_SLUG is missing.',
+      );
+      return;
+    }
 
     if (runParams.tests) runParams.tests.forEach(t => this.addTest(t));
 
@@ -196,12 +210,17 @@ export class BitbucketPipe {
 
       log.info(pc.yellow('Bitbucket'), `Report created: ${pc.magenta(commentURL)}`);
     } catch (err) {
+      const scopeHint =
+        `${err}`.includes('Forbidden')
+        || `${err}`.includes('403')
+          ? '\nHint: use a token that can write PR comments (recommended: Repository Access Token with Pull requests: Write and Repository: Read) and run inside a pull-requests pipeline where BITBUCKET_PR_ID is available.'
+          : '';
       console.error(
         APP_PREFIX,
         pc.yellow('Bitbucket'),
         `Couldn't create Bitbucket report\n${err}.
       Request URL: ${commentsRequestURL}
-      Request data: ${body}`,
+      Request data: ${body}${scopeHint}`,
       );
     }
   }
