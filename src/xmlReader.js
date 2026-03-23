@@ -651,34 +651,26 @@ class XmlReader {
 
 export default XmlReader;
 
-function toArray(value) {
-  if (!value) return [];
-  return Array.isArray(value) ? value : [value];
-}
+function reduceTestCases(prev, item) {
+  let testCases = item.testcase;
+  if (!testCases) testCases = item['test-case'];
+  if (!Array.isArray(testCases)) {
+    testCases = [testCases];
+  }
 
-function collectProperties(item) {
-  if (!item?.properties) return [];
-  return Array.isArray(item.properties.property)
-    ? item.properties.property.filter(Boolean)
-    : [item.properties.property].filter(Boolean);
-}
+  // suite inside test case
+  const testCase = item['test-suite']?.['test-case'];
+  if (testCase) {
+    const nestedCases = Array.isArray(testCase) ? testCase : [testCase];
+    testCases.push(...nestedCases);
+  }
 
-function extractTestsFromSuite(item, parentContext = {}) {
-  const testCases = toArray(item.testcase || item['test-case']);
   const suiteOutput = item['system-out'] || item.output || item.log || '';
   const suiteErr = item['system-err'] || item.output || item.log || '';
-  const context = {
-    file: item.filepath || item.file || item.fullname || item.package || parentContext.file || '',
-    output: [parentContext.output, suiteOutput].filter(Boolean).join('\n\n'),
-    err: [parentContext.err, suiteErr].filter(Boolean).join('\n\n'),
-    properties: [...(parentContext.properties || []), ...collectProperties(item)],
-  };
-  const tests = [];
-
   testCases
     .filter(t => !!t)
     .forEach(testCaseItem => {
-      const file = testCaseItem.file || context.file;
+      const file = testCaseItem.file || item.filepath || item.fullname || item.package || '';
 
       let stack = '';
       let message = '';
@@ -696,10 +688,7 @@ function extractTestsFromSuite(item, parentContext = {}) {
       const preferClassname = reduceOptions.preferClassname || isParametrized;
 
       // SpecFlow config
-      let { title, tags, testId } = fetchProperties(
-        isParametrized ? item : testCaseItem,
-        isParametrized ? context.properties : undefined,
-      );
+      let { title, tags, testId } = fetchProperties(isParametrized ? item : testCaseItem);
       let example = null;
       const suiteTitle = preferClassname ? testCaseItem.classname : item.name || testCaseItem.classname;
 
@@ -717,9 +706,9 @@ function extractTestsFromSuite(item, parentContext = {}) {
         title = title.replace(/\(.*?\)/, '').trim();
       }
 
-      stack = `${testCaseItem['system-out'] || testCaseItem.output || testCaseItem.log || ''}\n\n${stack}\n\n${
-        context.output
-      }\n\n${context.err}`.trim();
+      stack = `${
+        testCaseItem['system-out'] || testCaseItem.output || testCaseItem.log || ''
+      }\n\n${stack}\n\n${suiteOutput}\n\n${suiteErr}`.trim();
 
       if (!testId) testId = fetchIdFromOutput(stack);
 
@@ -755,7 +744,7 @@ function extractTestsFromSuite(item, parentContext = {}) {
       const stackFiles = fetchFilesFromStackTrace(stack);
       files = [...new Set([...files, ...stackFiles])]; // Remove duplicates
 
-      tests.push({
+      prev.push({
         rid,
         file,
         stack,
@@ -775,26 +764,37 @@ function extractTestsFromSuite(item, parentContext = {}) {
         retry: false,
       });
     });
-
-  const nestedSuites = [...toArray(item.testsuite), ...toArray(item['test-suite'])];
-  nestedSuites.forEach(nestedSuite => {
-    tests.push(...extractTestsFromSuite(nestedSuite, context));
-  });
-
-  return tests;
+  return prev;
 }
 
 function processTestSuite(testsuite) {
   if (!testsuite) return [];
-  return toArray(testsuite).flatMap(suite => extractTestsFromSuite(suite));
+  if (testsuite.testsuite && !testsuite.testcase) return processTestSuite(testsuite.testsuite);
+  if (testsuite['test-suite'] && !testsuite['test-case']) return processTestSuite(testsuite['test-suite']);
+
+  let suites = testsuite;
+  if (!Array.isArray(testsuite)) suites = [testsuite];
+
+  const subSuites = suites.filter(
+    s => (s['test-suite'] || s.testsuite) && !(s['test-case'] || s.testcase),
+  );
+
+  return [
+    ...suites.reduce(reduceTestCases, []),
+    ...subSuites.map(s => processTestSuite(s['test-suite'] || s.testsuite)),
+  ].flat();
 }
 
-function fetchProperties(item, inheritedProperties = []) {
+function fetchProperties(item) {
   const tags = [];
   let title = '';
 
-  const properties = [...inheritedProperties, ...collectProperties(item)];
-  if (!properties.length) return {};
+  if (!item.properties) return {};
+
+  // Handle both single property and array of properties
+  const properties = Array.isArray(item.properties.property)
+    ? item.properties.property
+    : [item.properties.property].filter(Boolean);
 
   const prop = properties.find(p => p.name === 'Description');
   if (prop) title = prop.value;

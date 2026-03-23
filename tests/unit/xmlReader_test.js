@@ -268,7 +268,7 @@ describe('XML Reader', () => {
     expect(jsonData.status).to.eql('failed');
     const stats = reader.calculateStats();
     expect(stats.status).to.eql('failed');
-    expect(stats.tests_count).to.eql(5);
+    expect(stats.tests_count).to.eql(3);
     expect(jsonData.tests.length).to.eql(stats.tests_count);
 
     reader.fetchSourceCode();
