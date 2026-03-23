@@ -11,7 +11,7 @@ const stripColors = stripVTControlCharacters || (str => str?.replace(/\x1b\[[0-9
  * Returns the formatted stack including the stack trace, steps, and logs.
  * @param {Object} params - Parameters for formatting logs
  * @param {string} params.error - Error message
- * @param {Array|any} params.steps - Test steps (array or other types)
+ * @param {Array|any} [params.steps] - Test steps (array or other types)
  * @param {string} params.logs - Test logs
  * @returns {string}
  */
