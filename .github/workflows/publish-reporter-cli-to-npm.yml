@@ -1,10 +1,6 @@
 name: Publish REPORTER CLI wrapper
 on:
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'NPM version to publish'
-        required: true
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -16,7 +12,12 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - run: npm install
         working-directory: ./packages/reporter-cli
-      - run: npm version ${{ github.event.inputs.version }} --no-git-tag-version
+      - name: Sync wrapper version with root reporter package
+        shell: bash
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          npm version "$VERSION" --no-git-tag-version
+          npm pkg set "dependencies.@testomatio/reporter=$VERSION"
         working-directory: ./packages/reporter-cli
       - run: npm publish
         working-directory: ./packages/reporter-cli
