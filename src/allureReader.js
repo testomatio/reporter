@@ -43,6 +43,15 @@ class AllureReader {
     this.suites = {};
     this.uploader = new S3Uploader();
 
+    // Allure results already contain steps and stack traces for all tests,
+    // so enable passing them for passed tests by default
+    if (!process.env.TESTOMATIO_STACK_PASSED) {
+      process.env.TESTOMATIO_STACK_PASSED = '1';
+    }
+    if (!process.env.TESTOMATIO_STEPS_PASSED) {
+      process.env.TESTOMATIO_STEPS_PASSED = '1';
+    }
+
     const packageJsonPath = path.resolve(__dirname, '..', 'package.json');
     this.version = JSON.parse(fs.readFileSync(packageJsonPath).toString()).version;
     console.log(APP_PREFIX, `Testomatio Reporter v${this.version}`);
