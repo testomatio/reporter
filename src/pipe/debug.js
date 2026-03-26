@@ -2,9 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import createDebugMessages from 'debug';
-import { APP_PREFIX } from '../constants.js';
 import prettyMs from 'pretty-ms';
-import { transformEnvVarToBoolean } from '../utils/utils.js';
+import { log } from '../utils/log.js';
 
 const debug = createDebugMessages('@testomatio/reporter:pipe:debug');
 
@@ -16,7 +15,7 @@ export class DebugPipe {
     this.isEnabled = !!process.env.TESTOMATIO_DEBUG || !!process.env.DEBUG;
     if (this.isEnabled) {
       this.batch = {
-        isEnabled: this.params.isBatchEnabled ?? !transformEnvVarToBoolean(process.env.TESTOMATIO_DISABLE_BATCH_UPLOAD),
+        isEnabled: this.params.isBatchEnabled ?? !process.env.TESTOMATIO_DISABLE_BATCH_UPLOAD,
         intervalFunction: null,
         intervalTime: 5000,
         tests: [],
@@ -41,7 +40,7 @@ export class DebugPipe {
         debug('Failed to create symlink:', err.message);
       }
 
-      console.log(APP_PREFIX, '🪲 Debug file created');
+      log.info('🪲 Debug file created');
       this.testomatioEnvVars = Object.keys(process.env)
         .filter(key => key.startsWith('TESTOMATIO_'))
         .reduce((acc, key) => {
@@ -113,10 +112,15 @@ export class DebugPipe {
 
   async finishRun(params) {
     if (!this.isEnabled) return;
-    await this.batchUpload();
+    await this.sync();
     if (this.batch.intervalFunction) clearInterval(this.batch.intervalFunction);
     this.logToFile({ action: 'finishRun', params });
-    console.log(APP_PREFIX, '🪲 Debug Saved to', this.logFilePath);
+    log.info('🪲 Debug Saved to', this.logFilePath);
+  }
+
+  async sync() {
+    if (!this.isEnabled) return;
+    await this.batchUpload();
   }
 
   toString() {

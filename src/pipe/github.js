@@ -3,9 +3,10 @@ import path from 'path';
 import pc from 'picocolors';
 import humanizeDuration from 'humanize-duration';
 import merge from 'lodash.merge';
-import { APP_PREFIX, testomatLogoURL } from '../constants.js';
+import { testomatLogoURL } from '../constants.js';
 import { ansiRegExp, isSameTest } from '../utils/utils.js';
 import { statusEmoji, fullName } from '../utils/pipe_utils.js';
+import { log } from '../utils/log.js';
 
 const debug = createDebugMessages('@testomatio/reporter:pipe:github');
 
@@ -142,6 +143,20 @@ class GitHubPipe {
       });
 
     let body = summary;
+    const coverageConfiguration = this.store?.coverageConfiguration;
+    const isManualRun = this.store?.runKind === 'manual';
+    if (isManualRun && coverageConfiguration) {
+      const testsCount = coverageConfiguration.tests?.length || 0;
+      const suitesCount = coverageConfiguration.suites?.length || 0;
+      body += '\n\n<details>\n<summary><h3>🧭 Coverage Scope</h3></summary>\n\n';
+      if (!testsCount && !suitesCount) {
+        body += '- No tests were affected, run disabled\n';
+      } else {
+        body += `- Suites: ${suitesCount}\n`;
+        body += `- Tests: ${testsCount}\n`;
+      }
+      body += '\n</details>';
+    }
 
     if (failures.length) {
       body += `\n<details>\n<summary><h3>🟥 Failures (${failures.length})</h4></summary>\n\n${failures.join('\n')}\n`;
@@ -177,10 +192,15 @@ class GitHubPipe {
       debug('Comment URL:', url);
       this.store.githubUrl = url;
 
-      console.log(APP_PREFIX, pc.yellow('GitHub'), `Report created: ${pc.magenta(url)}`);
+      log.info(pc.yellow('GitHub'), `Report created: ${pc.magenta(url)}`);
     } catch (err) {
-      console.log(APP_PREFIX, pc.yellow('GitHub'), `Couldn't create GitHub report ${err}`);
+      log.info(pc.yellow('GitHub'), `Couldn't create GitHub report ${err}`);
     }
+  }
+
+  async sync() {
+    // GitHubPipe doesn't buffer tests, so sync is a no-op
+    // Reserved for future use if needed
   }
 
   toString() {

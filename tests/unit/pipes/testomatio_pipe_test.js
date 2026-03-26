@@ -831,5 +831,43 @@ describe('TestomatioPipe', () => {
         expect(testData.stack).to.equal('Error stack trace');
       });
     });
+
+    describe('create flag handling', () => {
+      it('should preserve explicit create flag from test data', () => {
+        delete process.env.TESTOMATIO_CREATE;
+
+        const testData = {
+          title: 'Test with explicit create',
+          status: 'passed',
+          create: true,
+          steps: [],
+          stack: '',
+        };
+
+        pipe.addTest(testData);
+        expect(testData.create).to.equal(true);
+      });
+
+      it('should use pipe default create flag when create is not provided', () => {
+        process.env.TESTOMATIO_CREATE = '1';
+
+        const createPipe = new TestomatioPipe({
+          apiKey: TESTOMATIO,
+          testomatioUrl: TESTOMATIO_URL,
+          isBatchEnabled: false,
+        });
+        createPipe.runId = 'test-run-id';
+
+        const testData = {
+          title: 'Test without create',
+          status: 'passed',
+          steps: [],
+          stack: '',
+        };
+
+        createPipe.addTest(testData);
+        expect(testData.create).to.equal(true);
+      });
+    });
   });
 });

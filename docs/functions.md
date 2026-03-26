@@ -197,5 +197,5 @@ Supported frameworks:
 - 🟢 Cucumber
 - 🟢 Jest
 - 🟢 Mocha
-- 🟡 Playwright (`step`, `log` supported)
+- 🟡 Playwright (everything, except artifacts)
 - 🟢 WDIO (everything, except artifacts)

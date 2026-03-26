@@ -3,14 +3,16 @@ import pc from 'picocolors';
 import { Gaxios } from 'gaxios';
 import JsonCycle from 'json-cycle';
 import { APP_PREFIX, STATUS, AXIOS_TIMEOUT, REPORTER_REQUEST_RETRIES } from '../constants.js';
-import { isValidUrl, 
-  foundedTestLog, 
-  readLatestRunId, 
-  transformEnvVarToBoolean, 
-  getGitCommitSha 
+import {
+  isValidUrl,
+  foundedTestLog,
+  readLatestRunId,
+  transformEnvVarToBoolean,
+  getGitCommitSha,
 } from '../utils/utils.js';
 import { parseFilterParams, generateFilterRequestParams, setS3Credentials } from '../utils/pipe_utils.js';
 import { config } from '../config.js';
+import { log } from '../utils/log.js';
 
 const debug = createDebugMessages('@testomatio/reporter:pipe:testomatio');
 
@@ -25,7 +27,7 @@ if (process.env.TESTOMATIO_RUN) process.env.runId = process.env.TESTOMATIO_RUN;
 class TestomatioPipe {
   constructor(params, store) {
     this.batch = {
-      isEnabled: params?.isBatchEnabled ?? !transformEnvVarToBoolean(process.env.TESTOMATIO_DISABLE_BATCH_UPLOAD),
+      isEnabled: params?.isBatchEnabled ?? !process.env.TESTOMATIO_DISABLE_BATCH_UPLOAD,
       intervalFunction: null, // will be created in createRun by setInterval function
       intervalTime: 5000, // how often tests are sent
       tests: [], // array of tests in batch
@@ -64,10 +66,12 @@ class TestomatioPipe {
       const sha = getGitCommitSha();
       if (sha) {
         this.title = `Shared Run - ${sha}`;
-        console.log(APP_PREFIX, `🔄 Auto-generated title for shared run: ${this.title}`);
+        log.info(`🔄 Auto-generated title for shared run: ${this.title}`);
       } else {
-        console.log(APP_PREFIX, pc.red('Failed to resolve git commit SHA for shared run title.'));
-        console.log(APP_PREFIX, 'Please run the tests inside a Git repository or set TESTOMATIO_TITLE explicitly.');
+        log.warn(
+          pc.red('Failed to resolve git commit SHA for shared run title.'),
+          'Please run the tests inside a Git repository or set TESTOMATIO_TITLE explicitly.',
+        );
       }
     }
     this.groupTitle = params.groupTitle || process.env.TESTOMATIO_RUNGROUP_TITLE;
@@ -86,16 +90,10 @@ class TestomatioPipe {
         httpMethodsToRetry: ['GET', 'PUT', 'HEAD', 'OPTIONS', 'DELETE', 'POST'],
         shouldRetry: error => {
           if (!error.response) return false;
-          switch (error.response?.status) {
-            case 400: // Bad request (probably wrong API key)
-            case 404: // Test not matched
-            case 429: // Rate limit exceeded
-            case 500: // Internal server error
-              return false;
-            default:
-              break;
-          }
-          return error.response?.status >= 401; // Retry on 401+ and 5xx
+          // no need to retry on 4xx errors, because they caused by user mistake, thus retrying will not help
+          // 500 could also be related to both user or server mistake, but decided not to retry for now
+          // this code code be changed to retry 500 too if needed
+          return error.response?.status >= 501; // Retry only on server errors
         },
       },
     });
@@ -111,7 +109,7 @@ class TestomatioPipe {
 
     if (!isValidUrl(this.url.trim())) {
       this.isEnabled = false;
-      console.error(APP_PREFIX, pc.red(`Error creating report on Testomat.io, report url '${this.url}' is invalid`));
+      log.error(pc.red(`Error creating report on Testomat.io, report url '${this.url}' is invalid`));
     }
   }
 
@@ -122,7 +120,7 @@ class TestomatioPipe {
    */
   #formatData(data) {
     data.api_key = this.apiKey;
-    data.create = this.createNewTests;
+    if (data.create === undefined) data.create = this.createNewTests;
 
     // add test ID + run ID
     if (data.rid) data.rid = `${this.runId}-${data.rid}`;
@@ -182,9 +180,9 @@ class TestomatioPipe {
         return resp.data.tests;
       }
 
-      console.log(APP_PREFIX, `⛔  No tests found for your --filter --> ${type}=${id}`);
+      log.warn(`⛔  No tests found for your --filter --> ${type}=${id}`);
     } catch (err) {
-      console.error(APP_PREFIX, `🚩 Error getting Testomat.io test grepList: ${err}`);
+      log.error(`🚩 Error getting Testomat.io test grepList: ${err}`);
     }
   }
 
@@ -198,6 +196,9 @@ class TestomatioPipe {
     if (!this.isEnabled) return;
     if (this.batch.isEnabled && this.isEnabled)
       this.batch.intervalFunction = setInterval(this.#batchUpload, this.batch.intervalTime);
+    if (this.store) {
+      this.store.runKind = params.kind;
+    }
 
     let buildUrl = process.env.BUILD_URL || process.env.CI_JOB_URL || process.env.CIRCLE_BUILD_URL;
 
@@ -219,6 +220,16 @@ class TestomatioPipe {
 
     const accessEvent = process.env.TESTOMATIO_PUBLISH ? 'publish' : null;
 
+    const coverageConfiguration = this.store?.coverageConfiguration;
+    let description = null;
+    let configuration = null;
+    if (coverageConfiguration && (coverageConfiguration.tests?.length || coverageConfiguration.suites?.length)) {
+      description = this.store?.coverageDescription || null;
+      configuration = {
+        tests: coverageConfiguration.tests?.map(id => id.replace(/^T/, '')) || [],
+        suites: coverageConfiguration.suites?.map(id => id.replace(/^S/, '')) || [],
+      };
+    }
     const runParams = Object.fromEntries(
       Object.entries({
         ci_build_url: buildUrl,
@@ -232,6 +243,8 @@ class TestomatioPipe {
         shared_run: this.sharedRun,
         shared_run_timeout: this.sharedRunTimeout,
         kind: params.kind,
+        configuration,
+        description,
       }).filter(([, value]) => !!value),
     );
     debug(' >>>>>> Run params', JSON.stringify(runParams, null, 2));
@@ -246,6 +259,15 @@ class TestomatioPipe {
         responseType: 'json',
       });
       if (resp.data.artifacts) setS3Credentials(resp.data.artifacts);
+      if (resp.data.url) {
+        const respUrl = new URL(resp.data.url);
+        this.runUrl = `${this.url}${respUrl.pathname}`;
+        this.runPublicUrl = resp.data.public_url;
+        this.store.runUrl = this.runUrl;
+        this.store.runPublicUrl = this.runPublicUrl;
+        log.info('📊 Using existing run. Report ID:', this.runId);
+        log.info('📊 Report URL:', pc.magenta(this.runUrl));
+      }
       return;
     }
 
@@ -268,21 +290,24 @@ class TestomatioPipe {
       this.store.runUrl = this.runUrl;
       this.store.runPublicUrl = this.runPublicUrl;
       this.store.runId = this.runId;
-      console.log(APP_PREFIX, '📊 Report created. Report ID:', this.runId);
+      log.info('📊 Report created. Report ID:', this.runId);
       process.env.runId = this.runId;
       debug('Run created', this.runId);
     } catch (err) {
       const errorText = err.response?.data?.message || err.message;
       debug('Error creating run', err);
       console.log(errorText || err);
+      if (err.response?.status === 403) this.#disablePipe();
       if (!this.apiKey) console.error('Testomat.io API key is not set');
       if (!this.apiKey?.startsWith('tstmt')) console.error('Testomat.io API key is invalid');
+
+      if (process.env.DEBUG || process.env.TESTOMATIO_DEBUG) this.#logFailedResponse(err);
 
       console.error(
         APP_PREFIX,
         'Error creating Testomat.io report (see details above), please check if your API key is valid. Skipping report',
       );
-      printCreateIssue(err);
+      printCreateIssue();
     }
     debug('"createRun" function finished');
   }
@@ -326,29 +351,14 @@ class TestomatioPipe {
         maxContentLength: Infinity,
       })
       .catch(err => {
+        if (err.response?.status === 403) this.#disablePipe();
         this.requestFailures++;
         this.notReportedTestsCount++;
         if (err.response) {
-          if (err.response.status >= 400) {
-            const responseData = err.response.data || { message: '' };
-            console.log(
-              APP_PREFIX,
-              pc.yellow(`Warning: ${responseData.message} (${err.response.status})`),
-              pc.gray(data?.title || ''),
-            );
-            if (err.response?.data?.message?.includes('could not be matched')) {
-              this.hasUnmatchedTests = true;
-            }
-            return;
-          }
-          console.log(
-            APP_PREFIX,
-            pc.yellow(`Warning: ${data?.title || ''} (${err.response?.status})`),
-            `Report couldn't be processed: ${err?.response?.data?.message}`,
-          );
-          printCreateIssue(err);
+          this.#logFailedResponse(err);
+          printCreateIssue();
         } else {
-          console.log(APP_PREFIX, pc.blue(data?.title || ''), "Report couldn't be processed", err);
+          log.info(pc.blue(data?.title || ''), "Report couldn't be processed", err);
         }
       });
   };
@@ -392,25 +402,14 @@ class TestomatioPipe {
         maxContentLength: Infinity,
       })
       .catch(err => {
+        if (err.response?.status === 403) this.#disablePipe();
         this.requestFailures++;
         this.notReportedTestsCount += testsToSend.length;
         if (err.response) {
-          if (err.response.status >= 400) {
-            const responseData = err.response.data || { message: '' };
-            console.log(APP_PREFIX, pc.yellow(`Warning: ${responseData.message} (${err.response.status})`));
-            if (err.response?.data?.message?.includes('could not be matched')) {
-              this.hasUnmatchedTests = true;
-            }
-            return;
-          }
-          console.log(
-            APP_PREFIX,
-            pc.yellow(`Warning: (${err.response?.status})`),
-            `Report couldn't be processed: ${err?.response?.data?.message}`,
-          );
-          printCreateIssue(err);
+          this.#logFailedResponse(err);
+          printCreateIssue();
         } else {
-          console.log(APP_PREFIX, "Report couldn't be processed", err);
+          log.info("Report couldn't be processed", err);
         }
       });
   };
@@ -424,7 +423,7 @@ class TestomatioPipe {
 
     this.runId = this.runId || process.env.runId || this.store.runId || readLatestRunId();
     if (!this.runId) {
-      console.warn(APP_PREFIX, pc.red('Run ID is not set, skipping test reporting'));
+      log.warn(pc.red('Run ID is not set, skipping test reporting'));
       return;
     }
 
@@ -439,6 +438,15 @@ class TestomatioPipe {
 
     // return promise to be able to wait for it
     return uploading;
+  }
+
+  /**
+   * Syncs / flushes buffered tests by uploading them as a batch
+   * This is used to manually trigger batch upload (e.g., after all tests are added)
+   */
+  async sync() {
+    if (!this.isEnabled) return;
+    await this.#batchUpload();
   }
 
   /**
@@ -490,21 +498,21 @@ class TestomatioPipe {
         });
 
         if (this.runUrl) {
-          console.log(APP_PREFIX, '📊 Report Saved. Report URL:', pc.magenta(this.runUrl));
+          log.warn('📊 Report URL:', pc.magenta(this.runUrl));
         }
         if (this.runPublicUrl) {
-          console.log(APP_PREFIX, '🌟 Public URL:', pc.magenta(this.runPublicUrl));
+          log.info('🌟 Public URL:', pc.magenta(this.runPublicUrl));
         }
       }
       if (this.runUrl && this.proceed) {
         const notFinishedMessage = pc.yellow(pc.bold('Run was not finished because of $TESTOMATIO_PROCEED'));
-        console.log(APP_PREFIX, `📊 ${notFinishedMessage}. Report URL: ${pc.magenta(this.runUrl)}`);
-        console.log(APP_PREFIX, `🛬 Run to finish it: TESTOMATIO_RUN=${this.runId} npx @testomatio/reporter finish`);
+        log.warn(`📊 ${notFinishedMessage}. Report URL: ${pc.magenta(this.runUrl)}`);
+        log.warn(`🛬 Run to finish it: TESTOMATIO_RUN=${this.runId} npx @testomatio/reporter finish`);
       }
 
       if (this.hasUnmatchedTests) {
         console.log('');
-        console.log(APP_PREFIX, pc.yellow(pc.bold('⚠️ Some reported tests were not found in Testomat.io project')));
+        log.warn(pc.yellow(pc.bold('⚠️ Some reported tests were not found in Testomat.io project')));
         console.log(
           APP_PREFIX,
           `If you use Testomat.io as a reporter only, please re-run tests using ${pc.bold('TESTOMATIO_CREATE=1')}`,
@@ -513,17 +521,64 @@ class TestomatioPipe {
           APP_PREFIX,
           `But to keep your tests consistent it is recommended to ${pc.bold('import tests first')}`,
         );
-        console.log(APP_PREFIX, 'If tests were imported but still not matched, assign test IDs to your tests.');
-        console.log(APP_PREFIX, 'You can do that automatically via command line tools:');
-        console.log(APP_PREFIX, pc.bold('npx check-tests ... --update-ids'), 'See: https://bit.ly/js-update-ids');
-        console.log(APP_PREFIX, 'or for Cucumber:');
-        console.log(APP_PREFIX, pc.bold('npx check-cucumber ... --update-ids'), 'See: https://bit.ly/bdd-update-ids');
+        log.info(
+          'If tests were imported but still not matched, assign test IDs to your tests.',
+          'You can do that automatically via command line tools:',
+          pc.bold('npx check-tests ... --update-ids'),
+          'See: https://bit.ly/js-update-ids',
+          'or for Cucumber:',
+          pc.bold('npx check-cucumber ... --update-ids'),
+          'See: https://bit.ly/bdd-update-ids',
+        );
       }
     } catch (err) {
-      console.log(APP_PREFIX, 'Error updating status, skipping...', err);
-      printCreateIssue(err);
+      log.info('Error updating status, skipping...', err);
+      if (process.env.DEBUG || process.env.TESTOMATIO_DEBUG) this.#logFailedResponse(err);
+      printCreateIssue();
     }
     debug('Run finished');
+  }
+
+  #disablePipe() {
+    this.isEnabled = false;
+    this.apiKey = null;
+
+    // clear interval function, otherwise the proccess will continue indefinitely
+    if (this.batch.intervalFunction) {
+      clearInterval(this.batch.intervalFunction);
+      this.batch.intervalFunction = null;
+      this.batch.isEnabled = false;
+    }
+    this.batch.tests = [];
+  }
+
+  #logFailedResponse(error) {
+    let responseBody = stringify(error.response?.data ?? error.response ?? error, { pretty: true });
+    if (!responseBody) responseBody = '<empty>';
+    responseBody = hideTestomatioToken(responseBody);
+
+    const statusCode = error.status || error.code || error.response?.status || '<unknown status code>';
+    const method = error.response?.config.method || '<unknown method>';
+    const url = error.response?.config.url || '<unknown url>';
+
+    let message = pc.yellow('\n⚠️ Request to Testomat.io failed:\n');
+    message += pc.bold(`${pc.red(statusCode)} ${method} ${url}\n`);
+    message += `\t${pc.bold('response: ')}${pc.gray(responseBody)}\n`;
+
+    const requestBody = hideTestomatioToken(stringify(error.response?.config?.data));
+    if (process.env.DEBUG || process.env.TESTOMATIO_DEBUG) {
+      message += `\t${pc.bold('request: ')}${pc.gray(requestBody)}\n`;
+    } else {
+      const requestBodyCut = requestBody.slice(0, 1000);
+      message += `\t${pc.bold('request: ')}${pc.gray(`${requestBodyCut}.....`)}\n`;
+      message += '\trequest body is cut, run with TESTOMATIO_DEBUG=1 to see full body\n';
+    }
+
+    console.log(message);
+
+    if (error.response?.data?.message?.includes('could not be matched')) {
+      this.hasUnmatchedTests = true;
+    }
   }
 
   toString() {
@@ -532,26 +587,42 @@ class TestomatioPipe {
 }
 
 let registeredErrorHints = false;
-function printCreateIssue(err) {
+function printCreateIssue() {
   if (registeredErrorHints) return;
   registeredErrorHints = true;
   process.on('exit', () => {
-    console.log();
-    console.log(APP_PREFIX, 'There was an error reporting to Testomat.io:');
     console.log(
       APP_PREFIX,
-      'If you think this is a bug please create an issue: https://github.com/testomatio/reporter/issues/new',
+      'There was an error reporting to Testomat.io.\n',
+      pc.yellow(
+        'If you think this is a bug please create an issue: https://github.com/testomatio/reporter/issues/new.',
+      ),
+      pc.yellow('Provide the logs from above'),
     );
-    console.log(APP_PREFIX, 'Provide this information:');
-    console.log('Error:', err.message || err.code);
-    if (!err.config) return;
-
-    const time = new Date().toUTCString();
-    const { body, url, baseURL, method } = err?.config || {};
-    console.log('```js');
-    console.log({ body: body?.replace(/"(tstmt_[^"]+)"/g, 'tstmt_*'), url, baseURL, method, time });
-    console.log('```');
   });
+}
+
+/**
+ * Removes Testomatio token from string data
+ *
+ * @param {string} data
+ * @returns {string}
+ */
+function hideTestomatioToken(data) {
+  return (typeof data === 'string' ? data : '')
+    .replace(/"api_key"\s*:\s*"[^"]+"/g, '"api_key": "<hidden>"')
+    .replace(/"(tstmt_[^"]+)"/g, '"tstmt_***"');
+}
+
+/**
+ * Stringifies provided data
+ *
+ * @param {any} anything
+ * @param {{ pretty: boolean }} opts
+ * @returns {string}
+ */
+function stringify(anything, opts = { pretty: false }) {
+  return typeof anything === 'string' ? anything : JSON.stringify(anything, null, opts.pretty ? 2 : undefined);
 }
 
 export default TestomatioPipe;

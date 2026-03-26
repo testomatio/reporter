@@ -23,10 +23,14 @@ class VitestReporter {
      * @type {(TestData & {status: string})[]} tests
      */
     this.tests = [];
+    this._finalized = false;
+    this._finalizing = false;
   }
 
   // on run start
   onInit() {
+    this._finalized = false;
+    this._finalizing = false;
     this.client.createRun();
   }
 
@@ -35,34 +39,59 @@ class VitestReporter {
    * @param {unknown[] | undefined} errors // errors does not contain errors from tests; probably its testrunner errors
    */
   async onFinished(files, errors) {
-    if (!files || !files.length) console.info('No tests executed');
+    if (this._finalized || this._finalizing) return;
+    this._finalizing = true;
 
-    files.forEach(file => {
-      // task could be test or suite
-      file.tasks.forEach(taskOrSuite => {
-        if (taskOrSuite.type === 'test') {
-          const test = taskOrSuite;
-          this.tests.push(this.#getDataFromTest(test));
-        } else if (taskOrSuite.type === 'suite') {
-          const suite = taskOrSuite;
-          this.#processTasksOfSuite(suite);
-        } else {
-          throw new Error('Unprocessed case. Unknown task type');
-        }
+    try {
+      this.tests = [];
+      if (!files || !files.length) {
+        console.info('No tests executed');
+        return;
+      }
+
+      files.forEach(file => {
+        // task could be test or suite
+        getTasks(file).forEach(taskOrSuite => {
+          if (taskOrSuite.type === 'test') {
+            const test = taskOrSuite;
+            this.tests.push(this.#getDataFromTest(test));
+          } else if (taskOrSuite.type === 'suite') {
+            const suite = taskOrSuite;
+            this.#processTasksOfSuite(suite);
+          } else {
+            throw new Error('Unprocessed case. Unknown task type');
+          }
+        });
       });
-    });
 
-    debug(this.tests.length, 'tests collected');
+      debug(this.tests.length, 'tests collected');
 
-    // send tests to Testomat.io
-    for (const test of this.tests) {
-      await this.client.addTestRun(test.status, test);
+      // send tests to Testomat.io
+      for (const test of this.tests) {
+        await this.client.addTestRun(test.status, test);
+      }
+
+      console.log('finished');
+      if (errors.length) console.error('Vitest adapter errors:', errors);
+
+      await this.client.updateRunStatus(getRunStatusFromResults(files));
+      this._finalized = true;
+    } finally {
+      this._finalizing = false;
     }
+  }
 
-    console.log('finished');
-    if (errors.length) console.error('Vitest adapter errors:', errors);
-
-    await this.client.updateRunStatus(getRunStatusFromResults(files));
+  /**
+   * Vitest 4+ reporter API callback.
+   *
+   * @param {Array<unknown> | undefined} testModules
+   * @param {unknown[] | undefined} errors
+   */
+  async onTestRunEnd(testModules, errors) {
+    const files = (testModules || [])
+      .map(module => module && (/** @type {any} */ (module).task || module))
+      .filter(Boolean);
+    await this.onFinished(files, errors);
   }
 
   /* non-used listeners
@@ -83,7 +112,7 @@ class VitestReporter {
    * @param {VitestSuite} suite
    */
   #processTasksOfSuite(suite) {
-    suite.tasks.forEach(taskOrSuite => {
+    getTasks(suite).forEach(taskOrSuite => {
       if (taskOrSuite.type === 'test') {
         const test = taskOrSuite;
         this.tests.push(this.#getDataFromTest(test));
@@ -101,16 +130,17 @@ class VitestReporter {
    *
    * @param {VitestTest} test
    *
-   * @returns {TestData & {status: string}}
+   * @returns {TestData & {status: 'passed' | 'failed' | 'skipped'}}
    */
   #getDataFromTest(test) {
     return {
       error: test.result?.errors ? test.result.errors[0] : undefined,
-      file: test.file.name,
+      file: test.file?.name || test.file?.filepath || '',
       logs: test.logs ? transformLogsToString(test.logs) : '',
       meta: test.meta,
+      // @ts-ignore - STATUS values are string literals but type system sees them as string
       status: getTestStatus(test),
-      suite_title: test.suite.name || test.file?.name,
+      suite_title: test.suite?.name || test.file?.name || test.file?.filepath,
       test_id: getTestomatIdFromTestTitle(test.name),
       time: test.result?.duration || 0,
       title: test.name,
@@ -161,8 +191,9 @@ function getRunStatusFromResults(files) {
 function getTestStatus(test) {
   if (test.result?.state === 'fail') return STATUS.FAILED;
   if (test.result?.state === 'pass') return STATUS.PASSED;
-  if (!test.result && test.mode === 'skip') return STATUS.SKIPPED;
+  if (test.result?.state === 'skip' || (!test.result && test.mode === 'skip')) return STATUS.SKIPPED;
   console.error(pc.red('Unprocessed case for defining test status. Contact dev team. Test:'), test);
+  return STATUS.SKIPPED;
 }
 
 /**
@@ -177,6 +208,20 @@ function transformLogsToString(logs) {
     if (log.type === 'stderr') logsStr += `${pc.red(log.content)}\n`;
   });
   return logsStr;
+}
+
+/**
+ * Supports both old and new Vitest task tree shapes.
+ *
+ * @param {any} node
+ * @returns {any[]}
+ */
+function getTasks(node) {
+  if (!node) return [];
+  if (Array.isArray(node.tasks)) return node.tasks;
+  if (Array.isArray(node.children)) return node.children;
+  if (node.task) return [node.task];
+  return [];
 }
 
 export default VitestReporter;

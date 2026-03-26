@@ -1,15 +1,18 @@
-import pc from 'picocolors';
 import crypto from 'crypto';
 import os from 'os';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
-import { APP_PREFIX, STATUS as Status, TESTOMAT_TMP_STORAGE_DIR } from '../constants.js';
+import { APP_PREFIX, STATUS as Status, TESTOMAT_TMP_STORAGE_DIR, SCREENSHOTS_ON_STEPS } from '../constants.js';
 import TestomatioClient from '../client.js';
-import { getTestomatIdFromTestTitle, fileSystem } from '../utils/utils.js';
+import { getTestomatIdFromTestTitle, fileSystem, truncate } from '../utils/utils.js';
 import { services } from '../services/index.js';
 import { dataStorage } from '../data-storage.js';
 import { extensionMap } from '../utils/constants.js';
+import pc from 'picocolors';
+import { fetchLinksFromLogs } from './utils/playwright.js';
+import { formatStep, addStatusToStep, addArtifactsToStep } from './utils/step-formatter.js';
+import { log } from '../utils/log.js';
 
 const reportTestPromises = [];
 
@@ -34,34 +37,25 @@ class PlaywrightReporter {
     dataStorage.setContext(fullTestTitle);
   }
 
-  onTestEnd(test, result) {
+  async onTestEnd(test, result) {
     // test.parent.project().__projectId
 
     if (!this.client) return;
 
     const { title } = test;
     const { error, duration } = result;
+    const pwAttachments = (result.attachments || []).filter(a => a.body || a.path);
+
+    const files = pwAttachments
+      .map(att => ({
+        path: this.#getArtifactPath(att),
+        title: att.name || title,
+        type: att.contentType,
+      }))
+      .filter(f => f.path);
+
     const suite_title = test.parent ? test.parent?.title : path.basename(test?.location?.file);
 
-    const steps = [];
-    for (const step of result.steps) {
-      const appendedStep = appendStep(step);
-      if (appendedStep) {
-        steps.push(appendedStep);
-      }
-    }
-
-    // Extract and normalize tags
-    const tags = extractTags(test);
-
-    const fullTestTitle = getTestContextName(test);
-    let logs = '';
-    if (result.stderr.length || result.stdout.length) {
-      logs = `\n\n${pc.bold('Logs:')}\n${pc.red(result.stderr.join(''))}\n${result.stdout.join('')}`;
-    }
-    const manuallyAttachedArtifacts = services.artifacts.get(fullTestTitle);
-    const testMeta = services.keyValues.get(fullTestTitle);
-    const links = services.links.get(fullTestTitle);
     const rid = test.id || test.testId || uuidv4();
 
     /**
@@ -80,6 +74,33 @@ class PlaywrightReporter {
       metadata: test.parent.project().metadata,
       name: test.parent.project().name,
     };
+
+    const steps = result.steps.map(step => appendStep(step, 0)).filter(step => step !== null);
+
+    // Extract and normalize tags
+    const tags = extractTags(test);
+
+    const fullTestTitle = getTestContextName(test);
+
+    let logs = '';
+    // get links along with filtered logs (liks related logs removed)
+    const { stdout: filteredStdout, links, meta } = fetchLinksFromLogs(result.stdout);
+    if (filteredStdout?.length || result.stderr?.length) {
+      logs = `\n\n${pc.bold('Logs:')}\n${pc.red(result.stderr.join(''))}\n${filteredStdout.join('')}`;
+    }
+
+    /*
+      All services fucntions work different for Playwright.
+      We don't have access to test title (as result, to test id) when calling this functions inside a test.
+      Thus, when user calls services functions inside a test, we just log this data to console.
+      Playwright intercepts the console.log on it's end and we just get this data from it.
+      Thus, we have a tiny drawback: all data from services functions inside a test will be logged to console.
+      And this requires a condition to be added for each service function – if its Playwright, then log to console.
+
+      "get" method of services will not return data for Playwright, we should parse stdout.
+    */
+    const manuallyAttachedArtifacts = services.artifacts.get(fullTestTitle);
+    const testMeta = services.keyValues.get(fullTestTitle);
 
     let status = result.status;
     // process test.fail() annotation
@@ -102,12 +123,14 @@ class PlaywrightReporter {
       logs,
       links,
       manuallyAttachedArtifacts,
+      files: files.length ? files : undefined,
       meta: {
         browser: project.browser,
         isMobile: project.isMobile,
         project: project.name,
         projectDependencies: project.dependencies?.length ? project.dependencies : null,
         ...testMeta,
+        ...meta,
         ...project.metadata, // metadata has any type (in playwright), but we will stringify it in client.js
         ...test.annotations?.reduce((acc, annotation) => {
           acc[annotation.type] = annotation.description;
@@ -120,7 +143,7 @@ class PlaywrightReporter {
     this.uploads.push({
       rid: `${rid}-${project.name}`,
       title: test.title,
-      files: result.attachments.filter(a => a.body || a.path),
+      files: pwAttachments,
       file: test.location?.file,
     });
     // remove empty uploads
@@ -153,7 +176,7 @@ class PlaywrightReporter {
     await Promise.all(reportTestPromises);
 
     if (this.uploads.length) {
-      if (this.client.uploader.isEnabled) console.log(APP_PREFIX, `🎞️  Uploading ${this.uploads.length} files...`);
+      if (this.client.uploader.isEnabled) log.info(`🎞️ Uploading ${this.uploads.length} files...`);
 
       const promises = [];
 
@@ -216,6 +239,44 @@ function appendStep(step, shift = 0) {
       newCategory = 'framework';
   }
 
+  const resultStep = formatStep({
+    category: newCategory,
+    title: step.title,
+    duration: step.duration,
+  });
+
+  // Add status based on error
+  addStatusToStep(resultStep, step.error ? 'failed' : 'passed', step.error);
+
+  // Add error if present
+  if (step.error !== undefined) {
+    if (typeof step.error === 'object') {
+      resultStep.error = {
+        message: truncate(String(step.error.message), 250),
+        stack: truncate(String(step.error.stack || ''), 250),
+      };
+    } else {
+      resultStep.error = truncate(String(step.error), 250);
+    }
+  }
+
+  // Add log if present
+  if (step.log) {
+    resultStep.log = truncate(String(step.log), 250);
+  }
+
+  // Add artifacts from attachments
+  if (step.attachments && step.attachments.length > 0 && SCREENSHOTS_ON_STEPS) {
+    const screenshotAttachment = step.attachments.find(att =>
+      att.contentType === 'image/png' && att.name === 'screenshot'
+    );
+    if (screenshotAttachment && screenshotAttachment.path) {
+      const artifacts = { screenshot: screenshotAttachment.path };
+      addArtifactsToStep(resultStep, artifacts);
+    }
+  }
+
+  // Process nested steps
   const formattedSteps = [];
   for (const child of step.steps || []) {
     const appendedChild = appendStep(child, shift + 2);
@@ -224,18 +285,8 @@ function appendStep(step, shift = 0) {
     }
   }
 
-  const resultStep = {
-    category: newCategory,
-    title: step.title,
-    duration: step.duration,
-  };
-
   if (formattedSteps.length) {
     resultStep.steps = formattedSteps.filter(s => !!s);
-  }
-
-  if (step.error !== undefined) {
-    resultStep.error = step.error;
   }
 
   return resultStep;
@@ -289,4 +340,4 @@ function getTestContextName(test) {
 }
 
 export default PlaywrightReporter;
-export { extractTags };
+export { extractTags, fetchLinksFromLogs };

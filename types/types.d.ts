@@ -17,7 +17,7 @@ declare module '@testomatio/reporter' {
    * @param message - step message
    * @param logs - optional key-value object with additional info (e.g. logs)
    */
-  export function step(message: string, logs?: {[key: string]: any}): void;
+  export function step(message: string, logs?: { [key: string]: any }): void;
 
   /**
    * Add key-value pair(s) to the test report
@@ -28,22 +28,22 @@ declare module '@testomatio/reporter' {
 
   /**
    * Add a single label to the test report
-   * @param key - label key (e.g. 'severity', 'feature', or just 'smoke' for labels without values)
-   * @param value - optional label value (e.g. 'high', 'login')
+   * @param {string | {[key: string]: string}} key - label key (e.g. 'severity', 'feature', or just 'smoke' for labels without values)
+   * @param {string | null} [value=null] - optional label value (of custom field value) (used when key is a string)
    */
-  export function label(key: string, value?: string | null): void;
+  export function label(key: string | { [key: string]: string }, value?: string | null): void;
 
   /**
    * Add link(s) to the test report
    * @param testIds - test IDs to link
    */
-  export function linkTest(...testIds: string[]): void;
+  export function linkTest(...testIds: (string | string[])[]): void;
 
   /**
    * Add JIRA issue link(s) to the test report
    * @param jiraIds - JIRA issue IDs to link
    */
-  export function linkJira(...jiraIds: string[]): void;
+  export function linkJira(...jiraIds: (string | string[])[]): void;
 
   /**
    * Logger service for intercepting and managing logs
@@ -159,6 +159,12 @@ export interface TestData {
   /** The unique identifier from Testomat.io of the test case. If provided, updates the existing test case with the given ID. */
   test_id?: string;
 
+  /** The status of the test (passed, failed, skipped, etc.) */
+  status?: 'passed' | 'failed' | 'skipped';
+
+  /** An array of artifacts associated with the test case (screenshots, videos, traces, etc.) */
+  artifacts?: ArtifactData[];
+
   /** An object representing an error that occurred during the execution of the test case. */
   error?: Error;
 
@@ -205,6 +211,24 @@ export interface TestData {
 
   /** Whether to overwrite status of this test to avoid saving as retry (defaults to false) */
   overwrite?: boolean;
+}
+
+/**
+ * Extended test data for HTML reporter.
+ */
+export interface HtmlTestData extends TestData {
+  meta?: { [key: string]: any } & {
+    attachments?: any[];
+    traces?: any;
+    console?: any;
+    stdout?: any;
+    stderr?: any;
+    logs?: any;
+    retryCount?: number;
+    isFlaky?: boolean;
+    attempts?: any[];
+    retries?: any[];
+  };
 }
 
 /**
@@ -266,6 +290,9 @@ export interface Pipe {
   /** adds a test to the current run */
   addTest(test: TestData): any;
 
+  /** syncs / flushes buffered data (e.g., uploads batched tests) */
+  sync(): Promise<void>;
+
   /** ends the run */
   finishRun(runParams: RunData): Promise<void>;
 
@@ -290,6 +317,9 @@ interface Step {
   duration: number;
   steps?: Step[];
   error?: any;
+  status?: string;
+  log?: string;
+  artifacts?: string[];
 }
 
 declare global {

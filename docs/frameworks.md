@@ -268,13 +268,14 @@ const testomatio = require('@testomatio/reporter/lib/adapter/webdriver');
 exports.config = {
   // ...
   reporters: [
-    [testomatio, {
-      apiKey: $ {
-        process.env.TESTOMATIO
-      }
-    }]
-  ]
-}
+    [
+      testomatio,
+      {
+        apiKey: process.env.TESTOMATIO,
+      },
+    ],
+  ],
+};
 ```
 
 For making screenshots on failed tests add the following hook to `wdio.conf.js`:
@@ -294,6 +295,30 @@ TESTOMATIO={API_KEY} npx @testomatio/reporter run 'npx wdio wdio.conf.js'
 > 📑 [Example Project](https://github.com/testomatio/examples/tree/master/webdriverio-mocha)
 
 > 📺 [Video](https://www.youtube.com/watch?v=cjVZzey-lto)
+
+#### Enhanced beforeEach Hook Handling
+
+To properly handle `beforeEach` hook failures and report all tests as failed, install the enhanced package:
+
+```bash
+npm install @testomatio/webdriver-hooks-enhancer
+```
+
+Enable in `wdio.conf.js`:
+
+```javascript
+reporters: [
+  [
+    'testomatio',
+    {
+      apiKey: process.env.TESTOMATIO,
+      enableHooksEnhancer: true, // Enable enhanced hook handling
+    },
+  ],
+];
+```
+
+This ensures that when a `beforeEach` hook fails, all tests in the suite are reported as failed (not just the first one).
 
 ### Cucumber
 

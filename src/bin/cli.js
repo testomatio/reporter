@@ -15,8 +15,9 @@ import pc from 'picocolors';
 import { filesize as prettyBytes } from 'filesize';
 import dotenv from 'dotenv';
 import Replay from '../replay.js';
+import { log } from '../utils/log.js';
 
-const debug = createDebugMessages('@testomatio/reporter:xml-cli');
+const debug = createDebugMessages('@testomatio/reporter:cli');
 const version = getPackageVersion();
 console.log(pc.cyan(pc.bold(` 🤩 Testomat.io Reporter v${version}`)));
 const program = new Command();
@@ -80,22 +81,17 @@ program
   .command('run')
   .alias('test')
   .description('Run tests with the specified command')
-  .argument('<command>', 'Test runner command')
+  .argument('[command]', 'Test runner command')
   .option('--filter <filter>', 'Additional execution filter')
   .option('--filter-list <filter>', 'Get a list of all tests by filter before running')
   .option('--kind <type>', 'Specify run type: automated, manual, or mixed')
   .action(async (command, opts) => {
     const apiKey = process.env['INPUT_TESTOMATIO-KEY'] || config.TESTOMATIO;
     const title = process.env.TESTOMATIO_TITLE;
-
-    if (!command || !command.split) {
-      console.log(APP_PREFIX, `No command provided. Use -c option to launch a test runner.`);
-      return process.exit(255);
-    }
-
     const client = new TestomatClient({ apiKey, title });
 
     if (opts.filter || opts.filterList) {
+      log.info('Filtering tests...');
       // Example of use: npx @testomatio/reporter run "npx jest" --filter "testomatio:tag-name=frontend"
       // Example of use: npx @testomatio/reporter run "npx jest" --filter "coverage:file=coverage.yml"
       // Example of use: npx @testomatio/reporter run "npx jest" --filter-list "coverage:file=coverage.yml"
@@ -103,12 +99,15 @@ program
       const pipeOptions = optsArray.join(':');
 
       const prepareRunParams = { pipe, pipeOptions };
+      if (opts.filterList) {
+        client.pipeStore.filterList = true;
+      }
 
       try {
         const tests = await client.prepareRun(prepareRunParams);
 
         if (!tests || tests.length === 0) {
-          console.log(APP_PREFIX, pc.yellow('No tests found.'));
+          log.info( pc.yellow('No tests found.'));
           return;
         }
 
@@ -117,20 +116,49 @@ program
 
         debug(`Execution pattern: "${pattern}"`);
 
-        if (opts.filterList) {
-          console.log(APP_PREFIX, pc.blue(`Matched test/suite IDs: ${tests.join(', ')}`));
-          console.log(APP_PREFIX, pc.green(`Full Running Command: ${filteredCommand}`));
+        if(opts.filterList) {
+          log.info( pc.blue(`Matched test/suite IDs: ${tests.join(', ')}`));
+          if (command) log.info( pc.green(`Full Running Command: ${filteredCommand}`));
           return;
         }
 
-        command = filteredCommand;
-      } catch (err) {
-        console.log(APP_PREFIX, err.message || err);
+        if (command && command.split) {
+          command = filteredCommand;
+        }
+      }
+      catch (err) {
+        log.info( err.message || err);
         return;
       }
     }
 
-    console.log(APP_PREFIX, `🚀 Running`, pc.green(command));
+    // just create a run (wich tests which match filters) without executing tests
+    if (!command || !command.split) {
+      const createRunParams = {};
+      if (title) {
+        createRunParams.title = title;
+      }
+      if (opts.kind) {
+        createRunParams.kind = opts.kind;
+      }
+
+      if (apiKey) {
+        await client.createRun(createRunParams);
+        const runId = process.env.TESTOMATIO_RUN || process.env.runId;
+        if (client.pipeStore.runUrl) log.info( `📊 Report URL: ${pc.magenta(client.pipeStore.runUrl)}`);
+
+        if (opts.kind !== 'manual') {
+          log.info( `No command passed, so you need to run tests yourself:`);
+          log.info( `TESTOMATIO_RUN=${runId} <command>`);
+        }
+      } else {
+        log.info( '⚠️  No API key provided. Cannot create run without TESTOMATIO key.');
+        process.exit(1);
+      }
+      return process.exit(0);
+    }
+
+    log.info( `🚀 Running`, pc.green(command));
 
     const runTests = async () => {
       const testCmds = command.split(' ');
@@ -141,7 +169,7 @@ program
 
       cmd.on('close', async code => {
         const emoji = code === 0 ? '🟢' : '🔴';
-        console.log(APP_PREFIX, emoji, `Runner exited with ${pc.bold(code)}`);
+        log.info( emoji, `Runner exited with ${pc.bold(code)}`);
         if (apiKey) {
           const status = code === 0 ? 'passed' : 'failed';
           await client.updateRunStatus(status);
@@ -183,7 +211,7 @@ program
 //   const runReader = new XmlReader({ javaTests, lang });
 //   const files = glob.sync(pattern, { cwd: opts.dir || process.cwd() });
 //   if (!files.length) {
-//     console.log(APP_PREFIX, `Report can't be created. No XML files found 😥`);
+//     log.info( `Report can't be created. No XML files found 😥`);
 //     process.exit(1);
 //   }
 
@@ -205,12 +233,12 @@ program
     const runReader = new XmlReader({ javaTests, lang });
     const files = glob.sync(pattern, { cwd: opts.dir || process.cwd() });
     if (!files.length) {
-      console.log(APP_PREFIX, `Report can't be created. No XML files found 😥`);
+      log.info( `Report can't be created. No XML files found 😥`);
       process.exit(1);
     }
 
     for (const file of files) {
-      console.log(APP_PREFIX, `Parsed ${file}`);
+      log.info( `Parsed ${file}`);
       runReader.parse(file);
     }
 
@@ -231,7 +259,7 @@ program
       await runReader.createRun();
       await runReader.uploadData();
     } catch (err) {
-      console.log(APP_PREFIX, 'Error updating status, skipping...', err);
+      log.info( 'Error updating status, skipping...', err);
     }
 
     if (timeoutTimer) clearTimeout(timeoutTimer);
@@ -300,10 +328,10 @@ program
     if (!opts.force) testruns = testruns.filter(tr => !tr.uploaded);
 
     if (!testruns.length) {
-      console.log(APP_PREFIX, '🗄️ Total artifacts:', numTotalArtifacts);
+      log.info( '🗄️ Total artifacts:', numTotalArtifacts);
       if (numTotalArtifacts) {
-        console.log(APP_PREFIX, 'No new artifacts to upload');
-        console.log(APP_PREFIX, 'To re-upload artifacts run this command with --force flag');
+        log.info( 'No new artifacts to upload');
+        log.info( 'To re-upload artifacts run this command with --force flag');
       }
       process.exit(0);
     }
@@ -325,7 +353,7 @@ program
       await client.addTestRun(undefined, { rid, files });
     }
 
-    console.log(APP_PREFIX, '🗄️', client.uploader.successfulUploads.length, 'artifacts 🟢uploaded');
+    log.info( '🗄️', client.uploader.successfulUploads.length, 'artifacts 🟢uploaded');
 
     if (client.uploader.successfulUploads.length) {
       debug('\n', APP_PREFIX, `🗄️ ${client.uploader.successfulUploads.length} artifacts uploaded to S3 bucket`);
@@ -384,11 +412,11 @@ program
       const replayService = new Replay({
         apiKey: config.TESTOMATIO,
         dryRun: opts.dryRun,
-        onLog: message => console.log(APP_PREFIX, message),
-        onError: message => console.error(APP_PREFIX, '⚠️ ', message),
+        onLog: message => log.info( message),
+        onError: message => log.error( '⚠️ ', message),
         onProgress: ({ current, total }) => {
           if (current % 10 === 0 || current === total) {
-            console.log(APP_PREFIX, `📊 Progress: ${current}/${total} tests processed`);
+            log.info( `📊 Progress: ${current}/${total} tests processed`);
           }
         },
       });
@@ -396,23 +424,25 @@ program
       const result = await replayService.replay(debugFile);
 
       if (result.dryRun) {
-        console.log(APP_PREFIX, '🔍 Dry run completed:');
-        console.log(APP_PREFIX, `  - Tests found: ${result.testsCount}`);
-        console.log(APP_PREFIX, `  - Environment variables: ${Object.keys(result.envVars).length}`);
-        console.log(APP_PREFIX, `  - Run parameters:`, result.runParams);
-        console.log(APP_PREFIX, '  Use without --dry-run to actually send the data');
+        log.info(
+          '🔍 Dry run completed:\n',
+          `  - Tests found: ${result.testsCount}\n`,
+          `  - Environment variables: ${Object.keys(result.envVars).length}\n`,
+          '  - Run parameters:', result.runParams, '\n',
+          '  Use without --dry-run to actually send the data',
+        );
       } else {
-        console.log(APP_PREFIX, `✅ Successfully replayed ${result.successCount}/${result.testsCount} tests`);
+        log.info( `✅ Successfully replayed ${result.successCount}/${result.testsCount} tests`);
         if (result.failureCount > 0) {
-          console.log(APP_PREFIX, `⚠️  ${result.failureCount} tests failed to upload`);
+          log.info( `⚠️  ${result.failureCount} tests failed to upload`);
         }
       }
 
       process.exit(0);
     } catch (err) {
-      console.error(APP_PREFIX, '❌ Error replaying debug data:', err.message);
+      log.error( '❌ Error replaying debug data:', err.message);
       if (err.message.includes('Debug file not found')) {
-        console.error(APP_PREFIX, '💡 Hint: Run tests with TESTOMATIO_DEBUG=1 to generate debug files');
+        log.error( '💡 Hint: Run tests with TESTOMATIO_DEBUG=1 to generate debug files');
       }
       process.exit(1);
     }

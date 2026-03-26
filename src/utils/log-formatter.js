@@ -11,7 +11,7 @@ const stripColors = stripVTControlCharacters || (str => str?.replace(/\x1b\[[0-9
  * Returns the formatted stack including the stack trace, steps, and logs.
  * @param {Object} params - Parameters for formatting logs
  * @param {string} params.error - Error message
- * @param {Array|any} params.steps - Test steps (array or other types)
+ * @param {Array|any} [params.steps] - Test steps (array or other types)
  * @param {string} params.logs - Test logs
  * @returns {string}
  */
@@ -102,11 +102,16 @@ export function formatError(error, message) {
  * @returns {boolean}
  */
 function isNotInternalFrame(frame) {
+  const fileName = frame.getFileName();
+  if (!fileName) return false;
+
+  const isFileUrl = fileName.startsWith('file://');
+  const hasPathSeparator = fileName.includes(sep) || fileName.includes('/') || isFileUrl;
+
   return (
-    frame.getFileName() &&
-    frame.getFileName().includes(sep) &&
-    !frame.getFileName().includes('node_modules') &&
-    !frame.getFileName().includes('internal')
+    hasPathSeparator &&
+    !fileName.includes('node_modules') &&
+    !fileName.includes('internal')
   );
 }
 

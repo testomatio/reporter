@@ -9,6 +9,7 @@ import { generateFilterRequestParams } from '../utils/pipe_utils.js';
 import { parsePipeOptions } from '../utils/pipe_utils.js';
 import { config } from '../config.js';
 import createDebugMessages from 'debug';
+import { log } from '../utils/log.js';
 
 const debug = createDebugMessages('@testomatio/reporter:pipe:csv');
 
@@ -54,7 +55,7 @@ class CoveragePipe { // or Changes for the future???
 
         this.branch = options?.diff || process.env.COVERAGE_BRANCH || this.#GIT.default_branch;
         this.isBranchDefault = !options.diff && !process.env.COVERAGE_BRANCH;
-        
+
         if (this.isBranchDefault) {
             console.log(
                 APP_PREFIX,
@@ -98,7 +99,7 @@ class CoveragePipe { // or Changes for the future???
             }
         });
 
-        // In case if we have all needed data 
+        // In case if we have all needed data
         this.isEnabled = true;
 
         debug('Coverage Pipe initialized', {
@@ -108,7 +109,7 @@ class CoveragePipe { // or Changes for the future???
 
         this.parsedCoverage = {};
         this.changedFiles = [];
-        this.matchedLines = new Set();        
+        this.matchedLines = new Set();
         this.tests = new Set();
         this.suiteIds = new Set();
         this.tagLabels = new Set();
@@ -118,12 +119,15 @@ class CoveragePipe { // or Changes for the future???
         debug(`Coverage Pipe: is Enabled = ${this.isEnabled}`);
     }
 
-    async prepareRun(opts) {       
+    async prepareRun(opts) {
         // Reset internal mutable state for isolation
         this.tests.clear();
         this.suiteIds.clear();
         this.tagLabels.clear();
         this.results = [];
+        if (this.store) {
+            this.store.coverageConfiguration = undefined;
+        }
 
         if (!this.isEnabled) return [];
 
@@ -132,9 +136,12 @@ class CoveragePipe { // or Changes for the future???
 
         // Step 2: Extract all available tests and compare with coverage file
         const lines = await this.extractRelevantTestsFromChanges();
+        if (this.store?.filterList && lines.size > 0) {
+            log.info( `Matched files: ${[...lines].join(', ')}`);
+        }
 
         if (lines.size === 0) {
-            console.log(APP_PREFIX, 'ℹ️  No matching entries in coverage file for provided Git changes.');
+            log.info( 'ℹ️  No matching entries in coverage file for provided Git changes.');
             return [];
         }
 
@@ -148,22 +155,33 @@ class CoveragePipe { // or Changes for the future???
                 if (!tests) return [];
 
                 console.log(
-                    APP_PREFIX, 
+                    APP_PREFIX,
                     `✅ We found ${tests.length === 1 ? 'one entry' : `${tests.length} (test/suite) entries`}` +
                     ' in Testomat.io service side.'
                 );
-                
+
                 tests.forEach(testId => this.tests.add(testId));
-            }  
+            }
         }
 
-        if (this.tests.size === 0) {
-            console.log(APP_PREFIX, 'ℹ️  No tests found for execution based on Git changes.');            
+        if (this.tests.size === 0 && this.suiteIds.size === 0) {
+            log.info( 'ℹ️  No tests found for execution based on Git changes.');
             return [];
         }
 
-        this.results = [...this.tests];
-        
+        this.results = [...this.tests, ...this.suiteIds];
+        if (this.store) {
+            this.store.coverageConfiguration = {
+                tests: [...this.tests],
+                suites: [...this.suiteIds],
+            };
+            this.store.coverageDescription = this.#buildRunDescription({
+                matchedLines: lines,
+                testsCount: this.tests.size,
+                suitesCount: this.suiteIds.size,
+            });
+        }
+
         return this.results;
     }
 
@@ -174,6 +192,11 @@ class CoveragePipe { // or Changes for the future???
     updateRun() {}
 
     async finishRun(runParams) {}
+
+    async sync() {
+        // CoveragePipe doesn't buffer tests, so sync is a no-op
+        // Reserved for future use if needed
+    }
 
     toString() {
         return 'Coverage Reporter';
@@ -213,19 +236,19 @@ class CoveragePipe { // or Changes for the future???
             });
 
             if (!Array.isArray(resp.data?.tests) && resp.data?.tests?.length === 0) {
-                console.log(APP_PREFIX, `🔍 No test by ${type}=${id} were found on the Testomat.io server side!`);
-                
+                log.info( `🔍 No test by ${type}=${id} were found on the Testomat.io server side!`);
+
                 return undefined;
             }
 
             return resp.data.tests;
-        } 
+        }
         catch (err) {
             console.error(
                 APP_PREFIX,
                 `🚩 Error getting available tests from the Testomat.io by "test_grep" option: ${err}`
             );
-            
+
             return undefined;
         }
     }
@@ -243,48 +266,48 @@ class CoveragePipe { // or Changes for the future???
                 encoding: 'utf-8',
                 stdio: ['pipe', 'pipe', 'ignore']
             });
-    
+
             return result
                 .split('\n')
                 .map(f => f.trim())
                 .filter(Boolean);
-        } 
+        }
         catch (err) {
             const errorMessage = err.message || '';
             // Git edge: Not a git repository or other error
             if (errorMessage.includes('Not a git repository')) {
-                console.error(APP_PREFIX, '❌ Error: This folder is not a Git repository.');
-            } 
+                log.error( '❌ Error: This folder is not a Git repository.');
+            }
             else {
                 throw new Error(`❌ Git command failed ("${cmd}"):\n`, errorMessage);
             }
-    
+
             return [];
         }
     }
 
     /**
-     * Builds a Git command string to list file changes between the current state 
+     * Builds a Git command string to list file changes between the current state
      * and a specified Git branch using `git diff --name-only`.
-     * 
+     *
      * Private pipe function
      * @throws {Error} Throws an error if `this.branch` is not defined.
      * @returns {string} A Git command string, e.g., 'git diff <branch> --name-only'.
      */
     #buildGitCommand() {
         if (!this.branch) throw new Error(`❌ Invalid changes option for setted branch!`);
-        
-        return `git diff ${this.branch} --name-only`; // Example: 'git diff <master> --name-only' 
+
+        return `git diff ${this.branch} --name-only`; // Example: 'git diff <master> --name-only'
     }
 
     /**
-     * Retrieves the list of files changed in the current Git working directory 
+     * Retrieves the list of files changed in the current Git working directory
      * compared to a specified branch.
      *
-     * This method builds a Git diff command and attempts to retrieve the changed 
+     * This method builds a Git diff command and attempts to retrieve the changed
      * files using that command. It logs helpful information and errors during the process.
      *
-     * If no changed files are found, or an error occurs at any stage, the method logs 
+     * If no changed files are found, or an error occurs at any stage, the method logs
      * the issue and returns `undefined`.
      *
      * @returns {this | undefined} Returns the current instance (`this`) if changed files are found;
@@ -295,13 +318,13 @@ class CoveragePipe { // or Changes for the future???
 
         try {
             cmd = this.#buildGitCommand();
-        } 
+        }
         catch (err) {
-            console.error(APP_PREFIX, err.message);
+            log.error( err.message);
             return undefined;
         }
-        
-        console.error(APP_PREFIX, `ℹ️  We will use '${cmd}' Git command.`);
+
+        log.error( `ℹ️  We will use '${cmd}' Git command.`);
 
         try {
             // For clear unit testing process -> Like test_defaultGitChangedFile = todomvc-tests/edit-todos_test.js
@@ -322,12 +345,12 @@ class CoveragePipe { // or Changes for the future???
             }
         }
         catch (err) {
-            console.error(APP_PREFIX, err.message);
-            console.error(APP_PREFIX, "🔍 Pls, check this Git command manually to understand the original problem.");
+            log.error( err.message);
+            log.error( "🔍 Pls, check this Git command manually to understand the original problem.");
             return undefined;
-        }        
+        }
 
-        console.log(APP_PREFIX, `📑  GIT changed files:\n  - ${this.changedFiles.join('\n  - ')}`);        
+        log.info( `📑  GIT changed files:\n  - ${this.changedFiles.join('\n  - ')}`);
         return this;
     }
 
@@ -347,20 +370,20 @@ class CoveragePipe { // or Changes for the future???
     validateCoverageFile() {
         // Validate the presence of the coverage filepath
         if (!fs.existsSync(this.coverageFilePath)) {
-            console.log(APP_PREFIX, '❌ Coverage file not found:', this.coverageFilePath);
+            log.info( '❌ Coverage file not found:', this.coverageFilePath);
             return undefined;
         }
 
         // Ensure the given path is a file (not a directory or other type)
         const stat = fs.statSync(this.coverageFilePath);
         if (!stat.isFile()) {
-            console.log(APP_PREFIX, '❌ Provided coverage path is not a file:', this.coverageFilePath);
+            log.info( '❌ Provided coverage path is not a file:', this.coverageFilePath);
             return undefined;
         }
 
         // Validate the file extension to be ".yml" to ensure it's a YAML file
         if (path.extname(this.coverageFilePath) !== ".yml") {
-            console.log(APP_PREFIX, '❌ Coverage file must have a .yml extension:', this.coverageFilePath);
+            log.info( '❌ Coverage file must have a .yml extension:', this.coverageFilePath);
             return undefined;
         }
 
@@ -386,12 +409,12 @@ class CoveragePipe { // or Changes for the future???
             this.parsedCoverage = yaml.load(rawYml) || {};
 
             debug(`Coverage filepath = ${this.coverageFilePath})`);
-            console.log(APP_PREFIX, `✅ Coverage file parsed successfully: ${this.coverageFilePath}`);
+            log.info( `✅ Coverage file parsed successfully: ${this.coverageFilePath}`);
 
             return this;
         }
         catch (err) {
-            console.error(APP_PREFIX, '❌ Failed to parse YAML:', err.message);
+            log.error( '❌ Failed to parse YAML:', err.message);
             return undefined;
         }
     }
@@ -412,7 +435,7 @@ class CoveragePipe { // or Changes for the future???
             for (const [pattern, ids] of Object.entries(this.parsedCoverage)) {
               if (minimatch(changedFile, pattern)) {
                 this.matchedLines.add(changedFile);
-      
+
                 ids.forEach(id => {
                     // Example: "@Tt74099t1"
                     if (id.startsWith('@T')) {
@@ -420,7 +443,7 @@ class CoveragePipe { // or Changes for the future???
                     }
                     // Example: "@Sd74099c1"
                     else if (id.startsWith('@S')) {
-                        this.tests.add(id.slice(1));
+                        this.suiteIds.add(id.slice(1));
                     }
                     // Example: "tag:@TestSmoke"
                     else if (id.startsWith('tag')) {
@@ -434,6 +457,47 @@ class CoveragePipe { // or Changes for the future???
         debug(`Matched lines: ${this.matchedLines}`);
 
         return this.matchedLines;
+    }
+
+    #buildRunDescription({ matchedLines, testsCount, suitesCount }) {
+        const sourceBranch =
+            process.env.GITHUB_HEAD_REF ||
+            process.env.GITHUB_REF_NAME ||
+            process.env.CI_COMMIT_REF_NAME ||
+            this.#getCurrentGitBranch() ||
+            'current branch';
+        const targetBranch = this.branch || 'target branch';
+        const coverageFile = this.coverageFilePath ? path.basename(this.coverageFilePath) : 'coverage.yml';
+        const updatedFiles = matchedLines && matchedLines.size > 0 ? [...matchedLines] : this.changedFiles;
+
+        let description = `Changes to **${updatedFiles.length}** files in ${sourceBranch} to ${targetBranch}.\n\n`;
+        if (suitesCount > 0 || testsCount > 0) {
+          const affectedItems = [];
+          if (suitesCount > 0) affectedItems.push(`**${suitesCount} suites**`);
+          if (testsCount > 0) affectedItems.push(`**${testsCount} individual tests**`);
+          description += `May affect ${affectedItems.join(' and ')} which are recommended to be tested for regression.\n\n`; // eslint-disable-line
+        }
+        description += 'Updated source files:\n';
+        if (updatedFiles.length) {
+            description += updatedFiles.map(file => `* \`${file}\``).join('\n');
+            description += '\n\n';
+        } else {
+            description += '* No matched files found\n\n';
+        }
+        description += `Mapping source files to tests set via \`${coverageFile}\` file.`;
+        return description;
+    }
+
+    #getCurrentGitBranch() {
+        try {
+            const branch = execSync('git rev-parse --abbrev-ref HEAD', {
+                encoding: 'utf-8',
+                stdio: ['pipe', 'pipe', 'ignore'],
+            }).trim();
+            return branch || undefined;
+        } catch (err) {
+            return undefined;
+        }
     }
 }
 

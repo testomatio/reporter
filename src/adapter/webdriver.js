@@ -16,6 +16,12 @@ class WebdriverReporter extends WDIOReporter {
 
     this._isSynchronising = false;
 
+    // Optional hooks enhancer for beforeEach failure handling
+    this.hooksEnhancer = null;
+    if (options?.enableHooksEnhancer) {
+      this._initializeHooksEnhancer();
+    }
+
     // run is created by cli, if enabling the row below, it mat lead to multiple runs being created
     // thus, need to check if process.env.runId is set and/or add more checks to avoid creating multiple runs
     // this.client.createRun();
@@ -23,6 +29,32 @@ class WebdriverReporter extends WDIOReporter {
 
   get isSynchronised() {
     return this._isSynchronising === false;
+  }
+
+  /**
+   * Initialize the hooks enhancer
+   * @private
+   */
+  async _initializeHooksEnhancer() {
+    try {
+      // Dynamic import to avoid hard dependency
+      // Resolve package path from the project's node_modules
+      const { createRequire } = await import('module');
+      const projectRequire = createRequire(process.cwd() + '/package.json');
+      // Import the hooks enhancer package
+      const packagePath = projectRequire.resolve('@testomatio/webdriver-hooks-enhancer');
+      const hooksEnhancerModule = await import(packagePath);
+      const { createHooksEnhancer } = hooksEnhancerModule;
+      
+      this.hooksEnhancer = createHooksEnhancer(this);
+      console.log('[TESTOMATIO] WebdriverIO Hooks Enhancer enabled');
+    } catch (error) {
+      console.warn(
+        '[TESTOMATIO] Could not enable WebdriverIO Hooks Enhancer.',
+        'Install @testomatio/webdriver-hooks-enhancer to use this feature:',
+        error.message
+      );
+    }
   }
 
   /**
@@ -46,6 +78,29 @@ class WebdriverReporter extends WDIOReporter {
     fileSystem.clearDir(TESTOMAT_TMP_STORAGE_DIR);
   }
 
+  onHookEnd(hook) {
+    // Hooks enhancer will handle this if enabled
+    if (this.hooksEnhancer) {
+      this.hooksEnhancer.trackHookFailure(hook);
+    }
+  }
+
+  async onSuiteEnd(suiteOrScenario) {
+    // Handle hook failures for regular suites using enhancer
+    if (this.hooksEnhancer && suiteOrScenario.type !== 'scenario') {
+      await this.hooksEnhancer.handleSuiteEnd(
+        suiteOrScenario,
+        this.client,
+        getTestomatIdFromTestTitle
+      );
+    }
+
+    // Handle BDD scenarios (cucumber)
+    if (suiteOrScenario.type === 'scenario') {
+      this._addTestPromises.push(this.addBddScenario(suiteOrScenario));
+    }
+  }
+
   onTestStart(test) {
     services.setContext(test.fullTitle);
   }
@@ -60,13 +115,6 @@ class WebdriverReporter extends WDIOReporter {
     test.logs = logs;
 
     this._addTestPromises.push(this.addTest(test));
-  }
-
-  // wdio-cucumber does not trigger onTestEnd hook, thus, using this one
-  onSuiteEnd(scerario) {
-    if (scerario.type === 'scenario') {
-      this._addTestPromises.push(this.addBddScenario(scerario));
-    }
   }
 
   async addTest(test) {

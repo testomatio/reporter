@@ -379,7 +379,6 @@ Content-Type: application/json
 Each step can include the following properties:
 
 - `category` (string): Classifies the step type. Common values include:
-
   - `user`: High-level user action steps
   - `framework`: Internal framework operations
   - `hook`: Test hooks like beforeEach, afterEach

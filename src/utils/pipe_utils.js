@@ -1,4 +1,4 @@
-import { APP_PREFIX } from '../constants.js';
+import { log } from './log.js';
 
 /**
  * Set S3 credentials from the provided artifacts object.
@@ -7,7 +7,7 @@ import { APP_PREFIX } from '../constants.js';
 function setS3Credentials(artifacts) {
   if (!Object.keys(artifacts).length) return;
 
-  console.log(APP_PREFIX, 'S3 credentials obtained from Testomat.io...');
+  log.info( 'S3 credentials obtained from Testomat.io...');
 
   if (artifacts.ACCESS_KEY_ID) process.env.S3_ACCESS_KEY_ID = artifacts.ACCESS_KEY_ID;
   if (artifacts.SECRET_ACCESS_KEY) process.env.S3_SECRET_ACCESS_KEY = artifacts.SECRET_ACCESS_KEY;
@@ -28,7 +28,7 @@ function setS3Credentials(artifacts) {
 function generateFilterRequestParams(params) {
   // Defensive check: ensure params is an object
   if (!params || typeof params !== 'object') {
-    console.error(APP_PREFIX, `Invalid parameters provided. Expected an object, got: ${typeof params}`);
+    log.error( `Invalid parameters provided. Expected an object, got: ${typeof params}`);
     return;
   }
 
@@ -39,7 +39,7 @@ function generateFilterRequestParams(params) {
   }
 
   if (!id) {
-    console.error(APP_PREFIX, `Please make sure your settings "${type.toUpperCase()}"= "${id}" is correct!`);
+    log.error( `Please make sure your settings "${type.toUpperCase()}"= "${id}" is correct!`);
     return;
   }
 
@@ -99,7 +99,7 @@ function updateFilterType(type) {
   ];
 
   if (!filterTypes.includes(typeLowerCase)) {
-    console.log(APP_PREFIX, `❗❗❗ Invalid filter: "${type}" start settings! Available option list: ${filterTypes}`);
+    log.error( `❗ Invalid filter: "${type}" start settings! Available option list: ${filterTypes}`);
     return;
   }
 

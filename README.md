@@ -10,17 +10,17 @@ Testomat.io Reporter (this npm package) supports:
 
 - 🏄 Integarion with all popular [JavaScript/TypeScript frameworks](./docs/frameworks.md)
 - 🗄️ Screenshots, videos, traces [uploaded into S3 bucket](./docs/artifacts.md)
-- 🔎 [Stack traces](./docs/stacktrace.md) and error messages
+- 🔎 [Stack traces](https://github.com/testomatio/reporter/blob/2.x/docs/stacktrace.md) and error messages
 - 🐙 [GitHub](./docs/pipes/github.md), [GitLab](./docs/pipes/gitlab.md) & [Bitbucket](./docs/pipes/bitbucket.md) integration
 - 🚅 Realtime reports
-- 🗃️ Other test frameworks supported via [JUnit XML](./docs/junit.md) with [XML import configuration](./docs/xml-imports.md)
+- 🗃️ Other test frameworks supported via [JUnit XML](./docs/junit.md)
 - 🚶‍♀️ Steps _(work in progress)_
 - 📄 [Logger](./docs/logger.md) _(work in progress, supports Jest for now)_
 - ☁️ Custom properties and metadata _(work in progress)_
 - 💯 Free & open-source.
 - 📊 Public and private Run reports on cloud via [Testomat.io App](https://testomat.io) 👇
 
-<img width="1920" height="1085" alt="image" src="https://github.com/user-attachments/assets/cf823e8b-1305-4ed2-a7c5-712efec12ceb" />
+![testomatio-reporter](./docs/images/testomatio-reporter.png)
 
 ## How It Works
 
@@ -64,10 +64,10 @@ yarn add @testomatio/reporter --dev
 
 |                                                 |                                               |                                                           |
 | ----------------------------------------------- | --------------------------------------------- | --------------------------------------------------------- |
-| [Playwright](./docs/frameworks.md#playwright)   | [CodeceptJS](./docs/frameworks.md#CodeceptJS) | [Cypress](./docs/frameworks.md#Cypress)                   |
-| [Jest](./docs/frameworks.md#Jest)               | [Mocha](./docs/frameworks.md#Mocha)           | [WebDriverIO](./docs/frameworks.md#WebDriverIO)           |
-| [TestCafe](./docs/frameworks.md#TestCafe)       | [Detox](./docs/frameworks.md#Detox)           | [Codeception](https://github.com/testomatio/php-reporter) |
-| [Newman (Postman)](./docs/frameworks.md#Newman) | [JUnit](./docs/junit.md#junit)                | [NUnit](./docs/junit.md#nunit)                            |
+| [Playwright](./docs/frameworks.md#playwright)   | [CodeceptJS](./docs/frameworks.md#codeceptjs) | [Cypress](./docs/frameworks.md#cypress)                   |
+| [Jest](./docs/frameworks.md#jest)               | [Mocha](./docs/frameworks.md#mocha)           | [WebDriverIO](./docs/frameworks.md#webdriverio)           |
+| [TestCafe](./docs/frameworks.md#testcafe)       | [Detox](./docs/frameworks.md#detox)           | [Codeception](https://github.com/testomatio/php-reporter) |
+| [Newman (Postman)](./docs/frameworks.md#newman) | [JUnit](./docs/junit.md#junit)                | [NUnit](./docs/junit.md#nunit)                            |
 | [PyTest](./docs/junit.md#pytest)                | [PHPUnit](./docs/junit.md#phpunit)            | [Protractor](./docs/frameworks.md#protractor)             |
 | [Allure](./docs/allure.md)                      |                                               |                                                           |
 
@@ -78,7 +78,7 @@ or **any [other via JUnit](./docs/junit.md)** report....
 - [Create report on Testomat.io](./docs/pipes/testomatio.md).
 - [Create brief summary report for GitHub Pull Request](./docs/pipes/github.md) 👇
 - [Create brief summary report for GitLab Merge Request](./docs/pipes/gitlab.md).
-- [Configure other pipes](./docs/pipes/md) for other ways to process test results output.
+- [Configure other pipes](./docs/pipes.md) for other ways to process test results output.
 
 ![GitHub report](./docs/pipes/images/github.png)
 
@@ -104,7 +104,7 @@ With our reporter, you can:
 * Visualize data on successful and failed tests, including statistics and error details.
 * Quickly share reports with your team members or stakeholders.
 
-![HTML report](./docs/images/html_reporter_example.gif)
+![HTML report](./docs/images/html-reporter-example.gif)
 
 Learn more about generating HTML reports [here](./docs/pipes/html.md)
 
@@ -137,6 +137,7 @@ Bring this reporter on CI and never lose test results again!
 - 🔂 [Workflows](./docs/workflows.md)
 - 🖊️ [Logger](./docs/logger.md)
 - 🪲 [Debug File Format](./docs/debug-file-format.md)
+- 📊 [Control output logs](./docs/log-level.md)
 
 ## Development
 
