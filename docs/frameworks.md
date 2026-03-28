@@ -30,10 +30,11 @@ Add plugin to [codecept conf](https://github.com/testomatio/reporter/blob/master
 plugins: {
   testomatio: {
     enabled: true,
-    // new way
-    require: '@testomatio/reporter/lib/adapter/codecept',
-    // old way
+    // new way (recommended)
     require: '@testomatio/reporter/codecept',
+
+    // old way
+    require: '@testomatio/reporter/lib/adapter/codecept',
   }
 }
 ```
