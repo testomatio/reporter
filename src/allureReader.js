@@ -514,18 +514,26 @@ class AllureReader {
     this.calculateStats();
     this.fetchSourceCode();
 
-    const dataString = {
-      ...this.stats,
+    this.pipes = this.pipes || (await this.pipesPromise);
+
+    // Upload tests individually via addTest (like XML reader does)
+    // so each pipe processes them through its own pipeline
+    for (const test of this._tests) {
+      await Promise.all(this.pipes.map(p => p.addTest(test)));
+    }
+
+    // Flush any batched tests
+    await Promise.all(this.pipes.map(p => p.sync()));
+
+    debug('Uploaded %d tests, finishing run', this._tests.length);
+
+    const finishData = {
       api_key: this.requestParams.apiKey,
       status: 'finished',
       duration: this.stats.duration,
-      tests: this._tests,
     };
 
-    debug('Uploading data', dataString);
-
-    this.pipes = this.pipes || (await this.pipesPromise);
-    return Promise.all(this.pipes.map(p => p.finishRun(dataString)));
+    return Promise.all(this.pipes.map(p => p.finishRun(finishData)));
   }
 }
 
