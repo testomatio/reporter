@@ -769,17 +769,20 @@ function reduceTestCases(prev, item) {
 
 function processTestSuite(testsuite) {
   if (!testsuite) return [];
-  if (testsuite.testsuite) return processTestSuite(testsuite.testsuite);
+  if (testsuite.testsuite && !testsuite.testcase) return processTestSuite(testsuite.testsuite);
   if (testsuite['test-suite'] && !testsuite['test-case']) return processTestSuite(testsuite['test-suite']);
 
   let suites = testsuite;
-  if (!Array.isArray(testsuite)) {
-    suites = [testsuite];
-  }
+  if (!Array.isArray(testsuite)) suites = [testsuite];
 
-  const subSuites = suites.filter(s => s['test-suite'] && !testsuite['test-case']);
+  const subSuites = suites.filter(
+    s => (s['test-suite'] || s.testsuite) && !(s['test-case'] || s.testcase),
+  );
 
-  return [...subSuites.map(s => processTestSuite(s['test-suite'])), ...suites.reduce(reduceTestCases, [])].flat();
+  return [
+    ...suites.reduce(reduceTestCases, []),
+    ...subSuites.map(s => processTestSuite(s['test-suite'] || s.testsuite)),
+  ].flat();
 }
 
 function fetchProperties(item) {

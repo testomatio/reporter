@@ -19,19 +19,35 @@ const debug = createDebugMessages('@testomatio/reporter:adapter-jest');
 class VitestReporter {
   constructor(config = {}) {
     this.client = new TestomatioClient({ apiKey: config?.apiKey });
-    /**
-     * @type {(TestData & {status: string})[]} tests
-     */
+    /** @type {(TestData & {status: string, _reportKey?: string | null})[]} tests */
     this.tests = [];
     this._finalized = false;
     this._finalizing = false;
+    this._runStartedAtMs = null;
+    this._runStartedAtMicros = null;
+    this._reportedTestKeys = new Set();
+    this._liveQueue = Promise.resolve();
   }
 
   // on run start
   onInit() {
+    const now = Date.now();
     this._finalized = false;
     this._finalizing = false;
+    this._runStartedAtMs = now;
+    this._runStartedAtMicros = now * 1000;
+    this._reportedTestKeys = new Set();
+    this._liveQueue = Promise.resolve();
     this.client.createRun();
+  }
+
+  /**
+   * Vitest 3/4 callback fired when test run starts.
+   */
+  onTestRunStart() {
+    const now = Date.now();
+    this._runStartedAtMs = now;
+    this._runStartedAtMicros = now * 1000;
   }
 
   /**
@@ -68,13 +84,18 @@ class VitestReporter {
 
       // send tests to Testomat.io
       for (const test of this.tests) {
+        if (test._reportKey && this._reportedTestKeys.has(test._reportKey)) continue;
+        if (test._reportKey) this._reportedTestKeys.add(test._reportKey);
         await this.client.addTestRun(test.status, test);
       }
+      await this._liveQueue;
 
       console.log('finished');
       if (errors.length) console.error('Vitest adapter errors:', errors);
 
-      await this.client.updateRunStatus(getRunStatusFromResults(files));
+      const startedAtMs = this._runStartedAtMs || getEarliestTestStartMs(files) || Date.now();
+      const duration = Math.max(0, (Date.now() - startedAtMs) / 1000);
+      await this.client.updateRunStatus(getRunStatusFromResults(files), { duration });
       this._finalized = true;
     } finally {
       this._finalizing = false;
@@ -92,6 +113,28 @@ class VitestReporter {
       .map(module => module && (/** @type {any} */ (module).task || module))
       .filter(Boolean);
     await this.onFinished(files, errors);
+  }
+
+  /**
+   * Vitest 4 callback fired when single test case is finished.
+   *
+   * @param {unknown} testCase
+   */
+  async onTestCaseResult(testCase) {
+    await this.#reportLive(testCase);
+  }
+
+  /**
+   * Vitest 3 fallback callback with task updates.
+   *
+   * @param {unknown[] | undefined} packs
+   */
+  async onTaskUpdate(packs) {
+    if (!Array.isArray(packs) || !packs.length) return;
+    for (const pack of packs) {
+      const test = getTestFromTaskUpdatePack(pack);
+      if (test) await this.#reportLive(test);
+    }
   }
 
   /* non-used listeners
@@ -128,24 +171,51 @@ class VitestReporter {
   /**
    * Processes task and returns test data ready to be sent to Testomat.io
    *
-   * @param {VitestTest} test
+   * @param {any} test
    *
-   * @returns {TestData & {status: 'passed' | 'failed' | 'skipped'}}
+   * @returns {TestData & {status: 'passed' | 'failed' | 'skipped', _reportKey?: string | null}}
    */
   #getDataFromTest(test) {
+    const normalized = normalizeVitestTest(test);
+    const reportKey = getReportKey(test, normalized);
+    const startMicros =
+      typeof normalized.startTime === 'number'
+        ? Math.floor(normalized.startTime * 1000)
+        : this._runStartedAtMicros || undefined;
+
     return {
-      error: test.result?.errors ? test.result.errors[0] : undefined,
-      file: test.file?.name || test.file?.filepath || '',
-      logs: test.logs ? transformLogsToString(test.logs) : '',
-      meta: test.meta,
+      _reportKey: reportKey,
+      error: normalized.error,
+      file: normalized.file,
+      logs: normalized.logs,
+      meta: normalized.meta,
       // @ts-ignore - STATUS values are string literals but type system sees them as string
-      status: getTestStatus(test),
-      suite_title: test.suite?.name || test.file?.name || test.file?.filepath,
-      test_id: getTestomatIdFromTestTitle(test.name),
-      time: test.result?.duration || 0,
-      title: test.name,
+      status: getTestStatus(normalized.state, normalized.mode),
+      suite_title: normalized.suiteTitle,
+      test_id: getTestomatIdFromTestTitle(normalized.name),
+      time: normalized.duration,
+      timestamp: startMicros,
+      title: normalized.name,
       // testomatio functions (artifacts, logs, steps, meta) are not supported
     };
+  }
+
+  /**
+   * @param {unknown} testCase
+   */
+  async #reportLive(testCase) {
+    if (this._finalized || this._finalizing) return;
+    const normalized = normalizeVitestTest(testCase);
+    if (!isLiveReportableState(normalized.state, normalized.mode)) return;
+
+    const data = this.#getDataFromTest(testCase);
+    if (!data._reportKey || this._reportedTestKeys.has(data._reportKey)) return;
+    this._reportedTestKeys.add(data._reportKey);
+
+    this._liveQueue = this._liveQueue
+      .then(() => this.client.addTestRun(data.status, data))
+      .catch(() => undefined);
+    await this._liveQueue;
   }
 }
 
@@ -162,17 +232,16 @@ function getRunStatusFromResults(files) {
   let status = 'finished'; // default status (if no failed or passed tests)
 
   files.forEach(file => {
-    // search for failed tests
-    file.tasks.forEach(taskOrSuite => {
-      if (taskOrSuite.result?.state === 'fail') {
+    getTasks(file).forEach(taskOrSuite => {
+      if (isFailedState(taskOrSuite?.result?.state)) {
         status = 'failed'; // set status to failed if any test failed
       }
     });
 
     // if there are no failed tests > search for passed tests
     if (status !== 'failed') {
-      file.tasks.forEach(taskOrSuite => {
-        if (taskOrSuite.result?.state === 'pass') {
+      getTasks(file).forEach(taskOrSuite => {
+        if (isPassedState(taskOrSuite?.result?.state)) {
           status = 'passed'; // set status to passed if any test passed (and there are no failed tests)
         }
       });
@@ -185,14 +254,15 @@ function getRunStatusFromResults(files) {
 /**
  * Returns test status in Testomat.io format
  *
- * @param {VitestTest} test
+ * @param {string | undefined} state
+ * @param {string | undefined} mode
  * @returns 'passed' | 'failed' | 'skipped'
  */
-function getTestStatus(test) {
-  if (test.result?.state === 'fail') return STATUS.FAILED;
-  if (test.result?.state === 'pass') return STATUS.PASSED;
-  if (test.result?.state === 'skip' || (!test.result && test.mode === 'skip')) return STATUS.SKIPPED;
-  console.error(pc.red('Unprocessed case for defining test status. Contact dev team. Test:'), test);
+function getTestStatus(state, mode) {
+  if (isFailedState(state)) return STATUS.FAILED;
+  if (isPassedState(state)) return STATUS.PASSED;
+  if (isSkippedState(state) || (!state && mode === 'skip')) return STATUS.SKIPPED;
+  console.error(pc.red('Unprocessed case for defining test status. Contact dev team. State:'), state);
   return STATUS.SKIPPED;
 }
 
@@ -220,8 +290,165 @@ function getTasks(node) {
   if (!node) return [];
   if (Array.isArray(node.tasks)) return node.tasks;
   if (Array.isArray(node.children)) return node.children;
+  if (node.children && typeof node.children[Symbol.iterator] === 'function') return Array.from(node.children);
   if (node.task) return [node.task];
   return [];
+}
+
+/**
+ * @param {string | undefined} state
+ * @returns {boolean}
+ */
+function isFailedState(state) {
+  return state === 'fail' || state === 'failed';
+}
+
+/**
+ * @param {string | undefined} state
+ * @returns {boolean}
+ */
+function isPassedState(state) {
+  return state === 'pass' || state === 'passed';
+}
+
+/**
+ * @param {string | undefined} state
+ * @returns {boolean}
+ */
+function isSkippedState(state) {
+  return state === 'skip' || state === 'skipped' || state === 'todo';
+}
+
+/**
+ * Accept only completed test states for live upload to avoid reporting
+ * intermediate task updates as skipped.
+ *
+ * @param {string | undefined} state
+ * @param {string | undefined} mode
+ * @returns {boolean}
+ */
+function isLiveReportableState(state, mode) {
+  if (isFailedState(state) || isPassedState(state) || isSkippedState(state)) return true;
+  if (!state && mode === 'skip') return true;
+  return false;
+}
+
+/**
+ * @param {VitestTestFile[] | undefined} files
+ * @returns {number | null}
+ */
+function getEarliestTestStartMs(files) {
+  let earliest = null;
+  const walk = node => {
+    if (!node) return;
+    const startTime = node?.result?.startTime;
+    if (typeof startTime === 'number' && !Number.isNaN(startTime)) {
+      if (earliest == null || startTime < earliest) earliest = startTime;
+    }
+    getTasks(node).forEach(walk);
+  };
+  (files || []).forEach(walk);
+  return earliest;
+}
+
+/**
+ * @param {any} test
+ * @returns {{
+ *  name: string,
+ *  state: string | undefined,
+ *  mode: string | undefined,
+ *  duration: number,
+ *  startTime: number | undefined,
+ *  error: any,
+ *  file: string,
+ *  suiteTitle: string,
+ *  logs: string,
+ *  meta: any
+ * }}
+ */
+function normalizeVitestTest(test) {
+  if (test && typeof test.result === 'function') {
+    const result = test.result();
+    const diagnostic = typeof test.diagnostic === 'function' ? test.diagnostic() : undefined;
+    const state = result?.state;
+    const duration = diagnostic?.duration || 0;
+    const startTime = diagnostic?.startTime;
+    const error = Array.isArray(result?.errors) ? result.errors[0] : undefined;
+    const file =
+      test.module?.relativeModuleId ||
+      test.module?.moduleId ||
+      test.task?.file?.name ||
+      test.task?.file?.filepath ||
+      '';
+    const suiteTitle =
+      (test.parent?.type === 'suite' ? test.parent?.name : null) ||
+      test.task?.suite?.name ||
+      test.task?.file?.name ||
+      file;
+
+    return {
+      name: test.name || test.task?.name || '',
+      state,
+      mode: test.options?.mode || test.task?.mode,
+      duration,
+      startTime,
+      error,
+      file,
+      suiteTitle,
+      logs: '',
+      meta: typeof test.meta === 'function' ? test.meta() : {},
+    };
+  }
+
+  return {
+    name: test?.name || '',
+    state: test?.result?.state,
+    mode: test?.mode,
+    duration: test?.result?.duration || 0,
+    startTime: test?.result?.startTime,
+    error: test?.result?.errors ? test.result.errors[0] : undefined,
+    file: test?.file?.name || test?.file?.filepath || '',
+    suiteTitle: test?.suite?.name || test?.file?.name || test?.file?.filepath || '',
+    logs: test?.logs ? transformLogsToString(test.logs) : '',
+    meta: test?.meta,
+  };
+}
+
+/**
+ * @param {any} test
+ * @param {{file: string, suiteTitle: string, name: string, startTime?: number}} normalized
+ * @returns {string | null}
+ */
+function getReportKey(test, normalized) {
+  if (test?.id) return String(test.id);
+  if (test?.task?.id) return String(test.task.id);
+  if (!normalized?.name) return null;
+  const loc = test?.location || test?.task?.location;
+  const locationKey = loc ? `${loc.line || ''}:${loc.column || ''}` : '';
+  const startKey =
+    typeof normalized.startTime === 'number' && !Number.isNaN(normalized.startTime) ? String(normalized.startTime) : '';
+  return `${normalized.file}::${normalized.suiteTitle}::${normalized.name}::${locationKey}::${startKey}`;
+}
+
+/**
+ * Vitest can pass task updates as tuples. Try to extract a test-like object.
+ *
+ * @param {unknown} pack
+ * @returns {any | null}
+ */
+function getTestFromTaskUpdatePack(pack) {
+  if (!pack) return null;
+
+  if (Array.isArray(pack)) {
+    if (pack[2]?.type === 'test') return pack[2];
+    if (pack[1]?.type === 'test') return pack[1];
+    if (pack[0]?.type === 'test') return pack[0];
+    return null;
+  }
+
+  const objectPack = /** @type {any} */ (pack);
+  if (typeof objectPack === 'object' && objectPack?.type === 'test') return objectPack;
+  return null;
 }
 
 export default VitestReporter;

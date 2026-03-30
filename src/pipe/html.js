@@ -230,8 +230,10 @@ class HtmlPipe {
       ];
 
       test.artifactsUploaded = allPossibleArtifacts.some(artifact => {
-        const link = artifact?.link || artifact?.path;
-        return link && (link.startsWith('http://') || link.startsWith('https://')) && !link.startsWith('file://');
+        let link = artifact?.link || artifact?.path;
+        if (!link) return false;
+        if (typeof link !== 'string') link = String(link);
+        return link.startsWith('http://') || link.startsWith('https://');
       });
 
       normalizeRetries(test);

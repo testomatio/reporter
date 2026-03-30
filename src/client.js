@@ -257,7 +257,7 @@ class Client {
       message = error?.message;
     }
 
-    let fullLogs = formatLogs({ error: errorFormatted, steps, logs: testData.logs });
+    let fullLogs = formatLogs({ error: errorFormatted, logs: testData.logs });
 
     if (stackArtifactsEnabled && fullLogs?.trim()?.length > 0) {
       uploadedFiles.push(
@@ -360,10 +360,11 @@ class Client {
    *
    * Updates the status of the current test run and finishes the run.
    * @param {'passed' | 'failed' | 'skipped' | 'finished'} status - The status of the current test run.
+   * @param {Partial<import('../types/types.js').RunData>} [params] - Additional run params (e.g. duration).
    * Must be one of "passed", "failed", or "finished"
    * @returns {Promise<any>} - A Promise that resolves when finishes the run.
    */
-  async updateRunStatus(status) {
+  async updateRunStatus(status, params = {}) {
     this.pipes ||= await pipesFactory(this.paramsForPipesFactory || {}, this.pipeStore);
     this.runId ||= readLatestRunId();
 
@@ -371,7 +372,7 @@ class Client {
     // all pipes disabled, skipping
     if (!this.pipes?.filter(p => p.isEnabled).length) return Promise.resolve();
 
-    const runParams = { status };
+    const runParams = { ...params, status };
 
     this.queue = this.queue
       .then(() => Promise.all(this.pipes.map(p => p.finishRun(runParams))))
