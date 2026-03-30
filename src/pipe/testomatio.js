@@ -366,7 +366,7 @@ class TestomatioPipe {
   /**
    * Uploads tests as a batch (multiple tests at once). Intended to be used with a setInterval
    */
-  #batchUpload = async () => {
+  #batchUpload = async (opts = {}) => {
     if (!this.batch.isEnabled) return;
     if (!this.batch.tests.length) return;
     if (this.#cancelTestReportingInCaseOfTooManyReqFailures()) return;
@@ -395,6 +395,7 @@ class TestomatioPipe {
           api_key: this.apiKey,
           tests: testsToSend,
           batch_index: this.batch.batchIndex,
+          bulk: opts.bulk || undefined,
         },
         headers: {
           'Content-Type': 'application/json',
@@ -446,7 +447,7 @@ class TestomatioPipe {
    */
   async sync() {
     if (!this.isEnabled) return;
-    await this.#batchUpload();
+    await this.#batchUpload({ bulk: true });
   }
 
   /**
