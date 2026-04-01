@@ -1085,6 +1085,18 @@ function normalizeArtifacts(test) {
   return allArtifacts
     .map(artifact => {
       if (typeof artifact === 'string') {
+        if (/^https?:\/\//i.test(artifact)) {
+          const base = path.basename(new URL(artifact).pathname) || artifact;
+
+          return {
+            name: base,
+            title: base,
+            path: artifact,
+            fsPath: null,
+            relativePath: artifact,
+          };
+        }
+
         const abs = path.isAbsolute(artifact) ? artifact : path.resolve(process.cwd(), artifact);
         const href = artifact.startsWith('file://') ? artifact : fileUrl(abs, { resolve: true });
         const base = path.basename(abs);
@@ -1101,9 +1113,14 @@ function normalizeArtifacts(test) {
       if (artifact?.path) {
         const raw = String(artifact.path);
         const isFileUrl = raw.startsWith('file://');
-        const abs = isFileUrl ? null : path.isAbsolute(raw) ? raw : path.resolve(process.cwd(), raw);
-        const href = isFileUrl ? raw : fileUrl(abs, { resolve: true });
-        const base = abs ? path.basename(abs) : artifact.name || artifact.title || 'attachment';
+        const isHttpUrl = /^https?:\/\//i.test(raw);
+        const abs = isFileUrl || isHttpUrl ? null : path.isAbsolute(raw) ? raw : path.resolve(process.cwd(), raw);
+        const href = isFileUrl || isHttpUrl ? raw : fileUrl(abs, { resolve: true });
+        const base = abs
+          ? path.basename(abs)
+          : isHttpUrl
+            ? path.basename(new URL(raw).pathname) || artifact.name || artifact.title || 'attachment'
+            : artifact.name || artifact.title || 'attachment';
 
         return {
           ...artifact,

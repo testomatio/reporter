@@ -17,7 +17,21 @@ const DATA = {
   tests: [
     {
       files: [],
-      steps: '\u001b[32m\u001b[1mOn TodosPage: goto \u001b[22m\u001b[39m\n',
+      steps: [
+        {
+          category: 'user',
+          title: 'On TodosPage: goto',
+          duration: 121,
+          artifacts: [path.resolve(dirname, '../data/artifacts/screenshot1.png')],
+          steps: [
+            {
+              category: 'user',
+              title: 'Fill todo title',
+              duration: 25,
+            },
+          ],
+        },
+      ],
       status: 'passed',
       stack: 'I execute script () => sessionStorage.clear()',
       example: null,
@@ -25,7 +39,7 @@ const DATA = {
       title: 'New TEST #1 item @T50e82737',
       suite_title: 'Create Tasks @step:01 @story:12 @S2f5c1942',
       test_id: '50e82737',
-      message: '',
+      message: 'Console output for passed test',
       run_time: 121,
       artifacts: [],
       api_key: 'tstmt_gRqrhBUaVxTpezGpZjRmlahOeqcRBBbDMA1692050199',
@@ -66,7 +80,13 @@ const DATA = {
       test_id: '5c9d2187',
       message: 'Test skipped: Feature not enabled in current environment',
       run_time: 0,
-      artifacts: [],
+      artifacts: [
+        {
+          path: 'https://example-bucket.r2.cloudflarestorage.com/run-1/skipped-test.png',
+          name: 'skipped-test.png',
+          type: 'image/png',
+        },
+      ],
       api_key: 'tstmt_gRqrhBUaVxTpezGpZjRmlahOeqcRBBbDMA1692050199',
       create: false,
     },
@@ -396,6 +416,44 @@ describe('HTML report tests', () => {
     expect(failedTestsFromData).to.have.length(1);
     expect(skippedTestsFromData).to.have.length(1);
     expect(todoTestsFromData).to.have.length(1);
+  });
+
+  it('should style passed messages without failed color and prefer message tab when message exists', () => {
+    const htmlContent = fs.readFileSync(filepath, 'utf-8');
+
+    expect(htmlContent).to.include('.message-block.passed');
+    expect(htmlContent).to.include("if (hasMessage) return 'message';");
+    expect(htmlContent).to.include("const initialTab = getInitialTestTab({ isTodo, hasMessage, hasSteps: test.stepsArray?.length || test.steps });");
+    expect(htmlContent).to.include("button class='test-tab${initialMessageClass}'");
+    expect(htmlContent).to.include("div class='test-tab-content${initialMessageClass}' data-tab='message'");
+  });
+
+  it('should render expandable nested steps and step-level attachments', () => {
+    const htmlContent = fs.readFileSync(filepath, 'utf-8');
+
+    expect(htmlContent).to.include('.step-toggle');
+    expect(htmlContent).to.include('.step-children.collapsed');
+    expect(htmlContent).to.include('function toggleStepChildren(button)');
+    expect(htmlContent).to.include('data-parent-step-id="${stepId}"');
+    expect(htmlContent).to.include('createAttachmentItems(step.artifacts)');
+    expect(htmlContent).to.include('step-attachments');
+    expect(htmlContent).to.include('Console output for passed test');
+    expect(htmlContent).to.include('Fill todo title');
+    expect(htmlContent).to.include('screenshot1.png');
+  });
+
+  it('should not duplicate step number label under step title', () => {
+    const htmlContent = fs.readFileSync(filepath, 'utf-8');
+
+    expect(htmlContent).to.not.include('Step ${stepNumber}');
+    expect(htmlContent).to.not.include('Step ${number}');
+  });
+
+  it('should keep remote artifact URLs as remote links instead of converting them to file urls', () => {
+    const htmlContent = fs.readFileSync(filepath, 'utf-8');
+
+    expect(htmlContent).to.include('https://example-bucket.r2.cloudflarestorage.com/run-1/skipped-test.png');
+    expect(htmlContent).to.not.include('file:///D:/testomat/reporter/https:/example-bucket.r2.cloudflarestorage.com');
   });
 });
 
