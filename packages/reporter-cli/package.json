@@ -8,6 +8,10 @@
     "testomatio-reporter": "./bin/cli.js",
     "reporter": "./bin/cli.js"
   },
+  "repository": {                                             
+     "type": "git",                                            
+    "url": "https://github.com/testomatio/reporter"                
+  },      
   "files": [
     "bin"
   ],
