@@ -71,6 +71,7 @@ jobs:
         with:
           node-version: 22
           registry-url: 'https://registry.npmjs.org'
+      - run: npm install -g npm@latest
       - run: npm ci
         working-directory: ./packages/reporter-cli
       - name: Sync wrapper version with release version
@@ -96,5 +97,3 @@ jobs:
       - name: Publish wrapper to npm
         run: npm publish --provenance --tag ${{ steps.npm_tag.outputs.tag }}
         working-directory: ./packages/reporter-cli
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
