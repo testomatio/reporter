@@ -44,6 +44,10 @@ const REPORTER_REQUEST_RETRIES = {
   withinTimeSeconds: Number(process.env.TESTOMATIO_MAX_REQUEST_RETRIES_WITHIN_TIME_SECONDS) || 60,
 };
 
+function getCreateRunAxiosTimeout() {
+  return Math.max(AXIOS_TIMEOUT, 80 * 1000);
+}
+
 export {
   APP_PREFIX,
   TESTOMAT_TMP_STORAGE_DIR,
@@ -51,6 +55,7 @@ export {
   STATUS,
   HTML_REPORT,
   AXIOS_TIMEOUT,
+  getCreateRunAxiosTimeout,
   testomatLogoURL,
   REPORTER_REQUEST_RETRIES,
   SCREENSHOTS_ON_STEPS,

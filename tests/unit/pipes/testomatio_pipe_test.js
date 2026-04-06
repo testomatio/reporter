@@ -421,6 +421,35 @@ describe('TestomatioPipe', () => {
       expect(receivedRequestBody.data).to.be.an('object');
       expect(receivedRequestBody.data).to.have.property('kind', 'automated');
     });
+
+    it('should use extended timeout for create run requests', async () => {
+      let receivedRequestBody = null;
+
+      server.on({
+        method: 'POST',
+        path: '/api/reporter',
+        reply: {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            url: 'https://faketestomat.io/report/timeout123',
+            uid: 'test-run-127',
+            public_url: 'https://faketestomat.io/public/timeout123',
+          }),
+        },
+      });
+
+      const originalRequest = testomatioPipe.client.request;
+      testomatioPipe.client.request = async function (config) {
+        receivedRequestBody = config;
+        return originalRequest.call(this, config);
+      };
+
+      await testomatioPipe.createRun({ kind: 'manual' });
+
+      expect(receivedRequestBody).to.not.be.null;
+      expect(receivedRequestBody.timeout).to.equal(80000);
+    });
   });
 
   describe('constructor', () => {
