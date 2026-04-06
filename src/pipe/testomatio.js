@@ -2,7 +2,7 @@ import createDebugMessages from 'debug';
 import pc from 'picocolors';
 import { Gaxios } from 'gaxios';
 import JsonCycle from 'json-cycle';
-import { APP_PREFIX, STATUS, AXIOS_TIMEOUT, getCreateRunAxiosTimeout, REPORTER_REQUEST_RETRIES } from '../constants.js';
+import { APP_PREFIX, STATUS, REQUEST_TIMEOUT, getCreateRunRequestTimeout, REPORTER_REQUEST_RETRIES } from '../constants.js';
 import {
   isValidUrl,
   foundedTestLog,
@@ -81,7 +81,7 @@ class TestomatioPipe {
     // Create a new instance of gaxios with a custom config
     this.client = new Gaxios({
       baseURL: `${this.url.trim()}`,
-      timeout: AXIOS_TIMEOUT,
+      timeout: REQUEST_TIMEOUT,
       proxy: proxy ? proxy.toString() : undefined,
       retry: true,
       retryConfig: {
@@ -256,7 +256,7 @@ class TestomatioPipe {
         method: 'PUT',
         url: `/api/reporter/${this.runId}`,
         data: runParams,
-        timeout: getCreateRunAxiosTimeout(),
+        timeout: getCreateRunRequestTimeout(),
         responseType: 'json',
       });
       if (resp.data.artifacts) setS3Credentials(resp.data.artifacts);
@@ -278,7 +278,7 @@ class TestomatioPipe {
         method: 'POST',
         url: '/api/reporter',
         data: runParams,
-        timeout: getCreateRunAxiosTimeout(),
+        timeout: getCreateRunRequestTimeout(),
         maxContentLength: Infinity,
         responseType: 'json',
       });
