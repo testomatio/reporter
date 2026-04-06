@@ -2,7 +2,13 @@ import createDebugMessages from 'debug';
 import pc from 'picocolors';
 import { Gaxios } from 'gaxios';
 import JsonCycle from 'json-cycle';
-import { APP_PREFIX, STATUS, REQUEST_TIMEOUT, getCreateRunRequestTimeout, REPORTER_REQUEST_RETRIES } from '../constants.js';
+import {
+  APP_PREFIX,
+  STATUS,
+  REQUEST_TIMEOUT,
+  getCreateRunRequestTimeout,
+  REPORTER_REQUEST_RETRIES,
+} from '../constants.js';
 import {
   isValidUrl,
   foundedTestLog,
