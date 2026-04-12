@@ -741,6 +741,18 @@
             min-width: 0;
         }
 
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .step-main {
+            flex: 1;
+            min-width: 0;
+        }
+
         .step-text {
             font-size: 14px;
             color: var(--gray-700);
@@ -753,6 +765,35 @@
             font-size: 12px;
             color: var(--gray-500);
             margin-top: 4px;
+        }
+
+        .step-toggle {
+            width: 24px;
+            height: 24px;
+            border: none;
+            border-radius: 6px;
+            background: var(--gray-100);
+            color: var(--gray-600);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: var(--transition);
+            margin-top: 2px;
+        }
+
+        .step-toggle:hover {
+            background: var(--gray-200);
+            color: var(--gray-700);
+        }
+
+        .step-toggle.collapsed i {
+            transform: rotate(-90deg);
+        }
+
+        .step-toggle i {
+            transition: transform 0.2s ease;
         }
 
         .step-status {
@@ -788,6 +829,10 @@
             position: relative;
             margin-left: 48px;
             padding-left: 0;
+        }
+
+        .step-children.collapsed {
+            display: none;
         }
 
         .step-children::before {
@@ -865,6 +910,30 @@
 
         .message-block.info {
             border-left-color: var(--info-color);
+        }
+
+        .message-block.passed {
+            border-left-color: var(--success-color);
+        }
+
+        .message-block.skipped,
+        .message-block.todo {
+            border-left-color: var(--warning-color);
+        }
+
+        .message-block.failed {
+            border-left-color: var(--danger-color);
+        }
+
+        .step-attachments {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .step-attachments .attachment-item {
+            min-height: 120px;
         }
 
         .metadata-grid {
@@ -2377,6 +2446,11 @@
             const isTodo = statusClass === 'todo';
             const isSkippedOrTodo = statusClass === 'skipped' || statusClass === 'todo';
             const displayTime = isSkippedOrTodo ? '-' : formatDuration(test.run_time || 0);
+            const hasMessage = hasMeaningfulMessage(test.message);
+            const initialTab = getInitialTestTab({ isTodo, hasMessage, hasSteps: test.stepsArray?.length || test.steps });
+            const initialMessageClass = initialTab === 'message' ? ' active' : '';
+            const initialStepsClass = initialTab === 'steps' ? ' active' : '';
+            const initialInfoClass = initialTab === 'info' ? ' active' : '';
 
             testItem.innerHTML = `
                 <div class='test-header' onclick='toggleTest(this)'>
@@ -2411,14 +2485,14 @@
                 <div class='test-content'>
                     <div class='test-tabs'>
                         ${isTodo ? `
-                            <button class='test-tab active' onclick='showTestTab(this, \"info\")'>
+                            <button class='test-tab${initialInfoClass}' onclick='showTestTab(this, \"info\")'>
                                 <i class='fas fa-info-circle'></i> Info
                             </button>
                         ` : `
-                            <button class='test-tab active' onclick='showTestTab(this, \"steps\")'>
+                            <button class='test-tab${initialStepsClass}' onclick='showTestTab(this, \"steps\")'>
                                 <i class='fas fa-list-ol'></i> Steps
                             </button>
-                            <button class='test-tab' onclick='showTestTab(this, \"message\")'>
+                            <button class='test-tab${initialMessageClass}' onclick='showTestTab(this, \"message\")'>
                                 <i class='fas fa-comment-dots'></i> Message
                             </button>
                             ${hasStack ? `<button class='test-tab' onclick='showTestTab(this, \"stack\")'>
@@ -2439,7 +2513,7 @@
                         `}
                     </div>
                     ${isTodo ? `
-                        <div class='test-tab-content active' data-tab='info'>
+                        <div class='test-tab-content${initialInfoClass}' data-tab='info'>
                             <div class='todo-info'>
                                 <div class='todo-title'>
                                     <i class='fas fa-list-ul'></i>
@@ -2456,7 +2530,7 @@
                             </div>
                         </div>
                     ` : `
-                        <div class='test-tab-content active' data-tab='steps'>
+                        <div class='test-tab-content${initialStepsClass}' data-tab='steps'>
                             <div class='steps-container' id='steps-${index}'>
                                 ${(() => {
                                     const hasStepsArray = test.stepsArray && Array.isArray(test.stepsArray) && test.stepsArray.length > 0;
@@ -2476,7 +2550,7 @@
                                 })()}
                             </div>
                         </div>
-                        <div class='test-tab-content' data-tab='message'>
+                        <div class='test-tab-content${initialMessageClass}' data-tab='message'>
                             <div class='message-block ${statusClass}'>
                                 <strong>${statusClass.toUpperCase()}:</strong><br>
                                 ${test.message || 'No message available'}
@@ -2540,6 +2614,16 @@
             } else {
                 return `${ms}ms`;
             }
+        }
+
+        function hasMeaningfulMessage(message) {
+            return typeof message === 'string' && message.trim().length > 0 && message !== 'No message available';
+        }
+
+        function getInitialTestTab({ isTodo, hasMessage }) {
+            if (isTodo) return 'info';
+            if (hasMessage) return 'message';
+            return 'steps';
         }
 
         function parseStepsToHtml(stepsText) {
@@ -2629,25 +2713,33 @@
                     const status = step.status || 'passed';
                     const duration = step.duration || 0;
                     const category = step.category || '';
+                    const hasArtifacts = Array.isArray(step.artifacts) && step.artifacts.length > 0;
 
                     html += `
                         <div class="step-item step-level-${depth}" data-step-id="${stepId}">
-                            <div class="step-number">${stepNumber}</div>
                             <div class="step-content">
-                                <p class="step-text">${step.title || 'Untitled step'}</p>
-                                ${category && category !== 'user' ? `<div class="step-category">${category}</div>` : ''}
-                                <div class="step-time">
-                                    Step ${stepNumber}
-                                    ${duration > 0 ? `<span class="step-duration"><i class="fas fa-clock"></i> ${formatDuration(duration)}</span>` : ''}
+                                <div class="step-header">
+                                    <div class="step-number">${stepNumber}</div>
+                                    <div class="step-main">
+                                        <p class="step-text">${step.title || 'Untitled step'}</p>
+                                        ${category && category !== 'user' ? `<div class="step-category">${category}</div>` : ''}
+                                        ${duration > 0 ? `<div class="step-time"><span class="step-duration"><i class="fas fa-clock"></i> ${formatDuration(duration)}</span></div>` : ''}
+                                        ${hasArtifacts ? `<div class="step-attachments">${createAttachmentItems(step.artifacts)}</div>` : ''}
+                                    </div>
+                                    ${hasChildren ? `
+                                        <button class="step-toggle" type="button" aria-expanded="true" onclick="toggleStepChildren(this)">
+                                            <i class="fas fa-chevron-down"></i>
+                                        </button>
+                                    ` : ''}
+                                    <div class="step-status ${status}"></div>
                                 </div>
                             </div>
-                            <div class="step-status ${status}"></div>
                         </div>
                     `;
 
                     if (hasChildren) {
                         html += `
-                            <div class="step-children">
+                            <div class="step-children" data-parent-step-id="${stepId}">
                                 ${renderStepsTree(step.steps, depth + 1)}
                             </div>
                         `;
@@ -2673,17 +2765,36 @@
         function createStepHtml(text, number, status = null, category = null) {
             const statusClass = status || 'passed';
             const categoryText = category && category !== 'user' ? `<div class="step-category">${category}</div>` : '';
-            const durationIcon = status ? `<div class="step-duration"><i class="fas fa-clock"></i> auto</div>` : '';
+            const durationIcon = status ? `<div class="step-time"><span class="step-duration"><i class="fas fa-clock"></i> auto</span></div>` : '';
 
             return `<div class="step-item">
-                <div class="step-number">${number}</div>
                 <div class="step-content">
-                    <p class="step-text">${text}</p>
-                    ${categoryText}
-                    <div class="step-time">Step ${number}${durationIcon}</div>
+                    <div class="step-header">
+                        <div class="step-number">${number}</div>
+                        <div class="step-main">
+                            <p class="step-text">${text}</p>
+                            ${categoryText}
+                            ${durationIcon}
+                        </div>
+                        <div class="step-status ${statusClass}"></div>
+                    </div>
                 </div>
-                <div class="step-status ${statusClass}"></div>
             </div>`;
+        }
+
+        function toggleStepChildren(button) {
+            const stepItem = button.closest('.step-item');
+            if (!stepItem) return;
+
+            const stepId = stepItem.getAttribute('data-step-id');
+            if (!stepId) return;
+
+            const children = stepItem.parentElement.querySelector(`.step-children[data-parent-step-id="${stepId}"]`);
+            if (!children) return;
+
+            const collapsed = children.classList.toggle('collapsed');
+            button.classList.toggle('collapsed', collapsed);
+            button.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
         }
 
         function createRetryAttempts(retries) {

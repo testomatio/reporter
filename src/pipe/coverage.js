@@ -9,6 +9,7 @@ import { generateFilterRequestParams } from '../utils/pipe_utils.js';
 import { parsePipeOptions } from '../utils/pipe_utils.js';
 import { config } from '../config.js';
 import createDebugMessages from 'debug';
+import { log } from '../utils/log.js';
 
 const debug = createDebugMessages('@testomatio/reporter:pipe:csv');
 
@@ -136,11 +137,11 @@ class CoveragePipe { // or Changes for the future???
         // Step 2: Extract all available tests and compare with coverage file
         const lines = await this.extractRelevantTestsFromChanges();
         if (this.store?.filterList && lines.size > 0) {
-            console.log(APP_PREFIX, `Matched files: ${[...lines].join(', ')}`);
+            log.info( `Matched files: ${[...lines].join(', ')}`);
         }
 
         if (lines.size === 0) {
-            console.log(APP_PREFIX, 'ℹ️  No matching entries in coverage file for provided Git changes.');
+            log.info( 'ℹ️  No matching entries in coverage file for provided Git changes.');
             return [];
         }
 
@@ -164,7 +165,7 @@ class CoveragePipe { // or Changes for the future???
         }
 
         if (this.tests.size === 0 && this.suiteIds.size === 0) {
-            console.log(APP_PREFIX, 'ℹ️  No tests found for execution based on Git changes.');
+            log.info( 'ℹ️  No tests found for execution based on Git changes.');
             return [];
         }
 
@@ -191,6 +192,11 @@ class CoveragePipe { // or Changes for the future???
     updateRun() {}
 
     async finishRun(runParams) {}
+
+    async sync() {
+        // CoveragePipe doesn't buffer tests, so sync is a no-op
+        // Reserved for future use if needed
+    }
 
     toString() {
         return 'Coverage Reporter';
@@ -230,7 +236,7 @@ class CoveragePipe { // or Changes for the future???
             });
 
             if (!Array.isArray(resp.data?.tests) && resp.data?.tests?.length === 0) {
-                console.log(APP_PREFIX, `🔍 No test by ${type}=${id} were found on the Testomat.io server side!`);
+                log.info( `🔍 No test by ${type}=${id} were found on the Testomat.io server side!`);
 
                 return undefined;
             }
@@ -270,7 +276,7 @@ class CoveragePipe { // or Changes for the future???
             const errorMessage = err.message || '';
             // Git edge: Not a git repository or other error
             if (errorMessage.includes('Not a git repository')) {
-                console.error(APP_PREFIX, '❌ Error: This folder is not a Git repository.');
+                log.error( '❌ Error: This folder is not a Git repository.');
             }
             else {
                 throw new Error(`❌ Git command failed ("${cmd}"):\n`, errorMessage);
@@ -314,11 +320,11 @@ class CoveragePipe { // or Changes for the future???
             cmd = this.#buildGitCommand();
         }
         catch (err) {
-            console.error(APP_PREFIX, err.message);
+            log.error( err.message);
             return undefined;
         }
 
-        console.error(APP_PREFIX, `ℹ️  We will use '${cmd}' Git command.`);
+        log.error( `ℹ️  We will use '${cmd}' Git command.`);
 
         try {
             // For clear unit testing process -> Like test_defaultGitChangedFile = todomvc-tests/edit-todos_test.js
@@ -339,12 +345,12 @@ class CoveragePipe { // or Changes for the future???
             }
         }
         catch (err) {
-            console.error(APP_PREFIX, err.message);
-            console.error(APP_PREFIX, "🔍 Pls, check this Git command manually to understand the original problem.");
+            log.error( err.message);
+            log.error( "🔍 Pls, check this Git command manually to understand the original problem.");
             return undefined;
         }
 
-        console.log(APP_PREFIX, `📑  GIT changed files:\n  - ${this.changedFiles.join('\n  - ')}`);
+        log.info( `📑  GIT changed files:\n  - ${this.changedFiles.join('\n  - ')}`);
         return this;
     }
 
@@ -364,20 +370,20 @@ class CoveragePipe { // or Changes for the future???
     validateCoverageFile() {
         // Validate the presence of the coverage filepath
         if (!fs.existsSync(this.coverageFilePath)) {
-            console.log(APP_PREFIX, '❌ Coverage file not found:', this.coverageFilePath);
+            log.info( '❌ Coverage file not found:', this.coverageFilePath);
             return undefined;
         }
 
         // Ensure the given path is a file (not a directory or other type)
         const stat = fs.statSync(this.coverageFilePath);
         if (!stat.isFile()) {
-            console.log(APP_PREFIX, '❌ Provided coverage path is not a file:', this.coverageFilePath);
+            log.info( '❌ Provided coverage path is not a file:', this.coverageFilePath);
             return undefined;
         }
 
         // Validate the file extension to be ".yml" to ensure it's a YAML file
         if (path.extname(this.coverageFilePath) !== ".yml") {
-            console.log(APP_PREFIX, '❌ Coverage file must have a .yml extension:', this.coverageFilePath);
+            log.info( '❌ Coverage file must have a .yml extension:', this.coverageFilePath);
             return undefined;
         }
 
@@ -403,12 +409,12 @@ class CoveragePipe { // or Changes for the future???
             this.parsedCoverage = yaml.load(rawYml) || {};
 
             debug(`Coverage filepath = ${this.coverageFilePath})`);
-            console.log(APP_PREFIX, `✅ Coverage file parsed successfully: ${this.coverageFilePath}`);
+            log.info( `✅ Coverage file parsed successfully: ${this.coverageFilePath}`);
 
             return this;
         }
         catch (err) {
-            console.error(APP_PREFIX, '❌ Failed to parse YAML:', err.message);
+            log.error( '❌ Failed to parse YAML:', err.message);
             return undefined;
         }
     }

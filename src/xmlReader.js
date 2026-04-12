@@ -21,6 +21,7 @@ import { pipesFactory } from './pipe/index.js';
 import adapterFactory from './junit-adapter/index.js';
 import { config } from './config.js';
 import { S3Uploader } from './uploader.js';
+import { log } from './utils/log.js';
 
 // @ts-ignore this line will be removed in compiled code, because __dirname is defined in commonjs
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -86,7 +87,7 @@ class XmlReader {
     // @ts-ignore
     const packageJsonPath = path.resolve(__dirname, '..', 'package.json');
     this.version = JSON.parse(fs.readFileSync(packageJsonPath).toString()).version;
-    console.log(APP_PREFIX, `Testomatio Reporter v${this.version}`);
+    log.info(`Testomatio Reporter v${this.version}`);
   }
 
   connectAdapter() {
@@ -508,7 +509,7 @@ class XmlReader {
 
       const runId = this.runId || this.store.runId || Date.now().toString();
       test.artifacts = await Promise.all(files.map(f => this.uploader.uploadFileByPath(f, [runId, path.basename(f)])));
-      console.log(APP_PREFIX, `🗄️ Uploaded ${pc.bold(`${files.length} artifacts`)} for test ${test.title}`);
+      log.info(`🗄️ Uploaded ${pc.bold(`${files.length} artifacts`)} for test ${test.title}`);
     }
   }
 
@@ -529,6 +530,52 @@ class XmlReader {
     return run;
   }
 
+  /**
+   * Calculate the approximate size of data in bytes (JSON stringified length)
+   * @param {Object} data - Data to measure
+   * @returns {number} Size in bytes
+   */
+  #getObjectSize(data) {
+    const body = JSON.stringify(data);
+    return new TextEncoder().encode(body).length;
+  }
+
+  /**
+   * Split tests array into chunks based on data size
+   * @param {Array} tests - Array of tests to split
+   * @returns {Array<Array>} Array of test chunks
+   */
+  #splitTestsIntoChunks(tests) {
+    const maxSizeBytes = 1 * 1024 * 1024;
+
+    const chunks = [];
+    let currentChunk = [];
+    let currentChunkSize = 0;
+
+    for (const test of tests) {
+      const testSize = this.#getObjectSize(test);
+
+      const wouldExceedSize = currentChunkSize + testSize > maxSizeBytes;
+
+      if (wouldExceedSize) {
+        if (currentChunk.length > 0) {
+          chunks.push(currentChunk);
+        }
+        currentChunk = [];
+        currentChunkSize = 0;
+      }
+
+      currentChunk.push(test);
+      currentChunkSize += testSize;
+    }
+
+    if (currentChunk.length > 0) {
+      chunks.push(currentChunk);
+    }
+
+    return chunks;
+  }
+
   async uploadData() {
     await this.uploadArtifacts();
     this.calculateStats();
@@ -537,18 +584,63 @@ class XmlReader {
     this.formatErrors();
     this.formatTests();
 
-    const dataString = {
-      ...this.stats,
+    this.pipes = this.pipes || (await this.pipesPromise);
+
+    // Create run before uploading tests to ensure runId is set
+    await this.createRun();
+
+    if (!this.tests || !Array.isArray(this.tests) || this.tests.length === 0) {
+      debug('No tests to upload, finishing run');
+      const finishData = {
+        api_key: this.requestParams.apiKey,
+        status: 'finished',
+        duration: this.stats.duration,
+        detach: this.requestParams.detach,
+      };
+      return Promise.all(this.pipes.map(p => p.finishRun(finishData)));
+    }
+
+    const testChunks = this.#splitTestsIntoChunks(this.tests);
+
+    const totalChunks = testChunks.length;
+    const totalTests = this.tests.length;
+
+    debug(`Split ${totalTests} tests into ${totalChunks} chunks (max 1MB per chunk)`);
+
+    let uploadedTests = 0;
+    for (let i = 0; i < testChunks.length; i++) {
+      const chunk = testChunks[i];
+      const chunkNum = i + 1;
+
+      if (totalChunks > 1) {
+        debug(`Uploading chunk ${chunkNum}/${totalChunks} (${chunk.length} tests)`);
+      }
+
+      for (const test of chunk) {
+        await Promise.all(this.pipes.map(p => p.addTest(test)));
+      }
+
+      await Promise.all(this.pipes.map(p => p.sync()));
+
+      uploadedTests += chunk.length;
+      debug(`Uploaded ${uploadedTests}/${totalTests} tests`);
+    }
+
+    if (totalChunks > 1) {
+      log.info(`✅ Successfully uploaded ${uploadedTests} tests in ${totalChunks} chunks`);
+    } else {
+      log.info(`✅ Successfully uploaded ${uploadedTests} tests`);
+    }
+
+    const finishData = {
       api_key: this.requestParams.apiKey,
       status: 'finished',
       duration: this.stats.duration,
-      tests: this.tests,
+      detach: this.requestParams.detach,
     };
 
-    debug('Uploading data', dataString);
-
-    this.pipes = this.pipes || (await this.pipesPromise);
-    return Promise.all(this.pipes.map(p => p.finishRun(dataString)));
+    debug('Finishing run with status:', finishData.status);
+    return Promise.all(this.pipes.map(p => p.finishRun(finishData)));
   }
 
   async _finishRun() {
@@ -677,17 +769,20 @@ function reduceTestCases(prev, item) {
 
 function processTestSuite(testsuite) {
   if (!testsuite) return [];
-  if (testsuite.testsuite) return processTestSuite(testsuite.testsuite);
+  if (testsuite.testsuite && !testsuite.testcase) return processTestSuite(testsuite.testsuite);
   if (testsuite['test-suite'] && !testsuite['test-case']) return processTestSuite(testsuite['test-suite']);
 
   let suites = testsuite;
-  if (!Array.isArray(testsuite)) {
-    suites = [testsuite];
-  }
+  if (!Array.isArray(testsuite)) suites = [testsuite];
 
-  const subSuites = suites.filter(s => s['test-suite'] && !testsuite['test-case']);
+  const subSuites = suites.filter(
+    s => (s['test-suite'] || s.testsuite) && !(s['test-case'] || s.testcase),
+  );
 
-  return [...subSuites.map(s => processTestSuite(s['test-suite'])), ...suites.reduce(reduceTestCases, [])].flat();
+  return [
+    ...suites.reduce(reduceTestCases, []),
+    ...subSuites.map(s => processTestSuite(s['test-suite'] || s.testsuite)),
+  ].flat();
 }
 
 function fetchProperties(item) {

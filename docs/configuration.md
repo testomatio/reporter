@@ -244,6 +244,18 @@ Example:
 TESTOMATIO={API_KEY} TESTOMATIO_NO_STEPS=1 <actual run command>
 ```
 
+#### `TESTOMATIO_SCREENSHOTS_ON_STEPS`
+
+Enable or disable uploading screenshots for steps. By default, screenshots on steps are uploaded to S3 and attached to the step as artifacts. Set to `false` to disable.
+
+Screenshots are uploaded only if the framework provides screenshot information for steps (e.g., Playwright captures screenshots during step execution, or CodeceptJS includes screenshot artifacts).
+
+Example:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_SCREENSHOTS_ON_STEPS=false <actual run command>
+```
+
 #### `TESTOMATIO_TITLE`
 
 Set the report title.
@@ -253,6 +265,40 @@ Example:
 ```
 TESTOMATIO={API_KEY} TESTOMATIO_TITLE="title for the report" <actual run command>
 ```
+
+#### `TESTOMATIO_LOG_LEVEL`
+
+Control the verbosity of `[TESTOMATIO]` prefixed messages in the test output.
+
+Available levels (from most quiet to most verbose):
+
+| Level   | Logs Shown                           |
+| ------- | ------------------------------------ |
+| `ERROR` | Only errors                          |
+| `WARN`  | Warnings and errors                  |
+| `INFO`  | Info, warnings, and errors (default) |
+
+Example:
+
+```
+# Show only errors (minimal output)
+TESTOMATIO_LOG_LEVEL=ERROR npm test
+
+# Show warnings and errors
+TESTOMATIO_LOG_LEVEL=WARN npm test
+
+# Show all info messages (default)
+TESTOMATIO_LOG_LEVEL=INFO npm test
+```
+
+This is useful when you want to suppress the `[TESTOMATIO]` messages in your CI logs while still seeing errors:
+
+```
+TESTOMATIO_LOG_LEVEL=ERROR npm test
+```
+
+> 📖 See [Log Level Control](./log-level.md) for more details.
+> 🐛 For detailed debugging, use the `DEBUG` environment variable with the debug package specified.
 
 #### `TESTOMATIO_UPDATE_CODE`
 

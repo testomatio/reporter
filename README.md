@@ -58,12 +58,19 @@ pnpm install @testomatio/reporter --save-dev
 yarn add @testomatio/reporter --dev
 ```
 
+For Yarn 4 (Berry), use CLI wrapper package:
+
+```
+yarn add testomatio-reporter-cli --dev
+npx testomatio-reporter <command> [options]
+```
+
 ## Getting Started
 
 ### 1️⃣ Attach Reporter to the Test Runner
 
 |                                                 |                                               |                                                           |
-|-------------------------------------------------|-----------------------------------------------|-----------------------------------------------------------|
+| ----------------------------------------------- | --------------------------------------------- | --------------------------------------------------------- |
 | [Playwright](./docs/frameworks.md#playwright)   | [CodeceptJS](./docs/frameworks.md#codeceptjs) | [Cypress](./docs/frameworks.md#cypress)                   |
 | [Jest](./docs/frameworks.md#jest)               | [Mocha](./docs/frameworks.md#mocha)           | [WebDriverIO](./docs/frameworks.md#webdriverio)           |
 | [TestCafe](./docs/frameworks.md#testcafe)       | [Detox](./docs/frameworks.md#detox)           | [Codeception](https://github.com/testomatio/php-reporter) |
@@ -135,6 +142,7 @@ Bring this reporter on CI and never lose test results again!
 - 🔂 [Workflows](./docs/workflows.md)
 - 🖊️ [Logger](./docs/logger.md)
 - 🪲 [Debug File Format](./docs/debug-file-format.md)
+- 📊 [Control output logs](./docs/log-level.md)
 
 ## Development
 

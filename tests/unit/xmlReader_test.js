@@ -209,6 +209,27 @@ describe('XML Reader', () => {
     expect(skippedTest.title).to.eql('Check Dashboard');
   });
 
+  it('should parse nested JUnit suites from XML', () => {
+    const reader = new XmlReader();
+    const jsonData = reader.parse(path.join(dirname, 'data/nested_suites.xml'));
+
+    expect(jsonData.status).to.eql('passed');
+    expect(jsonData.tests_count).to.eql(12);
+    expect(jsonData.tests.length).to.eql(12);
+
+    const searchTest = jsonData.tests.find(t => t.title === 'resultsLoadingFailed');
+    const homeTest = jsonData.tests.find(t => t.title === 'screenLoaded_@T0f90d3c4');
+    const appTest = jsonData.tests.find(t => t.title === 'example');
+
+    expect(searchTest).to.exist;
+    expect(homeTest).to.exist;
+    expect(appTest).to.exist;
+
+    expect(searchTest.suite_title).to.eql('SearchSnapshotTests');
+    expect(homeTest.suite_title).to.eql('HomeSnapshotTests');
+    expect(appTest.suite_title).to.eql('AppTests');
+  });
+
   it('should parse JUnit params', () => {
     const reader = new XmlReader({ lang: 'java' });
     const jsonData = reader.parse(path.join(dirname, 'data/junit2.xml'));

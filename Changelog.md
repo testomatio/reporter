@@ -92,7 +92,6 @@ TESTOMATIO_JIRA_ID=TST-12 <actual run command>
 # 1.0.13
 
 - JUnit improvements
-
   - Match test from source code by adding Test ID as a comment:
 
   ```java

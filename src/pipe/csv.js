@@ -125,6 +125,10 @@ class CsvPipe {
     if (!this.isEnabled) return;
 
     if (runParams.tests) runParams.tests.forEach(t => this.addTest(t));
+    await this.sync();
+  }
+
+  async sync() {
     // Save results based on the default headers
     if (this.isEnabled) {
       await this.saveToCsv(this.results, CSV_HEADERS);

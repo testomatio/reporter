@@ -51,12 +51,12 @@ describe('CodeceptJS Steps and Sections Reporting', function () {
       expect(dataProcessingSection.steps).to.be.an('array');
       expect(resultVerificationSection.steps).to.be.an('array');
 
-      // Check stack field formatting
+      // Check stack field does not contain steps (steps are in data.steps only)
       const stack = testEntry.testId.stack;
-      expect(stack).to.include('################[ Logs ]################');
-      expect(stack).to.include('User Authentication');
-      expect(stack).to.include('Data Processing');
-      expect(stack).to.include('Result Verification');
+      expect(stack).to.not.include('################[ Steps ]################');
+      expect(stack).to.not.include('User Authentication');
+      expect(stack).to.not.include('Data Processing');
+      expect(stack).to.not.include('Result Verification');
     });
 
     it('should preserve Section formatting in failed test steps', async () => {
@@ -84,12 +84,12 @@ describe('CodeceptJS Steps and Sections Reporting', function () {
       expect(successfulSection).to.exist;
       expect(failureSection).to.exist;
 
-      // Check stack field includes both steps and failure info
+      // Check stack field includes failure info but not steps
       const stack = testEntry.testId.stack;
-      expect(stack).to.include('################[ Logs ]################');
       expect(stack).to.include('################[ Failure ]################');
-      expect(stack).to.include('Successful Operations');
-      expect(stack).to.include('Operations with Failure');
+      expect(stack).to.not.include('################[ Steps ]################');
+      expect(stack).to.not.include('Successful Operations');
+      expect(stack).to.not.include('Operations with Failure');
       expect(stack).to.include('AssertionError');
     });
 

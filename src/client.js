@@ -1,15 +1,17 @@
 import createDebugMessages from 'debug';
 import fs from 'fs';
 import pc from 'picocolors';
-import { APP_PREFIX, STATUS } from './constants.js';
+import { APP_PREFIX, STATUS, SCREENSHOTS_ON_STEPS } from './constants.js';
 import { pipesFactory } from './pipe/index.js';
 import { glob } from 'glob';
 import path from 'path';
 import { fileURLToPath } from 'node:url';
 import { S3Uploader } from './uploader.js';
-import { readLatestRunId, storeRunId, validateSuiteId, transformEnvVarToBoolean } from './utils/utils.js';
+import { readLatestRunId, storeRunId, validateSuiteId, transformEnvVarToBoolean, isHttpUrl } from './utils/utils.js';
+import { generateShortFilename } from './adapter/utils/step-formatter.js';
 import { filesize as prettyBytes } from 'filesize';
 import { formatLogs, formatError, stripColors } from './utils/log-formatter.js';
+import { log } from './utils/log.js';
 
 const debug = createDebugMessages('@testomatio/reporter:client');
 
@@ -40,7 +42,7 @@ class Client {
     const pathToPackageJSON = path.join(__dirname, '../package.json');
     try {
       this.version = JSON.parse(fs.readFileSync(pathToPackageJSON).toString()).version;
-      console.log(APP_PREFIX, `Testomatio Reporter v${this.version}`);
+      log.info(`Testomatio Reporter v${this.version}`);
     } catch (e) {
       // do nothing
     }
@@ -71,7 +73,7 @@ class Client {
 
     // ❗ Validation: pipe is required
     if (!pipe || !pipeOptions) {
-      console.warn(`❗ No valid pipe found in filter cmd. Expected format: <pipe>:<options>
+      log.warn(`❗ No valid pipe found in filter cmd. Expected format: <pipe>:<options>
       Examples:
         --filter "testomatio:tag-name=frontend"
         --filter "coverage:file=coverage.yml"
@@ -92,10 +94,7 @@ class Client {
       // const p = this.pipes.find(p => p.id === `${pipe.toLowerCase()}`); TODO: as future updates
 
       if (!p?.isEnabled) {
-        console.warn(
-          APP_PREFIX,
-          "🚫 No active pipes were found in the system. Execution aborted!"
-        );
+        log.warn('🚫 No active pipes were found in the system. Execution aborted!');
         return;
       }
 
@@ -107,7 +106,7 @@ class Client {
 
       return result;
     } catch (err) {
-      console.error(APP_PREFIX, err);
+      log.error(err);
     }
   }
 
@@ -125,7 +124,7 @@ class Client {
 
     this.queue = this.queue
       .then(() => Promise.all(this.pipes.map(p => p.createRun(params))))
-      .catch(err => console.log(APP_PREFIX, err))
+      .catch(err => log.info(err))
       .then(() => {
         const runId = this.pipeStore?.runId;
         if (runId) this.runId = runId;
@@ -135,6 +134,60 @@ class Client {
       .then(() => undefined); // fixes return type
     // debug('Run', this.queue);
     return this.queue;
+  }
+
+  /**
+   * Recursively uploads artifacts from steps
+   *
+   * @param {*} steps - Steps payload (validated inside function)
+   * @param {string} testRid - Test/result ID
+   * @returns {Promise<void>}
+   */
+  async uploadStepArtifacts(steps, testRid) {
+    if (!steps || !Array.isArray(steps)) return;
+    if (!this.uploader.isEnabled || !SCREENSHOTS_ON_STEPS) return;
+
+    try {
+      for (const step of steps) {
+        if (!(step.artifacts && Array.isArray(step.artifacts))) {
+          if (step.steps) {
+            await this.uploadStepArtifacts(step.steps, testRid);
+          }
+          continue;
+        }
+
+        const uploadedArtifacts = [];
+        for (const artifact of step.artifacts) {
+          if (typeof artifact === 'string' && !isHttpUrl(artifact)) {
+            const filename = generateShortFilename(artifact);
+            try {
+              const uploadResult = await this.uploader.uploadFileByPath(
+                artifact, 
+                [this.runId, testRid, 'steps', filename]
+              );
+              if (uploadResult) {
+                uploadedArtifacts.push(uploadResult);
+              } else {
+                uploadedArtifacts.push(artifact);
+              }
+            } catch (uploadErr) {
+              uploadedArtifacts.push(artifact);
+            }
+          } else {
+            uploadedArtifacts.push(artifact);
+          }
+        }
+        step.artifacts = uploadedArtifacts;
+
+        if (step.steps) {
+          await this.uploadStepArtifacts(step.steps, testRid);
+        }
+      }
+
+    } catch (err) {
+      console.error(APP_PREFIX, 'Error in uploadStepArtifacts for testRid', testRid, ':', err);
+      throw err;
+    }
   }
 
   /**
@@ -161,6 +214,13 @@ class Client {
      */
     const { rid, error = null, steps: originalSteps, title, suite_title } = testData;
     let steps = originalSteps;
+
+    // Upload artifacts from steps
+    try {
+      await this.uploadStepArtifacts(steps, rid);
+    } catch (err) {
+      console.log(APP_PREFIX, 'Failed to upload step artifacts:', err);
+    }
 
     const uploadedFiles = [];
     const stackArtifactsEnabled = transformEnvVarToBoolean(process.env.TESTOMATIO_STACK_ARTIFACTS);
@@ -197,7 +257,7 @@ class Client {
       message = error?.message;
     }
 
-    let fullLogs = formatLogs({ error: errorFormatted, steps, logs: testData.logs });
+    let fullLogs = formatLogs({ error: errorFormatted, logs: testData.logs });
 
     if (stackArtifactsEnabled && fullLogs?.trim()?.length > 0) {
       uploadedFiles.push(
@@ -286,7 +346,7 @@ class Client {
             const result = await pipe.addTest(data);
             return { pipe: pipe.toString(), result };
           } catch (err) {
-            console.log(APP_PREFIX, pipe.toString(), err);
+            log.info(pipe.toString(), err);
           }
         }),
       ),
@@ -300,10 +360,11 @@ class Client {
    *
    * Updates the status of the current test run and finishes the run.
    * @param {'passed' | 'failed' | 'skipped' | 'finished'} status - The status of the current test run.
+   * @param {Partial<import('../types/types.js').RunData>} [params] - Additional run params (e.g. duration).
    * Must be one of "passed", "failed", or "finished"
    * @returns {Promise<any>} - A Promise that resolves when finishes the run.
    */
-  async updateRunStatus(status) {
+  async updateRunStatus(status, params = {}) {
     this.pipes ||= await pipesFactory(this.paramsForPipesFactory || {}, this.pipeStore);
     this.runId ||= readLatestRunId();
 
@@ -311,7 +372,7 @@ class Client {
     // all pipes disabled, skipping
     if (!this.pipes?.filter(p => p.isEnabled).length) return Promise.resolve();
 
-    const runParams = { status };
+    const runParams = { ...params, status };
 
     this.queue = this.queue
       .then(() => Promise.all(this.pipes.map(p => p.finishRun(runParams))))
@@ -341,10 +402,7 @@ class Client {
         }
 
         if (this.uploader.failedUploads.length) {
-          console.log(
-            APP_PREFIX,
-            `🗄️ ${this.uploader.failedUploads.length} artifacts 🔴${pc.bold('failed')} to upload`,
-          );
+          log.info(`🗄️ ${this.uploader.failedUploads.length} artifacts 🔴${pc.bold('failed')} to upload`);
           const failedUploads = this.uploader.failedUploads.map(file => ({
             relativePath: file.path.replace(process.cwd(), ''),
             sizePretty: file.size == null ? 'unknown' : prettyBytes(file.size, { round: 0 }).toString(),
@@ -362,11 +420,7 @@ class Client {
         }
 
         if (this.uploader.skippedUploads.length) {
-          console.log(
-            '\n',
-            APP_PREFIX,
-            `🗄️ ${pc.bold(this.uploader.skippedUploads.length)} artifacts uploading 🟡${pc.bold('skipped')}`,
-          );
+          log.info(`🗄️ ${pc.bold(this.uploader.skippedUploads.length)} artifacts uploading 🟡${pc.bold('skipped')}`);
           const skippedUploads = this.uploader.skippedUploads.map(file => ({
             relativePath: file.path.replace(process.cwd(), ''),
             sizePretty: file.size === null ? 'unknown' : prettyBytes(file.size, { round: 0 }).toString(),
@@ -386,14 +440,11 @@ class Client {
             this.runId
           } npx @testomatio/reporter upload-artifacts`;
           const numberOfNotUploadedArtifacts = this.uploader.skippedUploads.length + this.uploader.failedUploads.length;
-          console.log(
-            APP_PREFIX,
-            `${numberOfNotUploadedArtifacts} artifacts were not uploaded.
-            Run "${pc.magenta(command)}" with valid S3 credentials to upload skipped & failed artifacts`,
-          );
+          log.info(`${numberOfNotUploadedArtifacts} artifacts were not uploaded.
+            Run "${pc.magenta(command)}" with valid S3 credentials to upload skipped & failed artifacts`);
         }
       })
-      .catch(err => console.log(APP_PREFIX, err));
+      .catch(err => log.info(err));
 
     return this.queue;
   }

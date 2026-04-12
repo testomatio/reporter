@@ -145,7 +145,7 @@ describe('Client Stack Artifacts', () => {
       // Check that the uploaded file contains the logs
       const uploadedBuffer = uploadCalls[0].buffer;
       const uploadedContent = uploadedBuffer.toString('utf8');
-      expect(uploadedContent).to.include('Step 1');
+      expect(uploadedContent).not.to.include('Step 1');
       expect(uploadedContent).to.include('Small logs');
     });
 

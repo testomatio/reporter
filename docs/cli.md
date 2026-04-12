@@ -10,6 +10,13 @@ Reporter is designed to work with [Testomat.io](https://testomat.io) service but
 npm install -g @testomatio/reporter
 ```
 
+For Yarn 4 (Berry), install and run CLI wrapper:
+
+```bash
+yarn add -D testomatio-reporter-cli
+npx testomatio-reporter <command> [options]
+```
+
 ## General Usage
 
 ```bash

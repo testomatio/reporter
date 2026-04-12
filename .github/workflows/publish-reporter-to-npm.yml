@@ -58,3 +58,42 @@ jobs:
       - name: commit version to package.json (only for not beta release)
         run: git push
         if: contains(github.event.release.tag_name, 'beta') == false
+
+  publish_cli:
+    name: Publish REPORTER CLI wrapper
+    needs: publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.target_commitish }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: 'https://registry.npmjs.org'
+      - run: npm install -g npm@latest
+      - run: npm ci
+        working-directory: ./packages/reporter-cli
+      - name: Sync wrapper version with release version
+        run: |
+          npm version ${{ github.event.release.tag_name }} --no-git-tag-version
+          npm pkg set "dependencies.@testomatio/reporter=${{ github.event.release.tag_name }}"
+        working-directory: ./packages/reporter-cli
+      - name: Determine npm tag
+        id: npm_tag
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          if echo "$TAG" | grep -qE "alpha|-alpha|\.a\."; then
+            echo "tag=alpha" >> $GITHUB_OUTPUT
+          elif echo "$TAG" | grep -qE "beta|-beta|\.b\."; then
+            echo "tag=beta" >> $GITHUB_OUTPUT
+          elif echo "$TAG" | grep -qE "rc|-rc|\.rc\."; then
+            echo "tag=rc" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.release.prerelease }}" = "true" ]; then
+            echo "tag=beta" >> $GITHUB_OUTPUT
+          else
+            echo "tag=latest" >> $GITHUB_OUTPUT
+          fi
+      - name: Publish wrapper to npm
+        run: npm publish --provenance --tag ${{ steps.npm_tag.outputs.tag }}
+        working-directory: ./packages/reporter-cli
