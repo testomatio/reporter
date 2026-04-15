@@ -39,7 +39,11 @@ const {
   TESTOMATIO_RUN,
   TESTOMATIO_MARK_DETACHED,
   TESTOMATIO_LEGACY_NUNIT,
+  TESTOMATIO_MAX_ENTITY_EXPANSIONS,
 } = process.env;
+
+const MAX_OUTPUT_LENGTH = parseInt(TESTOMATIO_MAX_STACK_TRACE, 10) || 10000;
+const MAX_ENTITY_EXPANSIONS = parseInt(TESTOMATIO_MAX_ENTITY_EXPANSIONS, 10) || 10000;
 
 const options = {
   ignoreDeclaration: true,
@@ -47,9 +51,15 @@ const options = {
   alwaysCreateTextNode: false,
   attributeNamePrefix: '',
   parseTagValue: true,
+  processEntities: {
+    enabled: true,
+    maxEntitySize: 10000,
+    maxExpansionDepth: 10,
+    maxTotalExpansions: MAX_ENTITY_EXPANSIONS,
+    maxExpandedLength: 100000,
+    maxEntityCount: 10000,
+  },
 };
-
-const MAX_OUTPUT_LENGTH = parseInt(TESTOMATIO_MAX_STACK_TRACE, 10) || 10000;
 
 const reduceOptions = {};
 
