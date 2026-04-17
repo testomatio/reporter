@@ -4,7 +4,7 @@ import yaml from 'js-yaml';
 import { execSync } from 'child_process';
 import { Gaxios } from 'gaxios';
 import { minimatch } from 'minimatch';
-import { APP_PREFIX, AXIOS_TIMEOUT, REPORTER_REQUEST_RETRIES } from '../constants.js';
+import { APP_PREFIX, REQUEST_TIMEOUT, REPORTER_REQUEST_RETRIES } from '../constants.js';
 import { generateFilterRequestParams } from '../utils/pipe_utils.js';
 import { parsePipeOptions } from '../utils/pipe_utils.js';
 import { config } from '../config.js';
@@ -76,7 +76,7 @@ class CoveragePipe { // or Changes for the future???
         // Create a new instance of gaxios with a custom config
         this.client = new Gaxios({
             baseURL: `${this.url.trim()}`,
-            timeout: AXIOS_TIMEOUT,
+            timeout: REQUEST_TIMEOUT,
             proxy: proxy ? proxy.toString() : undefined,
             retry: true,
             retryConfig: {
