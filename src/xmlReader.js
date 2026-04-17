@@ -44,6 +44,7 @@ const {
 
 const MAX_OUTPUT_LENGTH = parseInt(TESTOMATIO_MAX_STACK_TRACE, 10) || 10000;
 const MAX_ENTITY_EXPANSIONS = parseInt(TESTOMATIO_MAX_ENTITY_EXPANSIONS, 10) || 10000;
+const ENTITY_EXPANSION_LIMIT_REGEXP = /Entity expansion limit exceeded/i;
 
 const options = {
   ignoreDeclaration: true,
@@ -123,7 +124,20 @@ class XmlReader {
       xmlData = xmlData.replace(regex, (_, p1, p2, p3) => `${p1}${p2.substring(0, MAX_OUTPUT_LENGTH)}${p3}`);
     }
 
-    const jsonResult = this.parser.parse(xmlData);
+    let jsonResult;
+    try {
+      jsonResult = this.parser.parse(xmlData);
+    } catch (error) {
+      if (ENTITY_EXPANSION_LIMIT_REGEXP.test(error.message)) {
+        throw new Error(
+          `${error.message}\n\n` +
+            `XML report contains more entity references than the current limit (${MAX_ENTITY_EXPANSIONS}). ` +
+            'If this XML report is trusted, increase the limit with TESTOMATIO_MAX_ENTITY_EXPANSIONS, for example:\n' +
+            `TESTOMATIO_MAX_ENTITY_EXPANSIONS=${MAX_ENTITY_EXPANSIONS * 2} npx report-xml "{pattern}" --lang={lang}`,
+        );
+      }
+      throw error;
+    }
     let jsonSuite;
 
     if (jsonResult.testsuites) {
