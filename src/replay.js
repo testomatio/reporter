@@ -1,8 +1,7 @@
 import fs from 'fs';
 import path from 'path';
-import os from 'os';
 import TestomatClient from './client.js';
-import { STATUS } from './constants.js';
+import { STATUS, DEBUG_FILE } from './constants.js';
 import { config } from './config.js';
 
 export class Replay {
@@ -15,11 +14,12 @@ export class Replay {
   }
 
   /**
-   * Get the default debug file path
+   * Get the default debug file path.
+   * Returns ./testomatio.debug.json (actual file in CI, symlink to tmp file in local).
    * @returns {string} Path to the latest debug file
    */
   getDefaultDebugFile() {
-    return path.join(os.tmpdir(), 'testomatio.debug.latest.json');
+    return path.join(process.cwd(), `${DEBUG_FILE}.json`);
   }
 
   /**

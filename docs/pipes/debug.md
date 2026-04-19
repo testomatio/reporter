@@ -14,7 +14,13 @@ TESTOMATIO_DEBUG=1 <actual run command>
 
 If your test run fails to upload results properly, you can replay the data from the debug file using the CLI.
 
-The debug pipe creates timestamped debug files (e.g., `testomatio.debug.1748206578783.json`) and maintains a symlink at `/tmp/testomatio.debug.latest.json` that always points to the most recent debug file. This allows you to keep a history of debug files while having a consistent path to the latest one.
+The latest run is always accessible at:
+
+```
+./testomatio.debug.json
+```
+
+Run history can be found in `/tmp` dir with filename like `/tmp/testomatio.debug.<datetime>.json`.
 
 You can replay the latest debug data simply with:
 
@@ -27,16 +33,10 @@ You can also specify a custom debug file path if needed:
 
 ```bash
 # Replay from a custom debug file
-TESTOMATIO=<your-api-key> npx @testomatio/reporter replay /path/to/custom-debug.json
+TESTOMATIO=<your-api-key> npx @testomatio/reporter replay /path/to/debug-file.json
 ```
 
-The debug file location is printed to the console when the debug pipe finishes:
-
-```
-[TESTOMATIO] 🪲 Debug Saved to /tmp/testomatio.debug.1748206578783.json
-```
-
-The symlink `/tmp/testomatio.debug.latest.json` will always point to the most recently created debug file.
+The debug file location is printed to the console when the debug pipe finishes.
 
 ## Debug File Format
 
@@ -48,3 +48,4 @@ The debug file contains JSON lines with timing information and test data:
 - **Finish parameters**: Final run status and configuration
 
 For more details, see the [CLI replay command documentation](../cli.md#replay).
+```

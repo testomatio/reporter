@@ -21,10 +21,11 @@ describe('Playwright Tags Extraction', () => {
     });
 
     beforeEach(() => {
-      debugFilePath = path.join(os.tmpdir(), 'testomatio.debug.latest.json');
-      const symlinkPath = path.join(os.tmpdir(), 'testomatio.debug.latest.json');
-      if (fs.existsSync(symlinkPath)) {
-        fs.unlinkSync(symlinkPath);
+      // Use the symlink path in project root
+      debugFilePath = path.join(process.cwd(), 'testomatio.debug.json');
+      // Clean up any existing symlink before starting
+      if (fs.existsSync(debugFilePath)) {
+        fs.unlinkSync(debugFilePath);
       }
     });
 
@@ -59,20 +60,10 @@ describe('Playwright Tags Extraction', () => {
 
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      const tmpFiles = fs
-        .readdirSync(os.tmpdir())
-        .filter(f => f.startsWith('testomatio.debug.') && f.endsWith('.json') && !f.includes('latest'))
-        .map(f => ({
-          name: f,
-          path: path.join(os.tmpdir(), f),
-          mtime: fs.statSync(path.join(os.tmpdir(), f)).mtime,
-        }))
-        .sort((a, b) => b.mtime - a.mtime);
+      const debugPath = path.join(process.cwd(), 'testomatio.debug.json');
+      expect(fs.existsSync(debugPath), 'Debug file not found').to.be.true;
 
-      expect(tmpFiles.length).to.be.greaterThan(0, 'No debug files found for tags test');
-
-      const latestDebugPath = tmpFiles[0].path;
-      const debugContent = fs.readFileSync(latestDebugPath, 'utf-8');
+      const debugContent = fs.readFileSync(debugPath, 'utf-8');
       const debugLines = debugContent
         .trim()
         .split('\n')

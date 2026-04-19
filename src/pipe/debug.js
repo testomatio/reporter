@@ -1,9 +1,8 @@
 import fs from 'fs';
-import path from 'path';
-import os from 'os';
 import createDebugMessages from 'debug';
 import prettyMs from 'pretty-ms';
 import { log } from '../utils/log.js';
+import { getDebugFilePath } from '../utils/debug.js';
 
 const debug = createDebugMessages('@testomatio/reporter:pipe:debug');
 
@@ -21,21 +20,23 @@ export class DebugPipe {
         tests: [],
         batchIndex: 0,
       };
-      this.logFilePath = path.join(os.tmpdir(), `testomatio.debug.${Date.now()}.json`);
+      const paths = getDebugFilePath();
+      this.logFilePath = paths.tmp;
+      this.rootPath = paths.root;
+      this.historyDir = paths.tmp.replace(/\/[^/]+$/, '');
 
       debug('Creating debug file:', this.logFilePath);
       fs.writeFileSync(this.logFilePath, '');
 
-      // Create symlink to ensure consistent path to latest debug file
-      const symlinkPath = path.join(os.tmpdir(), 'testomatio.debug.latest.json');
+      // Create symlink in project root pointing to the timestamped debug file
       try {
         // Remove existing symlink if it exists
-        if (fs.existsSync(symlinkPath)) {
-          fs.unlinkSync(symlinkPath);
+        if (fs.existsSync(paths.root)) {
+          fs.unlinkSync(paths.root);
         }
         // Create new symlink pointing to the timestamped debug file
-        fs.symlinkSync(this.logFilePath, symlinkPath);
-        debug('Created symlink:', symlinkPath, '->', this.logFilePath);
+        fs.symlinkSync(this.logFilePath, paths.root);
+        debug('Created symlink:', paths.root, '->', this.logFilePath);
       } catch (err) {
         debug('Failed to create symlink:', err.message);
       }
@@ -115,7 +116,9 @@ export class DebugPipe {
     await this.sync();
     if (this.batch.intervalFunction) clearInterval(this.batch.intervalFunction);
     this.logToFile({ action: 'finishRun', params });
-    log.info('🪲 Debug Saved to', this.logFilePath);
+
+    log.info(`🪲 Debug file: ${this.rootPath}`);
+    log.info(`History: ${this.historyDir}`);
   }
 
   async sync() {

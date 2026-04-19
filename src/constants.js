@@ -44,6 +44,8 @@ const REPORTER_REQUEST_RETRIES = {
   withinTimeSeconds: Number(process.env.TESTOMATIO_MAX_REQUEST_RETRIES_WITHIN_TIME_SECONDS) || 60,
 };
 
+const DEBUG_FILE = 'testomatio.debug';
+
 export {
   APP_PREFIX,
   TESTOMAT_TMP_STORAGE_DIR,
@@ -54,4 +56,5 @@ export {
   testomatLogoURL,
   REPORTER_REQUEST_RETRIES,
   SCREENSHOTS_ON_STEPS,
+  DEBUG_FILE,
 };

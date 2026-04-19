@@ -163,6 +163,9 @@ output/**/*.har
 # build dir
 lib/
 
+# Testomat.io debug files
+testomatio.debug.*
+
 
 NUnit_sample_test/
 NUnit_sample_test-master/

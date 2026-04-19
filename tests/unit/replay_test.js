@@ -78,7 +78,7 @@ describe('ReplayService', () => {
 
   describe('getDefaultDebugFile', () => {
     it('should return the correct default debug file path', () => {
-      const expected = path.join(os.tmpdir(), 'testomatio.debug.latest.json');
+      const expected = path.join(process.cwd(), 'testomatio.debug.json');
       expect(replayService.getDefaultDebugFile()).to.equal(expected);
     });
   });
