@@ -2,7 +2,6 @@ import { expect } from 'chai';
 import { afterEach, before, beforeEach, describe, it } from 'mocha';
 import { exec } from 'child_process';
 import fs from 'fs';
-import os from 'os';
 import path from 'path';
 import { promisify } from 'util';
 import { extractTags } from '../../src/adapter/playwright.js';
@@ -21,9 +20,9 @@ describe('Playwright Tags Extraction', () => {
     });
 
     beforeEach(() => {
-      // Use the symlink path in project root
-      debugFilePath = path.join(process.cwd(), 'testomatio.debug.json');
-      // Clean up any existing symlink before starting
+      // Debug file (symlink) is created in the cwd of the spawned Playwright process,
+      // which is exampleDir — not the test runner's cwd.
+      debugFilePath = path.join(exampleDir, 'testomatio.debug.json');
       if (fs.existsSync(debugFilePath)) {
         fs.unlinkSync(debugFilePath);
       }
@@ -60,7 +59,7 @@ describe('Playwright Tags Extraction', () => {
 
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      const debugPath = path.join(process.cwd(), 'testomatio.debug.json');
+      const debugPath = path.join(exampleDir, 'testomatio.debug.json');
       expect(fs.existsSync(debugPath), 'Debug file not found').to.be.true;
 
       const debugContent = fs.readFileSync(debugPath, 'utf-8');
