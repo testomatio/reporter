@@ -1,4 +1,5 @@
 import fs from 'fs';
+import path from 'path';
 import createDebugMessages from 'debug';
 import prettyMs from 'pretty-ms';
 import { log } from '../utils/log.js';
@@ -24,22 +25,23 @@ export class DebugPipe {
       const paths = getDebugFilePath(suffix);
       this.logFilePath = paths.tmp;
       this.rootPath = paths.root;
-      this.historyDir = paths.tmp.replace(/\/[^/]+$/, '');
+      this.historyDir = path.dirname(paths.tmp);
 
       debug('Creating debug file:', this.logFilePath);
       fs.writeFileSync(this.logFilePath, '');
 
-      // Create symlink in project root pointing to the timestamped debug file
+      // Create symlink in project root pointing to the timestamped debug file.
+      // Symlinks may fail on Windows without admin / on filesystems that don't support them;
+      // fall back to printing the actual tmp path so the user-facing log isn't misleading.
       try {
-        // Remove existing symlink if it exists
         if (fs.existsSync(paths.root)) {
           fs.unlinkSync(paths.root);
         }
-        // Create new symlink pointing to the timestamped debug file
         fs.symlinkSync(this.logFilePath, paths.root);
         debug('Created symlink:', paths.root, '->', this.logFilePath);
       } catch (err) {
-        debug('Failed to create symlink:', err.message);
+        debug('Failed to create symlink, using tmp path directly:', err.message);
+        this.rootPath = this.logFilePath;
       }
 
       log.info('🪲 Debug file created');

@@ -111,7 +111,7 @@ describe('DebugPipe logging tests', () => {
       expect(paths.root).to.equal(path.join(process.cwd(), 'testomatio.debug.json'));
       expect(paths.tmp).to.include(os.tmpdir());
       expect(paths.tmp).to.include('testomatio.debug.');
-      expect(paths.tmp).to.endWith('.json');
+      expect(paths.tmp).to.match(/\.json$/);
     });
 
     it('should create multiple timestamped files in tmp dir and update symlink to latest', async () => {
@@ -130,8 +130,8 @@ describe('DebugPipe logging tests', () => {
       expect(firstLinkTarget).to.equal(firstFilePath);
       tmpFiles.push(firstFilePath);
 
-      // Wait a bit to ensure different timestamp
-      await new Promise(resolve => setTimeout(resolve, 10));
+      // Wait past the next second boundary — getDebugFilePath rounds to seconds
+      await new Promise(resolve => setTimeout(resolve, 1100));
 
       // Create second debug pipe instance
       const pipe2 = new DebugPipe({});

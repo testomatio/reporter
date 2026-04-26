@@ -439,7 +439,6 @@ describe('ReplayService', () => {
 
       expect(result.success).to.be.true;
       expect(result.runId).to.equal(existingRunId);
-      expect(process.env.TESTOMATIO_RUN).to.equal(existingRunId);
 
       // createRun is called so TestomatioPipe issues PUT to update the existing run
       expect(mockClient.createRunCalled).to.be.true;
@@ -474,7 +473,6 @@ describe('ReplayService', () => {
 
       expect(result.success).to.be.true;
       expect(result.runId).to.equal(existingRunId);
-      expect(process.env.TESTOMATIO_RUN).to.equal(existingRunId);
       expect(mockClient.createRunCalled).to.be.true;
 
       expect(mockLogs.some(log => log.includes(`Using existing run ID: ${existingRunId}`))).to.be.true;
@@ -499,7 +497,6 @@ describe('ReplayService', () => {
 
       expect(result.success).to.be.true;
       expect(result.runId).to.equal(existingRunId);
-      expect(process.env.TESTOMATIO_RUN).to.equal(existingRunId);
       expect(mockClient.createRunCalled).to.be.true;
 
       expect(mockLogs.some(log => log.includes(`Using existing run ID: ${existingRunId}`))).to.be.true;

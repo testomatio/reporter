@@ -48,4 +48,3 @@ The debug file contains JSON lines with timing information and test data:
 - **Finish parameters**: Final run status and configuration
 
 For more details, see the [CLI replay command documentation](../cli.md#replay).
-```

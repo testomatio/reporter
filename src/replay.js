@@ -206,16 +206,12 @@ export class Replay {
       };
     }
 
-    // When a runId is recorded in the debug file, push to that run instead of creating a new one.
-    // TestomatioPipe reads runId from constructor params / TESTOMATIO_RUN env var; both are set
-    // here so the pipe issues a PUT to /api/reporter/{runId} (update) instead of POST (create).
     if (runId) {
       this.onLog(`Using existing run ID: ${runId}`);
       process.env.TESTOMATIO_RUN = runId;
     } else {
       this.onLog('Publishing to run...');
     }
-
     process.env.TESTOMATIO_REPLAY = '1';
 
     const client = new TestomatClient({
@@ -232,7 +228,6 @@ export class Replay {
 
     await client.createRun(runParams);
 
-    // Send each test result
     let successCount = 0;
     let failureCount = 0;
 
@@ -261,7 +256,9 @@ export class Replay {
 
     await client.updateRunStatus(finishParams.status || STATUS.FINISHED);
 
-    const result = {
+    this.onLog(`Successfully replayed ${successCount}/${tests.length} tests from debug file`);
+
+    return {
       success: true,
       testsCount: tests.length,
       successCount,
@@ -271,10 +268,6 @@ export class Replay {
       envVars,
       runId: runId || client.runId,
     };
-
-    this.onLog(`Successfully replayed ${successCount}/${tests.length} tests from debug file`);
-
-    return result;
   }
 }
 
