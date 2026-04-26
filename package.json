@@ -1,6 +1,6 @@
 {
   "name": "@testomatio/reporter",
-  "version": "2.7.6",
+  "version": "2.7.8",
   "description": "Testomatio Reporter Client",
   "engines": {
     "node": ">=18"
@@ -17,7 +17,6 @@
     "@aws-sdk/lib-storage": "^3.279.0",
     "@cucumber/cucumber": "^10.9.0",
     "@octokit/rest": "^21.1.1",
-    "aws-sdk": "^2.1072.0",
     "callsite-record": "^4.1.4",
     "commander": "^12",
     "cross-spawn": "^7.0.3",
