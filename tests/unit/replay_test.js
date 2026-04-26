@@ -106,7 +106,7 @@ describe('ReplayService', () => {
           ],
         },
         { action: 'addTest', testId: { id: 'test3', status: 'passed', title: 'Test 3' } },
-        { actions: 'finishRun', params: { status: 'finished' } },
+        { action: 'finishRun', params: { status: 'finished' } },
       ];
 
       const fileContent = debugData.map(line => JSON.stringify(line)).join('\n');
@@ -276,7 +276,7 @@ describe('ReplayService', () => {
         { data: 'variables', testomatioEnvVars: { TESTOMATIO: 'test-key' } },
         { action: 'createRun', params: { title: 'Test Run' } },
         { action: 'addTest', testId: { id: 'test1', status: 'passed' } },
-        { actions: 'finishRun', params: { status: 'finished' } },
+        { action: 'finishRun', params: { status: 'finished' } },
       ];
 
       fs.writeFileSync(debugFile, debugData.map(line => JSON.stringify(line)).join('\n'));
@@ -306,7 +306,7 @@ describe('ReplayService', () => {
             { id: 'test2', status: 'failed', title: 'Test 2' },
           ],
         },
-        { actions: 'finishRun', params: { status: 'finished' } },
+        { action: 'finishRun', params: { status: 'finished' } },
       ];
 
       fs.writeFileSync(debugFile, debugData.map(line => JSON.stringify(line)).join('\n'));
@@ -417,7 +417,41 @@ describe('ReplayService', () => {
       }
     });
 
-    it('should use existing run_id from debug pipe when available', async () => {
+    it('should use existing run_id from finishRun entry when available', async () => {
+      const existingRunId = 'existing-run-id-from-finish-run';
+
+      const debugData = [
+        { data: 'variables', testomatioEnvVars: { TESTOMATIO: 'test-key' } },
+        { action: 'createRun', params: { title: 'Test Run' } },
+        {
+          action: 'addTestsBatch',
+          tests: [
+            { id: 'test1', status: 'passed', title: 'Test 1' },
+            { id: 'test2', status: 'failed', title: 'Test 2' },
+          ],
+        },
+        { action: 'finishRun', runId: existingRunId, params: { status: 'finished' } },
+      ];
+
+      fs.writeFileSync(debugFile, debugData.map(line => JSON.stringify(line)).join('\n'));
+
+      const result = await replayService.replay(debugFile);
+
+      expect(result.success).to.be.true;
+      expect(result.runId).to.equal(existingRunId);
+      expect(process.env.TESTOMATIO_RUN).to.equal(existingRunId);
+
+      // createRun is called so TestomatioPipe issues PUT to update the existing run
+      expect(mockClient.createRunCalled).to.be.true;
+
+      expect(mockLogs.some(log => log.includes(`Using existing run ID: ${existingRunId}`))).to.be.true;
+      expect(mockClient.addTestRunCalls).to.have.length(2);
+      expect(mockClient.updateRunStatusCalls).to.have.length(1);
+      // finishRun status from debug file should propagate
+      expect(mockClient.updateRunStatusCalls[0]).to.deep.equal({ status: 'finished' });
+    });
+
+    it('should use existing run_id from addTestsBatch entries when available', async () => {
       const existingRunId = 'existing-run-id-from-debug-pipe';
 
       const debugData = [
@@ -431,7 +465,7 @@ describe('ReplayService', () => {
             { id: 'test2', status: 'failed', title: 'Test 2' },
           ],
         },
-        { actions: 'finishRun', params: { status: 'finished' } },
+        { action: 'finishRun', params: { status: 'finished' } },
       ];
 
       fs.writeFileSync(debugFile, debugData.map(line => JSON.stringify(line)).join('\n'));
@@ -440,14 +474,10 @@ describe('ReplayService', () => {
 
       expect(result.success).to.be.true;
       expect(result.runId).to.equal(existingRunId);
+      expect(process.env.TESTOMATIO_RUN).to.equal(existingRunId);
+      expect(mockClient.createRunCalled).to.be.true;
 
-      // Should NOT have called createRun since we're using existing runId
-      expect(mockClient.createRunCalled).to.be.false;
-
-      // Should have logged that we're using existing run ID
       expect(mockLogs.some(log => log.includes(`Using existing run ID: ${existingRunId}`))).to.be.true;
-
-      // Should still process tests and finish run
       expect(mockClient.addTestRunCalls).to.have.length(2);
       expect(mockClient.updateRunStatusCalls).to.have.length(1);
     });
@@ -460,7 +490,7 @@ describe('ReplayService', () => {
         { action: 'createRun', params: { title: 'Test Run' } },
         { action: 'addTest', runId: existingRunId, testId: { id: 'test1', status: 'passed', title: 'Test 1' } },
         { action: 'addTest', runId: existingRunId, testId: { id: 'test2', status: 'failed', title: 'Test 2' } },
-        { actions: 'finishRun', params: { status: 'finished' } },
+        { action: 'finishRun', params: { status: 'finished' } },
       ];
 
       fs.writeFileSync(debugFile, debugData.map(line => JSON.stringify(line)).join('\n'));
@@ -469,11 +499,9 @@ describe('ReplayService', () => {
 
       expect(result.success).to.be.true;
       expect(result.runId).to.equal(existingRunId);
+      expect(process.env.TESTOMATIO_RUN).to.equal(existingRunId);
+      expect(mockClient.createRunCalled).to.be.true;
 
-      // Should NOT have called createRun since we're using existing runId
-      expect(mockClient.createRunCalled).to.be.false;
-
-      // Should have logged that we're using existing run ID
       expect(mockLogs.some(log => log.includes(`Using existing run ID: ${existingRunId}`))).to.be.true;
     });
 
@@ -482,7 +510,7 @@ describe('ReplayService', () => {
         { data: 'variables', testomatioEnvVars: { TESTOMATIO: 'test-key' } },
         { action: 'createRun', params: { title: 'Test Run' } },
         { action: 'addTestsBatch', tests: [{ id: 'test1', status: 'passed', title: 'Test 1' }] },
-        { actions: 'finishRun', params: { status: 'finished' } },
+        { action: 'finishRun', params: { status: 'finished' } },
       ];
 
       fs.writeFileSync(debugFile, debugData.map(line => JSON.stringify(line)).join('\n'));
@@ -499,7 +527,25 @@ describe('ReplayService', () => {
       expect(mockLogs.some(log => log.includes('Publishing to run...'))).to.be.true;
     });
 
-    it('should use first found run_id when multiple exist', async () => {
+    it('should pick up runId from finishRun even if batch entries omit it', async () => {
+      const canonicalRunId = 'canonical-run-id';
+
+      const debugData = [
+        { action: 'createRun', params: { title: 'Test Run' } },
+        { action: 'addTestsBatch', tests: [{ id: 'test1', status: 'passed' }] },
+        { action: 'addTest', testId: { id: 'test2', status: 'passed' } },
+        { action: 'finishRun', runId: canonicalRunId, params: { status: 'finished' } },
+      ];
+
+      fs.writeFileSync(debugFile, debugData.map(line => JSON.stringify(line)).join('\n'));
+
+      const result = await replayService.replay(debugFile);
+
+      expect(result.runId).to.equal(canonicalRunId);
+      expect(mockClient.createRunCalled).to.be.true;
+    });
+
+    it('should use first found run_id from batch entries when no runCreated entry exists', async () => {
       const firstRunId = 'first-run-id';
       const secondRunId = 'second-run-id';
 
@@ -514,7 +560,7 @@ describe('ReplayService', () => {
       const result = await replayService.replay(debugFile);
 
       expect(result.runId).to.equal(firstRunId);
-      expect(mockClient.createRunCalled).to.be.false;
+      expect(mockClient.createRunCalled).to.be.true;
     });
 
     it('should include run_id in dry run results', async () => {
@@ -653,7 +699,7 @@ describe('ReplayService', () => {
             },
           ],
         },
-        { t: '+3000ms', actions: 'finishRun', params: { status: 'finished' } },
+        { t: '+3000ms', action: 'finishRun', params: { status: 'finished' } },
       ];
 
       fs.writeFileSync(debugFile, debugData.map(line => JSON.stringify(line)).join('\n'));

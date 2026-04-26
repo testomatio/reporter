@@ -119,8 +119,11 @@ export class Replay {
             // Handle tests without rid (no deduplication)
             testsWithoutRid.push({ ...test });
           }
-        } else if (logEntry.actions === 'finishRun') {
+        } else if (logEntry.action === 'finishRun') {
           finishParams = logEntry.params || {};
+          if (logEntry.runId && !runId) {
+            runId = logEntry.runId;
+          }
         }
       } catch (err) {
         parseErrors++;
@@ -203,21 +206,31 @@ export class Replay {
       };
     }
 
-    // Create client and restore the run
+    // When a runId is recorded in the debug file, push to that run instead of creating a new one.
+    // TestomatioPipe reads runId from constructor params / TESTOMATIO_RUN env var; both are set
+    // here so the pipe issues a PUT to /api/reporter/{runId} (update) instead of POST (create).
+    if (runId) {
+      this.onLog(`Using existing run ID: ${runId}`);
+      process.env.TESTOMATIO_RUN = runId;
+    } else {
+      this.onLog('Publishing to run...');
+    }
+
+    process.env.TESTOMATIO_REPLAY = '1';
+
     const client = new TestomatClient({
       apiKey: this.apiKey,
       isBatchEnabled: true,
       ...runParams,
+      ...(runId && { runId }),
     });
 
-    // Use the stored runId if available, otherwise create a new run
     if (runId) {
-      this.onLog(`Using existing run ID: ${runId}`);
       client.runId = runId;
-    } else {
-      this.onLog('Publishing to run...');
-      await client.createRun(runParams);
+      client.pipeStore.runId = runId;
     }
+
+    await client.createRun(runParams);
 
     // Send each test result
     let successCount = 0;

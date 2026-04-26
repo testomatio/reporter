@@ -20,7 +20,8 @@ export class DebugPipe {
         tests: [],
         batchIndex: 0,
       };
-      const paths = getDebugFilePath();
+      const suffix = process.env.TESTOMATIO_REPLAY ? 'replay' : '';
+      const paths = getDebugFilePath(suffix);
       this.logFilePath = paths.tmp;
       this.rootPath = paths.root;
       this.historyDir = paths.tmp.replace(/\/[^/]+$/, '');
@@ -115,7 +116,9 @@ export class DebugPipe {
     if (!this.isEnabled) return;
     await this.sync();
     if (this.batch.intervalFunction) clearInterval(this.batch.intervalFunction);
-    this.logToFile({ action: 'finishRun', params });
+    const logData = { action: 'finishRun', params };
+    if (this.store.runId) logData.runId = this.store.runId;
+    this.logToFile(logData);
 
     log.info(`🪲 Debug file: ${this.rootPath}`);
     log.info(`History: ${this.historyDir}`);
