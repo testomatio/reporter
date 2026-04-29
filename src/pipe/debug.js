@@ -34,8 +34,14 @@ export class DebugPipe {
       // Symlinks may fail on Windows without admin / on filesystems that don't support them;
       // fall back to printing the actual tmp path so the user-facing log isn't misleading.
       try {
-        if (fs.existsSync(paths.root)) {
+        // Use lstatSync (not existsSync) so we also detect dangling symlinks —
+        // existsSync follows links and returns false when the target is gone,
+        // which would leave a stale symlink in place and make symlinkSync fail with EEXIST.
+        try {
+          fs.lstatSync(paths.root);
           fs.unlinkSync(paths.root);
+        } catch (e) {
+          if (e.code !== 'ENOENT') throw e;
         }
         fs.symlinkSync(this.logFilePath, paths.root);
         debug('Created symlink:', paths.root, '->', this.logFilePath);

@@ -9,7 +9,9 @@ const execAsync = promisify(exec);
 export class CodeceptTestRunner {
   constructor() {
     this.exampleDir = path.join(process.cwd(), 'example', 'codecept');
-    this.debugFilePath = path.join(process.cwd(), 'testomatio.debug.json');
+    // Debug symlink is created in the cwd of the spawned codeceptjs process (exampleDir),
+    // not in the test runner's cwd.
+    this.debugFilePath = path.join(this.exampleDir, 'testomatio.debug.json');
   }
 
   cleanupDebugFiles() {
@@ -19,12 +21,14 @@ export class CodeceptTestRunner {
         fs.unlinkSync(path.join(os.tmpdir(), f));
       } catch (e) {}
     });
-    // Also remove symlink if it exists
+    // Also remove symlink if it exists. Use lstatSync — existsSync follows the
+    // link and returns false for dangling symlinks, which would leave them in place.
     try {
-      if (fs.existsSync(this.debugFilePath)) {
-        fs.unlinkSync(this.debugFilePath);
-      }
-    } catch (e) {}
+      fs.lstatSync(this.debugFilePath);
+      fs.unlinkSync(this.debugFilePath);
+    } catch (e) {
+      if (e.code !== 'ENOENT') throw e;
+    }
   }
 
   async run(testConfig = {}, extraEnv = {}) {
