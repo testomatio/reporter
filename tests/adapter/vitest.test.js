@@ -1,7 +1,6 @@
 import { expect } from 'chai';
 import { exec } from 'child_process';
 import fs from 'fs';
-import os from 'os';
 import path from 'path';
 import { promisify } from 'util';
 
@@ -18,17 +17,24 @@ describe('Vitest Adapter Tests', function () {
   });
 
   beforeEach(() => {
-    // Clean up symlink in project root before starting
-    debugFilePath = path.join(process.cwd(), 'testomatio.debug.json');
-    if (fs.existsSync(debugFilePath)) {
+    // Debug symlink is created in the cwd of the spawned vitest process (exampleDir),
+    // not in the test runner's cwd. Use lstatSync — existsSync follows the link and
+    // returns false for dangling symlinks, leaving them in place.
+    debugFilePath = path.join(exampleDir, 'testomatio.debug.json');
+    try {
+      fs.lstatSync(debugFilePath);
       fs.unlinkSync(debugFilePath);
+    } catch (e) {
+      if (e.code !== 'ENOENT') throw e;
     }
   });
 
   afterEach(() => {
-    // Clean up debug file after each test
-    if (fs.existsSync(debugFilePath)) {
+    try {
+      fs.lstatSync(debugFilePath);
       fs.unlinkSync(debugFilePath);
+    } catch (e) {
+      if (e.code !== 'ENOENT') throw e;
     }
   });
 
@@ -65,8 +71,8 @@ describe('Vitest Adapter Tests', function () {
     // Wait a moment for debug file to be finalized
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    // Use the symlink to the latest debug file
-    debugFilePath = path.join(process.cwd(), 'testomatio.debug.json');
+    // Use the symlink to the latest debug file (lives in the spawned process's cwd)
+    debugFilePath = path.join(exampleDir, 'testomatio.debug.json');
     console.log('Using debug file:', debugFilePath);
 
     const debugContent = fs.readFileSync(debugFilePath, 'utf-8');

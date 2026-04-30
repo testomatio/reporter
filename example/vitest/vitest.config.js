@@ -7,10 +7,8 @@ export default defineConfig({
 
     // Run tests sequentially for predictable results
     pool: 'forks',
-    poolOptions: {
-      forks: {
-        singleFork: true,
-      },
+    forks: {
+      singleFork: true,
     },
 
     // Disable watch mode by default
