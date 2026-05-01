@@ -1,8 +1,7 @@
 import fs from 'fs';
 import path from 'path';
-import os from 'os';
 import TestomatClient from './client.js';
-import { STATUS } from './constants.js';
+import { STATUS, DEBUG_FILE } from './constants.js';
 import { config } from './config.js';
 
 export class Replay {
@@ -15,11 +14,12 @@ export class Replay {
   }
 
   /**
-   * Get the default debug file path
+   * Get the default debug file path.
+   * Returns ./testomatio.debug.json (actual file in CI, symlink to tmp file in local).
    * @returns {string} Path to the latest debug file
    */
   getDefaultDebugFile() {
-    return path.join(os.tmpdir(), 'testomatio.debug.latest.json');
+    return path.join(process.cwd(), `${DEBUG_FILE}.json`);
   }
 
   /**
@@ -119,8 +119,11 @@ export class Replay {
             // Handle tests without rid (no deduplication)
             testsWithoutRid.push({ ...test });
           }
-        } else if (logEntry.actions === 'finishRun') {
+        } else if (logEntry.action === 'finishRun') {
           finishParams = logEntry.params || {};
+          if (logEntry.runId && !runId) {
+            runId = logEntry.runId;
+          }
         }
       } catch (err) {
         parseErrors++;
@@ -203,23 +206,28 @@ export class Replay {
       };
     }
 
-    // Create client and restore the run
+    if (runId) {
+      this.onLog(`Using existing run ID: ${runId}`);
+      process.env.TESTOMATIO_RUN = runId;
+    } else {
+      this.onLog('Publishing to run...');
+    }
+    process.env.TESTOMATIO_REPLAY = '1';
+
     const client = new TestomatClient({
       apiKey: this.apiKey,
       isBatchEnabled: true,
       ...runParams,
+      ...(runId && { runId }),
     });
 
-    // Use the stored runId if available, otherwise create a new run
     if (runId) {
-      this.onLog(`Using existing run ID: ${runId}`);
       client.runId = runId;
-    } else {
-      this.onLog('Publishing to run...');
-      await client.createRun(runParams);
+      client.pipeStore.runId = runId;
     }
 
-    // Send each test result
+    await client.createRun(runParams);
+
     let successCount = 0;
     let failureCount = 0;
 
@@ -248,7 +256,9 @@ export class Replay {
 
     await client.updateRunStatus(finishParams.status || STATUS.FINISHED);
 
-    const result = {
+    this.onLog(`Successfully replayed ${successCount}/${tests.length} tests from debug file`);
+
+    return {
       success: true,
       testsCount: tests.length,
       successCount,
@@ -258,10 +268,6 @@ export class Replay {
       envVars,
       runId: runId || client.runId,
     };
-
-    this.onLog(`Successfully replayed ${successCount}/${tests.length} tests from debug file`);
-
-    return result;
   }
 }
 

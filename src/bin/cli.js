@@ -6,7 +6,7 @@ import { glob } from 'glob';
 import createDebugMessages from 'debug';
 import TestomatClient from '../client.js';
 import XmlReader from '../xmlReader.js';
-import { APP_PREFIX, STATUS } from '../constants.js';
+import { APP_PREFIX, STATUS, DEBUG_FILE } from '../constants.js';
 import { cleanLatestRunId, getPackageVersion, applyFilter } from '../utils/utils.js';
 import { config } from '../config.js';
 import { readLatestRunId } from '../utils/utils.js';
@@ -370,7 +370,7 @@ program
 program
   .command('replay')
   .description('Replay test data from debug file and re-send to Testomat.io')
-  .argument('[debug-file]', 'Path to debug file (defaults to /tmp/testomatio.debug.latest.json)')
+  .argument('[debug-file]', `Path to debug file. Defaults to ./${DEBUG_FILE}.json`)
   .option('--dry-run', 'Preview the data without sending to Testomat.io')
   .action(async (debugFile, opts) => {
     try {

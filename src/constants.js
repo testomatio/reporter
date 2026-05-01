@@ -44,6 +44,8 @@ const REPORTER_REQUEST_RETRIES = {
   withinTimeSeconds: Number(process.env.TESTOMATIO_MAX_REQUEST_RETRIES_WITHIN_TIME_SECONDS) || 60,
 };
 
+const DEBUG_FILE = 'testomatio.debug';
+
 function getCreateRunRequestTimeout() {
   return Math.max(REQUEST_TIMEOUT, 80 * 1000);
 }
@@ -59,4 +61,5 @@ export {
   testomatLogoURL,
   REPORTER_REQUEST_RETRIES,
   SCREENSHOTS_ON_STEPS,
+  DEBUG_FILE,
 };
