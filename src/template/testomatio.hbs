@@ -2242,7 +2242,6 @@
                                     <div class='env-var-item {{#unless this.isSet}}env-var-unset{{/unless}}'>
                                         <div class='env-var-info'>
                                             <div class='env-var-key'>{{@key}}</div>
-                                            <div class='env-var-description'>{{this.description}}</div>
                                         </div>
                                         <div class='env-var-value {{#unless this.isSet}}env-var-empty{{/unless}} {{#if this.isSensitive}}env-var-confidential{{/if}}'>
                                             {{#if this.isSensitive}}
@@ -2267,7 +2266,6 @@
                                     <div class='env-var-item {{#unless this.isSet}}env-var-unset{{/unless}}'>
                                         <div class='env-var-info'>
                                             <div class='env-var-key'>{{@key}}</div>
-                                            <div class='env-var-description'>{{this.description}}</div>
                                         </div>
                                         <div class='env-var-value {{#unless this.isSet}}env-var-empty{{/unless}} {{#if this.isSensitive}}env-var-confidential{{/if}}'>
                                             {{#if this.isSensitive}}

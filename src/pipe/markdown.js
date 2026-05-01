@@ -222,20 +222,19 @@ function renderEnvSection(envVars) {
   ];
 
   for (const group of groups) {
-    const set = Object.entries(group.vars).filter(([, v]) => v && v.isSet);
-    if (!set.length) continue;
+    const entries = Object.entries(group.vars).filter(([, v]) => v && v.isSet);
+    if (!entries.length) continue;
+
+    entries.sort((a, b) => a[0].localeCompare(b[0]));
 
     const lines = [];
     lines.push('<details>');
-    lines.push(`<summary>${group.title} (${set.length})</summary>`);
+    lines.push(`<summary>${group.title} (${entries.length})</summary>`);
     lines.push('');
-    lines.push('| Variable | Value | Description |');
-    lines.push('| -------- | ----- | ----------- |');
-
-    for (const [name, info] of set) {
-      const value = mdTableCell(String(info.value ?? ''));
-      const desc = mdTableCell(String(info.description ?? ''));
-      lines.push(`| \`${name}\` | ${value} | ${desc} |`);
+    lines.push('| Variable | Value |');
+    lines.push('| -------- | ----- |');
+    for (const [name, info] of entries) {
+      lines.push(`| \`${name}\` | ${mdTableCell(String(info.value ?? ''))} |`);
     }
     lines.push('');
     lines.push('</details>');
@@ -715,103 +714,30 @@ function aggregateTestRetries(tests) {
   return aggregated;
 }
 
-function collectEnvironmentVariables() {
-  const allVars = {
-    testomatio: {
-      TESTOMATIO: { description: 'API Key for Testomat.io' },
-      TESTOMATIO_API_KEY: { description: 'API Key (alias for TESTOMATIO)' },
-      TESTOMATIO_CREATE: { description: 'Create new tests in Testomat.io' },
-      TESTOMATIO_DEBUG: { description: 'Enable debug mode' },
-      TESTOMATIO_DISABLE_BATCH_UPLOAD: { description: 'Disable batch upload' },
-      TESTOMATIO_ENV: { description: 'Environment label' },
-      TESTOMATIO_EXCLUDE_FILES_FROM_REPORT_GLOB_PATTERN: { description: 'Glob pattern to exclude files' },
-      TESTOMATIO_EXCLUDE_SKIPPED: { description: 'Exclude skipped tests from report' },
-      TESTOMATIO_FILENAME: { description: 'Report filename' },
-      TESTOMATIO_HTML_FILENAME: { description: 'HTML report filename' },
-      TESTOMATIO_HTML_REPORT_FOLDER: { description: 'Folder for HTML report' },
-      TESTOMATIO_HTML_REPORT_SAVE: { description: 'Save HTML report' },
-      TESTOMATIO_MARKDOWN_FILENAME: { description: 'Markdown report filename' },
-      TESTOMATIO_MARKDOWN_REPORT_FOLDER: { description: 'Folder for Markdown report' },
-      TESTOMATIO_MARKDOWN_REPORT_SAVE: { description: 'Save Markdown report' },
-      TESTOMATIO_INTERCEPT_CONSOLE_LOGS: { description: 'Intercept console logs' },
-      TESTOMATIO_MARK_DETACHED: { description: 'Mark tests as detached' },
-      TESTOMATIO_MAX_REQUEST_FAILURES: { description: 'Max request failures' },
-      TESTOMATIO_MAX_REQUEST_FAILURES_COUNT: { description: 'Max request failures count' },
-      TESTOMATIO_MAX_REQUEST_RETRIES_WITHIN_TIME_SECONDS: { description: 'Max retries within time period' },
-      TESTOMATIO_NO_STEPS: { description: 'Disable steps reporting' },
-      TESTOMATIO_NO_TIMESTAMP: { description: 'Remove timestamps from logs' },
-      TESTOMATIO_PROCEED: { description: 'Proceed even if tests fail' },
-      TESTOMATIO_PUBLISH: { description: 'Publish results to Testomat.io' },
-      TESTOMATIO_REQUEST_TIMEOUT: { description: 'Request timeout in milliseconds' },
-      TESTOMATIO_RUN: { description: 'Run ID to report tests to' },
-      TESTOMATIO_RUNGROUP_TITLE: { description: 'Title for run group' },
-      TESTOMATIO_SHARED_RUN: { description: 'Share run for parallel execution' },
-      TESTOMATIO_SHARED_RUN_TIMEOUT: { description: 'Timeout for shared run (in seconds)' },
-      TESTOMATIO_STACK_ARTIFACTS: { description: 'Stack artifacts in report' },
-      TESTOMATIO_STACK_FILTER: { description: 'Filter stack traces' },
-      TESTOMATIO_STACK_PASSED: { description: 'Report stack for passed tests' },
-      TESTOMATIO_STEPS_PASSED: { description: 'Report steps for passed tests' },
-      TESTOMATIO_SUITE: { description: 'Suite ID for new tests' },
-      TESTOMATIO_TOKEN: { description: 'API Token (alias for TESTOMATIO)' },
-      TESTOMATIO_TITLE: { description: 'Title for the test run' },
-      TESTOMATIO_URL: { description: 'Testomat.io URL (custom instance)' },
-      TESTOMATIO_WORKDIR: { description: 'Working directory for relative paths' },
-    },
-    s3: {
-      S3_ACCESS_KEY_ID: { description: 'S3 access key ID' },
-      S3_BUCKET: { description: 'S3 bucket name' },
-      S3_ENDPOINT: { description: 'S3 endpoint URL' },
-      S3_FORCE_PATH_STYLE: { description: 'S3 force path style' },
-      S3_KEY: { description: 'S3 access key' },
-      S3_PREFIX: { description: 'S3 key prefix' },
-      S3_REGION: { description: 'S3 region' },
-      S3_SECRET: { description: 'S3 secret key' },
-      S3_SECRET_ACCESS_KEY: { description: 'S3 secret access key' },
-      S3_SESSION_TOKEN: { description: 'S3 session token' },
-    },
-  };
+const SENSITIVE_PATTERNS = [/TOKEN/, /SECRET/, /PASSWORD/, /KEY$/, /^TESTOMATIO$/];
 
-  const sensitiveVars = new Set([
-    'TESTOMATIO',
-    'TESTOMATIO_TOKEN',
-    'TESTOMATIO_API_KEY',
-    'S3_KEY',
-    'S3_SECRET',
-    'S3_ACCESS_KEY_ID',
-    'S3_SECRET_ACCESS_KEY',
-    'S3_SESSION_TOKEN',
-  ]);
-
-  return {
-    testomatio: processEnvVars(allVars.testomatio, sensitiveVars),
-    s3: processEnvVars(allVars.s3, sensitiveVars),
-  };
+function isSensitiveVarName(name) {
+  return SENSITIVE_PATTERNS.some(re => re.test(name));
 }
 
-function processEnvVars(varConfigs, sensitiveVars) {
-  const result = {};
-  for (const [key, config] of Object.entries(varConfigs)) {
-    const value = process.env[key];
-    const isSensitive = sensitiveVars.has(key);
-    const isSet = value !== undefined;
-    let displayValue = '';
+function collectEnvironmentVariables() {
+  const groups = { testomatio: {}, s3: {} };
 
-    if (isSet) {
-      if (isSensitive) {
-        displayValue = '***';
-      } else {
-        displayValue = value;
-      }
-    }
+  for (const [name, value] of Object.entries(process.env)) {
+    if (value === undefined) continue;
 
-    result[key] = {
-      value: displayValue,
-      description: config.description,
-      isSet,
-      isSensitive,
-    };
+    let group = null;
+    if (name === 'TESTOMATIO' || name.startsWith('TESTOMATIO_')) group = 'testomatio';
+    else if (name.startsWith('S3_')) group = 's3';
+    if (!group) continue;
+
+    let displayValue = value;
+    if (isSensitiveVarName(name)) displayValue = '***';
+
+    groups[group][name] = { value: displayValue, isSet: true };
   }
-  return result;
+
+  return groups;
 }
 
 export default MarkdownPipe;
