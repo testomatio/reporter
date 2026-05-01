@@ -232,6 +232,11 @@ export interface HtmlTestData extends TestData {
 }
 
 /**
+ * Extended test data for Markdown reporter.
+ */
+export interface MarkdownTestData extends HtmlTestData {}
+
+/**
  * Object representing a result of a Run.
  */
 export interface RunData {
