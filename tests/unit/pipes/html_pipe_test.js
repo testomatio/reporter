@@ -455,6 +455,39 @@ describe('HTML report tests', () => {
     expect(htmlContent).to.include('https://example-bucket.r2.cloudflarestorage.com/run-1/skipped-test.png');
     expect(htmlContent).to.not.include('file:///D:/testomat/reporter/https:/example-bucket.r2.cloudflarestorage.com');
   });
+
+  it('renders run description (markdown) from store as a Description section', () => {
+    process.env.TESTOMATIO_HTML_REPORT_SAVE = '1';
+
+    const template = path.resolve(dirname, '../../..', 'src', 'template', 'testomatio.hbs');
+    const out = path.resolve(testOutputDir, 'with-description.html');
+    const store = {
+      coverageDescription:
+        'Changes to **3** files in feature to main.\n\n* `src/a.js`\n* `src/b.js`',
+    };
+    const pipe = new HtmlPipe({}, store);
+    pipe.buildReport({
+      runParams: { status: 'passed' },
+      tests: DATA.tests.slice(0, 1),
+      outputPath: out,
+      templatePath: template,
+      warningMsg: '',
+    });
+    const html = fs.readFileSync(out, 'utf-8');
+    const dom = new JSDOM(html);
+    const document = dom.window.document;
+    const section = document.querySelector('section.description-section');
+    expect(section).to.exist;
+    expect(section.querySelector('.description-body strong').textContent).to.equal('3');
+    expect(section.querySelector('.description-body code').textContent).to.equal('src/a.js');
+  });
+
+  it('omits the Description section when no description is present', () => {
+    const htmlContent = fs.readFileSync(filepath, 'utf-8');
+    const dom = new JSDOM(htmlContent);
+    const section = dom.window.document.querySelector('section.description-section');
+    expect(section).to.equal(null);
+  });
 });
 
 function getCurrentDate() {

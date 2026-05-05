@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import pc from 'picocolors';
 import handlebars from 'handlebars';
+import { marked } from 'marked';
 import fileUrl from 'file-url';
 import { fileSystem, isSameTest, ansiRegExp, formatStep } from '../utils/utils.js';
 import { HTML_REPORT } from '../constants.js';
@@ -250,6 +251,7 @@ class HtmlPipe {
       runUrl: this.store.runUrl || '',
       executionTime: testExecutionSumTime(aggregatedTests),
       executionDate: getCurrentDateTimeFormatted(),
+      description: runParams.description || this.store.coverageDescription || this.store.description || '',
       tests: aggregatedTests,
       envVars: collectEnvironmentVariables(),
     };
@@ -303,6 +305,11 @@ class HtmlPipe {
       'getTestsByStatus',
       (tests, status) => tests.filter(test => test.status.toLowerCase() === status.toLowerCase()).length,
     );
+
+    handlebars.registerHelper('markdown', value => {
+      if (typeof value !== 'string' || !value.trim()) return '';
+      return new handlebars.SafeString(marked.parse(value));
+    });
 
     handlebars.registerHelper('formatDuration', milliseconds => {
       if (!milliseconds || milliseconds === 0) return '0ms';

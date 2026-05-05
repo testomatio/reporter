@@ -30,6 +30,8 @@ Once the test run is complete, the HTML Pipe compiles the test results and gener
 
 The HTML report includes essential information, such as run ID, status, parallel execution indication, run URL, execution time, execution date, and details of individual tests.
 
+If a run-level description is provided (e.g. by the Coverage pipe via `coverageDescription`, or `runParams.description`), it is rendered as Markdown in a Description block below the header.
+
 #### Example Command
 
 📊 Generate a report without triggering the TESTOMATIO pipe (no data sent to the client)

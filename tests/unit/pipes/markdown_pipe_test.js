@@ -199,6 +199,31 @@ describe('Markdown report tests', () => {
     expect(mdContent).to.match(/<details>\s*\n<summary><strong>Artifacts<\/strong> \(\d+\)<\/summary>/);
   });
 
+  it('renders run description from store as a Description section', () => {
+    process.env.TESTOMATIO_MARKDOWN_REPORT_SAVE = '1';
+    const store = {
+      runId: DATA.runId,
+      runUrl: DATA.runUrl,
+      coverageDescription: 'Changes to **3** files in feature to main.\n\n* `src/a.js`\n* `src/b.js`',
+    };
+    const pipe = new MarkdownPipe({ title: 'With Desc' }, store);
+    const out = path.resolve(testOutputDir, 'with-description.md');
+    pipe.buildReport({
+      runParams: { status: 'passed' },
+      tests: DATA.tests.slice(0, 1),
+      outputPath: out,
+      warningMsg: '',
+    });
+    const content = fs.readFileSync(out, 'utf-8');
+    expect(content).to.include('## Description');
+    expect(content).to.include('Changes to **3** files in feature to main.');
+    expect(content).to.include('* `src/a.js`');
+  });
+
+  it('omits the Description section when no description is provided', () => {
+    expect(mdContent).to.not.include('## Description');
+  });
+
   it('toString returns the pipe label', () => {
     const pipe = new MarkdownPipe({}, {});
     expect(pipe.toString()).to.equal('Markdown Reporter');

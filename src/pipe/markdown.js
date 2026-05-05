@@ -131,6 +131,7 @@ class MarkdownPipe {
       isParallel: runParams?.isParallel,
       executionTime: testExecutionSumTime(aggregated),
       executionDate: getCurrentDateTimeFormatted(),
+      description: runParams?.description || this.store.coverageDescription || this.store.description || '',
       tests: aggregated,
       stats,
     };
@@ -162,8 +163,16 @@ function renderDocument(data) {
   const sections = [];
   sections.push(renderHeader(data));
   sections.push(renderRunMetadata(data));
+  sections.push(renderDescription(data.description));
   sections.push(renderTests(data.tests));
   return sections.filter(Boolean).join('\n\n') + '\n';
+}
+
+function renderDescription(description) {
+  if (typeof description !== 'string') return '';
+  const trimmed = description.trim();
+  if (!trimmed) return '';
+  return `## Description\n\n${trimmed}`;
 }
 
 function renderHeader(data) {
