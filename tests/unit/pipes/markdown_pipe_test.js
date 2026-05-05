@@ -182,33 +182,21 @@ describe('Markdown report tests', () => {
 
   it('marks pending+todo test as todo in the stats and per-test status', () => {
     const todoSection = mdContent.split('Todo test implementation')[1] || '';
-    expect(todoSection).to.include('- **Status:** todo');
+    expect(todoSection).to.include('| Status | todo |');
   });
 
-  it('shows env variables in a Testomatio details block', () => {
-    expect(mdContent).to.include('## Environment');
-    expect(mdContent).to.include('<details>');
-    expect(mdContent).to.include('Testomat.io variables');
-    expect(mdContent).to.include('| `TESTOMATIO_RUN` | abc-run-id |');
+  it('renders per-test meta as a table', () => {
+    expect(mdContent).to.include('| Status | failed |');
+    expect(mdContent).to.include('| Test ID | `5b8d1186` |');
   });
 
-  it('masks sensitive env variables', () => {
-    process.env.TESTOMATIO_MARKDOWN_REPORT_SAVE = '1';
-    process.env.TESTOMATIO = 'super-secret-token-value';
+  it('does not include an Environment section', () => {
+    expect(mdContent).to.not.include('## Environment');
+    expect(mdContent).to.not.include('Testomat.io variables');
+  });
 
-    const pipe = new MarkdownPipe({}, {});
-    const sensitivePath = path.resolve(testOutputDir, 'sensitive-report.md');
-    pipe.buildReport({
-      runParams: { status: 'passed' },
-      tests: DATA.tests.slice(0, 1),
-      outputPath: sensitivePath,
-      warningMsg: '',
-    });
-
-    const out = fs.readFileSync(sensitivePath, 'utf-8');
-    expect(out).to.include('| `TESTOMATIO` | *** |');
-    expect(out).to.not.include('super-secret-token-value');
-    delete process.env.TESTOMATIO;
+  it('wraps artifacts in a collapsible details block', () => {
+    expect(mdContent).to.match(/<details>\s*\n<summary><strong>Artifacts<\/strong> \(\d+\)<\/summary>/);
   });
 
   it('toString returns the pipe label', () => {

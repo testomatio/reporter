@@ -215,6 +215,10 @@ class Client {
     const { rid, error = null, steps: originalSteps, title, suite_title } = testData;
     let steps = originalSteps;
 
+    // Capture step artifact paths BEFORE uploadStepArtifacts mutates them to URLs,
+    // so we can exclude them from the test-level artifacts list later.
+    const stepArtifactPaths = collectStepArtifactPaths(steps);
+
     // Upload artifacts from steps
     try {
       await this.uploadStepArtifacts(steps, rid);
@@ -228,7 +232,6 @@ class Client {
     const {
       time = 0,
       example = null,
-      files = [],
       filesBuffers = [],
       code = null,
       file,
@@ -236,11 +239,17 @@ class Client {
       test_id,
       timestamp,
       links,
-      manuallyAttachedArtifacts,
       overwrite,
       tags,
     } = testData;
-    let { message = '', meta = {} } = testData;
+    let { files = [], manuallyAttachedArtifacts, message = '', meta = {} } = testData;
+
+    if (stepArtifactPaths.size) {
+      files = files.filter(f => !isStepArtifact(f, stepArtifactPaths));
+      if (Array.isArray(manuallyAttachedArtifacts)) {
+        manuallyAttachedArtifacts = manuallyAttachedArtifacts.filter(a => !isStepArtifact(a, stepArtifactPaths));
+      }
+    }
 
     meta = Object.entries(meta)
       .filter(([, value]) => value !== null && value !== undefined)
@@ -448,6 +457,43 @@ class Client {
 
     return this.queue;
   }
+}
+
+/**
+ * Walks the step tree and returns the set of artifact path/url values
+ * referenced by `step.artifacts` at any depth.
+ *
+ * @param {any} steps
+ * @returns {Set<string>}
+ */
+function collectStepArtifactPaths(steps) {
+  const paths = new Set();
+  if (!Array.isArray(steps)) return paths;
+  const walk = arr => {
+    for (const step of arr) {
+      if (!step) continue;
+      if (Array.isArray(step.artifacts)) {
+        for (const a of step.artifacts) {
+          if (typeof a === 'string') paths.add(a);
+          else if (a && typeof a === 'object' && typeof a.path === 'string') paths.add(a.path);
+        }
+      }
+      if (Array.isArray(step.steps)) walk(step.steps);
+    }
+  };
+  walk(steps);
+  return paths;
+}
+
+/**
+ * @param {string|{path?: string}|null|undefined} item
+ * @param {Set<string>} paths
+ * @returns {boolean}
+ */
+function isStepArtifact(item, paths) {
+  if (!item) return false;
+  const p = typeof item === 'object' ? item.path : item;
+  return typeof p === 'string' && paths.has(p);
 }
 
 /**

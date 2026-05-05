@@ -135,6 +135,7 @@ Bring this reporter on CI and never lose test results again!
   - [Gitlab](./docs/pipes/gitlab.md)
   - [CSV](./docs/pipes/csv.md)
   - [HTML report](./docs/pipes/html.md)
+  - [Markdown report](./docs/pipes/markdown.md)
   - [Bitbucket](./docs/pipes/bitbucket.md)
 - 🔗 [Linking Tests](./docs/linking-tests.md)
 - 📓 [JUnit](./docs/junit.md)
