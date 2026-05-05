@@ -2,7 +2,13 @@ import createDebugMessages from 'debug';
 import pc from 'picocolors';
 import { Gaxios } from 'gaxios';
 import JsonCycle from 'json-cycle';
-import { APP_PREFIX, STATUS, AXIOS_TIMEOUT, REPORTER_REQUEST_RETRIES } from '../constants.js';
+import {
+  APP_PREFIX,
+  STATUS,
+  REQUEST_TIMEOUT,
+  getCreateRunRequestTimeout,
+  REPORTER_REQUEST_RETRIES,
+} from '../constants.js';
 import {
   isValidUrl,
   foundedTestLog,
@@ -81,7 +87,7 @@ class TestomatioPipe {
     // Create a new instance of gaxios with a custom config
     this.client = new Gaxios({
       baseURL: `${this.url.trim()}`,
-      timeout: AXIOS_TIMEOUT,
+      timeout: REQUEST_TIMEOUT,
       proxy: proxy ? proxy.toString() : undefined,
       retry: true,
       retryConfig: {
@@ -256,6 +262,7 @@ class TestomatioPipe {
         method: 'PUT',
         url: `/api/reporter/${this.runId}`,
         data: runParams,
+        timeout: getCreateRunRequestTimeout(),
         responseType: 'json',
       });
       if (resp.data.artifacts) setS3Credentials(resp.data.artifacts);
@@ -277,6 +284,7 @@ class TestomatioPipe {
         method: 'POST',
         url: '/api/reporter',
         data: runParams,
+        timeout: getCreateRunRequestTimeout(),
         maxContentLength: Infinity,
         responseType: 'json',
       });
@@ -294,14 +302,13 @@ class TestomatioPipe {
       process.env.runId = this.runId;
       debug('Run created', this.runId);
     } catch (err) {
+      if (!this.apiKey) console.error('Testomat.io API key is not set');
       const errorText = err.response?.data?.message || err.message;
       debug('Error creating run', err);
-      console.log(errorText || err);
+      console.log(APP_PREFIX, errorText || err);
       if (err.response?.status === 403) this.#disablePipe();
-      if (!this.apiKey) console.error('Testomat.io API key is not set');
-      if (!this.apiKey?.startsWith('tstmt')) console.error('Testomat.io API key is invalid');
 
-      if (process.env.DEBUG || process.env.TESTOMATIO_DEBUG) this.#logFailedResponse(err);
+      this.#logFailedResponse(err);
 
       console.error(
         APP_PREFIX,
@@ -532,8 +539,8 @@ class TestomatioPipe {
         );
       }
     } catch (err) {
-      log.info('Error updating status, skipping...', err);
-      if (process.env.DEBUG || process.env.TESTOMATIO_DEBUG) this.#logFailedResponse(err);
+      console.log(APP_PREFIX, 'Error updating status, skipping...', err);
+      this.#logFailedResponse(err);
       printCreateIssue();
     }
     debug('Run finished');
@@ -558,19 +565,26 @@ class TestomatioPipe {
     responseBody = hideTestomatioToken(responseBody);
 
     const statusCode = error.status || error.code || error.response?.status || '<unknown status code>';
-    const method = error.response?.config.method || '<unknown method>';
-    const url = error.response?.config.url || '<unknown url>';
+    const method = error.response?.config?.method || '<unknown method>';
+    const url = String(error.response?.config?.url || '<unknown url>');
 
-    let message = pc.yellow('\n⚠️ Request to Testomat.io failed:\n');
-    message += pc.bold(`${pc.red(statusCode)} ${method} ${url}\n`);
+    let message = pc.yellow('⚠️ Request to Testomat.io failed:\n');
+    message += pc.bold(`${pc.red(statusCode)} ${method} ${pc.gray(url)}\n`);
+
+    if (statusCode === 403) {
+      message += `\t${pc.red('Please check your API token. It might be invalid or expired.')}\n`;
+    }
+
     message += `\t${pc.bold('response: ')}${pc.gray(responseBody)}\n`;
 
     const requestBody = hideTestomatioToken(stringify(error.response?.config?.data));
-    if (process.env.DEBUG || process.env.TESTOMATIO_DEBUG) {
+    if (process.env.DEBUG || process.env.TESTOMATIO_DEBUG || requestBody.length < 1000) {
+      // full body
       message += `\t${pc.bold('request: ')}${pc.gray(requestBody)}\n`;
     } else {
+      // cut body
       const requestBodyCut = requestBody.slice(0, 1000);
-      message += `\t${pc.bold('request: ')}${pc.gray(`${requestBodyCut}.....`)}\n`;
+      message += `\t${pc.bold('request: ')}${pc.gray(`${requestBodyCut}...`)}\n`;
       message += '\trequest body is cut, run with TESTOMATIO_DEBUG=1 to see full body\n';
     }
 

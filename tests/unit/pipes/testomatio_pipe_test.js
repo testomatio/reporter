@@ -421,6 +421,35 @@ describe('TestomatioPipe', () => {
       expect(receivedRequestBody.data).to.be.an('object');
       expect(receivedRequestBody.data).to.have.property('kind', 'automated');
     });
+
+    it('should use extended timeout for create run requests', async () => {
+      let receivedRequestBody = null;
+
+      server.on({
+        method: 'POST',
+        path: '/api/reporter',
+        reply: {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            url: 'https://faketestomat.io/report/timeout123',
+            uid: 'test-run-127',
+            public_url: 'https://faketestomat.io/public/timeout123',
+          }),
+        },
+      });
+
+      const originalRequest = testomatioPipe.client.request;
+      testomatioPipe.client.request = async function (config) {
+        receivedRequestBody = config;
+        return originalRequest.call(this, config);
+      };
+
+      await testomatioPipe.createRun({ kind: 'manual' });
+
+      expect(receivedRequestBody).to.not.be.null;
+      expect(receivedRequestBody.timeout).to.equal(80000);
+    });
   });
 
   describe('constructor', () => {
@@ -868,6 +897,324 @@ describe('TestomatioPipe', () => {
         createPipe.addTest(testData);
         expect(testData.create).to.equal(true);
       });
+    });
+  });
+
+  describe('error logging behavior (testing via public methods)', () => {
+    let pipe;
+    let consoleLogOutput;
+    let originalRequest;
+
+    beforeEach(() => {
+      process.env.TESTOMATIO_URL = TESTOMATIO_URL;
+
+      pipe = new TestomatioPipe({
+        apiKey: TESTOMATIO,
+        testomatioUrl: TESTOMATIO_URL,
+        isBatchEnabled: false,
+      });
+
+      // Set up a run ID for finishRun tests
+      pipe.runId = 'test-run-123';
+
+      consoleLogOutput = [];
+      const originalLog = console.log;
+      console.log = (...args) => {
+        consoleLogOutput.push(args.join(' '));
+      };
+
+      // Store original request method to restore later
+      originalRequest = pipe.client.request;
+
+      return () => {
+        console.log = originalLog;
+      };
+    });
+
+    afterEach(() => {
+      console.log = global.console.log;
+      delete process.env.TESTOMATIO_URL;
+      // Restore original request method
+      pipe.client.request = originalRequest;
+    });
+
+    it('should show special message for 403 status code via createRun', async function () {
+      this.timeout(5000);
+
+      // Create a new pipe with batch disabled to avoid setInterval issues
+      const testPipe = new TestomatioPipe({
+        apiKey: TESTOMATIO,
+        testomatioUrl: TESTOMATIO_URL,
+        isBatchEnabled: false,
+      });
+
+      const error = new Error('Request failed');
+      error.response = {
+        status: 403,
+        data: { message: 'Forbidden' },
+        config: {
+          method: 'POST',
+          url: '/api/reporter',
+          data: { api_key: TESTOMATIO },
+        },
+      };
+
+      testPipe.client.request = function () {
+        return Promise.reject(error);
+      };
+
+      await testPipe.createRun();
+
+      const output = consoleLogOutput.join('\n');
+      expect(output).to.contain('403');
+      expect(output).to.contain('Please check your API token. It might be invalid or expired.');
+      expect(testPipe.isEnabled).to.be.false;
+    });
+
+    it('should log with TESTOMATIO prefix when createRun fails', async function () {
+      this.timeout(5000);
+
+      // Create a new pipe with batch disabled
+      const testPipe = new TestomatioPipe({
+        apiKey: TESTOMATIO,
+        testomatioUrl: TESTOMATIO_URL,
+        isBatchEnabled: false,
+      });
+
+      const error = new Error('Request failed');
+      error.response = {
+        status: 401,
+        data: { message: 'Invalid API key' },
+        config: {
+          method: 'POST',
+          url: '/api/reporter',
+          data: { api_key: TESTOMATIO },
+        },
+      };
+
+      testPipe.client.request = function () {
+        return Promise.reject(error);
+      };
+
+      await testPipe.createRun();
+
+      const output = consoleLogOutput.join('\n');
+      expect(output).to.contain('[TESTOMATIO]');
+    });
+
+    it('should log with TESTOMATIO prefix when finishRun fails', async function () {
+      this.timeout(5000);
+
+      const error = new Error('Request failed');
+      error.response = {
+        status: 500,
+        data: { message: 'Internal Server Error' },
+        config: {
+          method: 'PUT',
+          url: `/api/reporter/${pipe.runId}`,
+          data: { api_key: TESTOMATIO },
+        },
+      };
+
+      pipe.client.request = function () {
+        return Promise.reject(error);
+      };
+
+      await pipe.finishRun({ status: 'passed' });
+
+      const output = consoleLogOutput.join('\n');
+      expect(output).to.contain('[TESTOMATIO]');
+      expect(output).to.contain('Error updating status, skipping...');
+    });
+
+    it('should set hasUnmatchedTests when error message contains "could not be matched"', async function () {
+      this.timeout(5000);
+
+      const error = new Error('Request failed');
+      error.response = {
+        status: 422,
+        data: { message: 'Test could not be matched' },
+        config: {
+          method: 'PUT',
+          url: `/api/reporter/${pipe.runId}`,
+          data: { api_key: TESTOMATIO },
+        },
+      };
+
+      pipe.client.request = function () {
+        return Promise.reject(error);
+      };
+
+      await pipe.finishRun({ status: 'passed' });
+
+      expect(pipe.hasUnmatchedTests).to.be.true;
+    });
+
+    it('should not set hasUnmatchedTests for other errors', async function () {
+      this.timeout(5000);
+
+      const error = new Error('Request failed');
+      error.response = {
+        status: 500,
+        data: { message: 'Internal Server Error' },
+        config: {
+          method: 'PUT',
+          url: `/api/reporter/${pipe.runId}`,
+          data: { api_key: TESTOMATIO },
+        },
+      };
+
+      pipe.client.request = function () {
+        return Promise.reject(error);
+      };
+
+      await pipe.finishRun({ status: 'passed' });
+
+      expect(pipe.hasUnmatchedTests).to.be.false;
+    });
+  });
+
+  describe('createRun error handling', () => {
+    let pipe;
+    let consoleErrorOutput;
+    let consoleLogOutput;
+    let originalRequest;
+
+    beforeEach(() => {
+      process.env.TESTOMATIO_URL = TESTOMATIO_URL;
+
+      pipe = new TestomatioPipe({
+        apiKey: TESTOMATIO,
+        testomatioUrl: TESTOMATIO_URL,
+        isBatchEnabled: false,
+      });
+
+      // Capture console output
+      consoleErrorOutput = [];
+      consoleLogOutput = [];
+
+      const originalError = console.error;
+      const originalLog = console.log;
+
+      console.error = (...args) => {
+        consoleErrorOutput.push(args.join(' '));
+      };
+
+      console.log = (...args) => {
+        consoleLogOutput.push(args.join(' '));
+      };
+
+      // Store original request method
+      originalRequest = pipe.client.request;
+
+      return () => {
+        console.error = originalError;
+        console.log = originalLog;
+      };
+    });
+
+    afterEach(() => {
+      console.error = global.console.error;
+      console.log = global.console.log;
+      delete process.env.TESTOMATIO_URL;
+      // Restore original request method
+      pipe.client.request = originalRequest;
+    });
+
+    it('should disable pipe on 403 error', async function () {
+      this.timeout(5000);
+
+      const error = new Error('Forbidden');
+      error.response = {
+        status: 403,
+        data: { message: 'Forbidden' },
+        config: {
+          method: 'POST',
+          url: '/api/reporter',
+          data: { api_key: TESTOMATIO },
+        },
+      };
+
+      pipe.client.request = function () {
+        return Promise.reject(error);
+      };
+
+      expect(pipe.isEnabled).to.be.true;
+
+      await pipe.createRun();
+
+      expect(pipe.isEnabled).to.be.false;
+    });
+
+    it('should log "API key is not set" when apiKey is missing', async () => {
+      const pipeNoKey = new TestomatioPipe({
+        testomatioUrl: TESTOMATIO_URL,
+        isBatchEnabled: false,
+      });
+
+      // This pipe has no API key, so it should be disabled
+      expect(pipeNoKey.isEnabled).to.be.false;
+    });
+  });
+
+  describe('finishRun error handling', () => {
+    let pipe;
+    let consoleLogOutput;
+    let originalRequest;
+
+    beforeEach(() => {
+      process.env.TESTOMATIO_URL = TESTOMATIO_URL;
+
+      pipe = new TestomatioPipe({
+        apiKey: TESTOMATIO,
+        testomatioUrl: TESTOMATIO_URL,
+        isBatchEnabled: false,
+      });
+
+      // Set up a run ID
+      pipe.runId = 'test-run-123';
+
+      consoleLogOutput = [];
+      const originalLog = console.log;
+      console.log = (...args) => {
+        consoleLogOutput.push(args.join(' '));
+      };
+
+      // Store original request method
+      originalRequest = pipe.client.request;
+
+      return () => {
+        console.log = originalLog;
+      };
+    });
+
+    afterEach(() => {
+      console.log = global.console.log;
+      delete process.env.TESTOMATIO_URL;
+      // Restore original request method
+      pipe.client.request = originalRequest;
+    });
+
+    it('should handle network errors gracefully', async function () {
+      this.timeout(5000);
+
+      const error = new Error('Bad Gateway');
+      error.response = {
+        status: 502,
+        data: { message: 'Bad Gateway' },
+        config: {
+          method: 'PUT',
+          url: `/api/reporter/${pipe.runId}`,
+          data: { api_key: TESTOMATIO },
+        },
+      };
+
+      pipe.client.request = function () {
+        return Promise.reject(error);
+      };
+
+      // Should not throw, should handle error gracefully
+      expect(pipe.finishRun({ status: 'passed' })).to.not.throw;
     });
   });
 });

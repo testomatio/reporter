@@ -51,6 +51,18 @@ npx report-xml "{pattern}" --lang={lang}
 
 Testomat.io reporter can extract additional information from XML test output, including file attachments and test IDs. This is done by parsing specific patterns in the test output sections of JUnit XML reports.
 
+### Troubleshooting Entity Expansion Limits
+
+Some XML reports define and reuse many XML entities in a `DOCTYPE` block. To protect the import process from unsafe or accidentally oversized XML, the reporter limits entity expansion during parsing.
+
+If XML import fails with `Entity expansion limit exceeded`, and the report comes from a trusted test runner, increase the limit with `TESTOMATIO_MAX_ENTITY_EXPANSIONS`:
+
+```
+TESTOMATIO_MAX_ENTITY_EXPANSIONS=20000 npx report-xml "{pattern}" --lang={lang}
+```
+
+The default limit is `10000` entity expansions. Raise it only for trusted XML reports.
+
 ### File Attachments
 
 The reporter automatically detects and uploads files referenced in test output using the `file://` URL pattern. This works across different platforms and supports various file URL formats:

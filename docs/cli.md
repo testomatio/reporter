@@ -249,7 +249,7 @@ npx @testomatio/reporter replay [debug-file] [options]
 
 **Arguments:**
 
-- `debug-file` (optional) - Path to debug file. Defaults to latest created debug file, i.e. `/tmp/testomatio.debug.latest.json`
+- `debug-file` (optional) - Path to debug file. Defaults to `./testomatio.debug.json`.
 
 **Options:**
 

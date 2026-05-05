@@ -714,7 +714,7 @@ function aggregateTestRetries(tests) {
   return aggregated;
 }
 
-const SENSITIVE_PATTERNS = [/TOKEN/, /SECRET/, /PASSWORD/, /KEY$/, /^TESTOMATIO$/];
+const SENSITIVE_PATTERNS = [/TOKEN/, /SECRET/, /PASSWORD/, /KEY/, /^TESTOMATIO$/];
 
 function isSensitiveVarName(name) {
   return SENSITIVE_PATTERNS.some(re => re.test(name));

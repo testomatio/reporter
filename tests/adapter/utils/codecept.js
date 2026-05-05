@@ -9,7 +9,9 @@ const execAsync = promisify(exec);
 export class CodeceptTestRunner {
   constructor() {
     this.exampleDir = path.join(process.cwd(), 'example', 'codecept');
-    this.debugFilePath = path.join(os.tmpdir(), 'testomatio.debug.latest.json');
+    // Debug symlink is created in the cwd of the spawned codeceptjs process (exampleDir),
+    // not in the test runner's cwd.
+    this.debugFilePath = path.join(this.exampleDir, 'testomatio.debug.json');
   }
 
   cleanupDebugFiles() {
@@ -19,6 +21,14 @@ export class CodeceptTestRunner {
         fs.unlinkSync(path.join(os.tmpdir(), f));
       } catch (e) {}
     });
+    // Also remove symlink if it exists. Use lstatSync — existsSync follows the
+    // link and returns false for dangling symlinks, which would leave them in place.
+    try {
+      fs.lstatSync(this.debugFilePath);
+      fs.unlinkSync(this.debugFilePath);
+    } catch (e) {
+      if (e.code !== 'ENOENT') throw e;
+    }
   }
 
   async run(testConfig = {}, extraEnv = {}) {
@@ -51,20 +61,12 @@ export class CodeceptTestRunner {
     }
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    // Find the most recent debug file instead of relying on symlink
-    const tmpFiles = fs
-      .readdirSync(os.tmpdir())
-      .filter(f => f.startsWith('testomatio.debug.') && f.endsWith('.json') && !f.includes('latest'))
-      .map(f => ({
-        name: f,
-        path: path.join(os.tmpdir(), f),
-        mtime: fs.statSync(path.join(os.tmpdir(), f)).mtime.getTime(),
-      }))
-      .sort((a, b) => b.mtime - a.mtime);
+    // Use the symlink to the latest debug file
+    const debugFilePath = this.debugFilePath;
+    if (!fs.existsSync(debugFilePath)) {
+      throw new Error('Debug file not found');
+    }
 
-    if (tmpFiles.length === 0) throw new Error('Debug file not found');
-
-    const debugFilePath = tmpFiles[0].path;
     const debugContent = fs.readFileSync(debugFilePath, 'utf-8');
     const debugData = debugContent
       .trim()
@@ -101,26 +103,19 @@ export class CodeceptTestRunner {
       stderr = error.stderr || '';
     }
     await new Promise(resolve => setTimeout(resolve, 1000));
-    const debugFiles = fs
-      .readdirSync(os.tmpdir())
-      .filter(f => f.startsWith('testomatio.debug.') && f.endsWith('.json'))
-      .map(f => path.join(os.tmpdir(), f))
-      .filter(f => fs.existsSync(f));
-    if (debugFiles.length === 0) {
+
+    // Use the symlink to the latest debug file
+    const debugFilePath = this.debugFilePath;
+    if (!fs.existsSync(debugFilePath)) {
       throw new Error('Debug file not found');
     }
-    let debugData = [];
-    for (const debugFile of debugFiles) {
-      try {
-        const debugContent = fs.readFileSync(debugFile, 'utf-8');
-        const fileData = debugContent
-          .trim()
-          .split('\n')
-          .filter(line => line.trim())
-          .map(line => JSON.parse(line));
-        debugData.push(...fileData);
-      } catch (e) {}
-    }
+
+    const debugContent = fs.readFileSync(debugFilePath, 'utf-8');
+    const debugData = debugContent
+      .trim()
+      .split('\n')
+      .filter(line => line.trim())
+      .map(line => JSON.parse(line));
     const testEntries = debugData.filter(entry => entry.action === 'addTest');
     return { stdout, stderr, debugData, testEntries };
   }

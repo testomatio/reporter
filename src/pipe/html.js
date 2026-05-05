@@ -906,7 +906,7 @@ function dropISayEcho(lines) {
   return out;
 }
 
-const SENSITIVE_ENV_PATTERNS = [/TOKEN/, /SECRET/, /PASSWORD/, /KEY$/, /^TESTOMATIO$/];
+const SENSITIVE_ENV_PATTERNS = [/TOKEN/, /SECRET/, /PASSWORD/, /KEY/, /^TESTOMATIO$/];
 
 function isSensitiveEnvName(name) {
   return SENSITIVE_ENV_PATTERNS.some(re => re.test(name));

@@ -8,7 +8,7 @@ const TESTOMATIO_REQUEST_TIMEOUT = parseInt(process.env.TESTOMATIO_REQUEST_TIMEO
 if (TESTOMATIO_REQUEST_TIMEOUT) {
   console.log(`${APP_PREFIX} Request timeout is set to ${TESTOMATIO_REQUEST_TIMEOUT / 1000}s`);
 }
-const AXIOS_TIMEOUT = TESTOMATIO_REQUEST_TIMEOUT || 20 * 1000;
+const REQUEST_TIMEOUT = TESTOMATIO_REQUEST_TIMEOUT || 20 * 1000;
 const SCREENSHOTS_ON_STEPS = process.env.TESTOMATIO_SCREENSHOTS_ON_STEPS == null
   || transformEnvVarToBoolean(process.env.TESTOMATIO_SCREENSHOTS_ON_STEPS);
 
@@ -50,6 +50,12 @@ const REPORTER_REQUEST_RETRIES = {
   withinTimeSeconds: Number(process.env.TESTOMATIO_MAX_REQUEST_RETRIES_WITHIN_TIME_SECONDS) || 60,
 };
 
+const DEBUG_FILE = 'testomatio.debug';
+
+function getCreateRunRequestTimeout() {
+  return Math.max(REQUEST_TIMEOUT, 80 * 1000);
+}
+
 export {
   APP_PREFIX,
   TESTOMAT_TMP_STORAGE_DIR,
@@ -57,8 +63,10 @@ export {
   STATUS,
   HTML_REPORT,
   MARKDOWN_REPORT,
-  AXIOS_TIMEOUT,
+  REQUEST_TIMEOUT,
+  getCreateRunRequestTimeout,
   testomatLogoURL,
   REPORTER_REQUEST_RETRIES,
   SCREENSHOTS_ON_STEPS,
+  DEBUG_FILE,
 };
