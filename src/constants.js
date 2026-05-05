@@ -35,6 +35,12 @@ const HTML_REPORT = {
   TEMPLATE_NAME: 'testomatio.hbs',
 };
 
+// markdown pipe var
+const MARKDOWN_REPORT = {
+  FOLDER: 'md-report',
+  REPORT_DEFAULT_NAME: 'testomatio-report.md',
+};
+
 const testomatLogoURL = 'https://avatars.githubusercontent.com/u/59105116?s=36&v=4';
 
 const REPORTER_REQUEST_RETRIES = {
@@ -56,6 +62,7 @@ export {
   CSV_HEADERS,
   STATUS,
   HTML_REPORT,
+  MARKDOWN_REPORT,
   REQUEST_TIMEOUT,
   getCreateRunRequestTimeout,
   testomatLogoURL,
