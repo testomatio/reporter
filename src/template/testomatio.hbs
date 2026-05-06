@@ -227,6 +227,62 @@
             color: var(--gray-600);
         }
 
+        .configuration-section {
+            padding: 16px 30px 0;
+            background: var(--gray-50);
+        }
+
+        .configuration-card {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            padding: 20px 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        }
+
+        .configuration-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin: 0 0 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .configuration-title i { color: var(--gray-500); }
+
+        .configuration-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .configuration-table th,
+        .configuration-table td {
+            padding: 6px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .configuration-table tr:last-child th,
+        .configuration-table tr:last-child td { border-bottom: 0; }
+
+        .configuration-table th {
+            font-weight: 600;
+            color: var(--gray-600);
+            width: 30%;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 12.5px;
+        }
+
+        .configuration-table td {
+            color: var(--gray-800);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 12.5px;
+            word-break: break-word;
+        }
+
         .stats-section {
             padding: 30px;
             background: var(--gray-50);
@@ -2150,6 +2206,27 @@
                         Description
                     </h2>
                     <div class='description-body markdown-body'>{{markdown description}}</div>
+                </div>
+            </section>
+        {{/if}}
+
+        {{#if configuration}}
+            <section class='configuration-section'>
+                <div class='configuration-card'>
+                    <h2 class='configuration-title'>
+                        <i class='fas fa-sliders-h'></i>
+                        Configuration
+                    </h2>
+                    <table class='configuration-table'>
+                        <tbody>
+                            {{#each configuration}}
+                                <tr>
+                                    <th>{{this.key}}</th>
+                                    <td>{{this.value}}</td>
+                                </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
                 </div>
             </section>
         {{/if}}

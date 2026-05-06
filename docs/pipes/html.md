@@ -32,6 +32,8 @@ The HTML report includes essential information, such as run ID, status, parallel
 
 If a run-level description is provided (e.g. by the Coverage pipe via `coverageDescription`, or `runParams.description`), it is rendered as Markdown in a Description block below the header.
 
+If `client.createRun({ configuration: { ... } })` is called with a key/value object, the report renders it as a Configuration table beneath the description.
+
 #### Example Command
 
 📊 Generate a report without triggering the TESTOMATIO pipe (no data sent to the client)

@@ -29,6 +29,7 @@ The Markdown report includes:
 - **Summary table** — totals for passed / failed / skipped / todo / flaky.
 - **Run Metadata table** — status, run id, run URL, start time, duration, parallel flag.
 - **Description** — Markdown content rendered when a description is set on the shared pipe store (e.g. by the Coverage pipe via `coverageDescription`, or via `runParams.description`).
+- **Configuration** — when `client.createRun({ configuration: { ... } })` is called with a key/value object, the pipe renders it as a small table (e.g. `exploratory`, `browser`, `shard`).
 - **Tests, grouped by suite** — each test renders as:
   - a meta table (Status, Retries, Duration, Test ID),
   - **Steps** as a bullet list (parsed from CodeceptJS-style `<br>`-joined strings or nested step trees),

@@ -224,6 +224,28 @@ describe('Markdown report tests', () => {
     expect(mdContent).to.not.include('## Description');
   });
 
+  it('renders run configuration as a Configuration section', async () => {
+    process.env.TESTOMATIO_MARKDOWN_REPORT_SAVE = '1';
+    const pipe = new MarkdownPipe({ title: 'With Config' }, {});
+    await pipe.createRun({ configuration: { exploratory: true, browser: 'chromium', shard: 2 } });
+    const out = path.resolve(testOutputDir, 'with-configuration.md');
+    pipe.buildReport({
+      runParams: { status: 'passed' },
+      tests: DATA.tests.slice(0, 1),
+      outputPath: out,
+      warningMsg: '',
+    });
+    const content = fs.readFileSync(out, 'utf-8');
+    expect(content).to.include('## Configuration');
+    expect(content).to.match(/\|\s*`browser`\s*\|\s*chromium\s*\|/);
+    expect(content).to.match(/\|\s*`exploratory`\s*\|\s*true\s*\|/);
+    expect(content).to.match(/\|\s*`shard`\s*\|\s*2\s*\|/);
+  });
+
+  it('omits the Configuration section when no configuration is provided', () => {
+    expect(mdContent).to.not.include('## Configuration');
+  });
+
   it('toString returns the pipe label', () => {
     const pipe = new MarkdownPipe({}, {});
     expect(pipe.toString()).to.equal('Markdown Reporter');

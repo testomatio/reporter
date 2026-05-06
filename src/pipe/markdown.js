@@ -24,6 +24,7 @@ class MarkdownPipe {
     this.markdownOutputPath = '';
     this.filenameMsg = '';
     this.tests = [];
+    this.configuration = null;
 
     if (!this.isMarkdown) return;
 
@@ -52,8 +53,10 @@ class MarkdownPipe {
     );
   }
 
-  async createRun() {
-    // empty
+  async createRun(params = {}) {
+    if (params?.configuration && typeof params.configuration === 'object') {
+      this.configuration = { ...(this.configuration || {}), ...params.configuration };
+    }
   }
 
   async prepareRun() {}
@@ -132,6 +135,7 @@ class MarkdownPipe {
       executionTime: testExecutionSumTime(aggregated),
       executionDate: getCurrentDateTimeFormatted(),
       description: runParams?.description || this.store.coverageDescription || this.store.description || '',
+      configuration: this.configuration || this.store.configuration || runParams?.configuration || null,
       tests: aggregated,
       stats,
     };
@@ -164,6 +168,7 @@ function renderDocument(data) {
   sections.push(renderHeader(data));
   sections.push(renderRunMetadata(data));
   sections.push(renderDescription(data.description));
+  sections.push(renderConfiguration(data.configuration));
   sections.push(renderTests(data.tests));
   return sections.filter(Boolean).join('\n\n') + '\n';
 }
@@ -173,6 +178,31 @@ function renderDescription(description) {
   const trimmed = description.trim();
   if (!trimmed) return '';
   return `## Description\n\n${trimmed}`;
+}
+
+function renderConfiguration(configuration) {
+  if (!configuration || typeof configuration !== 'object') return '';
+  const entries = Object.entries(configuration).filter(([k]) => k !== 'tests' && k !== 'suites');
+  if (!entries.length) return '';
+
+  entries.sort((a, b) => a[0].localeCompare(b[0]));
+
+  const lines = ['## Configuration', '', '| Key | Value |', '| --- | ----- |'];
+  for (const [k, v] of entries) {
+    lines.push(`| \`${k}\` | ${formatConfigValue(v)} |`);
+  }
+  return lines.join('\n');
+}
+
+function formatConfigValue(value) {
+  if (value == null) return '';
+  if (typeof value === 'boolean' || typeof value === 'number') return String(value);
+  if (typeof value === 'string') return mdInline(value).replace(/\|/g, '\\|');
+  try {
+    return `\`${JSON.stringify(value)}\``;
+  } catch (_) {
+    return String(value);
+  }
 }
 
 function renderHeader(data) {

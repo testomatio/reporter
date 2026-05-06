@@ -488,6 +488,40 @@ describe('HTML report tests', () => {
     const section = dom.window.document.querySelector('section.description-section');
     expect(section).to.equal(null);
   });
+
+  it('renders run configuration as a key/value table', async () => {
+    process.env.TESTOMATIO_HTML_REPORT_SAVE = '1';
+    const template = path.resolve(dirname, '../../..', 'src', 'template', 'testomatio.hbs');
+    const out = path.resolve(testOutputDir, 'with-configuration.html');
+    const pipe = new HtmlPipe({}, {});
+    await pipe.createRun({ configuration: { exploratory: true, browser: 'chromium', shard: 2 } });
+    pipe.buildReport({
+      runParams: { status: 'passed' },
+      tests: DATA.tests.slice(0, 1),
+      outputPath: out,
+      templatePath: template,
+      warningMsg: '',
+    });
+    const html = fs.readFileSync(out, 'utf-8');
+    const dom = new JSDOM(html);
+    const document = dom.window.document;
+    const section = document.querySelector('section.configuration-section');
+    expect(section).to.exist;
+    const rows = Array.from(section.querySelectorAll('.configuration-table tr')).map(tr => [
+      tr.querySelector('th').textContent.trim(),
+      tr.querySelector('td').textContent.trim(),
+    ]);
+    expect(rows).to.deep.include(['browser', 'chromium']);
+    expect(rows).to.deep.include(['exploratory', 'true']);
+    expect(rows).to.deep.include(['shard', '2']);
+  });
+
+  it('omits the Configuration section when no configuration is present', () => {
+    const htmlContent = fs.readFileSync(filepath, 'utf-8');
+    const dom = new JSDOM(htmlContent);
+    const section = dom.window.document.querySelector('section.configuration-section');
+    expect(section).to.equal(null);
+  });
 });
 
 function getCurrentDate() {

@@ -28,6 +28,7 @@ class HtmlPipe {
     this.htmlOutputPath = '';
     this.filenameMsg = '';
     this.tests = [];
+    this.configuration = null;
 
     if (this.isHtml) {
       this.isEnabled = true;
@@ -62,8 +63,10 @@ class HtmlPipe {
     }
   }
 
-  async createRun() {
-    // empty
+  async createRun(params = {}) {
+    if (params?.configuration && typeof params.configuration === 'object') {
+      this.configuration = { ...(this.configuration || {}), ...params.configuration };
+    }
   }
 
   async prepareRun() {}
@@ -252,6 +255,7 @@ class HtmlPipe {
       executionTime: testExecutionSumTime(aggregatedTests),
       executionDate: getCurrentDateTimeFormatted(),
       description: runParams.description || this.store.coverageDescription || this.store.description || '',
+      configuration: buildDisplayConfiguration(this.configuration || this.store.configuration || runParams.configuration || null),
       tests: aggregatedTests,
       envVars: collectEnvironmentVariables(),
     };
@@ -1114,6 +1118,26 @@ function loadTracesFromFiles(test) {
         test.traces = traceDataList;
       }
     }
+  }
+}
+
+function buildDisplayConfiguration(configuration) {
+  if (!configuration || typeof configuration !== 'object') return null;
+  const entries = Object.entries(configuration).filter(([k]) => k !== 'tests' && k !== 'suites');
+  if (!entries.length) return null;
+  entries.sort((a, b) => a[0].localeCompare(b[0]));
+  return entries.map(([key, value]) => ({ key, value: formatConfigDisplayValue(value) }));
+}
+
+function formatConfigDisplayValue(value) {
+  if (value == null) return '';
+  if (typeof value === 'boolean' || typeof value === 'number' || typeof value === 'string') {
+    return String(value);
+  }
+  try {
+    return JSON.stringify(value);
+  } catch (_) {
+    return String(value);
   }
 }
 
