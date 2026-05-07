@@ -99,14 +99,20 @@ describe('Markdown report tests', () => {
   const testOutputDir = path.resolve(process.cwd(), 'mdOutput');
   let filepath = '';
   let mdContent = '';
+  let envSnapshot;
 
   before(() => {
+    envSnapshot = { ...process.env };
     if (!fs.existsSync(testOutputDir)) {
       fs.mkdirSync(testOutputDir);
     }
   });
 
   after(async () => {
+    // Restore env so leaked TESTOMATIO_* vars from these tests don't pollute
+    // sibling pipe tests (e.g. testomatio_pipe_test.js, which talks to a mock
+    // server and breaks if TESTOMATIO_RUN looks like an existing run id).
+    process.env = envSnapshot;
     try {
       await fs.promises.rm(testOutputDir, { recursive: true });
     } catch (err) {

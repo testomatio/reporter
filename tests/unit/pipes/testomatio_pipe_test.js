@@ -38,6 +38,9 @@ describe('TestomatioPipe', () => {
 
   afterEach(() => {
     process.env = originalEnv;
+    // Clear mock-http-server handlers between tests so registrations from one
+    // test don't leak into the next (otherwise stale handlers match later requests).
+    server.reset();
   });
 
   describe('pipe utils functions', () => {
