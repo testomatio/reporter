@@ -255,7 +255,9 @@ class HtmlPipe {
       executionTime: testExecutionSumTime(aggregatedTests),
       executionDate: getCurrentDateTimeFormatted(),
       description: runParams.description || this.store.coverageDescription || this.store.description || '',
-      configuration: buildDisplayConfiguration(this.configuration || this.store.configuration || runParams.configuration || null),
+      configuration: buildDisplayConfiguration(
+        this.configuration || this.store.configuration || runParams.configuration || null,
+      ),
       tests: aggregatedTests,
       envVars: collectEnvironmentVariables(),
     };
