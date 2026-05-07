@@ -314,7 +314,7 @@ class HtmlPipe {
 
     handlebars.registerHelper('markdown', value => {
       if (typeof value !== 'string' || !value.trim()) return '';
-      return new handlebars.SafeString(marked.parse(value));
+      return new handlebars.SafeString(marked.parse(value, { async: false }));
     });
 
     handlebars.registerHelper('formatDuration', milliseconds => {
