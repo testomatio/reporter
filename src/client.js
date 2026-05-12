@@ -245,9 +245,10 @@ class Client {
     let { files = [], manuallyAttachedArtifacts, message = '', meta = {} } = testData;
 
     if (stepArtifactPaths.size) {
-      files = files.filter(f => !isStepArtifact(f, stepArtifactPaths));
+      const isStepArtifact = item => stepArtifactPaths.has(typeof item === 'object' ? item?.path : item);
+      files = files.filter(f => !isStepArtifact(f));
       if (Array.isArray(manuallyAttachedArtifacts)) {
-        manuallyAttachedArtifacts = manuallyAttachedArtifacts.filter(a => !isStepArtifact(a, stepArtifactPaths));
+        manuallyAttachedArtifacts = manuallyAttachedArtifacts.filter(a => !isStepArtifact(a));
       }
     }
 
@@ -464,36 +465,22 @@ class Client {
  * referenced by `step.artifacts` at any depth.
  *
  * @param {any} steps
+ * @param {Set<string>} [paths]
  * @returns {Set<string>}
  */
-function collectStepArtifactPaths(steps) {
-  const paths = new Set();
+function collectStepArtifactPaths(steps, paths = new Set()) {
   if (!Array.isArray(steps)) return paths;
-  const walk = arr => {
-    for (const step of arr) {
-      if (!step) continue;
-      if (Array.isArray(step.artifacts)) {
-        for (const a of step.artifacts) {
-          if (typeof a === 'string') paths.add(a);
-          else if (a && typeof a === 'object' && typeof a.path === 'string') paths.add(a.path);
-        }
+  for (const step of steps) {
+    if (!step) continue;
+    if (Array.isArray(step.artifacts)) {
+      for (const a of step.artifacts) {
+        if (typeof a === 'string') paths.add(a);
+        else if (a && typeof a === 'object' && typeof a.path === 'string') paths.add(a.path);
       }
-      if (Array.isArray(step.steps)) walk(step.steps);
     }
-  };
-  walk(steps);
+    collectStepArtifactPaths(step.steps, paths);
+  }
   return paths;
-}
-
-/**
- * @param {string|{path?: string}|null|undefined} item
- * @param {Set<string>} paths
- * @returns {boolean}
- */
-function isStepArtifact(item, paths) {
-  if (!item) return false;
-  const p = typeof item === 'object' ? item.path : item;
-  return typeof p === 'string' && paths.has(p);
 }
 
 /**
