@@ -220,7 +220,7 @@ describe('Markdown report tests', () => {
       warningMsg: '',
     });
     const content = fs.readFileSync(out, 'utf-8');
-    expect(content).to.include('**Meta**');
+    expect(content).to.include('##### Meta');
     expect(content).to.include('- `author`: davert');
     expect(content).to.include('- `epic`: auth');
     expect(content).to.include('- `priority`: high');
@@ -230,7 +230,7 @@ describe('Markdown report tests', () => {
   });
 
   it('omits the Meta section when test.meta has no user-defined keys', () => {
-    expect(mdContent).to.not.include('**Meta**');
+    expect(mdContent).to.not.include('##### Meta');
   });
 
   it('shows env variables in a Testomatio details block', () => {

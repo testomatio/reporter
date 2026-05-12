@@ -351,7 +351,7 @@ function renderTestMeta(test) {
   entries.sort((a, b) => a[0].localeCompare(b[0]));
 
   const bullets = entries.map(([k, v]) => `- \`${k}\`: ${formatMetaValue(v)}`);
-  return `**Meta**\n\n${bullets.join('\n')}`;
+  return `##### Meta\n\n${bullets.join('\n')}`;
 }
 
 function formatMetaValue(value) {
