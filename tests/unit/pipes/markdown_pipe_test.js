@@ -99,14 +99,20 @@ describe('Markdown report tests', () => {
   const testOutputDir = path.resolve(process.cwd(), 'mdOutput');
   let filepath = '';
   let mdContent = '';
+  let envSnapshot;
 
   before(() => {
+    envSnapshot = { ...process.env };
     if (!fs.existsSync(testOutputDir)) {
       fs.mkdirSync(testOutputDir);
     }
   });
 
   after(async () => {
+    // Restore env so leaked TESTOMATIO_* vars from these tests don't pollute
+    // sibling pipe tests (e.g. testomatio_pipe_test.js, which talks to a mock
+    // server and breaks if TESTOMATIO_RUN looks like an existing run id).
+    process.env = envSnapshot;
     try {
       await fs.promises.rm(testOutputDir, { recursive: true });
     } catch (err) {
@@ -143,10 +149,12 @@ describe('Markdown report tests', () => {
     expect(mdContent).to.match(/\|\s*4\s*\|\s*1\s*\|\s*1\s*\|\s*1\s*\|\s*1\s*\|\s*0\s*\|/);
   });
 
-  it('contains a Run Metadata table with run id and URL', () => {
-    expect(mdContent).to.include('## Run Metadata');
-    expect(mdContent).to.include('| Run ID | `51eb2798` |');
-    expect(mdContent).to.include(`<${DATA.runUrl}>`);
+  it('renders run info as bullets under the Summary section (no Key | Value table)', () => {
+    expect(mdContent).to.not.include('## Run Metadata');
+    expect(mdContent).to.not.include('| Key | Value |');
+    expect(mdContent).to.include('- **Run ID:** `51eb2798`');
+    expect(mdContent).to.include(`- **Run URL:** <${DATA.runUrl}>`);
+    expect(mdContent).to.include('- **Status:** failed');
   });
 
   it('groups tests under suite headings', () => {
@@ -183,6 +191,46 @@ describe('Markdown report tests', () => {
   it('marks pending+todo test as todo in the stats and per-test status', () => {
     const todoSection = mdContent.split('Todo test implementation')[1] || '';
     expect(todoSection).to.include('- **Status:** todo');
+  });
+
+  it('renders test.meta as a Meta bullet list with user-defined keys only', () => {
+    process.env.TESTOMATIO_MARKDOWN_REPORT_SAVE = '1';
+    const pipe = new MarkdownPipe({ title: 'With Meta' }, {});
+    const out = path.resolve(testOutputDir, 'with-meta.md');
+    pipe.buildReport({
+      runParams: { status: 'passed' },
+      tests: [
+        {
+          title: 'test with meta',
+          suite_title: 'Suite With Meta',
+          status: 'passed',
+          run_time: 10,
+          meta: {
+            author: 'davert',
+            epic: 'auth',
+            priority: 'high',
+            // these should be filtered out:
+            attachments: ['x.png'],
+            retryCount: 0,
+            todo: false,
+          },
+        },
+      ],
+      outputPath: out,
+      warningMsg: '',
+    });
+    const content = fs.readFileSync(out, 'utf-8');
+    expect(content).to.include('**Meta**');
+    expect(content).to.include('- `author`: davert');
+    expect(content).to.include('- `epic`: auth');
+    expect(content).to.include('- `priority`: high');
+    expect(content).to.not.match(/- `attachments`:/);
+    expect(content).to.not.match(/- `retryCount`:/);
+    expect(content).to.not.match(/- `todo`:/);
+  });
+
+  it('omits the Meta section when test.meta has no user-defined keys', () => {
+    expect(mdContent).to.not.include('**Meta**');
   });
 
   it('shows env variables in a Testomatio details block', () => {

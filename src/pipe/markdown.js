@@ -162,7 +162,6 @@ class MarkdownPipe {
 function renderDocument(data) {
   const sections = [];
   sections.push(renderHeader(data));
-  sections.push(renderRunMetadata(data));
   sections.push(renderEnvSection(data.envVars));
   sections.push(renderTests(data.tests));
   return sections.filter(Boolean).join('\n\n') + '\n';
@@ -181,34 +180,25 @@ function renderHeader(data) {
     `| ${s.total} | ${s.passed} | ${s.failed} | ${s.skipped} | ${s.todo} | ${s.flaky} |`,
   ].join('\n');
 
-  return `${headline}\n\n${summaryTable}`;
+  const runInfo = renderRunInfoBullets(data);
+
+  return `${headline}\n\n${summaryTable}\n\n${runInfo}`;
 }
 
-function renderRunMetadata(data) {
-  const rows = [];
-
-  rows.push(['Status', mdInline(data.status || 'unknown')]);
-
-  if (data.runId) {
-    rows.push(['Run ID', `\`${mdInline(data.runId)}\``]);
-  }
-  if (data.runUrl) {
-    rows.push(['Run URL', `<${data.runUrl}>`]);
-  }
-
-  rows.push(['Started', mdInline(data.executionDate)]);
-  rows.push(['Duration', `\`${mdInline(data.executionTime)}\``]);
+function renderRunInfoBullets(data) {
+  const bullets = [];
+  bullets.push(`- **Status:** ${mdInline(data.status || 'unknown')}`);
+  if (data.runId) bullets.push(`- **Run ID:** \`${mdInline(data.runId)}\``);
+  if (data.runUrl) bullets.push(`- **Run URL:** <${data.runUrl}>`);
+  bullets.push(`- **Started:** ${mdInline(data.executionDate)}`);
+  bullets.push(`- **Duration:** \`${mdInline(data.executionTime)}\``);
 
   let parallelLabel = 'No parallel info';
   if (data.isParallel === true) parallelLabel = 'true';
   else if (data.isParallel === false) parallelLabel = 'false';
-  rows.push(['Parallel', parallelLabel]);
+  bullets.push(`- **Parallel:** ${parallelLabel}`);
 
-  const lines = ['## Run Metadata', '', '| Key | Value |', '| --- | ----- |'];
-  for (const [k, v] of rows) {
-    lines.push(`| ${k} | ${v} |`);
-  }
-  return lines.join('\n');
+  return bullets.join('\n');
 }
 
 function renderEnvSection(envVars) {
@@ -304,6 +294,9 @@ function renderTest(test) {
   }
   lines.push(meta.join('\n'));
 
+  const metaBlock = renderTestMeta(test);
+  if (metaBlock) lines.push(metaBlock);
+
   const stepsBlock = renderSteps(test);
   if (stepsBlock) lines.push(stepsBlock);
 
@@ -320,6 +313,55 @@ function renderTest(test) {
   if (artifactsBlock) lines.push(artifactsBlock);
 
   return lines.join('\n\n');
+}
+
+// Keys on test.meta that aren't user-defined metadata (carry reporter internals
+// or are surfaced elsewhere in the report). Excluded from the **Meta** section.
+const META_INTERNAL_KEYS = new Set([
+  'attachments',
+  'logs',
+  'console',
+  'stdout',
+  'stderr',
+  'traces',
+  'todo',
+  'retryCount',
+  'flaky',
+  'isFlaky',
+  'rid',
+  'RID',
+  'runRid',
+  'testRid',
+]);
+
+function renderTestMeta(test) {
+  const meta = test?.meta;
+  if (!meta || typeof meta !== 'object') return '';
+
+  const entries = Object.entries(meta).filter(([k, v]) => {
+    if (META_INTERNAL_KEYS.has(k)) return false;
+    if (v === null || v === undefined) return false;
+    if (typeof v === 'string' && !v.trim()) return false;
+    if (Array.isArray(v) && v.length === 0) return false;
+    return true;
+  });
+
+  if (!entries.length) return '';
+
+  entries.sort((a, b) => a[0].localeCompare(b[0]));
+
+  const bullets = entries.map(([k, v]) => `- \`${k}\`: ${formatMetaValue(v)}`);
+  return `**Meta**\n\n${bullets.join('\n')}`;
+}
+
+function formatMetaValue(value) {
+  if (typeof value === 'boolean' || typeof value === 'number') return String(value);
+  if (typeof value === 'string') return mdInline(value);
+  try {
+    return `\`${JSON.stringify(value)}\``;
+  } catch (_) {
+    return String(value);
+  }
 }
 
 function renderSteps(test) {
