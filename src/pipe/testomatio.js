@@ -194,7 +194,7 @@ class TestomatioPipe {
 
   /**
    * Creates a new run on Testomat.io
-   * @param {{isBatchEnabled?: boolean, kind?: string}} params
+   * @param {{isBatchEnabled?: boolean, kind?: string, configuration?: Record<string, any>}} params
    * @returns Promise<void>
    */
   async createRun(params = {}) {
@@ -235,6 +235,15 @@ class TestomatioPipe {
         tests: coverageConfiguration.tests?.map(id => id.replace(/^T/, '')) || [],
         suites: coverageConfiguration.suites?.map(id => id.replace(/^S/, '')) || [],
       };
+    }
+
+    // Merge caller-supplied configuration (e.g. { exploratory: true }) into runParams.configuration.
+    // Caller values win on key conflict; coverage-derived tests/suites lists are preserved when not overridden.
+    if (params.configuration && typeof params.configuration === 'object') {
+      configuration = { ...(configuration || {}), ...params.configuration };
+      if (this.store) {
+        this.store.configuration = { ...(this.store.configuration || {}), ...params.configuration };
+      }
     }
     const runParams = Object.fromEntries(
       Object.entries({

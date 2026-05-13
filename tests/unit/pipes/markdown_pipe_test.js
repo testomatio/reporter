@@ -99,14 +99,20 @@ describe('Markdown report tests', () => {
   const testOutputDir = path.resolve(process.cwd(), 'mdOutput');
   let filepath = '';
   let mdContent = '';
+  let envSnapshot;
 
   before(() => {
+    envSnapshot = { ...process.env };
     if (!fs.existsSync(testOutputDir)) {
       fs.mkdirSync(testOutputDir);
     }
   });
 
   after(async () => {
+    // Restore env so leaked TESTOMATIO_* vars from these tests don't pollute
+    // sibling pipe tests (e.g. testomatio_pipe_test.js, which talks to a mock
+    // server and breaks if TESTOMATIO_RUN looks like an existing run id).
+    process.env = envSnapshot;
     try {
       await fs.promises.rm(testOutputDir, { recursive: true });
     } catch (err) {
@@ -182,33 +188,68 @@ describe('Markdown report tests', () => {
 
   it('marks pending+todo test as todo in the stats and per-test status', () => {
     const todoSection = mdContent.split('Todo test implementation')[1] || '';
-    expect(todoSection).to.include('- **Status:** todo');
+    expect(todoSection).to.include('| Status | todo |');
   });
 
-  it('shows env variables in a Testomatio details block', () => {
-    expect(mdContent).to.include('## Environment');
-    expect(mdContent).to.include('<details>');
-    expect(mdContent).to.include('Testomat.io variables');
-    expect(mdContent).to.include('| `TESTOMATIO_RUN` | abc-run-id |');
+  it('renders per-test meta as a table', () => {
+    expect(mdContent).to.include('| Status | failed |');
+    expect(mdContent).to.include('| Test ID | `5b8d1186` |');
   });
 
-  it('masks sensitive env variables', () => {
+  it('does not include an Environment section', () => {
+    expect(mdContent).to.not.include('## Environment');
+    expect(mdContent).to.not.include('Testomat.io variables');
+  });
+
+  it('wraps artifacts in a collapsible details block', () => {
+    expect(mdContent).to.match(/<details>\s*\n<summary><strong>Artifacts<\/strong> \(\d+\)<\/summary>/);
+  });
+
+  it('renders run description from store as a Description section', () => {
     process.env.TESTOMATIO_MARKDOWN_REPORT_SAVE = '1';
-    process.env.TESTOMATIO = 'super-secret-token-value';
-
-    const pipe = new MarkdownPipe({}, {});
-    const sensitivePath = path.resolve(testOutputDir, 'sensitive-report.md');
+    const store = {
+      runId: DATA.runId,
+      runUrl: DATA.runUrl,
+      coverageDescription: 'Changes to **3** files in feature to main.\n\n* `src/a.js`\n* `src/b.js`',
+    };
+    const pipe = new MarkdownPipe({ title: 'With Desc' }, store);
+    const out = path.resolve(testOutputDir, 'with-description.md');
     pipe.buildReport({
       runParams: { status: 'passed' },
       tests: DATA.tests.slice(0, 1),
-      outputPath: sensitivePath,
+      outputPath: out,
       warningMsg: '',
     });
+    const content = fs.readFileSync(out, 'utf-8');
+    expect(content).to.include('## Description');
+    expect(content).to.include('Changes to **3** files in feature to main.');
+    expect(content).to.include('* `src/a.js`');
+  });
 
-    const out = fs.readFileSync(sensitivePath, 'utf-8');
-    expect(out).to.include('| `TESTOMATIO` | *** |');
-    expect(out).to.not.include('super-secret-token-value');
-    delete process.env.TESTOMATIO;
+  it('omits the Description section when no description is provided', () => {
+    expect(mdContent).to.not.include('## Description');
+  });
+
+  it('renders run configuration as a Configuration section', async () => {
+    process.env.TESTOMATIO_MARKDOWN_REPORT_SAVE = '1';
+    const pipe = new MarkdownPipe({ title: 'With Config' }, {});
+    await pipe.createRun({ configuration: { exploratory: true, browser: 'chromium', shard: 2 } });
+    const out = path.resolve(testOutputDir, 'with-configuration.md');
+    pipe.buildReport({
+      runParams: { status: 'passed' },
+      tests: DATA.tests.slice(0, 1),
+      outputPath: out,
+      warningMsg: '',
+    });
+    const content = fs.readFileSync(out, 'utf-8');
+    expect(content).to.include('## Configuration');
+    expect(content).to.match(/\|\s*`browser`\s*\|\s*chromium\s*\|/);
+    expect(content).to.match(/\|\s*`exploratory`\s*\|\s*true\s*\|/);
+    expect(content).to.match(/\|\s*`shard`\s*\|\s*2\s*\|/);
+  });
+
+  it('omits the Configuration section when no configuration is provided', () => {
+    expect(mdContent).to.not.include('## Configuration');
   });
 
   it('toString returns the pipe label', () => {

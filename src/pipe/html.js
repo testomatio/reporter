@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import pc from 'picocolors';
 import handlebars from 'handlebars';
+import { marked } from 'marked';
 import fileUrl from 'file-url';
 import { fileSystem, isSameTest, ansiRegExp, formatStep } from '../utils/utils.js';
 import { HTML_REPORT } from '../constants.js';
@@ -27,6 +28,7 @@ class HtmlPipe {
     this.htmlOutputPath = '';
     this.filenameMsg = '';
     this.tests = [];
+    this.configuration = null;
 
     if (this.isHtml) {
       this.isEnabled = true;
@@ -61,8 +63,10 @@ class HtmlPipe {
     }
   }
 
-  async createRun() {
-    // empty
+  async createRun(params = {}) {
+    if (params?.configuration && typeof params.configuration === 'object') {
+      this.configuration = { ...(this.configuration || {}), ...params.configuration };
+    }
   }
 
   async prepareRun() {}
@@ -250,6 +254,10 @@ class HtmlPipe {
       runUrl: this.store.runUrl || '',
       executionTime: testExecutionSumTime(aggregatedTests),
       executionDate: getCurrentDateTimeFormatted(),
+      description: runParams.description || this.store.coverageDescription || this.store.description || '',
+      configuration: buildDisplayConfiguration(
+        this.configuration || this.store.configuration || runParams.configuration || null,
+      ),
       tests: aggregatedTests,
       envVars: collectEnvironmentVariables(),
     };
@@ -303,6 +311,11 @@ class HtmlPipe {
       'getTestsByStatus',
       (tests, status) => tests.filter(test => test.status.toLowerCase() === status.toLowerCase()).length,
     );
+
+    handlebars.registerHelper('markdown', value => {
+      if (typeof value !== 'string' || !value.trim()) return '';
+      return new handlebars.SafeString(marked.parse(value, { async: false }));
+    });
 
     handlebars.registerHelper('formatDuration', milliseconds => {
       if (!milliseconds || milliseconds === 0) return '0ms';
@@ -1107,6 +1120,26 @@ function loadTracesFromFiles(test) {
         test.traces = traceDataList;
       }
     }
+  }
+}
+
+function buildDisplayConfiguration(configuration) {
+  if (!configuration || typeof configuration !== 'object') return null;
+  const entries = Object.entries(configuration).filter(([k]) => k !== 'tests' && k !== 'suites');
+  if (!entries.length) return null;
+  entries.sort((a, b) => a[0].localeCompare(b[0]));
+  return entries.map(([key, value]) => ({ key, value: formatConfigDisplayValue(value) }));
+}
+
+function formatConfigDisplayValue(value) {
+  if (value == null) return '';
+  if (typeof value === 'boolean' || typeof value === 'number' || typeof value === 'string') {
+    return String(value);
+  }
+  try {
+    return JSON.stringify(value);
+  } catch (_) {
+    return String(value);
   }
 }
 

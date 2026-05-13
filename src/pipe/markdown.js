@@ -24,6 +24,7 @@ class MarkdownPipe {
     this.markdownOutputPath = '';
     this.filenameMsg = '';
     this.tests = [];
+    this.configuration = null;
 
     if (!this.isMarkdown) return;
 
@@ -52,8 +53,10 @@ class MarkdownPipe {
     );
   }
 
-  async createRun() {
-    // empty
+  async createRun(params = {}) {
+    if (params?.configuration && typeof params.configuration === 'object') {
+      this.configuration = { ...(this.configuration || {}), ...params.configuration };
+    }
   }
 
   async prepareRun() {}
@@ -131,9 +134,10 @@ class MarkdownPipe {
       isParallel: runParams?.isParallel,
       executionTime: testExecutionSumTime(aggregated),
       executionDate: getCurrentDateTimeFormatted(),
+      description: runParams?.description || this.store.coverageDescription || this.store.description || '',
+      configuration: this.configuration || this.store.configuration || runParams?.configuration || null,
       tests: aggregated,
       stats,
-      envVars: collectEnvironmentVariables(),
     };
 
     const md = renderDocument(data);
@@ -163,9 +167,42 @@ function renderDocument(data) {
   const sections = [];
   sections.push(renderHeader(data));
   sections.push(renderRunMetadata(data));
-  sections.push(renderEnvSection(data.envVars));
+  sections.push(renderDescription(data.description));
+  sections.push(renderConfiguration(data.configuration));
   sections.push(renderTests(data.tests));
   return sections.filter(Boolean).join('\n\n') + '\n';
+}
+
+function renderDescription(description) {
+  if (typeof description !== 'string') return '';
+  const trimmed = description.trim();
+  if (!trimmed) return '';
+  return `## Description\n\n${trimmed}`;
+}
+
+function renderConfiguration(configuration) {
+  if (!configuration || typeof configuration !== 'object') return '';
+  const entries = Object.entries(configuration).filter(([k]) => k !== 'tests' && k !== 'suites');
+  if (!entries.length) return '';
+
+  entries.sort((a, b) => a[0].localeCompare(b[0]));
+
+  const lines = ['## Configuration', '', '| Key | Value |', '| --- | ----- |'];
+  for (const [k, v] of entries) {
+    lines.push(`| \`${k}\` | ${formatConfigValue(v)} |`);
+  }
+  return lines.join('\n');
+}
+
+function formatConfigValue(value) {
+  if (value == null) return '';
+  if (typeof value === 'boolean' || typeof value === 'number') return String(value);
+  if (typeof value === 'string') return mdInline(value).replace(/\|/g, '\\|');
+  try {
+    return `\`${JSON.stringify(value)}\``;
+  } catch (_) {
+    return String(value);
+  }
 }
 
 function renderHeader(data) {
@@ -211,41 +248,6 @@ function renderRunMetadata(data) {
   return lines.join('\n');
 }
 
-function renderEnvSection(envVars) {
-  if (!envVars) return '';
-
-  const blocks = ['## Environment'];
-
-  const groups = [
-    { title: 'Testomat.io variables', vars: envVars.testomatio || {} },
-    { title: 'S3 variables', vars: envVars.s3 || {} },
-  ];
-
-  for (const group of groups) {
-    const entries = Object.entries(group.vars).filter(([, v]) => v && v.isSet);
-    if (!entries.length) continue;
-
-    entries.sort((a, b) => a[0].localeCompare(b[0]));
-
-    const lines = [];
-    lines.push('<details>');
-    lines.push(`<summary>${group.title} (${entries.length})</summary>`);
-    lines.push('');
-    lines.push('| Variable | Value |');
-    lines.push('| -------- | ----- |');
-    for (const [name, info] of entries) {
-      lines.push(`| \`${name}\` | ${mdTableCell(String(info.value ?? ''))} |`);
-    }
-    lines.push('');
-    lines.push('</details>');
-
-    blocks.push(lines.join('\n'));
-  }
-
-  if (blocks.length === 1) return '';
-  return blocks.join('\n\n');
-}
-
 function renderTests(tests) {
   if (!Array.isArray(tests) || tests.length === 0) {
     return '## Tests\n\n_No test results recorded._';
@@ -286,23 +288,30 @@ function renderTest(test) {
   }
 
   const duration = formatStepDuration(test.run_time);
-  let header = `#### ${mdInline(title)}`;
-  if (duration) header += ` — ${duration}`;
+  const header = `#### ${mdInline(title)}`;
 
   const lines = [header];
 
-  const meta = [`- **Status:** ${displayStatus}`];
+  const rows = [['Status', displayStatus]];
 
   const retries = computeRetries(test);
   if (retries.retryCount > 0) {
-    let retryLine = `- **Retries:** ${retries.retryCount}`;
-    if (retries.flaky) retryLine += ' (flaky)';
-    meta.push(retryLine);
+    let v = String(retries.retryCount);
+    if (retries.flaky) v += ' (flaky)';
+    rows.push(['Retries', v]);
+  }
+  if (duration) {
+    rows.push(['Duration', duration]);
   }
   if (typeof test.test_id === 'string' && test.test_id) {
-    meta.push(`- **Test ID:** \`${test.test_id}\``);
+    rows.push(['Test ID', `\`${test.test_id}\``]);
   }
-  lines.push(meta.join('\n'));
+
+  const metaTable = ['| Key | Value |', '| --- | ----- |'];
+  for (const [k, v] of rows) {
+    metaTable.push(`| ${k} | ${v} |`);
+  }
+  lines.push(metaTable.join('\n'));
 
   const stepsBlock = renderSteps(test);
   if (stepsBlock) lines.push(stepsBlock);
@@ -335,10 +344,30 @@ function renderSteps(test) {
 
   if (typeof steps === 'string' && steps.trim()) {
     const cleaned = steps.replace(ansiRegExp(), '').trim();
+    const parts = cleaned
+      .split(/<br\s*\/?>|\r?\n/i)
+      .map(s => s.trim())
+      .filter(Boolean);
+
+    if (parts.length > 1) {
+      const bullets = parts.map(line => formatStringStepBullet(line)).join('\n');
+      return `**Steps**\n\n${bullets}`;
+    }
+
     return `**Steps**\n\n${fence(cleaned)}`;
   }
 
   return '';
+}
+
+function formatStringStepBullet(line) {
+  const match = line.match(/^(.*?)[\s ]+(\d+)\s*ms\s*$/i);
+  if (match) {
+    const title = mdInline(match[1].trim());
+    const dur = `${match[2]}ms`;
+    return `- ${title} _(${dur})_`;
+  }
+  return `- ${mdInline(line)}`;
 }
 
 function renderStepTree(steps, depth) {
@@ -445,7 +474,10 @@ function renderArtifacts(test) {
 
   if (!items.length) return '';
 
-  const lines = ['**Artifacts**', ''];
+  const lines = [];
+  lines.push('<details>');
+  lines.push(`<summary><strong>Artifacts</strong> (${items.length})</summary>`);
+  lines.push('');
   for (const item of items) {
     if (item.isImage) {
       lines.push(`- ![${mdInline(item.name)}](${item.href})`);
@@ -453,6 +485,8 @@ function renderArtifacts(test) {
       lines.push(`- [${mdInline(item.name)}](${item.href})`);
     }
   }
+  lines.push('');
+  lines.push('</details>');
   return lines.join('\n');
 }
 
@@ -547,11 +581,6 @@ function fence(text, lang = '') {
 function mdInline(text) {
   if (text == null) return '';
   return String(text).replace(/\r?\n/g, ' ').trim();
-}
-
-function mdTableCell(text) {
-  if (text == null) return '';
-  return String(text).replace(/\|/g, '\\|').replace(/\r?\n/g, '<br>').trim();
 }
 
 function formatStepDuration(value) {
@@ -712,32 +741,6 @@ function aggregateTestRetries(tests) {
   });
 
   return aggregated;
-}
-
-const SENSITIVE_PATTERNS = [/TOKEN/, /SECRET/, /PASSWORD/, /KEY/, /^TESTOMATIO$/];
-
-function isSensitiveVarName(name) {
-  return SENSITIVE_PATTERNS.some(re => re.test(name));
-}
-
-function collectEnvironmentVariables() {
-  const groups = { testomatio: {}, s3: {} };
-
-  for (const [name, value] of Object.entries(process.env)) {
-    if (value === undefined) continue;
-
-    let group = null;
-    if (name === 'TESTOMATIO' || name.startsWith('TESTOMATIO_')) group = 'testomatio';
-    else if (name.startsWith('S3_')) group = 's3';
-    if (!group) continue;
-
-    let displayValue = value;
-    if (isSensitiveVarName(name)) displayValue = '***';
-
-    groups[group][name] = { value: displayValue, isSet: true };
-  }
-
-  return groups;
 }
 
 export default MarkdownPipe;
