@@ -21,6 +21,9 @@ class CsvPipe {
     this.results = [];
 
     this.outputDir = 'export';
+    if (process.env.TESTOMATIO_RUNGROUP) {
+      this.outputDir = path.join(this.outputDir, process.env.TESTOMATIO_RUNGROUP);
+    }
     this.defaultReportName = 'report.csv';
     this.csvFilename = process.env.TESTOMATIO_CSV_FILENAME;
     this.isEnabled = false;

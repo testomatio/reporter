@@ -32,7 +32,13 @@ class HtmlPipe {
 
     if (this.isHtml) {
       this.isEnabled = true;
-      this.htmlReportDir = process.env.TESTOMATIO_HTML_REPORT_FOLDER || HTML_REPORT.FOLDER;
+      let baseReportDir = process.env.TESTOMATIO_HTML_REPORT_FOLDER || HTML_REPORT.FOLDER;
+
+      if (process.env.TESTOMATIO_RUNGROUP) {
+        baseReportDir = path.join(baseReportDir, process.env.TESTOMATIO_RUNGROUP);
+      }
+
+      this.htmlReportDir = baseReportDir;
 
       if (process.env.TESTOMATIO_HTML_FILENAME && process.env.TESTOMATIO_HTML_FILENAME.endsWith('.html')) {
         this.htmlReportName = process.env.TESTOMATIO_HTML_FILENAME;
