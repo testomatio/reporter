@@ -21,8 +21,8 @@ class CsvPipe {
     this.results = [];
 
     this.outputDir = 'export';
-    if (process.env.TESTOMATIO_RUNGROUP) {
-      this.outputDir = path.join(this.outputDir, process.env.TESTOMATIO_RUNGROUP);
+    if (process.env.TESTOMATIO_RUNGROUP_TITLE) {
+      this.outputDir = path.join(this.outputDir, process.env.TESTOMATIO_RUNGROUP_TITLE);
     }
     this.defaultReportName = 'report.csv';
     this.csvFilename = process.env.TESTOMATIO_CSV_FILENAME;
@@ -60,7 +60,7 @@ class CsvPipe {
    */
   checkExportDir() {
     if (!fs.existsSync(this.outputDir)) {
-      return fs.mkdirSync(this.outputDir);
+      return fs.mkdirSync(this.outputDir, { recursive: true });
     }
   }
 

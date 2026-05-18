@@ -31,8 +31,8 @@ class MarkdownPipe {
     this.isEnabled = true;
     let baseReportDir = process.env.TESTOMATIO_MARKDOWN_REPORT_FOLDER || MARKDOWN_REPORT.FOLDER;
 
-    if (process.env.TESTOMATIO_RUNGROUP) {
-      baseReportDir = path.join(baseReportDir, process.env.TESTOMATIO_RUNGROUP);
+    if (process.env.TESTOMATIO_RUNGROUP_TITLE) {
+      baseReportDir = path.join(baseReportDir, process.env.TESTOMATIO_RUNGROUP_TITLE);
     }
 
     this.markdownReportDir = baseReportDir;
