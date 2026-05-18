@@ -116,8 +116,9 @@ class Client {
    * @returns {Promise<any>} - resolves to Run id which should be used to update / add test
    */
   async createRun(params = {}) {
+    const pipeParams = { ...(this.paramsForPipesFactory || {}), ...(params || {}) };
     if (!this.pipes || !this.pipes.length)
-      this.pipes = await pipesFactory(params || this.paramsForPipesFactory || {}, this.pipeStore);
+      this.pipes = await pipesFactory(pipeParams, this.pipeStore);
     debug('Creating run...');
     // all pipes disabled, skipping
     if (!this.pipes?.filter(p => p.isEnabled).length) return Promise.resolve();

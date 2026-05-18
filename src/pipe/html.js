@@ -20,7 +20,7 @@ class HtmlPipe {
     this.store = store || {};
     this.title = params.title || process.env.TESTOMATIO_TITLE;
     this.apiKey = params.apiKey || process.env.TESTOMATIO;
-    this.isHtml = process.env.TESTOMATIO_HTML_REPORT_SAVE;
+    this.isHtml = params.html ?? process.env.TESTOMATIO_HTML_REPORT_SAVE;
 
     debug('HTML Pipe: ', this.apiKey ? 'API KEY' : '*no api key provided*');
 
@@ -32,7 +32,7 @@ class HtmlPipe {
 
     if (this.isHtml) {
       this.isEnabled = true;
-      this.htmlReportDir = process.env.TESTOMATIO_HTML_REPORT_FOLDER || HTML_REPORT.FOLDER;
+      this.htmlReportDir = params.reportDir || process.env.TESTOMATIO_HTML_REPORT_FOLDER || HTML_REPORT.FOLDER;
 
       if (process.env.TESTOMATIO_HTML_FILENAME && process.env.TESTOMATIO_HTML_FILENAME.endsWith('.html')) {
         this.htmlReportName = process.env.TESTOMATIO_HTML_FILENAME;

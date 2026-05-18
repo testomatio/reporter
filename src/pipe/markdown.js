@@ -16,7 +16,7 @@ class MarkdownPipe {
     this.store = store || {};
     this.title = params.title || process.env.TESTOMATIO_TITLE;
     this.apiKey = params.apiKey || process.env.TESTOMATIO;
-    this.isMarkdown = process.env.TESTOMATIO_MARKDOWN_REPORT_SAVE;
+    this.isMarkdown = params.markdown ?? process.env.TESTOMATIO_MARKDOWN_REPORT_SAVE;
 
     debug('Markdown Pipe: ', this.apiKey ? 'API KEY' : '*no api key provided*');
 
@@ -29,7 +29,7 @@ class MarkdownPipe {
     if (!this.isMarkdown) return;
 
     this.isEnabled = true;
-    this.markdownReportDir = process.env.TESTOMATIO_MARKDOWN_REPORT_FOLDER || MARKDOWN_REPORT.FOLDER;
+    this.markdownReportDir = params.reportDir || process.env.TESTOMATIO_MARKDOWN_REPORT_FOLDER || MARKDOWN_REPORT.FOLDER;
 
     const envName = process.env.TESTOMATIO_MARKDOWN_FILENAME;
     if (envName && envName.endsWith('.md')) {
@@ -143,7 +143,6 @@ class MarkdownPipe {
     const md = renderDocument(data);
 
     fs.writeFileSync(outputPath, md, 'utf-8');
-
     if (fs.existsSync(outputPath)) {
       const absolutePath = path.resolve(outputPath);
       const fileUrlPath = fileUrl(absolutePath, { resolve: true });

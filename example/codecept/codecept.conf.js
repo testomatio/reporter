@@ -29,6 +29,10 @@ exports.config = {
       enabled: true,
       require: '../../lib/adapter/codecept',
       apiKey: process.env.TESTOMATIO,
+      html: process.env.TESTOMATIO_CODECEPT_HTML === '1',
+      markdown: process.env.TESTOMATIO_CODECEPT_MARKDOWN === '1',
+      csv: process.env.TESTOMATIO_CODECEPT_CSV === '1',
+      reportDir: process.env.TESTOMATIO_CODECEPT_REPORT_DIR,
     },
   },
   // Multiple test execution configurations
