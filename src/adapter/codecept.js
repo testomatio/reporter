@@ -595,13 +595,13 @@ function buildCodeceptClientConfig(config = {}) {
 }
 
 function resolveCodeceptOutputDir(config = {}) {
-  const globalState = /** @type {{ codeceptjs?: { container?: { config?: { output?: string } } } }} */ (globalThis);
+  const codeceptStore = /** @type {{ outputDir?: string }} */ (codeceptjs.store || {});
   const candidates = [
     config.outputDir,
     config.output,
+    codeceptStore.outputDir,
     codecept?.config?.get?.()?.output,
     codecept?.config?.output,
-    globalState.codeceptjs?.container?.config?.output,
   ];
 
   const outputDir = candidates.find(value => typeof value === 'string' && value.trim());
