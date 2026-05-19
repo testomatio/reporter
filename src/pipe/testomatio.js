@@ -576,12 +576,16 @@ class TestomatioPipe {
     const statusCode = error.status || error.code || error.response?.status || '<unknown status code>';
     const method = error.response?.config?.method || '<unknown method>';
     const url = String(error.response?.config?.url || '<unknown url>');
+    const statusText = error.response?.statusText || '';
 
     let message = pc.yellow('⚠️ Request to Testomat.io failed:\n');
     message += pc.bold(`${pc.red(statusCode)} ${method} ${pc.gray(url)}\n`);
 
-    if (statusCode === 403) {
-      message += `\t${pc.red('Please check your API token. It might be invalid or expired.')}\n`;
+    const apiMessage = error.response?.data?.message;
+    if (apiMessage) {
+      message += `\t${pc.red(apiMessage)}\n`;
+    } else if (statusText) {
+      message += `\t${pc.red(statusText)}\n`;
     }
 
     message += `\t${pc.bold('response: ')}${pc.gray(responseBody)}\n`;
