@@ -582,7 +582,9 @@ class TestomatioPipe {
     message += pc.bold(`${pc.red(statusCode)} ${method} ${pc.gray(url)}\n`);
 
     const apiMessage = error.response?.data?.message;
-    if (apiMessage) {
+    if (statusCode === 403) {
+      message += `\t${pc.red('Please check your API token. It might be invalid or expired.')}\n`;
+    } else if (apiMessage) {
       message += `\t${pc.red(apiMessage)}\n`;
     } else if (statusText) {
       message += `\t${pc.red(statusText)}\n`;
