@@ -83,6 +83,7 @@ class TestomatioPipe {
     this.groupTitle = params.groupTitle || process.env.TESTOMATIO_RUNGROUP_TITLE;
     this.env = process.env.TESTOMATIO_ENV;
     this.label = process.env.TESTOMATIO_LABEL;
+    this.description = params.description || process.env.TESTOMATIO_DESCRIPTION;
 
     // Create a new instance of gaxios with a custom config
     this.client = new Gaxios({
@@ -227,15 +228,17 @@ class TestomatioPipe {
     const accessEvent = process.env.TESTOMATIO_PUBLISH ? 'publish' : null;
 
     const coverageConfiguration = this.store?.coverageConfiguration;
-    let description = null;
+    let coverageDescription = null;
     let configuration = null;
     if (coverageConfiguration && (coverageConfiguration.tests?.length || coverageConfiguration.suites?.length)) {
-      description = this.store?.coverageDescription || null;
+      coverageDescription = this.store?.coverageDescription || null;
       configuration = {
         tests: coverageConfiguration.tests?.map(id => id.replace(/^T/, '')) || [],
         suites: coverageConfiguration.suites?.map(id => id.replace(/^S/, '')) || [],
       };
     }
+    // Run description: coverage-derived block (if any) with the user-provided TESTOMATIO_DESCRIPTION appended after it.
+    const description = [coverageDescription, this.description].filter(Boolean).join('\n\n') || null;
 
     // Merge caller-supplied configuration (e.g. { exploratory: true }) into runParams.configuration.
     // Caller values win on key conflict; coverage-derived tests/suites lists are preserved when not overridden.

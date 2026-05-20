@@ -15,6 +15,7 @@ class MarkdownPipe {
   constructor(params, store = {}) {
     this.store = store || {};
     this.title = params.title || process.env.TESTOMATIO_TITLE;
+    this.description = params.description || process.env.TESTOMATIO_DESCRIPTION;
     this.apiKey = params.apiKey || process.env.TESTOMATIO;
     this.isMarkdown = process.env.TESTOMATIO_MARKDOWN_REPORT_SAVE;
 
@@ -134,7 +135,10 @@ class MarkdownPipe {
       isParallel: runParams?.isParallel,
       executionTime: testExecutionSumTime(aggregated),
       executionDate: getCurrentDateTimeFormatted(),
-      description: runParams?.description || this.store.coverageDescription || this.store.description || '',
+      description:
+        [runParams?.description || this.store.coverageDescription || this.store.description, this.description]
+          .filter(Boolean)
+          .join('\n\n') || '',
       configuration: this.configuration || this.store.configuration || runParams?.configuration || null,
       tests: aggregated,
       stats,

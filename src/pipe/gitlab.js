@@ -5,7 +5,7 @@ import humanizeDuration from 'humanize-duration';
 import merge from 'lodash.merge';
 import path from 'path';
 import { APP_PREFIX, testomatLogoURL } from '../constants.js';
-import { ansiRegExp, isSameTest } from '../utils/utils.js';
+import { ansiRegExp, isSameTest, truncate } from '../utils/utils.js';
 import { statusEmoji, fullName } from '../utils/pipe_utils.js';
 import { log } from '../utils/log.js';
 
@@ -27,6 +27,7 @@ class GitLabPipe {
     this.tests = [];
     // GitLab PAT looks like glpat-nKGdja3jsG4850sGksh7
     this.token = params.GITLAB_PAT || process.env.GITLAB_PAT || this.ENV.GITLAB_PAT;
+    this.description = params.description || process.env.TESTOMATIO_DESCRIPTION;
     this.hiddenCommentData = `<!--- testomat.io report ${process.env.CI_JOB_NAME || ''} -->`;
 
     debug(
@@ -144,6 +145,10 @@ class GitLabPipe {
       });
 
     let body = summary;
+
+    if (this.description) {
+      body += `\n\n> ${truncate(this.description, 1024).replace(/\r?\n/g, '\n> ')}`;
+    }
 
     if (failures.length) {
       body += `\n<details>\n<summary><h3>🟥 Failures (${failures.length})</h4></summary>\n\n${failures.join('\n')}\n`;

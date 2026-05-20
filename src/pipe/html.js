@@ -19,6 +19,7 @@ class HtmlPipe {
   constructor(params, store = {}) {
     this.store = store || {};
     this.title = params.title || process.env.TESTOMATIO_TITLE;
+    this.description = params.description || process.env.TESTOMATIO_DESCRIPTION;
     this.apiKey = params.apiKey || process.env.TESTOMATIO;
     this.isHtml = process.env.TESTOMATIO_HTML_REPORT_SAVE;
 
@@ -254,7 +255,10 @@ class HtmlPipe {
       runUrl: this.store.runUrl || '',
       executionTime: testExecutionSumTime(aggregatedTests),
       executionDate: getCurrentDateTimeFormatted(),
-      description: runParams.description || this.store.coverageDescription || this.store.description || '',
+      description:
+        [runParams.description || this.store.coverageDescription || this.store.description, this.description]
+          .filter(Boolean)
+          .join('\n\n') || '',
       configuration: buildDisplayConfiguration(
         this.configuration || this.store.configuration || runParams.configuration || null,
       ),

@@ -266,6 +266,16 @@ Example:
 TESTOMATIO={API_KEY} TESTOMATIO_TITLE="title for the report" <actual run command>
 ```
 
+#### `TESTOMATIO_DESCRIPTION`
+
+Add a description to the test run. It is appended to the run description on Testomat.io (after any change-aware coverage description), shown in the HTML and Markdown reports, and added — truncated to 1024 characters — to GitHub / GitLab / Bitbucket pull request comments.
+
+Example:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_DESCRIPTION="Nightly regression on staging" <actual run command>
+```
+
 #### `TESTOMATIO_LOG_LEVEL`
 
 Control the verbosity of `[TESTOMATIO]` prefixed messages in the test output.

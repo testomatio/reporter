@@ -1,5 +1,5 @@
 import { APP_PREFIX, testomatLogoURL } from '../constants.js';
-import { ansiRegExp, isSameTest } from '../utils/utils.js';
+import { ansiRegExp, isSameTest, truncate } from '../utils/utils.js';
 import { statusEmoji, fullName } from '../utils/pipe_utils.js';
 import { Gaxios } from 'gaxios';
 import pc from 'picocolors';
@@ -27,6 +27,7 @@ export class BitbucketPipe {
     this.tests = [];
     // Bitbucket PAT looks like bbpat-*****
     this.token = params.BITBUCKET_ACCESS_TOKEN || process.env.BITBUCKET_ACCESS_TOKEN || this.ENV.BITBUCKET_ACCESS_TOKEN;
+    this.description = params.description || process.env.TESTOMATIO_DESCRIPTION;
     this.hiddenCommentData = `Testomat.io report: ${process.env.BITBUCKET_BRANCH || ''}`;
 
     debug(
@@ -169,6 +170,10 @@ export class BitbucketPipe {
       });
 
     let body = summary;
+
+    if (this.description) {
+      body += `\n\n> ${truncate(this.description, 1024).replace(/\r?\n/g, '\n> ')}`;
+    }
 
     if (failures.length) {
       body += `\n🟥 **Failures (${failures.length})**\n\n* ${failures.join('\n* ')}\n`;

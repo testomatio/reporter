@@ -116,8 +116,10 @@ program
         debug(`Execution pattern: "${pattern}"`);
 
         if(opts.filterList) {
-          log.info( pc.blue(`Matched test/suite IDs: ${tests.join(', ')}`));
-          if (command) log.info( pc.green(`Full Running Command: ${filteredCommand}`));
+          if (command) log.info(pc.green(`Full Running Command: ${filteredCommand}`));
+          log.info();
+          log.info(`Grep string:`);
+          log.info(`${tests.join(', ')}`);
           return;
         }
 
