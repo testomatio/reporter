@@ -114,9 +114,14 @@ describe('Markdown report tests', () => {
     // server and breaks if TESTOMATIO_RUN looks like an existing run id).
     process.env = envSnapshot;
     try {
-      await fs.promises.rm(testOutputDir, { recursive: true });
+      await fs.promises.rm(testOutputDir, { recursive: true, force: true });
     } catch (err) {
       console.error(`Unknown error while deleting ${testOutputDir}.`);
+    }
+    try {
+      await fs.promises.rm(path.resolve(process.cwd(), 'output'), { recursive: true, force: true });
+    } catch (err) {
+      console.error('Unknown error while deleting output directory.');
     }
   });
 
@@ -261,5 +266,12 @@ describe('Markdown report tests', () => {
     delete process.env.TESTOMATIO_MARKDOWN_REPORT_SAVE;
     const pipe = new MarkdownPipe({}, {});
     expect(pipe.isEnabled).to.equal(false);
+  });
+
+  it('uses runtime CodeceptJS reportDir config', () => {
+    const pipe = new MarkdownPipe({ markdown: true, reportDir: path.join('output', 'report') }, {});
+
+    expect(pipe.isEnabled).to.equal(true);
+    expect(pipe.markdownReportDir).to.equal(path.join('output', 'report'));
   });
 });

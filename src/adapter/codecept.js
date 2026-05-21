@@ -1,4 +1,5 @@
 import createDebugMessages from 'debug';
+import path from 'path';
 import pc from 'picocolors';
 import TestomatClient from '../client.js';
 import { STATUS, APP_PREFIX, TESTOMAT_TMP_STORAGE_DIR, SCREENSHOTS_ON_STEPS } from '../constants.js';
@@ -53,9 +54,8 @@ function CodeceptReporter(config) {
   let isRunFinalized = false;
 
   const testTimeMap = {};
-  const { apiKey } = config;
-
-  const client = new TestomatClient({ apiKey });
+  const clientConfig = buildCodeceptClientConfig(config);
+  const client = new TestomatClient(clientConfig);
 
   // Store original output methods for fallback
   const originalOutput = {
@@ -577,3 +577,45 @@ function formatHookStep(step) {
 
 export { CodeceptReporter };
 export default CodeceptReporter;
+
+function buildCodeceptClientConfig(config = {}) {
+  const outputDir = resolveCodeceptOutputDir(config);
+  const reportDir = resolveCodeceptReportDir(config, outputDir);
+
+  return {
+    ...config,
+    apiKey: config.apiKey,
+    framework: 'codeceptjs',
+    outputDir,
+    reportDir,
+    html: config.html,
+    markdown: config.markdown,
+    csv: config.csv,
+  };
+}
+
+function resolveCodeceptOutputDir(config = {}) {
+  const codeceptStore = /** @type {{ outputDir?: string }} */ (codeceptjs.store || {});
+  const candidates = [
+    config.outputDir,
+    config.output,
+    codeceptStore.outputDir,
+    codecept?.config?.get?.()?.output,
+    codecept?.config?.output,
+  ];
+
+  const outputDir = candidates.find(value => typeof value === 'string' && value.trim());
+  return outputDir || 'output';
+}
+
+function resolveCodeceptReportDir(config = {}, outputDir = 'output') {
+  if (typeof config.reportDir === 'string' && config.reportDir.trim()) {
+    return config.reportDir;
+  }
+
+  if (path.isAbsolute(outputDir)) {
+    return path.join(outputDir, 'report');
+  }
+
+  return path.join(outputDir, 'report');
+}

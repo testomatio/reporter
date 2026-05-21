@@ -1,4 +1,6 @@
 import { expect } from 'chai';
+import fs from 'fs';
+import path from 'path';
 import TestomatioClient from '../../src/client.js';
 
 describe('Client Stack Artifacts', () => {
@@ -18,6 +20,24 @@ describe('Client Stack Artifacts', () => {
 
   afterEach(() => {
     delete process.env.TESTOMATIO_STACK_ARTIFACTS;
+  });
+
+  it('keeps constructor pipe config when createRun receives runtime params', async () => {
+    const reportDir = path.join('output', 'report');
+    const reportRoot = path.resolve(process.cwd(), 'output');
+    const htmlClient = new TestomatioClient({ html: true, reportDir });
+
+    try {
+      await htmlClient.createRun({ title: 'Runtime title' });
+
+      const htmlPipe = htmlClient.pipes.find(pipe => pipe.constructor.name === 'HtmlPipe');
+
+      expect(htmlPipe).to.exist;
+      expect(htmlPipe.isEnabled).to.equal(true);
+      expect(htmlPipe.htmlReportDir).to.equal(reportDir);
+    } finally {
+      await fs.promises.rm(reportRoot, { recursive: true, force: true });
+    }
   });
 
   describe('when TESTOMATIO_STACK_ARTIFACTS is disabled', () => {

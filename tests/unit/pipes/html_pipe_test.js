@@ -122,9 +122,14 @@ describe('HTML report tests', () => {
   });
   after(async () => {
     try {
-      await fs.promises.rm(testOutputDir, { recursive: true });
+      await fs.promises.rm(testOutputDir, { recursive: true, force: true });
     } catch (err) {
       console.error(`Unknown error while deleting ${testOutputDir}.`);
+    }
+    try {
+      await fs.promises.rm(path.resolve(process.cwd(), 'output'), { recursive: true, force: true });
+    } catch (err) {
+      console.error('Unknown error while deleting output directory.');
     }
   });
   it(
@@ -521,6 +526,13 @@ describe('HTML report tests', () => {
     const dom = new JSDOM(htmlContent);
     const section = dom.window.document.querySelector('section.configuration-section');
     expect(section).to.equal(null);
+  });
+
+  it('uses runtime CodeceptJS reportDir config', () => {
+    const pipe = new HtmlPipe({ html: true, reportDir: path.join('output', 'report') }, {});
+
+    expect(pipe.isEnabled).to.equal(true);
+    expect(pipe.htmlReportDir).to.equal(path.join('output', 'report'));
   });
 });
 
