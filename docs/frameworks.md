@@ -30,19 +30,31 @@ Add plugin to [codecept conf](https://github.com/testomatio/reporter/blob/master
 plugins: {
   testomatio: {
     enabled: true,
-    // new way (recommended)
     require: '@testomatio/reporter/codecept',
 
-    // old way
-    require: '@testomatio/reporter/lib/adapter/codecept',
+    // optional: local reports in CodeceptJS output folder
+    html: true,
+    markdown: true,
+    csv: true,
+    reportDir: 'output/report',
   }
 }
 ```
+
+If `reportDir` is omitted, Testomatio reporter stores local reports in `output/report`, where `output` is taken from your CodeceptJS `output` setting.
+
+Legacy adapter path `@testomatio/reporter/lib/adapter/codecept` is still supported, but `@testomatio/reporter/codecept` is the preferred public entrypoint.
 
 Run the following command from you project folder:
 
 ```bash
 TESTOMATIO={API_KEY} npx codeceptjs run
+```
+
+For local reports only, no API key is required:
+
+```bash
+npx codeceptjs run
 ```
 
 > 🖼 Screenshots of failed tests and videos (for Playwright helper) will be automatically uploaded as [Artifacts](./artifacts.md)
