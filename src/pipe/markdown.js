@@ -31,6 +31,9 @@ class MarkdownPipe {
     this.isEnabled = true;
     this.markdownReportDir =
       params.reportDir || process.env.TESTOMATIO_MARKDOWN_REPORT_FOLDER || MARKDOWN_REPORT.FOLDER;
+    if (process.env.TESTOMATIO_RUNGROUP_TITLE) {
+      this.markdownReportDir = path.join(this.markdownReportDir, process.env.TESTOMATIO_RUNGROUP_TITLE);
+    }
 
     const envName = process.env.TESTOMATIO_MARKDOWN_FILENAME;
     if (envName && envName.endsWith('.md')) {
