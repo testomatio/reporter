@@ -453,6 +453,85 @@ describe('TestomatioPipe', () => {
       expect(receivedRequestBody).to.not.be.null;
       expect(receivedRequestBody.timeout).to.equal(80000);
     });
+
+    it('should send TESTOMATIO_DESCRIPTION as the run description', async () => {
+      process.env.TESTOMATIO_DESCRIPTION = 'Nightly regression on staging';
+      let receivedRequestBody = null;
+
+      server.on({
+        method: 'POST',
+        path: '/api/reporter',
+        reply: {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            url: 'https://faketestomat.io/report/desc1',
+            uid: 'test-run-desc-1',
+            public_url: 'https://faketestomat.io/public/desc1',
+          }),
+        },
+      });
+
+      const pipe = new TestomatioPipe({
+        apiKey: TESTOMATIO,
+        testomatioUrl: TESTOMATIO_URL,
+        isBatchEnabled: false,
+      });
+
+      const originalRequest = pipe.client.request;
+      pipe.client.request = async function (config) {
+        receivedRequestBody = config;
+        return originalRequest.call(this, config);
+      };
+
+      await pipe.createRun({ kind: 'automated' });
+
+      expect(receivedRequestBody).to.not.be.null;
+      expect(receivedRequestBody.data).to.have.property('description', 'Nightly regression on staging');
+    });
+
+    it('should append TESTOMATIO_DESCRIPTION after the coverage description', async () => {
+      process.env.TESTOMATIO_DESCRIPTION = 'User note';
+      let receivedRequestBody = null;
+
+      server.on({
+        method: 'POST',
+        path: '/api/reporter',
+        reply: {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            url: 'https://faketestomat.io/report/desc2',
+            uid: 'test-run-desc-2',
+            public_url: 'https://faketestomat.io/public/desc2',
+          }),
+        },
+      });
+
+      const store = {
+        coverageConfiguration: { tests: ['T123'], suites: [] },
+        coverageDescription: 'Coverage scope: 1 test affected',
+      };
+      const pipe = new TestomatioPipe(
+        {
+          apiKey: TESTOMATIO,
+          testomatioUrl: TESTOMATIO_URL,
+          isBatchEnabled: false,
+        },
+        store,
+      );
+
+      const originalRequest = pipe.client.request;
+      pipe.client.request = async function (config) {
+        receivedRequestBody = config;
+        return originalRequest.call(this, config);
+      };
+
+      await pipe.createRun({ kind: 'automated' });
+
+      expect(receivedRequestBody).to.not.be.null;
+      expect(receivedRequestBody.data.description).to.equal('Coverage scope: 1 test affected\n\nUser note');
+    });
   });
 
   describe('constructor', () => {
