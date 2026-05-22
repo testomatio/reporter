@@ -1,6 +1,6 @@
 {
   "name": "testomatio-reporter-cli",
-  "version": "2.7.2",
+  "version": "2.8.1",
   "description": "Yarn Berry compatible CLI wrapper for @testomatio/reporter",
   "type": "module",
   "bin": {
@@ -19,7 +19,7 @@
     "node": ">=18"
   },
   "dependencies": {
-    "@testomatio/reporter": "2.7.2"
+    "@testomatio/reporter": "2.8.1"
   },
   "license": "MIT"
 }
