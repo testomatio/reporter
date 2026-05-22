@@ -117,9 +117,9 @@ program
 
         if(opts.filterList) {
           if (command) log.info(pc.green(`Full Running Command: ${filteredCommand}`));
-          log.info();
-          log.info(`Grep string:`);
-          log.info(`${tests.join(', ')}`);
+          console.log();
+          console.log(`Grep string:`);
+          console.log(`${tests.join(', ')}`);
           return;
         }
 
