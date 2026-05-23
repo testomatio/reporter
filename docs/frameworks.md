@@ -43,12 +43,30 @@ plugins: {
 
 If `reportDir` is omitted, Testomatio reporter stores local reports in `output/report`, where `output` is taken from your CodeceptJS `output` setting.
 
+You can enable local reports directly in the CodeceptJS plugin config:
+
+- `html: true`
+- `markdown: true`
+- `csv: true`
+
+Or via environment variables at runtime:
+
+```bash
+TESTOMATIO_CODECEPT_HTML=1 TESTOMATIO_CODECEPT_MARKDOWN=1 TESTOMATIO_CODECEPT_CSV=1 npx codeceptjs run
+```
+
 Legacy adapter path `@testomatio/reporter/lib/adapter/codecept` is still supported, but `@testomatio/reporter/codecept` is the preferred public entrypoint.
 
 Run the following command from you project folder:
 
 ```bash
 TESTOMATIO={API_KEY} npx codeceptjs run
+```
+
+Add a custom run description with `TESTOMATIO_DESCRIPTION`:
+
+```bash
+TESTOMATIO={API_KEY} TESTOMATIO_DESCRIPTION="Nightly regression on staging" npx codeceptjs run
 ```
 
 For local reports only, no API key is required:
@@ -65,6 +83,12 @@ If tests run parallel, like workers in CodeceptJS use testomatio `run` command t
 
 ```bash
 TESTOMATIO={API_KEY} npx @testomatio/reporter run 'npx codeceptjs run-workers 2'
+```
+
+To place all parallel worker results into the same RunGroup, add `TESTOMATIO_RUNGROUP_TITLE`:
+
+```bash
+TESTOMATIO={API_KEY} TESTOMATIO_RUNGROUP_TITLE="Builds/${BUILD_ID}" npx @testomatio/reporter run 'npx codeceptjs run-workers 2'
 ```
 
 Use `--env-file <envfile>` option to load environment variables from .env file. Inside env file TESTOMATIO credentials like `TESTOMATIO` api key or [S3 config for artifacts](./artifacts.md).
