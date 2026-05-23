@@ -16,9 +16,16 @@ import dotenv from 'dotenv';
 import Replay from '../replay.js';
 import { log } from '../utils/log.js';
 
+const filterListArgIdx = process.argv.indexOf('--filter-list');
+const filterListArgValue = filterListArgIdx >= 0 ? process.argv[filterListArgIdx + 1] : '';
+const filterListFormat = filterListArgValue?.match(/(?:^|[,:])format=([\w-]+)/)?.[1];
+if (filterListFormat) process.env.TESTOMATIO_LOG_STDERR = '1';
+
 const debug = createDebugMessages('@testomatio/reporter:cli');
 const version = getPackageVersion();
-console.log(pc.cyan(pc.bold(` 🤩 Testomat.io Reporter v${version}`)));
+if (!filterListFormat) {
+  console.log(pc.cyan(pc.bold(` 🤩 Testomat.io Reporter v${version}`)));
+}
 const program = new Command();
 
 program
@@ -116,10 +123,11 @@ program
         debug(`Execution pattern: "${pattern}"`);
 
         if(opts.filterList) {
+          if (client.pipeStore.dryRun) return;
           if (command) log.info(pc.green(`Full Running Command: ${filteredCommand}`));
           console.log();
           console.log(`Grep string:`);
-          console.log(`${tests.join(', ')}`);
+          console.log(`${tests.join(',')}`);
           return;
         }
 

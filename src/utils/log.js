@@ -42,7 +42,8 @@ export function shouldLog(messageLevel) {
  */
 export function info(...args) {
   if (shouldLog(LOG_LEVELS.INFO)) {
-    console.log(APP_PREFIX, ...args);
+    const fn = process.env.TESTOMATIO_LOG_STDERR === '1' ? console.error : console.log;
+    fn(APP_PREFIX, ...args);
   }
 }
 

@@ -5,7 +5,7 @@ import { execSync } from 'child_process';
 import { Gaxios } from 'gaxios';
 import { minimatch } from 'minimatch';
 import { APP_PREFIX, REQUEST_TIMEOUT, REPORTER_REQUEST_RETRIES } from '../constants.js';
-import { generateFilterRequestParams } from '../utils/pipe_utils.js';
+import { generateFilterRequestParams, formatFilterListIds } from '../utils/pipe_utils.js';
 import { parsePipeOptions } from '../utils/pipe_utils.js';
 import { config } from '../config.js';
 import createDebugMessages from 'debug';
@@ -55,10 +55,10 @@ class CoveragePipe { // or Changes for the future???
 
         this.branch = options?.diff || process.env.COVERAGE_BRANCH || this.#GIT.default_branch;
         this.isBranchDefault = !options.diff && !process.env.COVERAGE_BRANCH;
+        this.outputFormat = options?.format;
 
         if (this.isBranchDefault) {
-            console.log(
-                APP_PREFIX,
+            log.info(
                 `🟡 No "diff" branch provided. That's why we use default one = "${this.branch}".\n` +
                 '👉 You can set it via --filter "coverage:file=coverage.yml,diff=your-branch"'
             );
@@ -154,8 +154,7 @@ class CoveragePipe { // or Changes for the future???
 
                 if (!tests) return [];
 
-                console.log(
-                    APP_PREFIX,
+                log.info(
                     `✅ We found ${tests.length === 1 ? 'one entry' : `${tests.length} (test/suite) entries`}` +
                     ' in Testomat.io service side.'
                 );
@@ -180,6 +179,12 @@ class CoveragePipe { // or Changes for the future???
                 testsCount: this.tests.size,
                 suitesCount: this.suiteIds.size,
             });
+        }
+
+        if (this.store?.filterList && this.outputFormat) {
+            const out = formatFilterListIds(this.results, this.outputFormat);
+            if (out) console.log(out);
+            this.store.dryRun = true;
         }
 
         return this.results;
@@ -324,7 +329,7 @@ class CoveragePipe { // or Changes for the future???
             return undefined;
         }
 
-        log.error( `ℹ️  We will use '${cmd}' Git command.`);
+        log.warn( `We will use '${cmd}' Git command.`);
 
         try {
             // For clear unit testing process -> Like test_defaultGitChangedFile = todomvc-tests/edit-todos_test.js
@@ -335,10 +340,7 @@ class CoveragePipe { // or Changes for the future???
                 this.changedFiles =  this.#getChangedFilesFromGit(cmd);
 
                 if (this.changedFiles.length === 0) {
-                    console.log(
-                        APP_PREFIX,
-                        'ℹ️  No files changed in the latest Git commit. Skipping coverage processing.'
-                    );
+                    log.info('ℹ️  No files changed in the latest Git commit. Skipping coverage processing.');
 
                     return undefined;
                 }
