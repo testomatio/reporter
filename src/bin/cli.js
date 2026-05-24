@@ -123,7 +123,9 @@ program
         if (opts.filterList) {
           const out = formatFilterListIds(tests, opts.format || 'ids');
           if (out) console.log(out);
-          if (command) {
+          // Show the runnable-command hint only in interactive mode (no explicit --format).
+          // When --format is set the user is scripting and doesn't need stderr noise.
+          if (command && !opts.format) {
             log.info(pc.green(`Full Running Command: ${applyFilter(command, tests)}`));
           }
           return;
