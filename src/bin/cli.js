@@ -15,28 +15,35 @@ import { filesize as prettyBytes } from 'filesize';
 import dotenv from 'dotenv';
 import Replay from '../replay.js';
 import { log } from '../utils/log.js';
-
-const filterListArgIdx = process.argv.indexOf('--filter-list');
-const filterListArgValue = filterListArgIdx >= 0 ? process.argv[filterListArgIdx + 1] : '';
-const filterListFormat = filterListArgValue?.match(/(?:^|[,:])format=([\w-]+)/)?.[1];
-if (filterListFormat) process.env.TESTOMATIO_LOG_STDERR = '1';
+import { parsePipeOptions } from '../utils/pipe_utils.js';
 
 const debug = createDebugMessages('@testomatio/reporter:cli');
 const version = getPackageVersion();
-if (!filterListFormat) {
-  console.log(pc.cyan(pc.bold(` 🤩 Testomat.io Reporter v${version}`)));
-}
 const program = new Command();
+
+function getFilterListFormat(filterList) {
+  if (!filterList) return undefined;
+  const pipeOptions = filterList.split(':').slice(1).join(':');
+  return parsePipeOptions(pipeOptions).format;
+}
 
 program
   .version(version)
   .option('--env-file <envfile>', 'Load environment variables from env file')
-  .hook('preAction', thisCommand => {
+  .hook('preAction', (thisCommand, actionCommand) => {
     const opts = thisCommand.opts();
     if (opts.envFile) {
       dotenv.config({ path: opts.envFile });
     } else {
       dotenv.config();
+    }
+
+    // When --filter-list requests a machine-readable format (e.g. format=grep),
+    // route logs to stderr and skip the banner so stdout stays clean for piping.
+    if (getFilterListFormat(actionCommand.opts().filterList)) {
+      process.env.TESTOMATIO_LOG_STDERR = '1';
+    } else {
+      console.log(pc.cyan(pc.bold(` 🤩 Testomat.io Reporter v${version}`)));
     }
   });
 
