@@ -55,7 +55,6 @@ class CoveragePipe { // or Changes for the future???
 
         this.branch = options?.diff || process.env.COVERAGE_BRANCH || this.#GIT.default_branch;
         this.isBranchDefault = !options.diff && !process.env.COVERAGE_BRANCH;
-        this.outputFormat = options?.format;
 
         if (this.isBranchDefault) {
             log.info(
@@ -181,8 +180,8 @@ class CoveragePipe { // or Changes for the future???
             });
         }
 
-        if (this.store?.filterList && this.outputFormat) {
-            const out = formatFilterListIds(this.results, this.outputFormat);
+        if (this.store?.filterList && this.store?.outputFormat) {
+            const out = formatFilterListIds(this.results, this.store.outputFormat);
             if (out) console.log(out);
             this.store.dryRun = true;
         }

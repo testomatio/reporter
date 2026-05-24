@@ -163,8 +163,8 @@ function parsePipeOptions(optionsStr) {
 
 /**
  * Format a list of test IDs for `--filter-list` machine-readable output.
- * Used when a `format=` option is passed inside the filter string,
- * e.g. `--filter-list "coverage:file=...,format=grep"`.
+ * Used when the CLI `--format` option is passed,
+ * e.g. `--filter-list "coverage:file=..." --format grep`.
  *
  * @param {string[]} ids
  * @param {'grep'|'json'|'newline'|'ids'} format

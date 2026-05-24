@@ -15,17 +15,10 @@ import { filesize as prettyBytes } from 'filesize';
 import dotenv from 'dotenv';
 import Replay from '../replay.js';
 import { log } from '../utils/log.js';
-import { parsePipeOptions } from '../utils/pipe_utils.js';
 
 const debug = createDebugMessages('@testomatio/reporter:cli');
 const version = getPackageVersion();
 const program = new Command();
-
-function getFilterListFormat(filterList) {
-  if (!filterList) return undefined;
-  const pipeOptions = filterList.split(':').slice(1).join(':');
-  return parsePipeOptions(pipeOptions).format;
-}
 
 program
   .version(version)
@@ -38,9 +31,9 @@ program
       dotenv.config();
     }
 
-    // When --filter-list requests a machine-readable format (e.g. format=grep),
+    // When --format requests machine-readable output (e.g. grep, json),
     // route logs to stderr and skip the banner so stdout stays clean for piping.
-    if (getFilterListFormat(actionCommand.opts().filterList)) {
+    if (actionCommand.opts().format) {
       process.env.TESTOMATIO_LOG_STDERR = '1';
     } else {
       console.log(pc.cyan(pc.bold(` 🤩 Testomat.io Reporter v${version}`)));
@@ -97,6 +90,7 @@ program
   .argument('[command]', 'Test runner command')
   .option('--filter <filter>', 'Additional execution filter')
   .option('--filter-list <filter>', 'Get a list of all tests by filter before running')
+  .option('--format <format>', 'Machine-readable output format for --filter-list (grep, json, newline, ids)')
   .option('--kind <type>', 'Specify run type: automated, manual, or mixed')
   .action(async (command, opts) => {
     const apiKey = process.env['INPUT_TESTOMATIO-KEY'] || config.TESTOMATIO;
@@ -107,13 +101,16 @@ program
       log.info('Filtering tests...');
       // Example of use: npx @testomatio/reporter run "npx jest" --filter "testomatio:tag-name=frontend"
       // Example of use: npx @testomatio/reporter run "npx jest" --filter "coverage:file=coverage.yml"
-      // Example of use: npx @testomatio/reporter run "npx jest" --filter-list "coverage:file=coverage.yml"
+      // Example of use: npx @testomatio/reporter run "npx jest" --filter-list "coverage:file=coverage.yml" --format grep
       const [pipe, ...optsArray] = opts?.filter ? opts?.filter.split(':') : opts?.filterList.split(':');
       const pipeOptions = optsArray.join(':');
 
       const prepareRunParams = { pipe, pipeOptions };
       if (opts.filterList) {
         client.pipeStore.filterList = true;
+      }
+      if (opts.format) {
+        client.pipeStore.outputFormat = opts.format;
       }
 
       try {
