@@ -129,6 +129,8 @@ When `--filter-list` is set, the matched test IDs are printed to `stdout` in a f
 
 Set `TESTOMATIO_LOG_LEVEL=INFO` to bring the progress logs back for debugging.
 
+**Exit codes:** `--filter-list` exits `0` when at least one test matched, and `1` when no tests matched or filter resolution failed. CI scripts can branch on the exit code to skip launching the runner when there's nothing to run.
+
 The default format is `ids` (comma-separated). Use `--format` to switch:
 
 - `grep` — alternation wrapped in parens, e.g. `(t1|t2|t3)`
