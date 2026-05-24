@@ -161,12 +161,33 @@ function parsePipeOptions(optionsStr) {
   return options;
 }
 
-export { 
-  updateFilterType, 
-  parseFilterParams, 
-  generateFilterRequestParams, 
-  setS3Credentials, 
-  statusEmoji, 
+/**
+ * Format a list of test IDs for `--filter-list` machine-readable output.
+ * Used when the CLI `--format` option is passed,
+ * e.g. `--filter-list "coverage:file=..." --format grep`.
+ *
+ * @param {string[]} ids
+ * @param {'grep'|'json'|'newline'|'ids'} format
+ * @returns {string} Empty string if no ids; otherwise the formatted output.
+ */
+function formatFilterListIds(ids, format) {
+  if (!ids || ids.length === 0) return '';
+  switch (format) {
+    case 'grep': return `(${ids.join('|')})`;
+    case 'json': return JSON.stringify(ids);
+    case 'newline': return ids.join('\n');
+    case 'ids':
+    default: return ids.join(',');
+  }
+}
+
+export {
+  updateFilterType,
+  parseFilterParams,
+  generateFilterRequestParams,
+  setS3Credentials,
+  statusEmoji,
   fullName,
-  parsePipeOptions
+  parsePipeOptions,
+  formatFilterListIds,
 };

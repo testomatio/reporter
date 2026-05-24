@@ -96,6 +96,8 @@ Alias for this command – `test`, e.g. `npx @testomatio/reporter test [options]
 
 - `-c, --command <cmd>`: Test runner command (required).
 - `--filter <filter>`: [Filter executed tests](./pipes/testomatio.md#filter-tests) by tag, label, jira, plan.
+- `--filter-list <filter>`: Print the list of tests matching the filter without running them. Useful for inspecting which tests would run, or for piping IDs into another command. See [Coverage Pipe](./pipes/coverage.md#machine-readable-output-with---format) for examples.
+- `--format <format>`: Machine-readable output format for `--filter-list`. Supported values: `grep`, `json`, `newline`, `ids`. When set, the CLI banner is suppressed and informational logs go to `stderr` so `stdout` stays clean for piping.
 - `--env-file <envfile>`: Load environment variables from a specific env file.
 - `--kind <type>`: Specify run type: `automated`, `manual`, or `mixed`. Determines how the test run is categorized in Testomat.io.
 
@@ -109,6 +111,7 @@ npx @testomatio/reporter run "npx jest" --filter "testomatio:label=Smoke"
 npx @testomatio/reporter run "npx jest" --filter "testomatio:jira=TC-123"
 npx @testomatio/reporter run "npx jest" --filter "testomatio:plan=a123fb12"
 npx @testomatio/reporter run "npx jest" --filter-list "coverage:file=coverage.yml,diff=user-branch"
+npx @testomatio/reporter run --filter-list "coverage:file=coverage.yml" --format grep
 npx @testomatio/reporter run "npx jest" --filter "coverage:file=coverage.yml,diff=user-branch"
 npx @testomatio/reporter run "npx jest" --filter "coverage:file=coverage/coverage.yml"
 npx @testomatio/reporter run "mocha tests/" --env-file .env.test
