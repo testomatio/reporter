@@ -83,7 +83,9 @@ npx @testomatio/reporter run --filter-list "coverage:file=coverage/coverage.yml,
 
 ### Machine-readable output with `--format`
 
-`--filter-list` always prints the matched test IDs to `stdout` in a format suitable for piping into other tools. The CLI banner is suppressed and all informational logs are redirected to `stderr`, so `stdout` contains only the formatted list. The default format is `ids` (comma-separated); use `--format` to switch.
+`--filter-list` always prints the matched test IDs to `stdout` in a format suitable for piping. The CLI banner is suppressed, progress logs are silenced, and any remaining warnings/errors go to `stderr` — so the terminal shows only the test list, and the output is safe to copy or capture. The default format is `ids` (comma-separated); use `--format` to switch.
+
+Set `TESTOMATIO_LOG_LEVEL=INFO` to bring the progress logs back for debugging.
 
 Supported values:
 

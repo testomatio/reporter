@@ -33,10 +33,13 @@ program
     }
 
     // --filter-list produces a machine-readable test list on stdout, so route
-    // logs to stderr and skip the banner to keep stdout clean for piping.
+    // remaining output to stderr, skip the banner, and silence info-level
+    // logs so the terminal isn't flooded with progress noise.
+    // Set TESTOMATIO_LOG_LEVEL=INFO to re-enable progress logs for debugging.
     const subOpts = actionCommand.opts();
     if (subOpts.filterList || subOpts.format) {
       process.env.TESTOMATIO_LOG_STDERR = '1';
+      process.env.TESTOMATIO_LOG_LEVEL ||= 'WARN';
     } else {
       console.log(pc.cyan(pc.bold(` 🤩 Testomat.io Reporter v${version}`)));
     }

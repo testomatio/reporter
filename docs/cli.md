@@ -125,7 +125,9 @@ npx @testomatio/reporter run "npx jest" --kind mixed
 
 #### 3.2 Machine-readable output with `--format`
 
-When `--filter-list` is set, the matched test IDs are printed to `stdout` in a format suitable for piping. The CLI banner is suppressed and all informational logs are routed to `stderr`, so `stdout` stays clean.
+When `--filter-list` is set, the matched test IDs are printed to `stdout` in a format suitable for piping. The CLI banner is suppressed, progress logs are silenced, and any remaining warnings/errors go to `stderr` — so the terminal shows only the test list, and the output is safe to copy or capture.
+
+Set `TESTOMATIO_LOG_LEVEL=INFO` to bring the progress logs back for debugging.
 
 The default format is `ids` (comma-separated). Use `--format` to switch:
 
