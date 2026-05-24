@@ -101,7 +101,7 @@ program
       log.info('Filtering tests...');
       // Example of use: npx @testomatio/reporter run "npx jest" --filter "testomatio:tag-name=frontend"
       // Example of use: npx @testomatio/reporter run "npx jest" --filter "coverage:file=coverage.yml"
-      // Example of use: npx @testomatio/reporter run "npx jest" --filter-list "coverage:file=coverage.yml" --format grep
+      // Example of use: npx @testomatio/reporter run --filter-list "coverage:file=coverage.yml" --format grep
       const [pipe, ...optsArray] = opts?.filter ? opts?.filter.split(':') : opts?.filterList.split(':');
       const pipeOptions = optsArray.join(':');
 
