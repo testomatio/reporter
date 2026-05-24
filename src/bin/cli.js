@@ -119,7 +119,10 @@ program
         const tests = await client.prepareRun(prepareRunParams);
 
         if (!tests || tests.length === 0) {
-          log.info( pc.yellow('No tests found.'));
+          log.warn( pc.yellow('No tests found.'));
+          // Exit non-zero on --filter-list so scripts can detect "nothing to run"
+          // via $? and skip launching the runner.
+          if (opts.filterList) process.exit(1);
           return;
         }
 
@@ -139,7 +142,8 @@ program
         }
       }
       catch (err) {
-        log.info( err.message || err);
+        log.error( err.message || err);
+        if (opts.filterList) process.exit(1);
         return;
       }
     }
