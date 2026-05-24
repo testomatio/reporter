@@ -119,31 +119,35 @@ npx @testomatio/reporter run "npm test" --kind manual
 npx @testomatio/reporter run "npx jest" --kind mixed
 ```
 
-#### 3.1 run by "--filter" option
+#### 3.1 Filter pipes
 
-⚠️ Note on unsupported --filter modes
+> `--filter` and `--filter-list` only work with the `testomatio:` and `coverage:` pipes (e.g. `testomatio:tag-name=smoke`, `coverage:file=coverage.yml`). Any other prefix is rejected.
 
-If you provide a --filter value that does not start with either `testomatio:` or `coverage:` ,
-the reporter will stop execution and print a clear error message.
+#### 3.2 Machine-readable output with `--format`
 
-Example of wrong command:
+When `--filter-list` is set, the matched test IDs are printed to `stdout` in a format suitable for piping. The CLI banner is suppressed and all informational logs are routed to `stderr`, so `stdout` stays clean.
+
+The default format is `ids` (comma-separated). Use `--format` to switch:
+
+- `grep` — alternation wrapped in parens, e.g. `(t1|t2|t3)`
+- `json` — JSON array, e.g. `["t1","t2","t3"]`
+- `newline` — one ID per line
+- `ids` — comma-separated (default)
+
+**Example: pipe matched tests straight into a runner's grep flag**
 
 ```bash
-npx @testomatio/reporter run "npx jest" --filter "tcoverage:file=coverage.yml"
+GREP=$(npx @testomatio/reporter run --filter-list "coverage:file=coverage.yml" --format grep)
+npx playwright test --grep "$GREP"
 ```
 
-Output:
+**Example: capture IDs as JSON for further processing**
 
 ```bash
-[TESTOMATIO] 🚫 Unsupported --filter mode: "tcoverage".
-✅ Supported formats:
-   • "coverage:<options>" (e.g., --filter-list "coverage:file=coverage.yml")
-   • "coverage:<options>" (e.g., --filter "coverage:file=coverage.yml")
-   • "testomatio:<options>" (e.g., --filter-list "testomatio:tag-name=smoke")
-   • "testomatio:<options>" (e.g., --filter "testomatio:tag-name=smoke")
-
-👉 Please refer to the documentation for supported options and usage examples.
+npx @testomatio/reporter run --filter-list "coverage:file=coverage.yml" --format json > affected-tests.json
 ```
+
+See the [Coverage Pipe docs](./pipes/coverage.md#machine-readable-output-with---format) for more details on each format.
 
 > Previously known as: `npx start-test-run -c "command"` _(before 1.6.0)_
 
