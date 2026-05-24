@@ -15,6 +15,7 @@ import { filesize as prettyBytes } from 'filesize';
 import dotenv from 'dotenv';
 import Replay from '../replay.js';
 import { log } from '../utils/log.js';
+import { formatFilterListIds } from '../utils/pipe_utils.js';
 
 const debug = createDebugMessages('@testomatio/reporter:cli');
 const version = getPackageVersion();
@@ -31,9 +32,10 @@ program
       dotenv.config();
     }
 
-    // When --format requests machine-readable output (e.g. grep, json),
-    // route logs to stderr and skip the banner so stdout stays clean for piping.
-    if (actionCommand.opts().format) {
+    // --filter-list produces a machine-readable test list on stdout, so route
+    // logs to stderr and skip the banner to keep stdout clean for piping.
+    const subOpts = actionCommand.opts();
+    if (subOpts.filterList || subOpts.format) {
       process.env.TESTOMATIO_LOG_STDERR = '1';
     } else {
       console.log(pc.cyan(pc.bold(` 🤩 Testomat.io Reporter v${version}`)));
@@ -109,9 +111,6 @@ program
       if (opts.filterList) {
         client.pipeStore.filterList = true;
       }
-      if (opts.format) {
-        client.pipeStore.outputFormat = opts.format;
-      }
 
       try {
         const tests = await client.prepareRun(prepareRunParams);
@@ -121,22 +120,17 @@ program
           return;
         }
 
-        const pattern = `(${tests.join('|')})`;
-        const filteredCommand = applyFilter(command, tests);
-
-        debug(`Execution pattern: "${pattern}"`);
-
-        if(opts.filterList) {
-          if (client.pipeStore.dryRun) return;
-          if (command) log.info(pc.green(`Full Running Command: ${filteredCommand}`));
-          console.log();
-          console.log(`Grep string:`);
-          console.log(`${tests.join(',')}`);
+        if (opts.filterList) {
+          const out = formatFilterListIds(tests, opts.format || 'ids');
+          if (out) console.log(out);
+          if (command) {
+            log.info(pc.green(`Full Running Command: ${applyFilter(command, tests)}`));
+          }
           return;
         }
 
         if (command && command.split) {
-          command = filteredCommand;
+          command = applyFilter(command, tests);
         }
       }
       catch (err) {

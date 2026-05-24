@@ -5,7 +5,7 @@ import { execSync } from 'child_process';
 import { Gaxios } from 'gaxios';
 import { minimatch } from 'minimatch';
 import { APP_PREFIX, REQUEST_TIMEOUT, REPORTER_REQUEST_RETRIES } from '../constants.js';
-import { generateFilterRequestParams, formatFilterListIds } from '../utils/pipe_utils.js';
+import { generateFilterRequestParams } from '../utils/pipe_utils.js';
 import { parsePipeOptions } from '../utils/pipe_utils.js';
 import { config } from '../config.js';
 import createDebugMessages from 'debug';
@@ -178,12 +178,6 @@ class CoveragePipe { // or Changes for the future???
                 testsCount: this.tests.size,
                 suitesCount: this.suiteIds.size,
             });
-        }
-
-        if (this.store?.filterList && this.store?.outputFormat) {
-            const out = formatFilterListIds(this.results, this.store.outputFormat);
-            if (out) console.log(out);
-            this.store.dryRun = true;
         }
 
         return this.results;
