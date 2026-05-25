@@ -490,11 +490,16 @@ function formatHookName(hookName) {
   return hookName.replace(/Hook$/, '');
 }
 
+function getCodeceptStepCategory(origin = 'test') {
+  if (origin === 'hook') return 'hook';
+  return 'user';
+}
+
 // Format CodeceptJS step using its built-in methods
 function formatCodeceptStep(step, screenshotOnFailPath = null) {
   if (!step) return null;
 
-  const category = step.constructor.name === 'HelperStep' ? 'framework' : 'user';
+  const category = getCodeceptStepCategory('test');
   const title = truncate(String(step));
   const duration = step.duration || 0;
 
@@ -548,7 +553,7 @@ function formatHookStep(step) {
   title = truncate(title);
 
   const formattedStep = formatStep({
-    category: 'hook',
+    category: getCodeceptStepCategory('hook'),
     title,
     duration: step.duration || 0,
   });
