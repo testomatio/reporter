@@ -144,7 +144,7 @@ Max request timeout in **milli**seconds. Default is 20 sec.
 
 Trigger a remote CI build instead of (or in addition to) creating a run locally. When set, the reporter asks Testomat.io to dispatch the named CI profile (configured under **Settings → CI** on the project — for example `github`, `gitlab`, `jenkins`, `bitbucket`). The CLI sets this automatically when you pass [`--remote <profile>`](./cli.md#3-run), so you only need this env var when you don't go through the CLI.
 
-If a filter is also resolved (via `--filter` or [`TESTOMATIO_CI_OVERRIDE`](#testomatio_ci_override)), the matched test IDs are joined with `|` and forwarded to the CI workflow as the grep pattern.
+If a filter is also resolved (via `--filter` or [`TESTOMATIO_CI_PARAMS`](#testomatio_ci_params)), the matched test IDs are joined with `|` and forwarded to the CI workflow as the grep pattern.
 
 Example:
 
@@ -154,17 +154,17 @@ TESTOMATIO={API_KEY} TESTOMATIO_CI_PROFILE=github <actual run command>
 
 See: [Trigger a Remote CI Run](./pipes/testomatio.md#trigger-a-remote-ci-run).
 
-#### `TESTOMATIO_CI_OVERRIDE`
+#### `TESTOMATIO_CI_PARAMS`
 
 Comma-separated `key=value` pairs forwarded to the CI profile config at launch time. Use it to override profile defaults per run (e.g. `branch`, `ref`, environment variables exposed to the CI workflow). Entries without `=` are ignored. Only takes effect when [`TESTOMATIO_CI_PROFILE`](#testomatio_ci_profile) is set.
 
 Example:
 
 ```
-TESTOMATIO={API_KEY} TESTOMATIO_CI_PROFILE=github TESTOMATIO_CI_OVERRIDE="branch=develop,REGION=eu" <actual run command>
+TESTOMATIO={API_KEY} TESTOMATIO_CI_PROFILE=github TESTOMATIO_CI_PARAMS="branch=develop,REGION=eu" <actual run command>
 ```
 
-The CLI sets this automatically when you pass `--remote-override key=value` (repeatable) — see [CLI docs](./cli.md#3-run).
+The CLI sets this automatically when you pass `--remote-param key=value` (repeatable) — see [CLI docs](./cli.md#3-run).
 
 #### `TESTOMATIO_PROCEED`
 

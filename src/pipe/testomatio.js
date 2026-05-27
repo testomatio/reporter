@@ -25,13 +25,13 @@ const debug = createDebugMessages('@testomatio/reporter:pipe:testomatio');
 if (process.env.TESTOMATIO_RUN) process.env.runId = process.env.TESTOMATIO_RUN;
 
 /**
- * Parse `TESTOMATIO_CI_OVERRIDE` (comma-separated `key=value` pairs) into an object.
+ * Parse `TESTOMATIO_CI_PARAMS` (comma-separated `key=value` pairs) into an object.
  * Entries without `=` or with empty keys are skipped. Returns undefined when input is empty.
  *
  * @param {string|undefined} raw
  * @returns {Record<string, string>|undefined}
  */
-function parseCiOverride(raw) {
+function parseCiParams(raw) {
   if (!raw) return undefined;
   /** @type {Record<string, string>} */
   const result = {};
@@ -106,10 +106,10 @@ class TestomatioPipe {
 
     // Remote CI launch — when `TESTOMATIO_CI_PROFILE` is set the run will be created
     // on the server *and* the named CI profile will be dispatched. Optional
-    // `TESTOMATIO_CI_OVERRIDE` is a comma-separated list of `key=value` pairs
+    // `TESTOMATIO_CI_PARAMS` is a comma-separated list of `key=value` pairs
     // forwarded to the CI profile config (e.g. `branch=develop,REGION=eu`).
     this.ciProfile = process.env.TESTOMATIO_CI_PROFILE;
-    this.ciOverride = parseCiOverride(process.env.TESTOMATIO_CI_OVERRIDE);
+    this.ciParams = parseCiParams(process.env.TESTOMATIO_CI_PARAMS);
 
     // Create a new instance of gaxios with a custom config
     this.client = new Gaxios({
@@ -284,7 +284,7 @@ class TestomatioPipe {
       ci = { profile: this.ciProfile };
       const grepIds = this.store?.preparedTestIds;
       if (grepIds?.length) ci.grep = grepIds.join('|');
-      if (this.ciOverride) ci.override = this.ciOverride;
+      if (this.ciParams) ci.override = this.ciParams;
     }
     const runParams = Object.fromEntries(
       Object.entries({

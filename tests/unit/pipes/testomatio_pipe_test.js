@@ -551,7 +551,7 @@ describe('TestomatioPipe', () => {
       });
 
       process.env.TESTOMATIO_CI_PROFILE = 'github';
-      process.env.TESTOMATIO_CI_OVERRIDE = 'branch=develop,REGION=eu';
+      process.env.TESTOMATIO_CI_PARAMS = 'branch=develop,REGION=eu';
 
       try {
         const store = { preparedTestIds: ['T1', 'T2'] };
@@ -577,7 +577,7 @@ describe('TestomatioPipe', () => {
         });
       } finally {
         delete process.env.TESTOMATIO_CI_PROFILE;
-        delete process.env.TESTOMATIO_CI_OVERRIDE;
+        delete process.env.TESTOMATIO_CI_PARAMS;
       }
     });
 

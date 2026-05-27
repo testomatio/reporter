@@ -99,7 +99,7 @@ program
   .option('--kind <type>', 'Specify run type: automated, manual, or mixed')
   .option('--remote <profile>', 'Trigger run on the named Testomat.io CI profile instead of executing locally')
   .option(
-    '--remote-override <kv>',
+    '--remote-param <kv>',
     'key=value pair forwarded to the CI profile config (repeat for multiple)',
     (value, prev) => prev.concat([value]),
     [],
@@ -111,8 +111,8 @@ program
         process.exit(1);
       }
       process.env.TESTOMATIO_CI_PROFILE = opts.remote;
-      if (opts.remoteOverride?.length) {
-        process.env.TESTOMATIO_CI_OVERRIDE = opts.remoteOverride.join(',');
+      if (opts.remoteParam?.length) {
+        process.env.TESTOMATIO_CI_PARAMS = opts.remoteParam.join(',');
       }
     }
 

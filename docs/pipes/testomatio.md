@@ -333,10 +333,10 @@ TESTOMATIO={API_KEY} npx @testomatio/reporter run --remote gitlab \
 TESTOMATIO={API_KEY} npx @testomatio/reporter run --remote jenkins \
   --filter "testomatio:plan=a123fb12"
 
-# Override CI profile config (e.g. branch / env vars) at launch time
+# Forward extra params to the CI profile config (e.g. branch / env vars) at launch time
 TESTOMATIO={API_KEY} npx @testomatio/reporter run --remote github \
-  --remote-override branch=develop \
-  --remote-override REGION=eu
+  --remote-param branch=develop \
+  --remote-param REGION=eu
 ```
 
 Equivalent env-var form (matches the existing `TESTOMATIO_*` configuration pattern — see [Configuration](../configuration.md#testomatio_ci_profile)):
@@ -344,7 +344,7 @@ Equivalent env-var form (matches the existing `TESTOMATIO_*` configuration patte
 ```bash
 TESTOMATIO={API_KEY} \
 TESTOMATIO_CI_PROFILE=github \
-TESTOMATIO_CI_OVERRIDE="branch=develop,REGION=eu" \
+TESTOMATIO_CI_PARAMS="branch=develop,REGION=eu" \
   npx @testomatio/reporter run --filter "testomatio:tag-name=smoke"
 ```
 

@@ -101,7 +101,7 @@ Alias for this command – `test`, e.g. `npx @testomatio/reporter test [options]
 - `--env-file <envfile>`: Load environment variables from a specific env file.
 - `--kind <type>`: Specify run type: `automated`, `manual`, or `mixed`. Determines how the test run is categorized in Testomat.io.
 - `--remote <profile>`: Trigger the run on a CI profile configured on the Testomat.io project (e.g. `github`, `gitlab`, `jenkins`) instead of executing tests locally. The CLI creates the run on Testomat.io, asks the backend to dispatch the named CI workflow, and exits. Equivalent to setting [`TESTOMATIO_CI_PROFILE`](./configuration.md#testomatio_ci_profile).
-- `--remote-override <kv>`: `key=value` pair forwarded to the CI profile config (e.g. `branch=develop`). Repeat the option to pass multiple overrides. Equivalent to setting [`TESTOMATIO_CI_OVERRIDE`](./configuration.md#testomatio_ci_override).
+- `--remote-param <kv>`: `key=value` pair forwarded to the CI profile config (e.g. `branch=develop`). Repeat the option to pass multiple params. Equivalent to setting [`TESTOMATIO_CI_PARAMS`](./configuration.md#testomatio_ci_params).
 
 **Examples:**
 
@@ -167,7 +167,7 @@ Works with every `--filter` form (`coverage:...`, `testomatio:tag-name=...`, `:p
 npx @testomatio/reporter run --remote github
 npx @testomatio/reporter run --remote github --filter "coverage:file=coverage.manual.yml,diff=master"
 npx @testomatio/reporter run --remote gitlab --filter "testomatio:tag-name=smoke"
-npx @testomatio/reporter run --remote jenkins --remote-override branch=develop --remote-override REGION=eu
+npx @testomatio/reporter run --remote jenkins --remote-param branch=develop --remote-param REGION=eu
 ```
 
 **Behaviour & guards**
@@ -178,7 +178,7 @@ npx @testomatio/reporter run --remote jenkins --remote-override branch=develop -
 - If `--filter` resolves to zero tests the run is not created — same `No tests found.` early-return as the regular flow.
 - The CI profile must exist on the project (configured in Testomat.io under **Settings → CI**). Resolution errors are surfaced as `CI launch failed: <message>` and exit `1`.
 
-The same configuration can be set via env vars (e.g. for users who don't pass through the CLI): [`TESTOMATIO_CI_PROFILE`](./configuration.md#testomatio_ci_profile) and [`TESTOMATIO_CI_OVERRIDE`](./configuration.md#testomatio_ci_override).
+The same configuration can be set via env vars (e.g. for users who don't pass through the CLI): [`TESTOMATIO_CI_PROFILE`](./configuration.md#testomatio_ci_profile) and [`TESTOMATIO_CI_PARAMS`](./configuration.md#testomatio_ci_params).
 
 > Previously known as: `npx start-test-run -c "command"` _(before 1.6.0)_
 
