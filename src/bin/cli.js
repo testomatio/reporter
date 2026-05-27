@@ -21,6 +21,16 @@ const debug = createDebugMessages('@testomatio/reporter:cli');
 const version = getPackageVersion();
 const program = new Command();
 
+function parseRemoteOverride(entries) {
+  const result = {};
+  for (const entry of entries) {
+    const idx = entry.indexOf('=');
+    if (idx <= 0) continue;
+    result[entry.slice(0, idx).trim()] = entry.slice(idx + 1);
+  }
+  return result;
+}
+
 program
   .version(version)
   .option('--env-file <envfile>', 'Load environment variables from env file')
@@ -97,10 +107,24 @@ program
   .option('--filter-list <filter>', 'Get a list of all tests by filter before running')
   .option('--format <format>', 'Machine-readable output format for --filter-list (grep, json, newline, ids)')
   .option('--kind <type>', 'Specify run type: automated, manual, or mixed')
+  .option('--remote <profile>', 'Trigger run on the named Testomat.io CI profile instead of executing locally')
+  .option(
+    '--remote-override <kv>',
+    'key=value pair forwarded to the CI profile config (repeat for multiple)',
+    (value, prev) => prev.concat([value]),
+    [],
+  )
   .action(async (command, opts) => {
     const apiKey = process.env['INPUT_TESTOMATIO-KEY'] || config.TESTOMATIO;
     const title = process.env.TESTOMATIO_TITLE;
     const client = new TestomatClient({ apiKey, title });
+
+    if (opts.remote && opts.filterList) {
+      log.warn(pc.red('⚠️  --filter-list cannot be combined with --remote'));
+      process.exit(1);
+    }
+
+    let resolvedTests;
 
     if (opts.filter || opts.filterList) {
       log.info('Filtering tests...');
@@ -126,6 +150,8 @@ program
           return;
         }
 
+        resolvedTests = tests;
+
         if (opts.filterList) {
           const out = formatFilterListIds(tests, opts.format || 'ids');
           if (out) console.log(out);
@@ -137,7 +163,7 @@ program
           return;
         }
 
-        if (command && command.split) {
+        if (command && command.split && !opts.remote) {
           command = applyFilter(command, tests);
         }
       }
@@ -146,6 +172,35 @@ program
         if (opts.filterList) process.exit(1);
         return;
       }
+    }
+
+    if (opts.remote) {
+      if (!apiKey) {
+        log.warn(pc.red('⚠️  TESTOMATIO API key required for --remote'));
+        process.exit(1);
+      }
+      if (command) {
+        log.warn(pc.yellow('Note: positional command is ignored when --remote is set; CI runs the workflow.'));
+      }
+
+      const ci = { profile: opts.remote };
+      if (resolvedTests?.length) ci.grep = resolvedTests.join('|');
+      if (opts.remoteOverride?.length) ci.override = parseRemoteOverride(opts.remoteOverride);
+
+      const createRunParams = { ci };
+      if (title) createRunParams.title = title;
+      if (opts.kind) createRunParams.kind = opts.kind;
+
+      try {
+        await client.createRun(createRunParams);
+      } catch (err) {
+        log.info(pc.red(`CI launch failed: ${err.message || err}`));
+        process.exit(1);
+      }
+
+      log.info(`🚀 CI build triggered on profile ${pc.cyan(opts.remote)}`);
+      if (client.pipeStore.runUrl) log.info(`📊 Report URL: ${pc.magenta(client.pipeStore.runUrl)}`);
+      return process.exit(0);
     }
 
     // just create a run (wich tests which match filters) without executing tests

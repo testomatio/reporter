@@ -532,6 +532,72 @@ describe('TestomatioPipe', () => {
       expect(receivedRequestBody).to.not.be.null;
       expect(receivedRequestBody.data.description).to.equal('Coverage scope: 1 test affected\n\nUser note');
     });
+
+    it('should pass ci block through to API for remote launch', async () => {
+      let receivedRequestBody = null;
+
+      server.on({
+        method: 'POST',
+        path: '/api/reporter',
+        reply: {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            url: 'https://faketestomat.io/report/ci-1',
+            uid: 'ci-run-1',
+            public_url: 'https://faketestomat.io/public/ci-1',
+          }),
+        },
+      });
+
+      const originalRequest = testomatioPipe.client.request;
+      testomatioPipe.client.request = async function (config) {
+        receivedRequestBody = config;
+        return originalRequest.call(this, config);
+      };
+
+      await testomatioPipe.createRun({
+        kind: 'automated',
+        ci: { profile: 'github', grep: 'T1|T2', override: { branch: 'develop' } },
+      });
+
+      expect(receivedRequestBody).to.not.be.null;
+      expect(receivedRequestBody.data).to.have.property('ci');
+      expect(receivedRequestBody.data.ci).to.deep.equal({
+        profile: 'github',
+        grep: 'T1|T2',
+        override: { branch: 'develop' },
+      });
+    });
+
+    it('should not include ci block in API request when ci is not supplied', async () => {
+      let receivedRequestBody = null;
+
+      server.on({
+        method: 'POST',
+        path: '/api/reporter',
+        reply: {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            url: 'https://faketestomat.io/report/no-ci',
+            uid: 'no-ci-run',
+            public_url: 'https://faketestomat.io/public/no-ci',
+          }),
+        },
+      });
+
+      const originalRequest = testomatioPipe.client.request;
+      testomatioPipe.client.request = async function (config) {
+        receivedRequestBody = config;
+        return originalRequest.call(this, config);
+      };
+
+      await testomatioPipe.createRun({ kind: 'automated' });
+
+      expect(receivedRequestBody).to.not.be.null;
+      expect(receivedRequestBody.data).to.not.have.property('ci');
+    });
   });
 
   describe('constructor', () => {

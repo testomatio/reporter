@@ -195,7 +195,18 @@ class TestomatioPipe {
 
   /**
    * Creates a new run on Testomat.io
-   * @param {{isBatchEnabled?: boolean, kind?: string, configuration?: Record<string, any>}} params
+   * @param {{
+   *   isBatchEnabled?: boolean,
+   *   kind?: string,
+   *   configuration?: Record<string, any>,
+   *   ci?: {
+   *     profile: string,
+   *     grep?: string,
+   *     override?: Record<string, any>,
+   *     type?: string,
+   *     id?: string,
+   *   },
+   * }} params
    * @returns Promise<void>
    */
   async createRun(params = {}) {
@@ -263,6 +274,7 @@ class TestomatioPipe {
         kind: params.kind,
         configuration,
         description,
+        ci: params.ci,
       }).filter(([, value]) => !!value),
     );
     debug(' >>>>>> Run params', JSON.stringify(runParams, null, 2));
