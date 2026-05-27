@@ -100,6 +100,8 @@ Alias for this command – `test`, e.g. `npx @testomatio/reporter test [options]
 - `--format <format>`: Machine-readable output format for `--filter-list`. Supported values: `grep`, `json`, `newline`, `ids`. When set, the CLI banner is suppressed and informational logs go to `stderr` so `stdout` stays clean for piping.
 - `--env-file <envfile>`: Load environment variables from a specific env file.
 - `--kind <type>`: Specify run type: `automated`, `manual`, or `mixed`. Determines how the test run is categorized in Testomat.io.
+- `--remote <profile>`: Trigger the run on a CI profile configured on the Testomat.io project (e.g. `github`, `gitlab`, `jenkins`) instead of executing tests locally. The CLI creates the run on Testomat.io, asks the backend to dispatch the named CI workflow, and exits. Equivalent to setting [`TESTOMATIO_CI_PROFILE`](./configuration.md#testomatio_ci_profile).
+- `--remote-override <kv>`: `key=value` pair forwarded to the CI profile config (e.g. `branch=develop`). Repeat the option to pass multiple overrides. Equivalent to setting [`TESTOMATIO_CI_OVERRIDE`](./configuration.md#testomatio_ci_override).
 
 **Examples:**
 
@@ -152,6 +154,31 @@ npx @testomatio/reporter run --filter-list "coverage:file=coverage.yml" --format
 ```
 
 See the [Coverage Pipe docs](./pipes/coverage.md#machine-readable-output-with---format) for more details on each format.
+
+#### 3.3 Trigger a remote CI run with `--remote`
+
+`--remote <profile>` skips local execution and asks Testomat.io to dispatch a CI workflow defined under a project's CI profile (see [Testomat.io Pipe → Trigger a Remote CI Run](./pipes/testomatio.md#trigger-a-remote-ci-run)). The CLI creates the run, attaches the named profile + any filter-resolved grep, and exits — your CI is responsible for running the tests and reporting results back into the same run.
+
+Works with every `--filter` form (`coverage:...`, `testomatio:tag-name=...`, `:plan=...`, `:label=...`, `:jira-ticket=...`): the resolved test ids are joined with `|` and forwarded as the CI grep pattern. Without `--filter` the CI workflow runs whatever it normally would.
+
+**Basic usage:**
+
+```bash
+npx @testomatio/reporter run --remote github
+npx @testomatio/reporter run --remote github --filter "coverage:file=coverage.manual.yml,diff=master"
+npx @testomatio/reporter run --remote gitlab --filter "testomatio:tag-name=smoke"
+npx @testomatio/reporter run --remote jenkins --remote-override branch=develop --remote-override REGION=eu
+```
+
+**Behaviour & guards**
+
+- Requires a Testomat.io API key (`TESTOMATIO`); the CLI exits `1` otherwise.
+- Cannot be combined with `--filter-list` — the CLI exits `1` with a clear error. Use one or the other.
+- Any positional command is ignored with a warning, so existing scripts can toggle `--remote` on without further edits.
+- If `--filter` resolves to zero tests the run is not created — same `No tests found.` early-return as the regular flow.
+- The CI profile must exist on the project (configured in Testomat.io under **Settings → CI**). Resolution errors are surfaced as `CI launch failed: <message>` and exit `1`.
+
+The same configuration can be set via env vars (e.g. for users who don't pass through the CLI): [`TESTOMATIO_CI_PROFILE`](./configuration.md#testomatio_ci_profile) and [`TESTOMATIO_CI_OVERRIDE`](./configuration.md#testomatio_ci_override).
 
 > Previously known as: `npx start-test-run -c "command"` _(before 1.6.0)_
 

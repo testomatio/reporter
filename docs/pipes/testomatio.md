@@ -302,6 +302,71 @@ TESTOMATIO={API_KEY} npx @testomatio/reporter run 'npx playwright test' --filter
 
 Please note, that this functionality allows you to easily filter and execute tests based on specific criteria, enhancing your testing experience.
 
+### Trigger a Remote CI Run
+
+Instead of executing tests locally, you can ask Testomat.io to dispatch a CI workflow defined on the project. The reporter creates the run on the server, attaches the named CI profile (and any filter-resolved grep) to it, and exits — your CI is responsible for running the tests and reporting their results back into the same run.
+
+This is useful for:
+
+- Kicking off coverage-driven regression runs (e.g. only re-run manual or e2e tests whose source files changed in a PR) without juggling CI tokens locally.
+- Running plan / tag / label-based suites from any environment without provisioning a local test runtime.
+- Wiring `npx @testomatio/reporter run --remote ...` into PR comments, dashboards, or chat-ops bots.
+
+#### Prerequisites
+
+1. A CI profile configured on the project: in Testomat.io go to **Settings → CI**, pick a provider (GitHub Actions, GitLab CI, Jenkins, Bamboo, Bitbucket Pipelines, TeamCity, CircleCI, Azure DevOps), and save it under a name like `github`. That name is what you pass to `--remote`.
+2. A project API key (`TESTOMATIO=tstmt_...`).
+
+#### Usage
+
+```bash
+# Dispatch the `github` profile and let it run its default scope
+TESTOMATIO={API_KEY} npx @testomatio/reporter run --remote github
+
+# Dispatch + grep filter (works with every supported filter form)
+TESTOMATIO={API_KEY} npx @testomatio/reporter run --remote github \
+  --filter "coverage:file=coverage.manual.yml,diff=master"
+
+TESTOMATIO={API_KEY} npx @testomatio/reporter run --remote gitlab \
+  --filter "testomatio:tag-name=smoke"
+
+TESTOMATIO={API_KEY} npx @testomatio/reporter run --remote jenkins \
+  --filter "testomatio:plan=a123fb12"
+
+# Override CI profile config (e.g. branch / env vars) at launch time
+TESTOMATIO={API_KEY} npx @testomatio/reporter run --remote github \
+  --remote-override branch=develop \
+  --remote-override REGION=eu
+```
+
+Equivalent env-var form (matches the existing `TESTOMATIO_*` configuration pattern — see [Configuration](../configuration.md#testomatio_ci_profile)):
+
+```bash
+TESTOMATIO={API_KEY} \
+TESTOMATIO_CI_PROFILE=github \
+TESTOMATIO_CI_OVERRIDE="branch=develop,REGION=eu" \
+  npx @testomatio/reporter run --filter "testomatio:tag-name=smoke"
+```
+
+#### How the grep is built
+
+When a filter is set, the testomatio / coverage pipe resolves it locally to a list of test ids (e.g. `T123`, `S45`). Those ids are joined with `|` and forwarded to the CI workflow under a `grep` config key. Your CI workflow then passes that pattern to the test framework's `--grep` flag (or equivalent).
+
+If no filter is supplied, no grep is sent and the CI workflow runs its default scope.
+
+#### Output
+
+On success the CLI prints the launched profile and the run URL:
+
+```
+🚀 CI build triggered on profile github
+📊 Report URL: https://app.testomat.io/projects/.../runs/...
+```
+
+Then it exits `0`. The run starts in the `scheduled` state and transitions as your CI reports results back through `@testomatio/reporter` running inside the workflow.
+
+> The CI profile name must exist on the project, otherwise the request fails with `CI launch failed: No settings for <profile>` and exits `1`. `--remote` cannot be combined with `--filter-list`.
+
 ### Exclude Tests from Report by Glob Pattern
 
 To exclude tests from the report by [glob pattern](https://www.npmjs.com/package/glob) use `TESTOMATIO_EXCLUDE_FILES_FROM_REPORT_GLOB_PATTERN` environment variable:
