@@ -21,16 +21,6 @@ const debug = createDebugMessages('@testomatio/reporter:cli');
 const version = getPackageVersion();
 const program = new Command();
 
-function parseRemoteOverride(entries) {
-  const result = {};
-  for (const entry of entries) {
-    const idx = entry.indexOf('=');
-    if (idx <= 0) continue;
-    result[entry.slice(0, idx).trim()] = entry.slice(idx + 1);
-  }
-  return result;
-}
-
 program
   .version(version)
   .option('--env-file <envfile>', 'Load environment variables from env file')
@@ -115,16 +105,20 @@ program
     [],
   )
   .action(async (command, opts) => {
+    if (opts.remote) {
+      if (opts.filterList) {
+        log.warn(pc.red('⚠️  --filter-list cannot be combined with --remote'));
+        process.exit(1);
+      }
+      process.env.TESTOMATIO_CI_PROFILE = opts.remote;
+      if (opts.remoteOverride?.length) {
+        process.env.TESTOMATIO_CI_OVERRIDE = opts.remoteOverride.join(',');
+      }
+    }
+
     const apiKey = process.env['INPUT_TESTOMATIO-KEY'] || config.TESTOMATIO;
     const title = process.env.TESTOMATIO_TITLE;
     const client = new TestomatClient({ apiKey, title });
-
-    if (opts.remote && opts.filterList) {
-      log.warn(pc.red('⚠️  --filter-list cannot be combined with --remote'));
-      process.exit(1);
-    }
-
-    let resolvedTests;
 
     if (opts.filter || opts.filterList) {
       log.info('Filtering tests...');
@@ -149,8 +143,6 @@ program
           if (opts.filterList) process.exit(1);
           return;
         }
-
-        resolvedTests = tests;
 
         if (opts.filterList) {
           const out = formatFilterListIds(tests, opts.format || 'ids');
@@ -183,18 +175,14 @@ program
         log.warn(pc.yellow('Note: positional command is ignored when --remote is set; CI runs the workflow.'));
       }
 
-      const ci = { profile: opts.remote };
-      if (resolvedTests?.length) ci.grep = resolvedTests.join('|');
-      if (opts.remoteOverride?.length) ci.override = parseRemoteOverride(opts.remoteOverride);
-
-      const createRunParams = { ci };
+      const createRunParams = {};
       if (title) createRunParams.title = title;
       if (opts.kind) createRunParams.kind = opts.kind;
 
       try {
         await client.createRun(createRunParams);
       } catch (err) {
-        log.info(pc.red(`CI launch failed: ${err.message || err}`));
+        log.warn(pc.red(`CI launch failed: ${err.message || err}`));
         process.exit(1);
       }
 

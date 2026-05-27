@@ -317,28 +317,12 @@ export interface PipeResult {
 }
 
 /**
- * CI launch block — forwarded as `ci` on `POST /api/reporter` so the server
- * creates the run *and* triggers a build on the named CI profile.
- */
-export interface CiLaunchParams {
-  /** Name of the CI profile configured on the Testomat.io project (e.g. `github`, `gitlab`). */
-  profile: string;
-
-  /** Pre-resolved grep string (e.g. `T1|T2|S3`); sent as-is to the CI workflow. */
-  grep?: string;
-
-  /** Key-value overrides merged into the CI profile config at launch time. */
-  override?: Record<string, any>;
-
-  /** Alternative to `grep`: ask the server to resolve a grep via GrepService. */
-  type?: 'plan' | 'run' | 'run_failed' | 'relaunch' | 'label' | 'requirement' | 'tag' | 'issue' | 'jira' | 'test' | 'suite';
-
-  /** UID/identifier for the `type` lookup. */
-  id?: string;
-}
-
-/**
  * Parameters accepted by `Client.createRun`.
+ *
+ * Remote CI launch (via `--remote <profile>` / matching `TESTOMATIO_CI_PROFILE`
+ * env var) is **not** passed through this object — `TestomatioPipe` reads the
+ * env vars directly and assembles the request body. See
+ * `TESTOMATIO_CI_PROFILE` and `TESTOMATIO_CI_OVERRIDE`.
  */
 export interface CreateRunParams {
   /** Run kind. Defaults to `automated` server-side. */
@@ -352,9 +336,6 @@ export interface CreateRunParams {
 
   /** Override batch upload on/off. */
   isBatchEnabled?: boolean;
-
-  /** Trigger a CI build instead of (or in addition to) creating the run. */
-  ci?: CiLaunchParams;
 }
 
 /**
