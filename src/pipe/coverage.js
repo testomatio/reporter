@@ -260,9 +260,10 @@ class CoveragePipe { // or Changes for the future???
      */
     #getChangedFilesFromGit(cmd) {
         try {
+            // Capture stderr (instead of ignoring it) so Git's actual error is available for diagnostics
             const result = execSync(cmd, {
                 encoding: 'utf-8',
-                stdio: ['pipe', 'pipe', 'ignore']
+                stdio: ['pipe', 'pipe', 'pipe']
             });
 
             return result
@@ -271,16 +272,33 @@ class CoveragePipe { // or Changes for the future???
                 .filter(Boolean);
         }
         catch (err) {
-            const errorMessage = err.message || '';
-            // Git edge: Not a git repository or other error
+            // Prefer Git's own stderr output, fall back to the generic error message
+            const gitOutput = (err.stderr || '').toString().trim();
+            const errorMessage = gitOutput || err.message || '';
+
+            // Git edge: Not a git repository
             if (errorMessage.includes('Not a git repository')) {
-                log.error( '❌ Error: This folder is not a Git repository.');
-            }
-            else {
-                throw new Error(`❌ Git command failed ("${cmd}"):\n`, errorMessage);
+                log.error('❌ Error: This folder is not a Git repository.');
+                return [];
             }
 
-            return [];
+            // Git edge: the branch/ref to diff against is not available locally.
+            // This is common in CI, where a shallow checkout fetches only the current branch.
+            if (
+                errorMessage.includes('unknown revision') ||
+                errorMessage.includes('ambiguous argument') ||
+                errorMessage.includes('bad revision')
+            ) {
+                log.error(`❌ Git command failed ("${cmd}"):\n${errorMessage}`);
+                log.error(
+                    `🔍 Branch "${this.branch}" was not found locally. ` +
+                    `In CI this usually means a shallow checkout — fetch full history first, e.g. ` +
+                    `actions/checkout with "fetch-depth: 0", or run "git fetch origin ${this.branch}:${this.branch}".`
+                );
+                return [];
+            }
+
+            throw new Error(`❌ Git command failed ("${cmd}"):\n${errorMessage}`);
         }
     }
 
