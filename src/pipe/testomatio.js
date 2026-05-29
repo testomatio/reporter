@@ -277,13 +277,20 @@ class TestomatioPipe {
 
     // Assemble the `ci` block when the user asked for a remote CI launch via
     // TESTOMATIO_CI_PROFILE (e.g. `--remote github`). Grep is taken from whatever
-    // `--filter` resolution already stashed in the shared pipeStore.
-    /** @type {{profile: string, grep?: string, override?: Record<string, any>}|null} */
+    // `--filter` resolution already stashed in the shared pipeStore. When launching
+    // an already-prepared run (TESTOMATIO_RUN set) with no fresh filter, ask the
+    // server to grep that run's own stored scope via `{ type: 'run', id }`.
+    /** @type {{profile: string, grep?: string, type?: string, id?: string, override?: Record<string, any>}|null} */
     let ci = null;
     if (this.ciProfile) {
       ci = { profile: this.ciProfile };
       const grepIds = this.store?.preparedTestIds;
-      if (grepIds?.length) ci.grep = grepIds.join('|');
+      if (grepIds?.length) {
+        ci.grep = grepIds.join('|');
+      } else if (this.runId) {
+        ci.type = 'run';
+        ci.id = this.runId;
+      }
       if (this.ciParams) ci.override = this.ciParams;
     }
     const runParams = Object.fromEntries(

@@ -367,6 +367,22 @@ Then it exits `0`. The run starts in the `scheduled` state and transitions as yo
 
 > The CI profile name must exist on the project, otherwise the request fails with `CI launch failed: No settings for <profile>` and exits `1`. `--remote` cannot be combined with `--filter-list`.
 
+#### Launch a Previously Prepared Run
+
+You can separate "create the run" from "trigger CI" into two steps. First prepare a scheduled run scoped to a filter (nothing runs yet):
+
+```bash
+RUN_ID=$(TESTOMATIO_CI_PROFILE= npx @testomatio/reporter start --filter "testomatio:tag-name=smoke")
+```
+
+Later, launch that existing run on a CI profile by pointing `TESTOMATIO_RUN` at it:
+
+```bash
+TESTOMATIO_RUN=$RUN_ID npx @testomatio/reporter run --remote github
+```
+
+When `TESTOMATIO_RUN` is set, the pipe issues a `PUT /api/reporter/{runId}` with the `ci` block instead of creating a new run. With no `--filter` at launch, the pipe sends `ci: { profile, type: 'run', id: <runId> }`, asking the server to grep the run's own stored scope — so the filter from the prepare step is reused automatically. Passing a fresh `--filter` at launch overrides that scope.
+
 ### Exclude Tests from Report by Glob Pattern
 
 To exclude tests from the report by [glob pattern](https://www.npmjs.com/package/glob) use `TESTOMATIO_EXCLUDE_FILES_FROM_REPORT_GLOB_PATTERN` environment variable:

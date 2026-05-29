@@ -217,6 +217,12 @@ components:
           items:
             $ref: '#/components/schemas/TestData'
           description: The details of each test
+        ci:
+          $ref: '#/components/schemas/CiLaunchParams'
+          description: >
+            Launch this already-prepared run on CI. When present, the run is
+            triggered on the named CI profile (with the resolved grep or
+            `type`/`id` selector) instead of applying a normal status update.
       example:
         status_event: 'finish'
         duration: 25.5

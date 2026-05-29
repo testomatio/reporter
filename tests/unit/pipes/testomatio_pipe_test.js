@@ -650,6 +650,49 @@ describe('TestomatioPipe', () => {
       expect(receivedRequestBody).to.not.be.null;
       expect(receivedRequestBody.data).to.not.have.property('ci');
     });
+
+    it('should grep the existing run scope when launching with TESTOMATIO_RUN and no filter', async () => {
+      let receivedRequestBody = null;
+
+      server.on({
+        method: 'PUT',
+        path: '/api/reporter/run-xyz',
+        reply: {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            url: 'https://faketestomat.io/report/run-xyz',
+            uid: 'run-xyz',
+            public_url: 'https://faketestomat.io/public/run-xyz',
+          }),
+        },
+      });
+
+      process.env.TESTOMATIO_CI_PROFILE = 'github';
+      process.env.TESTOMATIO_RUN = 'run-xyz';
+
+      try {
+        const pipe = new TestomatioPipe({
+          apiKey: TESTOMATIO,
+          testomatioUrl: TESTOMATIO_URL,
+          isBatchEnabled: false,
+        });
+
+        const originalRequest = pipe.client.request;
+        pipe.client.request = async function (config) {
+          receivedRequestBody = config;
+          return originalRequest.call(this, config);
+        };
+
+        await pipe.createRun({ kind: 'automated' });
+
+        expect(receivedRequestBody).to.not.be.null;
+        expect(receivedRequestBody.data.ci).to.deep.equal({ profile: 'github', type: 'run', id: 'run-xyz' });
+      } finally {
+        delete process.env.TESTOMATIO_CI_PROFILE;
+        delete process.env.TESTOMATIO_RUN;
+      }
+    });
   });
 
   describe('constructor', () => {

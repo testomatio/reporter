@@ -49,6 +49,7 @@ program
   .command('start')
   .description('Start a new run and return its ID')
   .option('--kind <type>', 'Specify run type: automated, manual, or mixed')
+  .option('--filter <filter>', 'Scope the prepared run to tests matching the filter (no execution)')
   .action(async opts => {
     cleanLatestRunId();
 
@@ -57,8 +58,19 @@ program
     const client = new TestomatClient({ apiKey });
 
     const createRunParams = {};
-    if (opts.kind) {
-      createRunParams.kind = opts.kind;
+    if (opts.kind) createRunParams.kind = opts.kind;
+
+    if (opts.filter) {
+      const [pipe, ...optsArray] = opts.filter.split(':');
+      const tests = await client.prepareRun({ pipe, pipeOptions: optsArray.join(':') });
+      if (!tests || tests.length === 0) {
+        log.warn(pc.yellow('No tests found for the filter. Run not created.'));
+        process.exit(1);
+      }
+      createRunParams.configuration = {
+        tests: tests.filter(id => id.startsWith('T')).map(id => id.slice(1)),
+        suites: tests.filter(id => id.startsWith('S')).map(id => id.slice(1)),
+      };
     }
 
     client.createRun(createRunParams).then(() => {

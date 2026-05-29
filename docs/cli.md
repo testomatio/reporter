@@ -41,6 +41,7 @@ npx @testomatio/reporter start [options]
 npx @testomatio/reporter start
 npx @testomatio/reporter start --kind manual
 npx @testomatio/reporter start --kind mixed
+npx @testomatio/reporter start --filter "testomatio:tag-name=smoke"
 ```
 
 **Environment Variables:**
@@ -51,6 +52,7 @@ npx @testomatio/reporter start --kind mixed
 
 - `--env-file <envfile>`: Load environment variables from a specific env file. If none specified, it will look for `.env` file.
 - `--kind <type>`: Specify run type: `automated`, `manual`, or `mixed`. Determines how the test run is categorized in Testomat.io.
+- `--filter <filter>`: Scope the prepared run to the tests matching the filter (same syntax as [`run --filter`](#31-filter-pipes)). The run is created with that test list but **not** executed — useful to prepare a run and launch it later on CI (see [Prepare a run, then launch it on CI](#34-prepare-a-run-then-launch-it-on-ci)).
 
 > Previously known as: `npx start-test-run --launch` _(before 1.6.0)_
 
@@ -179,6 +181,28 @@ npx @testomatio/reporter run --remote jenkins --remote-param branch=develop --re
 - The CI profile must exist on the project (configured in Testomat.io under **Settings → CI**). Resolution errors are surfaced as `CI launch failed: <message>` and exit `1`.
 
 The same configuration can be set via env vars (e.g. for users who don't pass through the CLI): [`TESTOMATIO_CI_PROFILE`](./configuration.md#testomatio_ci_profile) and [`TESTOMATIO_CI_PARAMS`](./configuration.md#testomatio_ci_params).
+
+#### 3.4 Prepare a run, then launch it on CI
+
+`--remote` can also launch a run that was prepared earlier, splitting "create the run" and "trigger CI" into two separate steps. This is useful when one job (or person) decides _what_ to run and a later step (a gate, a button, another pipeline) decides _when_ to launch it.
+
+**Step 1 — prepare a scheduled run (no CI), capturing its scope:**
+
+```bash
+RUN_ID=$(npx @testomatio/reporter start --filter "testomatio:tag-name=smoke")
+```
+
+The run is created with the matched tests and stays scheduled — nothing is executed and no CI is triggered yet. `start` prints the new run id on stdout.
+
+**Step 2 — launch that run on CI:**
+
+```bash
+TESTOMATIO_RUN=$RUN_ID npx @testomatio/reporter run --remote github
+```
+
+Because `TESTOMATIO_RUN` points at the prepared run, the CLI does **not** create a new run — it triggers the named CI profile for the existing one. With no `--filter` at launch, the server greps the run's own stored scope, so you don't have to repeat the filter. You can still pass a fresh `--filter` (or `--remote-param`) at launch to override the scope or CI config.
+
+This is the recommended two-phase flow. Choosing the profile at launch (rather than at prepare time) means the same prepared run can be launched on different CI profiles — e.g. retried on a second profile.
 
 > Previously known as: `npx start-test-run -c "command"` _(before 1.6.0)_
 
