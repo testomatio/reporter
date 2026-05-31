@@ -86,7 +86,7 @@
     "build:watch:bun": "rm -rf ./cjs && bun build ./src/bin/reportXml.js ./src/bin/startTest.js ./src/bin/uploadArtifacts.js --outdir ./cjs --target node --watch --onSuccess \"build/scripts/post-build.js\""
   },
   "devDependencies": {
-    "@playwright/test": "^1.49.1",
+    "@playwright/test": "^1.60.0",
     "@redocly/cli": "^1.0.0-beta.125",
     "@types/cross-spawn": "^6.0.6",
     "@types/cucumber": "^7.0.0",
