@@ -169,6 +169,7 @@ class CoveragePipe { // or Changes for the future???
 
         this.results = [...this.tests, ...this.suiteIds];
         if (this.store) {
+            this.store.preparedTestIds = this.results;
             this.store.coverageConfiguration = {
                 tests: [...this.tests],
                 suites: [...this.suiteIds],

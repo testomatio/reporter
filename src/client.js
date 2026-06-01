@@ -102,9 +102,6 @@ class Client {
       const rawResult = await p.prepareRun(pipeOptions);
       const result = Array.isArray(rawResult) ? rawResult : [];
 
-      // Expose resolved test ids to other pipes (e.g. TestomatioPipe builds `ci.grep` from this).
-      this.pipeStore.preparedTestIds = result;
-
       debug('Execution tests list', result);
 
       return result;

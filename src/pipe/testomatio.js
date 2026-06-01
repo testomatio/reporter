@@ -210,6 +210,7 @@ class TestomatioPipe {
 
       if (Array.isArray(resp.data?.tests) && resp.data?.tests?.length > 0) {
         foundedTestLog(APP_PREFIX, resp.data.tests);
+        if (this.store) this.store.preparedTestIds = resp.data.tests;
         return resp.data.tests;
       }
 
