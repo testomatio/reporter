@@ -132,18 +132,7 @@ npx @testomatio/reporter run "npx jest" --kind mixed
 
 #### 3.2 Machine-readable output with `--format`
 
-When `--filter-list` is set, the matched test IDs are printed to `stdout` in a format suitable for piping. The CLI banner is suppressed, progress logs are silenced, and any remaining warnings/errors go to `stderr` — so the terminal shows only the test list, and the output is safe to copy or capture.
-
-Set `TESTOMATIO_LOG_LEVEL=INFO` to bring the progress logs back for debugging.
-
-**Exit codes:** `--filter-list` exits `0` when at least one test matched, and `1` when no tests matched or filter resolution failed. CI scripts can branch on the exit code to skip launching the runner when there's nothing to run.
-
-The default format is `ids` (comma-separated). Use `--format` to switch:
-
-- `grep` — alternation wrapped in parens, e.g. `(t1|t2|t3)`
-- `json` — JSON array, e.g. `["t1","t2","t3"]`
-- `newline` — one ID per line
-- `ids` — comma-separated (default)
+With `--filter-list`, `--format` controls how the matched test IDs are printed to `stdout` (`ids` by default; also `grep`, `json`, `newline`). The banner is suppressed and logs go to `stderr`, so the output is safe to pipe or capture. Full reference, formats, and exit codes: [The `--format` flag](#the---format-flag).
 
 **Example: pipe matched tests straight into a runner's grep flag**
 
@@ -157,8 +146,6 @@ npx playwright test --grep "$GREP"
 ```bash
 npx @testomatio/reporter run --filter-list "coverage:file=coverage.yml" --format json > affected-tests.json
 ```
-
-See the [Coverage Pipe docs](./pipes/coverage.md#machine-readable-output-with---format) for more details on each format.
 
 #### 3.3 Trigger a remote CI run with `--remote`
 
@@ -352,6 +339,66 @@ The replay command uses the `ReplayService` class (located in `src/replay.js`) t
 6. Update the run status when complete
 
 For more details about debug files, see the [Debug Pipe documentation](pipes/debug.md).
+
+## The `--format` flag
+
+`--format` switches a command into **machine-readable mode**: `stdout` carries only the requested data so it can be captured or piped, while the banner and progress logs are routed to `stderr`. Two commands support it — [`run --filter-list`](#3-run) and [`start`](#1-start) — and machine-readable mode behaves the same way for both.
+
+**What machine-readable mode does (regardless of command or value):**
+
+- The startup banner is **not** printed.
+- Informational logs are routed to `stderr` (info level is lowered to `WARN`); only the requested payload is written to `stdout`.
+- Warnings and errors still go to `stderr`, so a captured `stdout` stays clean.
+- Set `TESTOMATIO_LOG_LEVEL=INFO` to bring progress logs back (on `stderr`) for debugging.
+
+This is what makes `$( … )` capture and `|` piping reliable — without `--format`, the banner and `[TESTOMATIO]` logs are interleaved on `stdout`.
+
+### With `run --filter-list`
+
+Prints the IDs of the tests matching the filter **without running them**. `--format` only takes effect together with `--filter-list`; the value selects the encoding:
+
+| Value     | Output                        | Example              |
+| --------- | ----------------------------- | -------------------- |
+| `ids`     | comma-separated (default)     | `T1,T2,S3`           |
+| `grep`    | alternation wrapped in parens | `(T1\|T2\|S3)`       |
+| `json`    | JSON array                    | `["T1","T2","S3"]`   |
+| `newline` | one ID per line               | `T1` / `T2` / `S3`   |
+
+**Exit codes:** `0` when at least one test matched, `1` when nothing matched or filter resolution failed — so CI can branch on `$?` and skip launching the runner when there is nothing to run.
+
+```bash
+# Feed the selection straight into a runner's grep flag
+GREP=$(npx @testomatio/reporter run --filter-list "coverage:file=coverage.yml" --format grep)
+[ -n "$GREP" ] && npx playwright test --grep "$GREP"
+
+# Capture the IDs as JSON for further processing
+npx @testomatio/reporter run --filter-list "coverage:file=coverage.yml" --format json > affected-tests.json
+```
+
+Only the `testomatio:` and `coverage:` filter pipes are supported (see [3.1 Filter pipes](#31-filter-pipes)). The [Coverage Pipe docs](./pipes/coverage.md#machine-readable-output-with---format) cover the formats in more detail.
+
+### With `start`
+
+Prints **only the new run id** to `stdout`, so it can be captured directly:
+
+```bash
+RUN_ID=$(npx @testomatio/reporter start --format id)
+echo "$RUN_ID"   # e.g. a1b2c3d4
+```
+
+`start` emits a single value (the run id), so for `start` the format **value is not significant** — `--format id` is the conventional choice, but any value turns on machine-readable mode. `start` exits non-zero if the run could not be created, so `RUN_ID` is set only on success. It combines with `--kind` and `--filter`:
+
+```bash
+RUN_ID=$(npx @testomatio/reporter start --kind manual --format id)
+RUN_ID=$(npx @testomatio/reporter start --filter "testomatio:tag-name=smoke" --format id)
+```
+
+### Quick reference
+
+| Command             | Accepted `--format` values       | `stdout` contains      | Needs                |
+| ------------------- | -------------------------------- | ---------------------- | -------------------- |
+| `run --filter-list` | `ids`, `grep`, `json`, `newline` | the matching test IDs  | `--filter-list`      |
+| `start`             | any (use `id`)                   | the new run id         | —                    |
 
 ## Environment Variables
 
