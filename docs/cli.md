@@ -29,7 +29,7 @@ npx @testomatio/reporter <command> [options]
 
 Starts a new test run and returns its ID. This requires an API key to be set in the `TESTOMATIO` environment variable.
 
-`start` prints **only the run id to `stdout`** (the banner and progress logs go to `stderr`), so it is safe to capture directly: `RUN_ID=$(npx @testomatio/reporter start)`. It exits non-zero if the run could not be created.
+With `--format id` (or any `--format`), `start` prints **only the run id to `stdout`** (the banner and progress logs go to `stderr`), so it is safe to capture: `RUN_ID=$(npx @testomatio/reporter start --format id)`. It exits non-zero if the run could not be created.
 
 **Usage:**
 
@@ -55,6 +55,7 @@ npx @testomatio/reporter start --filter "testomatio:tag-name=smoke"
 - `--env-file <envfile>`: Load environment variables from a specific env file. If none specified, it will look for `.env` file.
 - `--kind <type>`: Specify run type: `automated`, `manual`, or `mixed`. Determines how the test run is categorized in Testomat.io.
 - `--filter <filter>`: Scope the prepared run to the tests matching the filter (same syntax as [`run --filter`](#31-filter-pipes)). The run is created with that test list but **not** executed — useful to prepare a run and launch it later on CI (see [Prepare a run, then launch it on CI](#34-prepare-a-run-then-launch-it-on-ci)).
+- `--format <format>`: Print **only the run id** to `stdout` (banner and logs go to `stderr`) so it can be captured: `RUN_ID=$(npx @testomatio/reporter start --format id)`.
 
 > Previously known as: `npx start-test-run --launch` _(before 1.6.0)_
 
@@ -191,10 +192,10 @@ The same configuration can be set via env vars (e.g. for users who don't pass th
 **Step 1 — prepare a scheduled run (no CI), capturing its scope:**
 
 ```bash
-RUN_ID=$(npx @testomatio/reporter start --filter "testomatio:tag-name=smoke")
+RUN_ID=$(npx @testomatio/reporter start --filter "testomatio:tag-name=smoke" --format id)
 ```
 
-The run is created with the matched tests and stays scheduled — nothing is executed and no CI is triggered yet. `start` prints the new run id on stdout.
+The run is created with the matched tests and stays scheduled — nothing is executed and no CI is triggered yet. `--format id` keeps `stdout` to just the run id so `RUN_ID` captures it cleanly.
 
 **Step 2 — launch that run on CI:**
 

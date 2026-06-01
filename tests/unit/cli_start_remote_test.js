@@ -60,10 +60,10 @@ describe('cli start / run --remote', () => {
   after(done => server.stop(done));
 
   describe('start', () => {
-    it('prints ONLY the run id on stdout so RUN_ID=$(...) is clean', async () => {
+    it('with --format prints ONLY the run id on stdout so RUN_ID=$(...) is clean', async () => {
       server.on(replyRun('startrun123'));
 
-      const { code, stdout } = await runCli(['start']);
+      const { code, stdout } = await runCli(['start', '--format', 'id']);
 
       expect(code).to.equal(0);
       expect(stdout.trim()).to.equal('startrun123');
@@ -72,7 +72,7 @@ describe('cli start / run --remote', () => {
     it('exits non-zero when the run is not created', async () => {
       server.on(replyRun('ignored', 500));
 
-      const { code, stdout } = await runCli(['start']);
+      const { code, stdout } = await runCli(['start', '--format', 'id']);
 
       expect(code).to.equal(1);
       expect(stdout.trim()).to.not.equal('ignored');

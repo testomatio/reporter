@@ -32,19 +32,15 @@ program
       dotenv.config();
     }
 
-    // Commands whose stdout is meant to be captured (`start` prints the run id,
-    // `--filter-list` prints the test list) must keep stdout clean: route info
-    // logs to stderr and skip the banner so `RUN_ID=$(... start)` gets only the id.
+    // --format / --filter-list produce machine-readable output on stdout, so route
+    // remaining output to stderr, skip the banner, and silence info-level logs so
+    // stdout stays clean for capture (e.g. RUN_ID=$(... start --format id)).
     // Set TESTOMATIO_LOG_LEVEL=INFO to re-enable progress logs for debugging.
     const subOpts = actionCommand.opts();
-    const machineReadable = subOpts.filterList || subOpts.format || actionCommand.name() === 'start';
-    if (machineReadable) {
-      process.env.TESTOMATIO_LOG_STDERR = '1';
-    }
     if (subOpts.filterList || subOpts.format) {
+      process.env.TESTOMATIO_LOG_STDERR = '1';
       process.env.TESTOMATIO_LOG_LEVEL ||= 'WARN';
-    }
-    if (!machineReadable) {
+    } else {
       console.log(pc.cyan(pc.bold(` 🤩 Testomat.io Reporter v${version}`)));
     }
   });
@@ -54,6 +50,7 @@ program
   .description('Start a new run and return its ID')
   .option('--kind <type>', 'Specify run type: automated, manual, or mixed')
   .option('--filter <filter>', 'Scope the prepared run to tests matching the filter (no execution)')
+  .option('--format <format>', 'Machine-readable output: print only the run id to stdout (e.g. --format id)')
   .action(async opts => {
     cleanLatestRunId();
 
