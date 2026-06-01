@@ -32,15 +32,19 @@ program
       dotenv.config();
     }
 
-    // --filter-list produces a machine-readable test list on stdout, so route
-    // remaining output to stderr, skip the banner, and silence info-level
-    // logs so the terminal isn't flooded with progress noise.
+    // Commands whose stdout is meant to be captured (`start` prints the run id,
+    // `--filter-list` prints the test list) must keep stdout clean: route info
+    // logs to stderr and skip the banner so `RUN_ID=$(... start)` gets only the id.
     // Set TESTOMATIO_LOG_LEVEL=INFO to re-enable progress logs for debugging.
     const subOpts = actionCommand.opts();
-    if (subOpts.filterList || subOpts.format) {
+    const machineReadable = subOpts.filterList || subOpts.format || actionCommand.name() === 'start';
+    if (machineReadable) {
       process.env.TESTOMATIO_LOG_STDERR = '1';
+    }
+    if (subOpts.filterList || subOpts.format) {
       process.env.TESTOMATIO_LOG_LEVEL ||= 'WARN';
-    } else {
+    }
+    if (!machineReadable) {
       console.log(pc.cyan(pc.bold(` 🤩 Testomat.io Reporter v${version}`)));
     }
   });
@@ -53,7 +57,7 @@ program
   .action(async opts => {
     cleanLatestRunId();
 
-    console.log('Starting a new Run on Testomat.io...');
+    log.info('Starting a new Run on Testomat.io...');
     const apiKey = process.env['INPUT_TESTOMATIO-KEY'] || config.TESTOMATIO;
     const client = new TestomatClient({ apiKey });
 
@@ -73,10 +77,17 @@ program
       };
     }
 
-    client.createRun(createRunParams).then(() => {
-      console.log(process.env.runId);
-      process.exit(0);
-    });
+    await client.createRun(createRunParams);
+
+    const runId = client.pipeStore.runId || process.env.runId;
+    if (!runId) {
+      log.error(pc.red('Failed to create run on Testomat.io.'));
+      process.exit(1);
+    }
+
+    // stdout carries ONLY the run id so it can be captured: RUN_ID=$(reporter start)
+    console.log(runId);
+    process.exit(0);
   });
 
 program
@@ -194,12 +205,19 @@ program
       try {
         await client.createRun(createRunParams);
       } catch (err) {
-        log.warn(pc.red(`CI launch failed: ${err.message || err}`));
+        log.error(pc.red(`CI launch failed: ${err.message || err}`));
+        process.exit(1);
+      }
+
+      // createRun swallows pipe-level errors, so a resolved promise is not proof
+      // the launch succeeded — the pipe only records runUrl on a real 2xx response.
+      if (!client.pipeStore.runUrl) {
+        log.error(pc.red('CI launch failed — no run was created (see the error above).'));
         process.exit(1);
       }
 
       log.info(`🚀 CI build triggered on profile ${pc.cyan(opts.remote)}`);
-      if (client.pipeStore.runUrl) log.info(`📊 Report URL: ${pc.magenta(client.pipeStore.runUrl)}`);
+      log.info(`📊 Report URL: ${pc.magenta(client.pipeStore.runUrl)}`);
       return process.exit(0);
     }
 

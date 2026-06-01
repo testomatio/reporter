@@ -29,6 +29,8 @@ npx @testomatio/reporter <command> [options]
 
 Starts a new test run and returns its ID. This requires an API key to be set in the `TESTOMATIO` environment variable.
 
+`start` prints **only the run id to `stdout`** (the banner and progress logs go to `stderr`), so it is safe to capture directly: `RUN_ID=$(npx @testomatio/reporter start)`. It exits non-zero if the run could not be created.
+
 **Usage:**
 
 ```bash
