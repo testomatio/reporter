@@ -102,13 +102,13 @@ TESTOMATIO={API_KEY} TESTOMATIO_ENV="Windows, Chrome" <actual run command>
 
 ### Starting an Empty Run
 
-If you want to create a run and obtain its `{RUN_ID}` from [testomat.io](https://testomat.io) you can use `--launch` option:
+If you want to create a run and obtain its `{RUN_ID}` from [testomat.io](https://testomat.io) use the `start` command with `--format id`:
 
 ```bash
-TESTOMATIO={API_KEY} npx @testomatio/reporter start
+RUN_ID=$(TESTOMATIO={API_KEY} npx @testomatio/reporter start --format id)
 ```
 
-This command will return `{RUN_ID}` which you can pass to other jobs in a workflow.
+`--format id` keeps `stdout` to just the run id (banner and logs go to `stderr`), so `{RUN_ID}` is captured cleanly and can be passed to other jobs in a workflow.
 
 > When executed with `--launch` a command provided by `-c` flag is ignored
 
@@ -372,7 +372,7 @@ Then it exits `0`. The run starts in the `scheduled` state and transitions as yo
 You can separate "create the run" from "trigger CI" into two steps. First prepare a scheduled run scoped to a filter (nothing runs yet):
 
 ```bash
-RUN_ID=$(TESTOMATIO_CI_PROFILE= npx @testomatio/reporter start --filter "testomatio:tag-name=smoke")
+RUN_ID=$(TESTOMATIO_CI_PROFILE= npx @testomatio/reporter start --filter "testomatio:tag-name=smoke" --format id)
 ```
 
 Later, launch that existing run on a CI profile by pointing `TESTOMATIO_RUN` at it:

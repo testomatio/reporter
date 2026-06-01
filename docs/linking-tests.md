@@ -21,10 +21,10 @@ However, you don't want to see the automated test itself in the final report.
 **Step 1: Create a manual run and capture Run ID**
 
 ```bash
-RUN_ID=$(TESTOMATIO=tstmt_xxxx npx @testomatio/reporter start --kind manual | tail -n 1)
+RUN_ID=$(TESTOMATIO=tstmt_xxxx npx @testomatio/reporter start --kind manual --format id)
 ```
 
-> To check RUN_ID is set run `echo $RUN_ID`. Command can be different depending on your shell (zsh, fish, powershell). Last line of `npx @testomatio/reporter start` output is the run ID.
+> To check RUN_ID is set run `echo $RUN_ID`. Command can be different depending on your shell (zsh, fish, powershell). With `--format id`, `npx @testomatio/reporter start` prints only the run ID to stdout, so it is captured cleanly.
 
 This creates a manual run on Testomat.io and saves the run ID into the environment variable.
 
@@ -46,7 +46,7 @@ Playwright Example:
 
 ```bash
 # Step 1: Create manual run
-RUN_ID=$(TESTOMATIO=tstmt_xxxx npx @testomatio/reporter start --kind manual | tail -n 1)
+RUN_ID=$(TESTOMATIO=tstmt_xxxx npx @testomatio/reporter start --kind manual --format id)
 
 # Step 2: Run Playwright tests with manual run
 TESTOMATIO=tstmt_xxxx TESTOMATIO_RUN=$RUN_ID npx playwright test
@@ -67,10 +67,10 @@ This behavior is needed when you want to see the most precise report of all auto
 **Step 1: Create a mixed run**
 
 ```bash
-RUN_ID=$(TESTOMATIO=tstmt_xxxx npx @testomatio/reporter start --kind mixed | tail -n 1)
+RUN_ID=$(TESTOMATIO=tstmt_xxxx npx @testomatio/reporter start --kind mixed --format id)
 ```
 
-> To check RUN_ID is set run `echo $RUN_ID`. Command can be different depending on your shell (zsh, fish, powershell). Last line of `npx @testomatio/reporter start` output is the run ID.
+> To check RUN_ID is set run `echo $RUN_ID`. Command can be different depending on your shell (zsh, fish, powershell). With `--format id`, `npx @testomatio/reporter start` prints only the run ID to stdout, so it is captured cleanly.
 
 This creates a mixed run on Testomat.io and saves the run ID into the environment variable.
 
@@ -92,7 +92,7 @@ Playwright Example:
 
 ```bash
 # Step 1: Create manual run
-RUN_ID=$(TESTOMATIO=tstmt_xxxx npx @testomatio/reporter start --kind manual | tail -n 1)
+RUN_ID=$(TESTOMATIO=tstmt_xxxx npx @testomatio/reporter start --kind manual --format id)
 
 # Step 2: Run Playwright tests with manual run
 TESTOMATIO=tstmt_xxxx TESTOMATIO_RUN=$RUN_ID npx playwright test
