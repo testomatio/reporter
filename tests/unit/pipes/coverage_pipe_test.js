@@ -91,6 +91,7 @@ describe('CoveragePipe: general positive cases.', () => {
 
             const result = await coveragePipe.prepareRun(`file=${TEMP_COVERAGE_FILE}`);
             expect(result).to.deep.equal([testId.slice(1)]);
+            expect(coveragePipe.store.preparedTestIds).to.deep.equal(result);
         });
 
         it('should read coverage file and return matched test from server responce only', async () => {

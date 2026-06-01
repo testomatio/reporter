@@ -25,6 +25,25 @@ const debug = createDebugMessages('@testomatio/reporter:pipe:testomatio');
 if (process.env.TESTOMATIO_RUN) process.env.runId = process.env.TESTOMATIO_RUN;
 
 /**
+ * Parse `TESTOMATIO_CI_PARAMS` (comma-separated `key=value` pairs) into an object.
+ * Entries without `=` or with empty keys are skipped. Returns undefined when input is empty.
+ *
+ * @param {string|undefined} raw
+ * @returns {Record<string, string>|undefined}
+ */
+function parseCiParams(raw) {
+  if (!raw) return undefined;
+  /** @type {Record<string, string>} */
+  const result = {};
+  for (const entry of raw.split(',')) {
+    const idx = entry.indexOf('=');
+    if (idx <= 0) continue;
+    result[entry.slice(0, idx).trim()] = entry.slice(idx + 1);
+  }
+  return Object.keys(result).length ? result : undefined;
+}
+
+/**
  * @typedef {import('../../types/types.js').Pipe} Pipe
  * @typedef {import('../../types/types.js').TestData} TestData
  * @class TestomatioPipe
@@ -84,6 +103,13 @@ class TestomatioPipe {
     this.env = process.env.TESTOMATIO_ENV;
     this.label = process.env.TESTOMATIO_LABEL;
     this.description = params.description || process.env.TESTOMATIO_DESCRIPTION;
+
+    // Remote CI launch — when `TESTOMATIO_CI_PROFILE` is set the run will be created
+    // on the server *and* the named CI profile will be dispatched. Optional
+    // `TESTOMATIO_CI_PARAMS` is a comma-separated list of `key=value` pairs
+    // forwarded to the CI profile config (e.g. `branch=develop,REGION=eu`).
+    this.ciProfile = process.env.TESTOMATIO_CI_PROFILE;
+    this.ciParams = parseCiParams(process.env.TESTOMATIO_CI_PARAMS);
 
     // Create a new instance of gaxios with a custom config
     this.client = new Gaxios({
@@ -184,6 +210,7 @@ class TestomatioPipe {
 
       if (Array.isArray(resp.data?.tests) && resp.data?.tests?.length > 0) {
         foundedTestLog(APP_PREFIX, resp.data.tests);
+        if (this.store) this.store.preparedTestIds = resp.data.tests;
         return resp.data.tests;
       }
 
@@ -248,6 +275,25 @@ class TestomatioPipe {
         this.store.configuration = { ...(this.store.configuration || {}), ...params.configuration };
       }
     }
+
+    // Assemble the `ci` block when the user asked for a remote CI launch via
+    // TESTOMATIO_CI_PROFILE (e.g. `--remote github`). Grep is taken from whatever
+    // `--filter` resolution already stashed in the shared pipeStore. When launching
+    // an already-prepared run (TESTOMATIO_RUN set) with no fresh filter, ask the
+    // server to grep that run's own stored scope via `{ type: 'run', id }`.
+    /** @type {{profile: string, grep?: string, type?: string, id?: string, override?: Record<string, any>}|null} */
+    let ci = null;
+    if (this.ciProfile) {
+      ci = { profile: this.ciProfile };
+      const grepIds = this.store?.preparedTestIds;
+      if (grepIds?.length) {
+        ci.grep = grepIds.join('|');
+      } else if (this.runId) {
+        ci.type = 'run';
+        ci.id = this.runId;
+      }
+      if (this.ciParams) ci.override = this.ciParams;
+    }
     const runParams = Object.fromEntries(
       Object.entries({
         ci_build_url: buildUrl,
@@ -263,6 +309,7 @@ class TestomatioPipe {
         kind: params.kind,
         configuration,
         description,
+        ci,
       }).filter(([, value]) => !!value),
     );
     debug(' >>>>>> Run params', JSON.stringify(runParams, null, 2));

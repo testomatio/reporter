@@ -532,6 +532,167 @@ describe('TestomatioPipe', () => {
       expect(receivedRequestBody).to.not.be.null;
       expect(receivedRequestBody.data.description).to.equal('Coverage scope: 1 test affected\n\nUser note');
     });
+
+    it('should build ci block from env vars and pipeStore for remote launch', async () => {
+      let receivedRequestBody = null;
+
+      server.on({
+        method: 'POST',
+        path: '/api/reporter',
+        reply: {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            url: 'https://faketestomat.io/report/ci-1',
+            uid: 'ci-run-1',
+            public_url: 'https://faketestomat.io/public/ci-1',
+          }),
+        },
+      });
+
+      process.env.TESTOMATIO_CI_PROFILE = 'github';
+      process.env.TESTOMATIO_CI_PARAMS = 'branch=develop,REGION=eu';
+
+      try {
+        const store = { preparedTestIds: ['T1', 'T2'] };
+        const pipe = new TestomatioPipe(
+          { apiKey: TESTOMATIO, testomatioUrl: TESTOMATIO_URL, isBatchEnabled: false },
+          store,
+        );
+
+        const originalRequest = pipe.client.request;
+        pipe.client.request = async function (config) {
+          receivedRequestBody = config;
+          return originalRequest.call(this, config);
+        };
+
+        await pipe.createRun({ kind: 'automated' });
+
+        expect(receivedRequestBody).to.not.be.null;
+        expect(receivedRequestBody.data).to.have.property('ci');
+        expect(receivedRequestBody.data.ci).to.deep.equal({
+          profile: 'github',
+          grep: 'T1|T2',
+          override: { branch: 'develop', REGION: 'eu' },
+        });
+      } finally {
+        delete process.env.TESTOMATIO_CI_PROFILE;
+        delete process.env.TESTOMATIO_CI_PARAMS;
+      }
+    });
+
+    it('should send ci block without grep when no filter resolved test ids', async () => {
+      let receivedRequestBody = null;
+
+      server.on({
+        method: 'POST',
+        path: '/api/reporter',
+        reply: {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            url: 'https://faketestomat.io/report/ci-2',
+            uid: 'ci-run-2',
+            public_url: 'https://faketestomat.io/public/ci-2',
+          }),
+        },
+      });
+
+      process.env.TESTOMATIO_CI_PROFILE = 'gitlab';
+
+      try {
+        const pipe = new TestomatioPipe({
+          apiKey: TESTOMATIO,
+          testomatioUrl: TESTOMATIO_URL,
+          isBatchEnabled: false,
+        });
+
+        const originalRequest = pipe.client.request;
+        pipe.client.request = async function (config) {
+          receivedRequestBody = config;
+          return originalRequest.call(this, config);
+        };
+
+        await pipe.createRun({ kind: 'automated' });
+
+        expect(receivedRequestBody).to.not.be.null;
+        expect(receivedRequestBody.data.ci).to.deep.equal({ profile: 'gitlab' });
+      } finally {
+        delete process.env.TESTOMATIO_CI_PROFILE;
+      }
+    });
+
+    it('should not include ci block when TESTOMATIO_CI_PROFILE is not set', async () => {
+      let receivedRequestBody = null;
+
+      server.on({
+        method: 'POST',
+        path: '/api/reporter',
+        reply: {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            url: 'https://faketestomat.io/report/no-ci',
+            uid: 'no-ci-run',
+            public_url: 'https://faketestomat.io/public/no-ci',
+          }),
+        },
+      });
+
+      const originalRequest = testomatioPipe.client.request;
+      testomatioPipe.client.request = async function (config) {
+        receivedRequestBody = config;
+        return originalRequest.call(this, config);
+      };
+
+      await testomatioPipe.createRun({ kind: 'automated' });
+
+      expect(receivedRequestBody).to.not.be.null;
+      expect(receivedRequestBody.data).to.not.have.property('ci');
+    });
+
+    it('should grep the existing run scope when launching with TESTOMATIO_RUN and no filter', async () => {
+      let receivedRequestBody = null;
+
+      server.on({
+        method: 'PUT',
+        path: '/api/reporter/run-xyz',
+        reply: {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            url: 'https://faketestomat.io/report/run-xyz',
+            uid: 'run-xyz',
+            public_url: 'https://faketestomat.io/public/run-xyz',
+          }),
+        },
+      });
+
+      process.env.TESTOMATIO_CI_PROFILE = 'github';
+      process.env.TESTOMATIO_RUN = 'run-xyz';
+
+      try {
+        const pipe = new TestomatioPipe({
+          apiKey: TESTOMATIO,
+          testomatioUrl: TESTOMATIO_URL,
+          isBatchEnabled: false,
+        });
+
+        const originalRequest = pipe.client.request;
+        pipe.client.request = async function (config) {
+          receivedRequestBody = config;
+          return originalRequest.call(this, config);
+        };
+
+        await pipe.createRun({ kind: 'automated' });
+
+        expect(receivedRequestBody).to.not.be.null;
+        expect(receivedRequestBody.data.ci).to.deep.equal({ profile: 'github', type: 'run', id: 'run-xyz' });
+      } finally {
+        delete process.env.TESTOMATIO_CI_PROFILE;
+        delete process.env.TESTOMATIO_RUN;
+      }
+    });
   });
 
   describe('constructor', () => {

@@ -33,6 +33,9 @@ jobs:
     runs-on: ubuntu-latest
     name: Playwright Adapter Tests
     needs: linter-and-tests-on-latest-node
+    # Backstop: a stalled `playwright install` once burned the full 6h limit.
+    # Fail fast instead.
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

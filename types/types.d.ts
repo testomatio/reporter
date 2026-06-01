@@ -293,7 +293,7 @@ export interface Pipe {
   store: {};
 
   /** starts run  */
-  createRun(): Promise<void>;
+  createRun(params?: CreateRunParams): Promise<void>;
 
   /** adds a test to the current run */
   addTest(test: TestData): any;
@@ -314,6 +314,28 @@ export interface PipeResult {
 
   /** the result that pipe returned */
   result?: any;
+}
+
+/**
+ * Parameters accepted by `Client.createRun`.
+ *
+ * Remote CI launch (via `--remote <profile>` / matching `TESTOMATIO_CI_PROFILE`
+ * env var) is **not** passed through this object — `TestomatioPipe` reads the
+ * env vars directly and assembles the request body. See
+ * `TESTOMATIO_CI_PROFILE` and `TESTOMATIO_CI_OVERRIDE`.
+ */
+export interface CreateRunParams {
+  /** Run kind. Defaults to `automated` server-side. */
+  kind?: 'automated' | 'manual' | 'mixed';
+
+  /** Run title. */
+  title?: string;
+
+  /** Run configuration merged into the server-side run configuration. */
+  configuration?: Record<string, any>;
+
+  /** Override batch upload on/off. */
+  isBatchEnabled?: boolean;
 }
 
 /**
