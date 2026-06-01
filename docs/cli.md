@@ -96,6 +96,8 @@ Alias for this command – `test`, e.g. `npx @testomatio/reporter test [options]
 
 - `-c, --command <cmd>`: Test runner command (required).
 - `--filter <filter>`: [Filter executed tests](./pipes/testomatio.md#filter-tests) by tag, label, jira, plan.
+- `--filter-list <filter>`: Print the list of tests matching the filter without running them. Useful for inspecting which tests would run, or for piping IDs into another command. See [Coverage Pipe](./pipes/coverage.md#machine-readable-output-with---format) for examples.
+- `--format <format>`: Machine-readable output format for `--filter-list`. Supported values: `grep`, `json`, `newline`, `ids`. When set, the CLI banner is suppressed and informational logs go to `stderr` so `stdout` stays clean for piping.
 - `--env-file <envfile>`: Load environment variables from a specific env file.
 - `--kind <type>`: Specify run type: `automated`, `manual`, or `mixed`. Determines how the test run is categorized in Testomat.io.
 
@@ -109,6 +111,7 @@ npx @testomatio/reporter run "npx jest" --filter "testomatio:label=Smoke"
 npx @testomatio/reporter run "npx jest" --filter "testomatio:jira=TC-123"
 npx @testomatio/reporter run "npx jest" --filter "testomatio:plan=a123fb12"
 npx @testomatio/reporter run "npx jest" --filter-list "coverage:file=coverage.yml,diff=user-branch"
+npx @testomatio/reporter run --filter-list "coverage:file=coverage.yml" --format grep
 npx @testomatio/reporter run "npx jest" --filter "coverage:file=coverage.yml,diff=user-branch"
 npx @testomatio/reporter run "npx jest" --filter "coverage:file=coverage/coverage.yml"
 npx @testomatio/reporter run "mocha tests/" --env-file .env.test
@@ -116,31 +119,39 @@ npx @testomatio/reporter run "npm test" --kind manual
 npx @testomatio/reporter run "npx jest" --kind mixed
 ```
 
-#### 3.1 run by "--filter" option
+#### 3.1 Filter pipes
 
-⚠️ Note on unsupported --filter modes
+> `--filter` and `--filter-list` only work with the `testomatio:` and `coverage:` pipes (e.g. `testomatio:tag-name=smoke`, `coverage:file=coverage.yml`). Any other prefix is rejected.
 
-If you provide a --filter value that does not start with either `testomatio:` or `coverage:` ,
-the reporter will stop execution and print a clear error message.
+#### 3.2 Machine-readable output with `--format`
 
-Example of wrong command:
+When `--filter-list` is set, the matched test IDs are printed to `stdout` in a format suitable for piping. The CLI banner is suppressed, progress logs are silenced, and any remaining warnings/errors go to `stderr` — so the terminal shows only the test list, and the output is safe to copy or capture.
+
+Set `TESTOMATIO_LOG_LEVEL=INFO` to bring the progress logs back for debugging.
+
+**Exit codes:** `--filter-list` exits `0` when at least one test matched, and `1` when no tests matched or filter resolution failed. CI scripts can branch on the exit code to skip launching the runner when there's nothing to run.
+
+The default format is `ids` (comma-separated). Use `--format` to switch:
+
+- `grep` — alternation wrapped in parens, e.g. `(t1|t2|t3)`
+- `json` — JSON array, e.g. `["t1","t2","t3"]`
+- `newline` — one ID per line
+- `ids` — comma-separated (default)
+
+**Example: pipe matched tests straight into a runner's grep flag**
 
 ```bash
-npx @testomatio/reporter run "npx jest" --filter "tcoverage:file=coverage.yml"
+GREP=$(npx @testomatio/reporter run --filter-list "coverage:file=coverage.yml" --format grep)
+npx playwright test --grep "$GREP"
 ```
 
-Output:
+**Example: capture IDs as JSON for further processing**
 
 ```bash
-[TESTOMATIO] 🚫 Unsupported --filter mode: "tcoverage".
-✅ Supported formats:
-   • "coverage:<options>" (e.g., --filter-list "coverage:file=coverage.yml")
-   • "coverage:<options>" (e.g., --filter "coverage:file=coverage.yml")
-   • "testomatio:<options>" (e.g., --filter-list "testomatio:tag-name=smoke")
-   • "testomatio:<options>" (e.g., --filter "testomatio:tag-name=smoke")
-
-👉 Please refer to the documentation for supported options and usage examples.
+npx @testomatio/reporter run --filter-list "coverage:file=coverage.yml" --format json > affected-tests.json
 ```
+
+See the [Coverage Pipe docs](./pipes/coverage.md#machine-readable-output-with---format) for more details on each format.
 
 > Previously known as: `npx start-test-run -c "command"` _(before 1.6.0)_
 

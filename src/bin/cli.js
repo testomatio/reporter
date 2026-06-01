@@ -15,21 +15,33 @@ import { filesize as prettyBytes } from 'filesize';
 import dotenv from 'dotenv';
 import Replay from '../replay.js';
 import { log } from '../utils/log.js';
+import { formatFilterListIds } from '../utils/pipe_utils.js';
 
 const debug = createDebugMessages('@testomatio/reporter:cli');
 const version = getPackageVersion();
-console.log(pc.cyan(pc.bold(` 🤩 Testomat.io Reporter v${version}`)));
 const program = new Command();
 
 program
   .version(version)
   .option('--env-file <envfile>', 'Load environment variables from env file')
-  .hook('preAction', thisCommand => {
+  .hook('preAction', (thisCommand, actionCommand) => {
     const opts = thisCommand.opts();
     if (opts.envFile) {
       dotenv.config({ path: opts.envFile });
     } else {
       dotenv.config();
+    }
+
+    // --filter-list produces a machine-readable test list on stdout, so route
+    // remaining output to stderr, skip the banner, and silence info-level
+    // logs so the terminal isn't flooded with progress noise.
+    // Set TESTOMATIO_LOG_LEVEL=INFO to re-enable progress logs for debugging.
+    const subOpts = actionCommand.opts();
+    if (subOpts.filterList || subOpts.format) {
+      process.env.TESTOMATIO_LOG_STDERR = '1';
+      process.env.TESTOMATIO_LOG_LEVEL ||= 'WARN';
+    } else {
+      console.log(pc.cyan(pc.bold(` 🤩 Testomat.io Reporter v${version}`)));
     }
   });
 
@@ -83,6 +95,7 @@ program
   .argument('[command]', 'Test runner command')
   .option('--filter <filter>', 'Additional execution filter')
   .option('--filter-list <filter>', 'Get a list of all tests by filter before running')
+  .option('--format <format>', 'Machine-readable output format for --filter-list (grep, json, newline, ids)')
   .option('--kind <type>', 'Specify run type: automated, manual, or mixed')
   .action(async (command, opts) => {
     const apiKey = process.env['INPUT_TESTOMATIO-KEY'] || config.TESTOMATIO;
@@ -93,7 +106,7 @@ program
       log.info('Filtering tests...');
       // Example of use: npx @testomatio/reporter run "npx jest" --filter "testomatio:tag-name=frontend"
       // Example of use: npx @testomatio/reporter run "npx jest" --filter "coverage:file=coverage.yml"
-      // Example of use: npx @testomatio/reporter run "npx jest" --filter-list "coverage:file=coverage.yml"
+      // Example of use: npx @testomatio/reporter run --filter-list "coverage:file=coverage.yml" --format grep
       const [pipe, ...optsArray] = opts?.filter ? opts?.filter.split(':') : opts?.filterList.split(':');
       const pipeOptions = optsArray.join(':');
 
@@ -106,29 +119,31 @@ program
         const tests = await client.prepareRun(prepareRunParams);
 
         if (!tests || tests.length === 0) {
-          log.info( pc.yellow('No tests found.'));
+          log.warn( pc.yellow('No tests found.'));
+          // Exit non-zero on --filter-list so scripts can detect "nothing to run"
+          // via $? and skip launching the runner.
+          if (opts.filterList) process.exit(1);
           return;
         }
 
-        const pattern = `(${tests.join('|')})`;
-        const filteredCommand = applyFilter(command, tests);
-
-        debug(`Execution pattern: "${pattern}"`);
-
-        if(opts.filterList) {
-          if (command) log.info(pc.green(`Full Running Command: ${filteredCommand}`));
-          log.info();
-          log.info(`Grep string:`);
-          log.info(`${tests.join(', ')}`);
+        if (opts.filterList) {
+          const out = formatFilterListIds(tests, opts.format || 'ids');
+          if (out) console.log(out);
+          // Show the runnable-command hint only in interactive mode (no explicit --format).
+          // When --format is set the user is scripting and doesn't need stderr noise.
+          if (command && !opts.format) {
+            log.info(pc.green(`Full Running Command: ${applyFilter(command, tests)}`));
+          }
           return;
         }
 
         if (command && command.split) {
-          command = filteredCommand;
+          command = applyFilter(command, tests);
         }
       }
       catch (err) {
-        log.info( err.message || err);
+        log.error( err.message || err);
+        if (opts.filterList) process.exit(1);
         return;
       }
     }

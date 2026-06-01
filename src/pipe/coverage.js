@@ -57,8 +57,7 @@ class CoveragePipe { // or Changes for the future???
         this.isBranchDefault = !options.diff && !process.env.COVERAGE_BRANCH;
 
         if (this.isBranchDefault) {
-            console.log(
-                APP_PREFIX,
+            log.info(
                 `🟡 No "diff" branch provided. That's why we use default one = "${this.branch}".\n` +
                 '👉 You can set it via --filter "coverage:file=coverage.yml,diff=your-branch"'
             );
@@ -141,7 +140,7 @@ class CoveragePipe { // or Changes for the future???
         }
 
         if (lines.size === 0) {
-            log.info( 'ℹ️  No matching entries in coverage file for provided Git changes.');
+            log.warn( 'ℹ️  No matching entries in coverage file for provided Git changes.');
             return [];
         }
 
@@ -154,8 +153,7 @@ class CoveragePipe { // or Changes for the future???
 
                 if (!tests) return [];
 
-                console.log(
-                    APP_PREFIX,
+                log.info(
                     `✅ We found ${tests.length === 1 ? 'one entry' : `${tests.length} (test/suite) entries`}` +
                     ' in Testomat.io service side.'
                 );
@@ -165,7 +163,7 @@ class CoveragePipe { // or Changes for the future???
         }
 
         if (this.tests.size === 0 && this.suiteIds.size === 0) {
-            log.info( 'ℹ️  No tests found for execution based on Git changes.');
+            log.warn( 'ℹ️  No tests found for execution based on Git changes.');
             return [];
         }
 
@@ -236,7 +234,7 @@ class CoveragePipe { // or Changes for the future???
             });
 
             if (!Array.isArray(resp.data?.tests) && resp.data?.tests?.length === 0) {
-                log.info( `🔍 No test by ${type}=${id} were found on the Testomat.io server side!`);
+                log.warn( `🔍 No test by ${type}=${id} were found on the Testomat.io server side!`);
 
                 return undefined;
             }
@@ -324,7 +322,7 @@ class CoveragePipe { // or Changes for the future???
             return undefined;
         }
 
-        log.error( `ℹ️  We will use '${cmd}' Git command.`);
+        log.info( `We will use '${cmd}' Git command.`);
 
         try {
             // For clear unit testing process -> Like test_defaultGitChangedFile = todomvc-tests/edit-todos_test.js
@@ -335,10 +333,7 @@ class CoveragePipe { // or Changes for the future???
                 this.changedFiles =  this.#getChangedFilesFromGit(cmd);
 
                 if (this.changedFiles.length === 0) {
-                    console.log(
-                        APP_PREFIX,
-                        'ℹ️  No files changed in the latest Git commit. Skipping coverage processing.'
-                    );
+                    log.warn('ℹ️  No files changed in the latest Git commit. Skipping coverage processing.');
 
                     return undefined;
                 }
@@ -370,20 +365,20 @@ class CoveragePipe { // or Changes for the future???
     validateCoverageFile() {
         // Validate the presence of the coverage filepath
         if (!fs.existsSync(this.coverageFilePath)) {
-            log.info( '❌ Coverage file not found:', this.coverageFilePath);
+            log.error( '❌ Coverage file not found:', this.coverageFilePath);
             return undefined;
         }
 
         // Ensure the given path is a file (not a directory or other type)
         const stat = fs.statSync(this.coverageFilePath);
         if (!stat.isFile()) {
-            log.info( '❌ Provided coverage path is not a file:', this.coverageFilePath);
+            log.error( '❌ Provided coverage path is not a file:', this.coverageFilePath);
             return undefined;
         }
 
         // Validate the file extension to be ".yml" to ensure it's a YAML file
         if (path.extname(this.coverageFilePath) !== ".yml") {
-            log.info( '❌ Coverage file must have a .yml extension:', this.coverageFilePath);
+            log.error( '❌ Coverage file must have a .yml extension:', this.coverageFilePath);
             return undefined;
         }
 
