@@ -1,10 +1,10 @@
 # testomatio-reporter-cli
 
-Yarn Berry compatible CLI wrapper around `@testomatio/reporter`.
+Yarn Berry compatible standalone CLI for `@testomatio/reporter`.
 
 ## Why
 
-Yarn 4 rejects bin names containing `/`. This wrapper exposes valid command names:
+Yarn 4 rejects bin names containing `/`. This package publishes the reporter CLI with valid command names and does not depend on `@testomatio/reporter`, so Yarn does not link the package that contains the invalid bin name.
 
 - `testomatio-reporter`
 - `reporter`
@@ -25,4 +25,4 @@ npx reporter run "npx playwright test"
 npx testomatio-reporter-cli run "npx playwright test"
 ```
 
-All arguments are forwarded to `@testomatio/reporter` CLI.
+All arguments are forwarded to the bundled reporter CLI.
