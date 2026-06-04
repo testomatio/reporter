@@ -1,39 +1,19 @@
 #!/usr/bin/env node
 
 import { spawn } from 'node:child_process';
-import { createRequire } from 'node:module';
 import { existsSync } from 'node:fs';
-import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-let targetCli;
-try {
-  const reporterPackageJsonPath = require.resolve('@testomatio/reporter/package.json');
-  const reporterPackageJson = JSON.parse(readFileSync(reporterPackageJsonPath, 'utf8'));
-  const bin = reporterPackageJson.bin || {};
-  const cliRelativePath =
-    bin['testomatio/reporter'] ||
-    bin['testomatio-reporter'] ||
-    Object.values(bin).find(value => typeof value === 'string' && value.includes('cli.js'));
+const standaloneCliPath = path.resolve(__dirname, '../src/bin/cli.js');
+const repositoryCliPath = path.resolve(__dirname, '../../../src/bin/cli.js');
+const targetCli = existsSync(standaloneCliPath) ? standaloneCliPath : repositoryCliPath;
 
-  if (!cliRelativePath) {
-    throw new Error('Cannot detect CLI entry from @testomatio/reporter package.json bin field');
-  }
-
-  targetCli = path.resolve(path.dirname(reporterPackageJsonPath), cliRelativePath);
-} catch (error) {
-  const localCliPath = path.resolve(__dirname, '../../../src/bin/cli.js');
-  if (existsSync(localCliPath)) {
-    targetCli = localCliPath;
-  } else {
-    console.error('[testomatio-reporter] Cannot resolve @testomatio/reporter CLI entrypoint.');
-    console.error(error?.message || error);
-    process.exit(1);
-  }
+if (!existsSync(targetCli)) {
+  console.error('[testomatio-reporter] Cannot resolve standalone CLI entrypoint.');
+  process.exit(1);
 }
 
 const child = spawn(process.execPath, [targetCli, ...process.argv.slice(2)], {

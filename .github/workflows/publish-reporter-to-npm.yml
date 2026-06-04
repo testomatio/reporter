@@ -32,7 +32,7 @@ jobs:
       - name: Sync CLI wrapper version in repository
         run: |
           npm version ${{ github.event.release.tag_name }} --no-git-tag-version
-          npm pkg set "dependencies.@testomatio/reporter=${{ github.event.release.tag_name }}"
+          npm run prepare:standalone
           npm install --package-lock-only
         working-directory: ./packages/reporter-cli
       - name: Commit release version updates
@@ -87,7 +87,8 @@ jobs:
       - name: Sync wrapper version with release version
         run: |
           npm version ${{ github.event.release.tag_name }} --no-git-tag-version
-          npm pkg set "dependencies.@testomatio/reporter=${{ github.event.release.tag_name }}"
+          npm run prepare:standalone
+          npm install --package-lock-only
         working-directory: ./packages/reporter-cli
       - name: Determine npm tag
         id: npm_tag

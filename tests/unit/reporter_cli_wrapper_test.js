@@ -4,9 +4,10 @@ import os from 'os';
 import path from 'path';
 import { spawn } from 'node:child_process';
 
-const wrapperCliPath = path.resolve(process.cwd(), 'packages/reporter-cli/bin/cli.js');
+const repositoryWrapperCliPath = path.resolve(process.cwd(), 'packages/reporter-cli/bin/cli.js');
+const wrapperPackageJsonPath = path.resolve(process.cwd(), 'packages/reporter-cli/package.json');
 
-function runWrapper(args, env = {}) {
+function runWrapper(wrapperCliPath, args, env = {}) {
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, [wrapperCliPath, ...args], {
       env: { ...process.env, ...env },
@@ -45,30 +46,20 @@ function extractJson(stdout) {
 
 describe('reporter-cli wrapper', () => {
   let tempDir;
-  let reporterPackageDir;
+  let wrapperCliPath;
 
   beforeEach(() => {
     tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'reporter-cli-wrapper-test-'));
-    reporterPackageDir = path.join(tempDir, '@testomatio', 'reporter');
-    fs.mkdirSync(path.join(reporterPackageDir, 'bin'), { recursive: true });
+    const binDir = path.join(tempDir, 'bin');
+    const srcBinDir = path.join(tempDir, 'src', 'bin');
+    fs.mkdirSync(binDir, { recursive: true });
+    fs.mkdirSync(srcBinDir, { recursive: true });
+
+    wrapperCliPath = path.join(binDir, 'cli.js');
+    fs.copyFileSync(repositoryWrapperCliPath, wrapperCliPath);
 
     fs.writeFileSync(
-      path.join(reporterPackageDir, 'package.json'),
-      JSON.stringify(
-        {
-          name: '@testomatio/reporter',
-          version: '9.9.9',
-          bin: {
-            'testomatio/reporter': './bin/cli.js',
-          },
-        },
-        null,
-        2,
-      ),
-    );
-
-    fs.writeFileSync(
-      path.join(reporterPackageDir, 'bin', 'cli.js'),
+      path.join(srcBinDir, 'cli.js'),
       [
         "const payload = {",
         '  argv: process.argv.slice(2),',
@@ -89,8 +80,7 @@ describe('reporter-cli wrapper', () => {
   });
 
   it('forwards args/env for run command with wdio style command', async () => {
-    const result = await runWrapper(['run', 'wdio --spec tests/e2e/smoke.e2e.js'], {
-      NODE_PATH: tempDir,
+    const result = await runWrapper(wrapperCliPath, ['run', 'wdio --spec tests/e2e/smoke.e2e.js'], {
       CUSTOM_ENV: 'from-wrapper',
       TESTOMATIO_CUSTOM: 'tstmt-value',
     });
@@ -104,9 +94,9 @@ describe('reporter-cli wrapper', () => {
 
   it('forwards args/env for run command with codeceptjs style command', async () => {
     const result = await runWrapper(
+      wrapperCliPath,
       ['run', 'codeceptjs run --grep @smoke --config codecept.conf.js'],
       {
-        NODE_PATH: tempDir,
         CUSTOM_ENV: 'codecept',
         TESTOMATIO_CUSTOM: 'codecept-env',
       },
@@ -117,5 +107,11 @@ describe('reporter-cli wrapper', () => {
     expect(payload.argv).to.deep.equal(['run', 'codeceptjs run --grep @smoke --config codecept.conf.js']);
     expect(payload.env.CUSTOM_ENV).to.equal('codecept');
     expect(payload.env.TESTOMATIO_CUSTOM).to.equal('codecept-env');
+  });
+
+  it('does not depend on @testomatio/reporter package', () => {
+    const packageJson = JSON.parse(fs.readFileSync(wrapperPackageJsonPath, 'utf8'));
+
+    expect(packageJson.dependencies).to.not.have.property('@testomatio/reporter');
   });
 });
