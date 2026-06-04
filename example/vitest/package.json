@@ -19,6 +19,6 @@
   "license": "MIT",
   "devDependencies": {
     "vite": "^7.3.2",
-    "vitest": "^4.0.8"
+    "vitest": "^4.1.0"
   }
 }
