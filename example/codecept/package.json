@@ -20,7 +20,7 @@
   "author": "Testomat.io",
   "license": "MIT",
   "devDependencies": {
-    "codeceptjs": "^3.7.5"
+    "codeceptjs": "^4.0.3"
   },
   "dependencies": {
     "@codeceptjs/expect-helper": "^1.0.2"
