@@ -133,7 +133,11 @@ class PlaywrightReporter {
         ...meta,
         ...project.metadata, // metadata has any type (in playwright), but we will stringify it in client.js
         ...test.annotations?.reduce((acc, annotation) => {
-          acc[annotation.type] = annotation.description;
+          if (acc[annotation.type]) {
+            acc[annotation.type] = `${acc[annotation.type]}, ${annotation.description}`;
+          } else {
+            acc[annotation.type] = annotation.description;
+          }
           return acc;
         }, {}),
       },
