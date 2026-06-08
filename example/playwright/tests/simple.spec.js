@@ -34,3 +34,16 @@ test(
     expect(true).toBe(true);
   },
 );
+
+test(
+  'test with duplicate annotation types',
+  {
+    annotation: [
+      { type: 'Issue', description: 'https://issues.example.com/DEMO-101' },
+      { type: 'Issue', description: 'https://issues.example.com/DEMO-102' },
+    ],
+  },
+  async () => {
+    expect(true).toBe(true);
+  },
+);

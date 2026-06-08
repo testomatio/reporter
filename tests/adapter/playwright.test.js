@@ -115,6 +115,19 @@ describe('Playwright Adapter Tests', function () {
       expect(testWithBugAnnotation).to.exist;
       expect(testWithBugAnnotation.testId.meta.bug).to.include('intentional failure');
     });
+
+    it('should preserve all annotations with duplicate types', async () => {
+      const { testEntries } = await runPlaywrightTest();
+
+      const testWithDuplicateAnnotations = testEntries.find(
+        entry => entry.testId && entry.testId.meta && entry.testId.meta.Issue,
+      );
+
+      expect(testWithDuplicateAnnotations).to.exist;
+      const issueValue = testWithDuplicateAnnotations.testId.meta.Issue;
+      expect(issueValue).to.include('DEMO-101');
+      expect(issueValue).to.include('DEMO-102');
+    });
   });
 
   describe('Relative File Paths', () => {
