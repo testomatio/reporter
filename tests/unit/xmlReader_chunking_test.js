@@ -18,11 +18,12 @@ describe('XmlReader Chunking with Pipe API', () => {
       lang: 'javascript',
     });
 
-    reader.requestParams.isBatchEnabled = true;
+    reader.requestParams.batchMode = 'manual';
 
     testomatioPipe = new TestomatioPipe({
       apiKey: 'test-api-key',
       url: 'https://test.testomat.io',
+      batchMode: 'manual',
     });
 
     testomatioPipe.runId = 'test-run-123';
@@ -48,6 +49,32 @@ describe('XmlReader Chunking with Pipe API', () => {
     };
 
     reader.pipes = [testomatioPipe];
+  });
+
+  describe('batchMode wiring', () => {
+    it('should default requestParams.batchMode to "manual"', () => {
+      const freshReader = new XmlReader({ apiKey: 'test-api-key', lang: 'javascript' });
+      expect(freshReader.requestParams.batchMode).to.equal('manual');
+    });
+
+    it('should forward batchMode to each pipe createRun', async () => {
+      const createRunParams = [];
+      const mockPipe = {
+        isEnabled: true,
+        createRun: async (params) => { createRunParams.push(params); },
+        addTest: async () => {},
+        sync: async () => {},
+        finishRun: async () => {},
+        toString: () => 'MockPipe',
+      };
+
+      reader.pipes = [mockPipe];
+
+      await reader.createRun();
+
+      expect(createRunParams).to.have.length(1);
+      expect(createRunParams[0].batchMode).to.equal('manual');
+    });
   });
 
   describe('addTest and sync pattern', () => {
