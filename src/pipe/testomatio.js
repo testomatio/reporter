@@ -46,7 +46,6 @@ function parseCiParams(raw) {
 /**
  * @typedef {import('../../types/types.js').Pipe} Pipe
  * @typedef {import('../../types/types.js').TestData} TestData
- * @typedef {import('../../types/types.js').BatchMode} BatchMode
  * @typedef {import('../../types/types.js').CreateRunParams} CreateRunParams
  * @class TestomatioPipe
  * @implements {Pipe}
@@ -54,8 +53,7 @@ function parseCiParams(raw) {
 class TestomatioPipe {
   constructor(params, store) {
     this.batch = {
-      /** @type {BatchMode}
-       * Batch upload mode:
+      /** Batch upload mode:
        * - `auto`: upload tests automatically by time interval (e.g. every 5 seconds).
        * - `manual`: buffer tests and upload only when `sync()` is invoked manually.
        * - `disabled`: send one test per request, no batching.
