@@ -14,13 +14,13 @@ import { fetchLinksFromLogs } from './utils/playwright.js';
 import { formatStep, addStatusToStep, addArtifactsToStep } from './utils/step-formatter.js';
 import { log } from '../utils/log.js';
 
-const reportTestPromises = [];
-
 class PlaywrightReporter {
   constructor(config = {}) {
     this.client = new TestomatioClient({ apiKey: config?.apiKey });
 
     this.uploads = [];
+    this.reportTestPromises = [];
+    this.runPromise = Promise.resolve();
   }
 
   onBegin(config, suite) {
@@ -29,7 +29,9 @@ class PlaywrightReporter {
     if (!this.client) return;
     this.suite = suite;
     this.config = config;
-    this.client.createRun();
+    this.uploads = [];
+    this.reportTestPromises = [];
+    this.runPromise = this.client.createRun();
   }
 
   onTestBegin(testInfo) {
@@ -41,6 +43,7 @@ class PlaywrightReporter {
     // test.parent.project().__projectId
 
     if (!this.client) return;
+    await this.runPromise;
 
     const { title } = test;
     const { error, duration } = result;
@@ -153,7 +156,7 @@ class PlaywrightReporter {
     // remove empty uploads
     this.uploads = this.uploads.filter(anUpload => anUpload.files.length);
 
-    reportTestPromises.push(reportTestPromise);
+    this.reportTestPromises.push(reportTestPromise);
   }
 
   #getArtifactPath(artifact) {
@@ -177,7 +180,8 @@ class PlaywrightReporter {
   async onEnd(result) {
     if (!this.client) return;
 
-    await Promise.all(reportTestPromises);
+    await this.runPromise;
+    await Promise.all(this.reportTestPromises);
 
     if (this.uploads.length) {
       if (this.client.uploader.isEnabled) log.info(`🎞️ Uploading ${this.uploads.length} files...`);
