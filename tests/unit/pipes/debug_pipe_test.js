@@ -78,9 +78,27 @@ describe('DebugPipe logging tests', () => {
     expect(fs.existsSync(debugPipeWithoutLogging.logFilePath)).to.be.false;
   });
 
-  it('should handle batch upload and log multiple tests in a batch', async () => {
-    debugPipe.batch.tests = [{ id: 'test1' }, { id: 'test2' }];
-    await debugPipe.batchUpload();
+  it('should buffer tests via addTest without writing them immediately', async () => {
+    await debugPipe.addTest({ id: 'test1' });
+    await debugPipe.addTest({ id: 'test2' });
+    expect(debugPipe.tests).to.deep.equal([{ id: 'test1' }, { id: 'test2' }]);
+    // nothing should be flushed to the log file yet (only the 3 header lines)
+    const savedData = fs.readFileSync(logFilePath, 'utf-8').trim().split('\n');
+    expect(savedData.length).to.equal(3);
+    expect(savedData.some(line => line.includes('addTestsBatch'))).to.be.false;
+  });
+
+  it('should not write an addTestsBatch entry on sync when there are no buffered tests', async () => {
+    debugPipe.tests = [];
+    await debugPipe.sync();
+    const savedData = fs.readFileSync(logFilePath, 'utf-8').trim().split('\n');
+    expect(savedData.length).to.equal(3);
+    expect(savedData.some(line => line.includes('addTestsBatch'))).to.be.false;
+  });
+
+  it('should log gathered tests as a batch on sync', async () => {
+    debugPipe.tests = [{ id: 'test1' }, { id: 'test2' }];
+    await debugPipe.sync();
     const savedData = fs.readFileSync(logFilePath, 'utf-8').trim().split('\n');
     expect(savedData.length).to.equal(4);
     expect(savedData[3]).to.contain(
@@ -88,11 +106,11 @@ describe('DebugPipe logging tests', () => {
     );
   });
 
-  it('should clear interval on finishRun and save final log', async () => {
-    debugPipe.isBatchEnabled = true;
-    debugPipe.batch.intervalFunction = setInterval(() => {}, 5000);
+  it('should flush gathered tests and save finishRun log', async () => {
+    debugPipe.tests = [{ id: 'test1' }];
     await debugPipe.finishRun({});
     const savedData = fs.readFileSync(logFilePath, 'utf-8').trim().split('\n');
+    expect(savedData.some(line => line.includes('"action":"addTestsBatch"'))).to.be.true;
     expect(savedData.some(line => line.includes('"action":"finishRun"'))).to.be.true;
   });
 

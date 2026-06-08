@@ -37,7 +37,7 @@ program
     const client = new TestomatClient({
       apiKey,
       runId,
-      isBatchEnabled: false,
+      batchMode: 'disabled',
     });
     let testruns = client.uploader.readUploadedFiles(process.env.TESTOMATIO_RUN);
 

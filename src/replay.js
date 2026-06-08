@@ -216,7 +216,7 @@ export class Replay {
 
     const client = new TestomatClient({
       apiKey: this.apiKey,
-      isBatchEnabled: true,
+      batchMode: 'auto',
       ...runParams,
       ...(runId && { runId }),
     });

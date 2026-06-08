@@ -14,13 +14,7 @@ export class DebugPipe {
 
     this.isEnabled = !!process.env.TESTOMATIO_DEBUG || !!process.env.DEBUG;
     if (this.isEnabled) {
-      this.batch = {
-        isEnabled: this.params.isBatchEnabled ?? !process.env.TESTOMATIO_DISABLE_BATCH_UPLOAD,
-        intervalFunction: null,
-        intervalTime: 5000,
-        tests: [],
-        batchIndex: 0,
-      };
+      this.tests = [];
       const suffix = process.env.TESTOMATIO_REPLAY ? 'replay' : '';
       const paths = getDebugFilePath(suffix);
       this.logFilePath = paths.tmp;
@@ -60,8 +54,6 @@ export class DebugPipe {
       this.logToFile({ datetime: new Date().toISOString(), timestamp: Date.now() });
       this.logToFile({ data: 'variables', testomatioEnvVars: this.testomatioEnvVars });
       this.logToFile({ data: 'store', store: this.store || {} });
-      // Bind batchUpload to the instance
-      this.batchUpload = this.batchUpload.bind(this);
     }
   }
 
@@ -88,42 +80,18 @@ export class DebugPipe {
 
   async createRun(params = {}) {
     if (!this.isEnabled) return;
-    if (params.isBatchEnabled === true || params.isBatchEnabled === false) this.batch.isEnabled = params.isBatchEnabled;
-
-    if (!this.isEnabled) return {};
-    if (this.batch.isEnabled) this.batch.intervalFunction = setInterval(this.batchUpload, this.batch.intervalTime);
 
     this.logToFile({ action: 'createRun', params });
   }
 
   async addTest(data) {
     if (!this.isEnabled) return;
-
-    if (!this.batch.isEnabled) {
-      const logData = { action: 'addTest', testId: data };
-      if (this.store.runId) logData.runId = this.store.runId;
-      this.logToFile(logData);
-    } else this.batch.tests.push(data);
-
-    if (!this.batch.intervalFunction) await this.batchUpload();
-  }
-
-  async batchUpload() {
-    this.batch.batchIndex++;
-    if (!this.batch.isEnabled) return;
-    if (!this.batch.tests.length) return;
-
-    const testsToSend = this.batch.tests.splice(0);
-
-    const logData = { action: 'addTestsBatch', tests: testsToSend };
-    if (this.store.runId) logData.runId = this.store.runId;
-    this.logToFile(logData);
+    this.tests.push(data);
   }
 
   async finishRun(params) {
     if (!this.isEnabled) return;
     await this.sync();
-    if (this.batch.intervalFunction) clearInterval(this.batch.intervalFunction);
     const logData = { action: 'finishRun', params };
     if (this.store.runId) logData.runId = this.store.runId;
     this.logToFile(logData);
@@ -133,8 +101,12 @@ export class DebugPipe {
   }
 
   async sync() {
-    if (!this.isEnabled) return;
-    await this.batchUpload();
+    if (!this.isEnabled || !this.tests.length) return;
+
+    const tests = this.tests.splice(0);
+    const logData = { action: 'addTestsBatch', tests };
+    if (this.store.runId) logData.runId = this.store.runId;
+    this.logToFile(logData);
   }
 
   toString() {

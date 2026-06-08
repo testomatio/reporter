@@ -73,7 +73,7 @@ class XmlReader {
       env: TESTOMATIO_ENV,
       group_title: TESTOMATIO_RUNGROUP_TITLE,
       detach: TESTOMATIO_MARK_DETACHED,
-      isBatchEnabled: true,
+      batchMode: 'manual',
     };
     this.runId = opts.runId || TESTOMATIO_RUN;
     this.adapter = adapterFactory(opts.lang?.toLowerCase(), opts);
@@ -542,7 +542,7 @@ class XmlReader {
       title: this.requestParams.title,
       env: this.requestParams.env,
       group_title: this.requestParams.group_title,
-      isBatchEnabled: this.requestParams.isBatchEnabled,
+      batchMode: this.requestParams.batchMode,
     };
 
     debug('Run', runParams);

@@ -46,18 +46,26 @@ function parseCiParams(raw) {
 /**
  * @typedef {import('../../types/types.js').Pipe} Pipe
  * @typedef {import('../../types/types.js').TestData} TestData
+ * @typedef {import('../../types/types.js').BatchMode} BatchMode
+ * @typedef {import('../../types/types.js').CreateRunParams} CreateRunParams
  * @class TestomatioPipe
  * @implements {Pipe}
  */
 class TestomatioPipe {
   constructor(params, store) {
     this.batch = {
-      isEnabled: params?.isBatchEnabled ?? !process.env.TESTOMATIO_DISABLE_BATCH_UPLOAD,
+      /** @type {BatchMode}
+       * Batch upload mode:
+       * - `auto`: upload tests automatically by time interval (e.g. every 5 seconds).
+       * - `manual`: buffer tests and upload only when `sync()` is invoked manually.
+       * - `disabled`: send one test per request, no batching.
+       */
+      mode: params.batchMode || (process.env.TESTOMATIO_DISABLE_BATCH_UPLOAD ? 'disabled' : 'auto'),
       intervalFunction: null, // will be created in createRun by setInterval function
       intervalTime: 5000, // how often tests are sent
-      tests: [], // array of tests in batch
-      batchIndex: 0, // represents the current batch index (starts from 1 and increments by 1 for each batch)
-      numberOfTimesCalledWithoutTests: 0, // how many times batch was called without tests
+      tests: [],
+      batchIndex: 0,
+      numberOfTimesCalledWithoutTests: 0,
     };
     this.retriesTimestamps = [];
     this.reportingCanceledDueToReqFailures = false;
@@ -222,13 +230,13 @@ class TestomatioPipe {
 
   /**
    * Creates a new run on Testomat.io
-   * @param {{isBatchEnabled?: boolean, kind?: string, configuration?: Record<string, any>}} params
+   * @param {CreateRunParams} params
    * @returns Promise<void>
    */
   async createRun(params = {}) {
-    this.batch.isEnabled = params.isBatchEnabled ?? this.batch.isEnabled;
+    if (params.batchMode) this.batch.mode = params.batchMode;
     if (!this.isEnabled) return;
-    if (this.batch.isEnabled && this.isEnabled)
+    if (this.batch.mode === 'auto' && this.isEnabled)
       this.batch.intervalFunction = setInterval(this.#batchUpload, this.batch.intervalTime);
     if (this.store) {
       this.store.runKind = params.kind;
@@ -433,14 +441,14 @@ class TestomatioPipe {
    * Uploads tests as a batch (multiple tests at once). Intended to be used with a setInterval
    */
   #batchUpload = async () => {
-    if (!this.batch.isEnabled) return;
+    if (this.batch.mode === 'disabled') return;
     if (!this.batch.tests.length) return;
     if (this.#cancelTestReportingInCaseOfTooManyReqFailures()) return;
     // prevent infinite loop
     if (this.batch.numberOfTimesCalledWithoutTests > 10) {
       debug('📨 Batch upload: no tests to send for 10 times, stopping batch');
       clearInterval(this.batch.intervalFunction);
-      this.batch.isEnabled = false;
+      this.batch.mode = 'disabled';
     }
     if (!this.batch.tests.length) {
       debug('📨 Batch upload: no tests to send');
@@ -496,11 +504,11 @@ class TestomatioPipe {
     this.#formatData(data);
 
     let uploading = null;
-    if (!this.batch.isEnabled) uploading = this.#uploadSingleTest(data);
+    if (this.batch.mode === 'disabled') uploading = this.#uploadSingleTest(data);
     else this.batch.tests.push(data);
 
-    // if test is added after run which is already finished
-    if (!this.batch.intervalFunction) uploading = this.#batchUpload();
+    // auto mode but no interval running yet (e.g. createRun hasn't started it): flush immediately
+    if (this.batch.mode === 'auto' && !this.batch.intervalFunction) uploading = this.#batchUpload();
 
     // return promise to be able to wait for it
     return uploading;
@@ -529,7 +537,7 @@ class TestomatioPipe {
       // (e.g. if test has artifacts, add test function will be invoked only after artifacts are uploaded)
       // batch stops working after run is finished; thus, disable it to use single test uploading
       this.batch.intervalFunction = null;
-      this.batch.isEnabled = false;
+      this.batch.mode = 'disabled';
     }
 
     debug('Finishing run...');
@@ -613,7 +621,7 @@ class TestomatioPipe {
     if (this.batch.intervalFunction) {
       clearInterval(this.batch.intervalFunction);
       this.batch.intervalFunction = null;
-      this.batch.isEnabled = false;
+      this.batch.mode = 'disabled';
     }
     this.batch.tests = [];
   }
