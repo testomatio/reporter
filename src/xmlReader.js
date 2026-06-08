@@ -73,8 +73,7 @@ class XmlReader {
       env: TESTOMATIO_ENV,
       group_title: TESTOMATIO_RUNGROUP_TITLE,
       detach: TESTOMATIO_MARK_DETACHED,
-      // batch uploading is implemented for xml already
-      isBatchEnabled: false,
+      isBatchEnabled: true,
     };
     this.runId = opts.runId || TESTOMATIO_RUN;
     this.adapter = adapterFactory(opts.lang?.toLowerCase(), opts);
@@ -611,7 +610,7 @@ class XmlReader {
     this.pipes = this.pipes || (await this.pipesPromise);
 
     // Create run before uploading tests to ensure runId is set
-    await this.createRun();
+    // await this.createRun(); // makes reporting stuck after finish, thus commenting out
 
     if (!this.tests || !Array.isArray(this.tests) || this.tests.length === 0) {
       debug('No tests to upload, finishing run');
