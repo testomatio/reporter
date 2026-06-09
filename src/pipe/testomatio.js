@@ -63,9 +63,9 @@ class TestomatioPipe {
       mode: params.batchMode || (process.env.TESTOMATIO_DISABLE_BATCH_UPLOAD ? 'disabled' : 'auto'),
       intervalFunction: null, // will be created in createRun by setInterval function
       intervalTime: 5000, // how often tests are sent
-      tests: [],
-      batchIndex: 0,
-      numberOfTimesCalledWithoutTests: 0,
+      tests: [], // array of tests in batch
+      batchIndex: 0,  // represents the current batch index (starts from 1 and increments by 1 for each batch)
+      numberOfTimesCalledWithoutTests: 0, // how many times batch was called without tests
     };
     this.retriesTimestamps = [];
     this.reportingCanceledDueToReqFailures = false;

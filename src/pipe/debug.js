@@ -54,6 +54,13 @@ export class DebugPipe {
       this.logToFile({ datetime: new Date().toISOString(), timestamp: Date.now() });
       this.logToFile({ data: 'variables', testomatioEnvVars: this.testomatioEnvVars });
       this.logToFile({ data: 'store', store: this.store || {} });
+
+      // Safety net for hook failures (e.g. a failing AfterSuite) that abort the run
+      // before finishRun: buffered tests would otherwise be lost. The handler is
+      // attached lazily when the first test is buffered and detached once flushed,
+      // so processes that create many pipes don't pile up `exit` listeners.
+      this.flushOnExit = () => this.flushBufferedTests();
+      this.exitListenerAttached = false;
     }
   }
 
@@ -87,6 +94,10 @@ export class DebugPipe {
   async addTest(data) {
     if (!this.isEnabled) return;
     this.tests.push(data);
+    if (!this.exitListenerAttached) {
+      process.once('exit', this.flushOnExit);
+      this.exitListenerAttached = true;
+    }
   }
 
   async finishRun(params) {
@@ -101,12 +112,28 @@ export class DebugPipe {
   }
 
   async sync() {
+    this.flushBufferedTests();
+  }
+
+  /**
+   * Writes any buffered tests to the debug file as a single batch.
+   * Runs synchronously so it can also be invoked from a process `exit` handler,
+   * which is the only chance to persist tests when a hook failure (e.g. a failing
+   * AfterSuite) prevents `finishRun` from being reached. Idempotent: the buffer is
+   * drained on flush, so a later `finishRun`/exit flush is a no-op.
+   */
+  flushBufferedTests() {
     if (!this.isEnabled || !this.tests.length) return;
 
     const tests = this.tests.splice(0);
     const logData = { action: 'addTestsBatch', tests };
     if (this.store.runId) logData.runId = this.store.runId;
     this.logToFile(logData);
+
+    if (this.exitListenerAttached) {
+      process.removeListener('exit', this.flushOnExit);
+      this.exitListenerAttached = false;
+    }
   }
 
   toString() {
