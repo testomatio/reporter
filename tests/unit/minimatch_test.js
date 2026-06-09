@@ -56,7 +56,7 @@ describe('minimatch integration in reporter', () => {
       coveragePipe = new CoveragePipe({
         apiKey: TESTOMATIO,
         testomatioUrl: TESTOMATIO_URL,
-        isBatchEnabled: false,
+        batchMode: 'disabled',
         pipeOptions: `file=${TEMP_COVERAGE_FILE}`
       });
     };

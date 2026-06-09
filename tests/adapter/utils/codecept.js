@@ -3,6 +3,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import { promisify } from 'util';
+import { extractTestEntries } from './extract-test-entries.js';
 
 const execAsync = promisify(exec);
 
@@ -73,7 +74,7 @@ export class CodeceptTestRunner {
       .split('\n')
       .filter(line => line.trim())
       .map(line => JSON.parse(line));
-    const testEntries = debugData.filter(entry => entry.action === 'addTest');
+    const testEntries = extractTestEntries(debugData);
     return { stdout, stderr, debugData, testEntries };
   }
 
@@ -116,7 +117,7 @@ export class CodeceptTestRunner {
       .split('\n')
       .filter(line => line.trim())
       .map(line => JSON.parse(line));
-    const testEntries = debugData.filter(entry => entry.action === 'addTest');
+    const testEntries = extractTestEntries(debugData);
     return { stdout, stderr, debugData, testEntries };
   }
 

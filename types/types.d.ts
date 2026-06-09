@@ -234,7 +234,7 @@ export interface HtmlTestData extends TestData {
 /**
  * Extended test data for Markdown reporter.
  */
-export interface MarkdownTestData extends HtmlTestData {}
+export interface MarkdownTestData extends HtmlTestData { }
 
 /**
  * Object representing a result of a Run.
@@ -288,6 +288,13 @@ export enum RunStatus {
   Finished = 'finished',
 }
 
+/** Batch upload strategy:
+ * `auto` (by time interval, e.g. every 5 seconds),
+ * `manual` (send tests via manually invoking sync() ),
+ * `disabled` (one test per request, no batching).
+ */
+export type BatchMode = 'auto' | 'manual' | 'disabled';
+
 export interface Pipe {
   isEnabled: boolean;
   store: {};
@@ -334,8 +341,8 @@ export interface CreateRunParams {
   /** Run configuration merged into the server-side run configuration. */
   configuration?: Record<string, any>;
 
-  /** Override batch upload on/off. */
-  isBatchEnabled?: boolean;
+  /** Override batch upload mode. */
+  batchMode?: BatchMode;
 }
 
 /**

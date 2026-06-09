@@ -31,7 +31,7 @@ describe('CoveragePipe: general positive cases.', () => {
         coveragePipe = new CoveragePipe({
             apiKey: TESTOMATIO,
             testomatioUrl: TESTOMATIO_URL,
-            isBatchEnabled: false,
+            batchMode: 'disabled',
             pipeOptions: `file=${TEMP_COVERAGE_FILE}`
         });
 
@@ -219,7 +219,7 @@ describe('CoveragePipe general class cases.', () => {
             coveragePipe = new CoveragePipe({
                 apiKey: TESTOMATIO,
                 testomatioUrl: TESTOMATIO_URL,
-                isBatchEnabled: false
+                batchMode: 'disabled'
             });
 
             expect(coveragePipe.branch).to.equal(branchName);
@@ -235,7 +235,7 @@ describe('CoveragePipe general class cases.', () => {
             coveragePipe = new CoveragePipe({
                 apiKey: TESTOMATIO,
                 testomatioUrl: TESTOMATIO_URL,
-                isBatchEnabled: false
+                batchMode: 'disabled'
             });
 
             expect(coveragePipe.branch).to.equal(branchName);
@@ -248,7 +248,7 @@ describe('CoveragePipe general class cases.', () => {
             coveragePipe = new CoveragePipe({
                 apiKey: TESTOMATIO,
                 testomatioUrl: TESTOMATIO_URL,
-                isBatchEnabled: false
+                batchMode: 'disabled'
             });
 
             expect(coveragePipe.branch).to.equal("master");
@@ -266,7 +266,7 @@ describe('CoveragePipe general class cases.', () => {
             coveragePipe = new CoveragePipe({
                 apiKey: TESTOMATIO,
                 testomatioUrl: TESTOMATIO_URL,
-                isBatchEnabled: false
+                batchMode: 'disabled'
             });
 
             expect(coveragePipe.isEnabled).to.equal(true);
@@ -276,7 +276,7 @@ describe('CoveragePipe general class cases.', () => {
             coveragePipe = new CoveragePipe({
                 apiKey: TESTOMATIO,
                 testomatioUrl: TESTOMATIO_URL,
-                isBatchEnabled: false
+                batchMode: 'disabled'
             });
 
             expect(coveragePipe.isEnabled).to.equal(false);
@@ -291,7 +291,7 @@ describe('CoveragePipe general class cases.', () => {
             coveragePipe = new CoveragePipe({
                 apiKey: TESTOMATIO,
                 testomatioUrl: TESTOMATIO_URL,
-                isBatchEnabled: false
+                batchMode: 'disabled'
             });
 
             expect(coveragePipe.isEnabled).to.equal(false);
@@ -307,7 +307,7 @@ describe('CoveragePipe general class cases.', () => {
             coveragePipe = new CoveragePipe({
                 apiKey: TESTOMATIO,
                 testomatioUrl: TESTOMATIO_URL,
-                isBatchEnabled: false
+                batchMode: 'disabled'
             });
 
             expect(coveragePipe.isDefaultGitChanges).to.equal(false);

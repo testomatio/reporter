@@ -32,7 +32,7 @@ describe('TestomatioPipe', () => {
     testomatioPipe = new TestomatioPipe({
       apiKey: TESTOMATIO,
       testomatioUrl: TESTOMATIO_URL,
-      isBatchEnabled: false,
+      batchMode: 'disabled',
     });
   });
 
@@ -252,7 +252,7 @@ describe('TestomatioPipe', () => {
       const disabledPipe = new TestomatioPipe({
         // No API key provided, pipe should be disabled
         testomatioUrl: TESTOMATIO_URL,
-        isBatchEnabled: false,
+        batchMode: 'disabled',
       });
 
       const result = await disabledPipe.prepareRun('plan-id=test');
@@ -475,7 +475,7 @@ describe('TestomatioPipe', () => {
       const pipe = new TestomatioPipe({
         apiKey: TESTOMATIO,
         testomatioUrl: TESTOMATIO_URL,
-        isBatchEnabled: false,
+        batchMode: 'disabled',
       });
 
       const originalRequest = pipe.client.request;
@@ -516,7 +516,7 @@ describe('TestomatioPipe', () => {
         {
           apiKey: TESTOMATIO,
           testomatioUrl: TESTOMATIO_URL,
-          isBatchEnabled: false,
+          batchMode: 'disabled',
         },
         store,
       );
@@ -556,7 +556,7 @@ describe('TestomatioPipe', () => {
       try {
         const store = { preparedTestIds: ['T1', 'T2'] };
         const pipe = new TestomatioPipe(
-          { apiKey: TESTOMATIO, testomatioUrl: TESTOMATIO_URL, isBatchEnabled: false },
+          { apiKey: TESTOMATIO, testomatioUrl: TESTOMATIO_URL, batchMode: 'disabled' },
           store,
         );
 
@@ -604,7 +604,7 @@ describe('TestomatioPipe', () => {
         const pipe = new TestomatioPipe({
           apiKey: TESTOMATIO,
           testomatioUrl: TESTOMATIO_URL,
-          isBatchEnabled: false,
+          batchMode: 'disabled',
         });
 
         const originalRequest = pipe.client.request;
@@ -675,7 +675,7 @@ describe('TestomatioPipe', () => {
         const pipe = new TestomatioPipe({
           apiKey: TESTOMATIO,
           testomatioUrl: TESTOMATIO_URL,
-          isBatchEnabled: false,
+          batchMode: 'disabled',
         });
 
         const originalRequest = pipe.client.request;
@@ -732,7 +732,7 @@ describe('TestomatioPipe', () => {
       pipe = new TestomatioPipe({
         apiKey: TESTOMATIO,
         testomatioUrl: TESTOMATIO_URL,
-        isBatchEnabled: false,
+        batchMode: 'disabled',
       });
 
       // Set a run ID to enable test reporting
@@ -784,7 +784,7 @@ describe('TestomatioPipe', () => {
         const batchPipe = new TestomatioPipe({
           apiKey: TESTOMATIO,
           testomatioUrl: TESTOMATIO_URL,
-          isBatchEnabled: true,
+          batchMode: 'auto',
         });
 
         // Set a run ID to enable test reporting
@@ -916,7 +916,7 @@ describe('TestomatioPipe', () => {
         const batchPipe = new TestomatioPipe({
           apiKey: TESTOMATIO,
           testomatioUrl: TESTOMATIO_URL,
-          isBatchEnabled: true,
+          batchMode: 'auto',
         });
 
         // Set a run ID to enable test reporting
@@ -1019,7 +1019,7 @@ describe('TestomatioPipe', () => {
         const batchPipe = new TestomatioPipe({
           apiKey: TESTOMATIO,
           testomatioUrl: TESTOMATIO_URL,
-          isBatchEnabled: true,
+          batchMode: 'auto',
         });
 
         // Set a run ID to enable test reporting
@@ -1126,7 +1126,7 @@ describe('TestomatioPipe', () => {
         const createPipe = new TestomatioPipe({
           apiKey: TESTOMATIO,
           testomatioUrl: TESTOMATIO_URL,
-          isBatchEnabled: false,
+          batchMode: 'disabled',
         });
         createPipe.runId = 'test-run-id';
 
@@ -1154,7 +1154,7 @@ describe('TestomatioPipe', () => {
       pipe = new TestomatioPipe({
         apiKey: TESTOMATIO,
         testomatioUrl: TESTOMATIO_URL,
-        isBatchEnabled: false,
+        batchMode: 'disabled',
       });
 
       // Set up a run ID for finishRun tests
@@ -1188,7 +1188,7 @@ describe('TestomatioPipe', () => {
       const testPipe = new TestomatioPipe({
         apiKey: TESTOMATIO,
         testomatioUrl: TESTOMATIO_URL,
-        isBatchEnabled: false,
+        batchMode: 'disabled',
       });
 
       const error = new Error('Request failed');
@@ -1221,7 +1221,7 @@ describe('TestomatioPipe', () => {
       const testPipe = new TestomatioPipe({
         apiKey: TESTOMATIO,
         testomatioUrl: TESTOMATIO_URL,
-        isBatchEnabled: false,
+        batchMode: 'disabled',
       });
 
       const error = new Error('Request failed');
@@ -1329,7 +1329,7 @@ describe('TestomatioPipe', () => {
       pipe = new TestomatioPipe({
         apiKey: TESTOMATIO,
         testomatioUrl: TESTOMATIO_URL,
-        isBatchEnabled: false,
+        batchMode: 'disabled',
       });
 
       // Capture console output
@@ -1392,11 +1392,156 @@ describe('TestomatioPipe', () => {
     it('should log "API key is not set" when apiKey is missing', async () => {
       const pipeNoKey = new TestomatioPipe({
         testomatioUrl: TESTOMATIO_URL,
-        isBatchEnabled: false,
+        batchMode: 'disabled',
       });
 
       // This pipe has no API key, so it should be disabled
       expect(pipeNoKey.isEnabled).to.be.false;
+    });
+  });
+
+  describe('batch upload mode', () => {
+    it('should default to auto when no batchMode and no env var is set', () => {
+      delete process.env.TESTOMATIO_DISABLE_BATCH_UPLOAD;
+      const defaultPipe = new TestomatioPipe({ apiKey: TESTOMATIO, testomatioUrl: TESTOMATIO_URL });
+      expect(defaultPipe.batch.mode).to.equal('auto');
+    });
+
+    it('should default to disabled when TESTOMATIO_DISABLE_BATCH_UPLOAD is set', () => {
+      process.env.TESTOMATIO_DISABLE_BATCH_UPLOAD = '1';
+      const envPipe = new TestomatioPipe({ apiKey: TESTOMATIO, testomatioUrl: TESTOMATIO_URL });
+      expect(envPipe.batch.mode).to.equal('disabled');
+      delete process.env.TESTOMATIO_DISABLE_BATCH_UPLOAD;
+    });
+
+    it('explicit batchMode param wins over the env default', () => {
+      process.env.TESTOMATIO_DISABLE_BATCH_UPLOAD = '1';
+      const manualPipe = new TestomatioPipe({
+        apiKey: TESTOMATIO,
+        testomatioUrl: TESTOMATIO_URL,
+        batchMode: 'manual',
+      });
+      expect(manualPipe.batch.mode).to.equal('manual');
+      delete process.env.TESTOMATIO_DISABLE_BATCH_UPLOAD;
+    });
+
+    it('createRun should override the constructor mode with params.batchMode', async () => {
+      const pipe = new TestomatioPipe({
+        apiKey: TESTOMATIO,
+        testomatioUrl: TESTOMATIO_URL,
+        batchMode: 'disabled',
+      });
+      pipe.runId = 'override-run-id';
+      pipe.client.request = async () => ({ data: {} });
+
+      await pipe.createRun({ batchMode: 'manual' });
+      expect(pipe.batch.mode).to.equal('manual');
+    });
+
+    it('createRun should start an interval in auto mode only', async () => {
+      const autoPipe = new TestomatioPipe({
+        apiKey: TESTOMATIO,
+        testomatioUrl: TESTOMATIO_URL,
+        batchMode: 'auto',
+      });
+      autoPipe.runId = 'auto-run-id';
+      autoPipe.client.request = async () => ({ data: {} });
+
+      await autoPipe.createRun({});
+      expect(autoPipe.batch.intervalFunction).to.not.be.null;
+      clearInterval(autoPipe.batch.intervalFunction);
+
+      const manualPipe = new TestomatioPipe({
+        apiKey: TESTOMATIO,
+        testomatioUrl: TESTOMATIO_URL,
+        batchMode: 'manual',
+      });
+      manualPipe.runId = 'manual-run-id';
+      manualPipe.client.request = async () => ({ data: {} });
+
+      await manualPipe.createRun({});
+      expect(manualPipe.batch.intervalFunction).to.be.null;
+    });
+
+    it('auto mode should flush immediately when no interval is running yet', async () => {
+      const autoPipe = new TestomatioPipe({
+        apiKey: TESTOMATIO,
+        testomatioUrl: TESTOMATIO_URL,
+        batchMode: 'auto',
+      });
+      autoPipe.runId = 'auto-flush-run-id';
+
+      const uploads = [];
+      autoPipe.client.request = async ({ data }) => {
+        uploads.push(data);
+        return { data: {} };
+      };
+
+      // createRun was not called, so no interval is running -> addTest flushes right away
+      await autoPipe.addTest({ title: 'Test 1', status: 'passed' });
+      expect(uploads).to.have.length(1);
+      expect(uploads[0].tests).to.have.length(1);
+    });
+
+    it('finishRun should clear the interval and switch mode to disabled', async () => {
+      const autoPipe = new TestomatioPipe({
+        apiKey: TESTOMATIO,
+        testomatioUrl: TESTOMATIO_URL,
+        batchMode: 'auto',
+      });
+      autoPipe.runId = 'finish-run-id';
+      autoPipe.client.request = async () => ({ data: {} });
+
+      await autoPipe.createRun({});
+      expect(autoPipe.batch.intervalFunction).to.not.be.null;
+
+      await autoPipe.finishRun({});
+      expect(autoPipe.batch.intervalFunction).to.be.null;
+      expect(autoPipe.batch.mode).to.equal('disabled');
+    });
+
+    it('manual mode should buffer tests until sync is called', async () => {
+      const manualPipe = new TestomatioPipe({
+        apiKey: TESTOMATIO,
+        testomatioUrl: TESTOMATIO_URL,
+        batchMode: 'manual',
+      });
+      manualPipe.runId = 'manual-run-id';
+
+      const uploads = [];
+      manualPipe.client.request = async ({ data }) => {
+        uploads.push(data);
+        return { data: {} };
+      };
+
+      manualPipe.addTest({ title: 'Test 1', status: 'passed' });
+      manualPipe.addTest({ title: 'Test 2', status: 'passed' });
+      expect(uploads).to.have.length(0);
+
+      await manualPipe.sync();
+      expect(uploads).to.have.length(1);
+      expect(uploads[0].tests).to.have.length(2);
+    });
+
+    it('disabled mode should upload each test immediately', async () => {
+      const disabledPipe = new TestomatioPipe({
+        apiKey: TESTOMATIO,
+        testomatioUrl: TESTOMATIO_URL,
+        batchMode: 'disabled',
+      });
+      disabledPipe.runId = 'disabled-run-id';
+
+      const uploads = [];
+      disabledPipe.client.request = async ({ data }) => {
+        uploads.push(data);
+        return { data: {} };
+      };
+
+      await disabledPipe.addTest({ title: 'Test 1', status: 'passed' });
+      await disabledPipe.addTest({ title: 'Test 2', status: 'passed' });
+      expect(uploads).to.have.length(2);
+      expect(JSON.parse(uploads[0]).title).to.equal('Test 1');
+      expect(JSON.parse(uploads[1]).title).to.equal('Test 2');
     });
   });
 
@@ -1411,7 +1556,7 @@ describe('TestomatioPipe', () => {
       pipe = new TestomatioPipe({
         apiKey: TESTOMATIO,
         testomatioUrl: TESTOMATIO_URL,
-        isBatchEnabled: false,
+        batchMode: 'disabled',
       });
 
       // Set up a run ID

@@ -68,7 +68,12 @@ describe('Playwright Tags Extraction', () => {
         .split('\n')
         .filter(line => line.trim());
       const debugData = debugLines.map(line => JSON.parse(line));
-      const testEntries = debugData.filter(entry => entry.action === 'addTest');
+      // DebugPipe buffers tests and flushes them as a single `addTestsBatch` entry on sync/finishRun.
+      // Flatten those batches into per-test entries shaped like the legacy `addTest` log
+      // ({ testId: <testData> }) so the assertions below can stay test-data oriented.
+      const testEntries = debugData
+        .filter(entry => entry.action === 'addTestsBatch')
+        .flatMap(entry => (entry.tests || []).map(test => ({ action: 'addTest', testId: test })));
 
       return { debugData, testEntries };
     }
