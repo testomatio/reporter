@@ -48,6 +48,7 @@ if (MAJOR_VERSION === 3 && MINOR_VERSION < 7) {
 
 function CodeceptReporter(config) {
   const failedTests = [];
+  const reportedTestUids = new Set();
   let videos = [];
   let traces = [];
   const reportTestPromises = [];
@@ -161,6 +162,7 @@ function CodeceptReporter(config) {
     const error = hook?.ctx?.currentTest?.err;
 
     for (const test of suite.tests) {
+      reportedTestUids.add(test.uid);
       const reportTestPromise = client.addTestRun('failed', {
         ...stripExampleFromTitle(test.title),
         rid: test.uid,
@@ -197,9 +199,29 @@ function CodeceptReporter(config) {
     });
   });
 
+  event.dispatcher.on(event.test.skipped, test => {
+    const { uid, tags, title } = test.simplify();
+
+    if (uid && reportedTestUids.has(uid)) return;
+
+    services.setContext(null);
+
+    const reportTestPromise = client.addTestRun(STATUS.SKIPPED, {
+      ...stripExampleFromTitle(title),
+      rid: uid,
+      test_id: getTestomatIdFromTestTitle(`${title} ${tags?.join(' ')}`),
+      suite_title: test.parent && stripTagsFromTitle(stripExampleFromTitle(test.parent.title).title),
+      time: test.duration,
+      meta: test.meta,
+    });
+    reportTestPromises.push(reportTestPromise);
+    reportedTestUids.add(uid);
+  });
+
   event.dispatcher.on(event.test.after, test => {
     const { uid, tags, title, artifacts } = test.simplify();
     const error = test.err || null;
+    reportedTestUids.add(uid);
     failedTests.push(uid || title);
     const testObj = getTestAndMessage(title);
     const files = buildArtifactFiles(artifacts);
@@ -211,8 +233,8 @@ function CodeceptReporter(config) {
 
     // Build step hierarchy with screenshot from screenshotOnFail
     const stepHierarchy = buildUnifiedStepHierarchy(
-      test.steps, 
-      hookSteps, 
+      test.steps,
+      hookSteps,
       screenshotOnFailPath
     );
 
