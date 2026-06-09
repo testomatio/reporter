@@ -28,6 +28,14 @@ const STATUS = {
   SKIPPED: 'skipped',
   FINISHED: 'finished',
 };
+
+// batch upload mode
+/** @type {{ AUTO: 'auto', MANUAL: 'manual', DISABLED: 'disabled' }} */
+const BATCH_MODE = {
+  AUTO: 'auto',
+  MANUAL: 'manual',
+  DISABLED: 'disabled',
+};
 // html pipe var
 const HTML_REPORT = {
   FOLDER: 'html-report',
@@ -61,6 +69,7 @@ export {
   TESTOMAT_TMP_STORAGE_DIR,
   CSV_HEADERS,
   STATUS,
+  BATCH_MODE,
   HTML_REPORT,
   MARKDOWN_REPORT,
   REQUEST_TIMEOUT,

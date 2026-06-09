@@ -14,13 +14,7 @@ export class DebugPipe {
 
     this.isEnabled = !!process.env.TESTOMATIO_DEBUG || !!process.env.DEBUG;
     if (this.isEnabled) {
-      this.batch = {
-        isEnabled: this.params.isBatchEnabled ?? !process.env.TESTOMATIO_DISABLE_BATCH_UPLOAD,
-        intervalFunction: null,
-        intervalTime: 5000,
-        tests: [],
-        batchIndex: 0,
-      };
+      this.tests = [];
       const suffix = process.env.TESTOMATIO_REPLAY ? 'replay' : '';
       const paths = getDebugFilePath(suffix);
       this.logFilePath = paths.tmp;
@@ -60,8 +54,13 @@ export class DebugPipe {
       this.logToFile({ datetime: new Date().toISOString(), timestamp: Date.now() });
       this.logToFile({ data: 'variables', testomatioEnvVars: this.testomatioEnvVars });
       this.logToFile({ data: 'store', store: this.store || {} });
-      // Bind batchUpload to the instance
-      this.batchUpload = this.batchUpload.bind(this);
+
+      // Safety net for hook failures (e.g. a failing AfterSuite) that abort the run
+      // before finishRun: buffered tests would otherwise be lost. The handler is
+      // attached lazily when the first test is buffered and detached once flushed,
+      // so processes that create many pipes don't pile up `exit` listeners.
+      this.flushOnExit = () => this.flushBufferedTests();
+      this.exitListenerAttached = false;
     }
   }
 
@@ -88,42 +87,22 @@ export class DebugPipe {
 
   async createRun(params = {}) {
     if (!this.isEnabled) return;
-    if (params.isBatchEnabled === true || params.isBatchEnabled === false) this.batch.isEnabled = params.isBatchEnabled;
-
-    if (!this.isEnabled) return {};
-    if (this.batch.isEnabled) this.batch.intervalFunction = setInterval(this.batchUpload, this.batch.intervalTime);
 
     this.logToFile({ action: 'createRun', params });
   }
 
   async addTest(data) {
     if (!this.isEnabled) return;
-
-    if (!this.batch.isEnabled) {
-      const logData = { action: 'addTest', testId: data };
-      if (this.store.runId) logData.runId = this.store.runId;
-      this.logToFile(logData);
-    } else this.batch.tests.push(data);
-
-    if (!this.batch.intervalFunction) await this.batchUpload();
-  }
-
-  async batchUpload() {
-    this.batch.batchIndex++;
-    if (!this.batch.isEnabled) return;
-    if (!this.batch.tests.length) return;
-
-    const testsToSend = this.batch.tests.splice(0);
-
-    const logData = { action: 'addTestsBatch', tests: testsToSend };
-    if (this.store.runId) logData.runId = this.store.runId;
-    this.logToFile(logData);
+    this.tests.push(data);
+    if (!this.exitListenerAttached) {
+      process.once('exit', this.flushOnExit);
+      this.exitListenerAttached = true;
+    }
   }
 
   async finishRun(params) {
     if (!this.isEnabled) return;
     await this.sync();
-    if (this.batch.intervalFunction) clearInterval(this.batch.intervalFunction);
     const logData = { action: 'finishRun', params };
     if (this.store.runId) logData.runId = this.store.runId;
     this.logToFile(logData);
@@ -133,8 +112,28 @@ export class DebugPipe {
   }
 
   async sync() {
-    if (!this.isEnabled) return;
-    await this.batchUpload();
+    this.flushBufferedTests();
+  }
+
+  /**
+   * Writes any buffered tests to the debug file as a single batch.
+   * Runs synchronously so it can also be invoked from a process `exit` handler,
+   * which is the only chance to persist tests when a hook failure (e.g. a failing
+   * AfterSuite) prevents `finishRun` from being reached. Idempotent: the buffer is
+   * drained on flush, so a later `finishRun`/exit flush is a no-op.
+   */
+  flushBufferedTests() {
+    if (!this.isEnabled || !this.tests.length) return;
+
+    const tests = this.tests.splice(0);
+    const logData = { action: 'addTestsBatch', tests };
+    if (this.store.runId) logData.runId = this.store.runId;
+    this.logToFile(logData);
+
+    if (this.exitListenerAttached) {
+      process.removeListener('exit', this.flushOnExit);
+      this.exitListenerAttached = false;
+    }
   }
 
   toString() {

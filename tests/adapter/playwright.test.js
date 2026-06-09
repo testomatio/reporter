@@ -3,6 +3,7 @@ import { exec } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
+import { extractTestEntries } from './utils/extract-test-entries.js';
 
 const execAsync = promisify(exec);
 
@@ -79,7 +80,7 @@ describe('Playwright Adapter Tests', function () {
     expect(debugLines.length).to.be.greaterThan(0);
 
     const debugData = debugLines.map(line => JSON.parse(line));
-    const testEntries = debugData.filter(entry => entry.action === 'addTest');
+    const testEntries = extractTestEntries(debugData);
     expect(testEntries.length).to.be.greaterThan(0);
 
     return { debugData, testEntries };

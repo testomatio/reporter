@@ -111,7 +111,7 @@ Every entry in the debug file follows this base structure:
     "title": "Test Run Title",
     "env": "staging",
     "parallel": true,
-    "isBatchEnabled": true
+    "batchMode": "auto"
   }
 }
 ```
@@ -213,7 +213,7 @@ Every entry in the debug file follows this base structure:
 | `params.env`            | string  | No       | Environment name                        |
 | `params.parallel`       | boolean | No       | Whether run supports parallel execution |
 | `params.status`         | string  | No       | Run status (for finishRun)              |
-| `params.isBatchEnabled` | boolean | No       | Whether batch upload is enabled         |
+| `params.batchMode`      | string  | No       | Batch upload mode: `auto`, `manual`, or `disabled` |
 
 #### `addTest` / `addTestsBatch`
 
@@ -377,8 +377,7 @@ for (const line of lines) {
 ### Batch Processing
 
 - Tests can be logged individually or in batches
-- Batch interval is 5 seconds by default
-- Batch upload is triggered on intervals and during finishRun
+- Batched tests are gathered in memory and written on `sync()` / `finishRun()`
 
 ### Error Handling
 

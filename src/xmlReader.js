@@ -3,7 +3,7 @@ import path from 'path';
 import pc from 'picocolors';
 import fs from 'fs';
 import { XMLParser } from 'fast-xml-parser';
-import { APP_PREFIX, STATUS } from './constants.js';
+import { APP_PREFIX, STATUS, BATCH_MODE } from './constants.js';
 import { randomUUID } from 'crypto';
 import { fileURLToPath } from 'url';
 import { NUnitXmlParser } from './junit-adapter/nunit-parser.js';
@@ -73,8 +73,7 @@ class XmlReader {
       env: TESTOMATIO_ENV,
       group_title: TESTOMATIO_RUNGROUP_TITLE,
       detach: TESTOMATIO_MARK_DETACHED,
-      // batch uploading is implemented for xml already
-      isBatchEnabled: false,
+      batchMode: BATCH_MODE.MANUAL,
     };
     this.runId = opts.runId || TESTOMATIO_RUN;
     this.adapter = adapterFactory(opts.lang?.toLowerCase(), opts);
@@ -543,7 +542,7 @@ class XmlReader {
       title: this.requestParams.title,
       env: this.requestParams.env,
       group_title: this.requestParams.group_title,
-      isBatchEnabled: this.requestParams.isBatchEnabled,
+      batchMode: this.requestParams.batchMode,
     };
 
     debug('Run', runParams);
@@ -611,7 +610,7 @@ class XmlReader {
     this.pipes = this.pipes || (await this.pipesPromise);
 
     // Create run before uploading tests to ensure runId is set
-    await this.createRun();
+    // await this.createRun(); // makes reporting stuck after finish, thus commenting out
 
     if (!this.tests || !Array.isArray(this.tests) || this.tests.length === 0) {
       debug('No tests to upload, finishing run');
