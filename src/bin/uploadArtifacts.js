@@ -9,6 +9,7 @@ import { config } from '../config.js';
 import { readLatestRunId } from '../utils/utils.js';
 import dotenv from 'dotenv';
 import { log } from '../utils/log.js';
+import { BATCH_MODE } from '../constants.js';
 
 const debug = createDebugMessages('@testomatio/reporter:upload-cli');
 const version = getPackageVersion();
@@ -37,7 +38,7 @@ program
     const client = new TestomatClient({
       apiKey,
       runId,
-      batchMode: 'disabled',
+      batchMode: BATCH_MODE.DISABLED,
     });
     let testruns = client.uploader.readUploadedFiles(process.env.TESTOMATIO_RUN);
 

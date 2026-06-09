@@ -3,7 +3,7 @@ import path from 'path';
 import pc from 'picocolors';
 import fs from 'fs';
 import { XMLParser } from 'fast-xml-parser';
-import { APP_PREFIX, STATUS } from './constants.js';
+import { APP_PREFIX, STATUS, BATCH_MODE } from './constants.js';
 import { randomUUID } from 'crypto';
 import { fileURLToPath } from 'url';
 import { NUnitXmlParser } from './junit-adapter/nunit-parser.js';
@@ -73,7 +73,7 @@ class XmlReader {
       env: TESTOMATIO_ENV,
       group_title: TESTOMATIO_RUNGROUP_TITLE,
       detach: TESTOMATIO_MARK_DETACHED,
-      batchMode: 'manual',
+      batchMode: BATCH_MODE.MANUAL,
     };
     this.runId = opts.runId || TESTOMATIO_RUN;
     this.adapter = adapterFactory(opts.lang?.toLowerCase(), opts);

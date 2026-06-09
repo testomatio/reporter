@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import TestomatClient from './client.js';
-import { STATUS, DEBUG_FILE } from './constants.js';
+import { STATUS, DEBUG_FILE, BATCH_MODE } from './constants.js';
 import { config } from './config.js';
 
 export class Replay {
@@ -216,7 +216,7 @@ export class Replay {
 
     const client = new TestomatClient({
       apiKey: this.apiKey,
-      batchMode: 'auto',
+      batchMode: BATCH_MODE.AUTO,
       ...runParams,
       ...(runId && { runId }),
     });

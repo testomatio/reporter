@@ -6,7 +6,7 @@ import { glob } from 'glob';
 import createDebugMessages from 'debug';
 import TestomatClient from '../client.js';
 import XmlReader from '../xmlReader.js';
-import { APP_PREFIX, STATUS, DEBUG_FILE } from '../constants.js';
+import { APP_PREFIX, STATUS, DEBUG_FILE, BATCH_MODE } from '../constants.js';
 import { cleanLatestRunId, getPackageVersion, applyFilter } from '../utils/utils.js';
 import { config } from '../config.js';
 import { readLatestRunId } from '../utils/utils.js';
@@ -369,7 +369,7 @@ program
     const client = new TestomatClient({
       apiKey,
       runId,
-      batchMode: 'disabled',
+      batchMode: BATCH_MODE.DISABLED,
     });
 
     let testruns = client.uploader.readUploadedFiles(runId);
