@@ -20,6 +20,8 @@ describe('PlaywrightReporter fast artifacts', () => {
         if (!runCreated) throw new Error('addTestRun was called before createRun completed');
         addTestRunCalls.push({ status, data });
       },
+      uploader: { isEnabled: true },
+      updateRunStatus: async () => {},
     };
 
     reporter.onBegin({ outputDir: '', projects: [{ outputDir: '' }] }, {});
@@ -65,6 +67,12 @@ describe('PlaywrightReporter fast artifacts', () => {
     await testEndPromise;
 
     expect(addTestRunCalls).to.have.length(1);
-    expect(addTestRunCalls[0].data.files).to.have.length(1);
+    expect(addTestRunCalls[0].data.files).to.be.undefined;
+
+    await reporter.onEnd({ status: 'passed' });
+
+    expect(addTestRunCalls).to.have.length(2);
+    expect(addTestRunCalls[1].data.files).to.have.length(1);
+    expect(addTestRunCalls[1].data.files[0].type).to.equal('image/png');
   });
 });
