@@ -111,6 +111,17 @@ export class DebugPipe {
     log.info(`History: ${this.historyDir}`);
   }
 
+  /**
+   * Logs artifacts data to the debug file.
+   * Used for trace.zip, video files and other artifacts uploaded after tests finish.
+   * @param {Array} artifacts - Array of artifacts with { rid, title, path, type }
+   */
+  addArtifacts(artifacts) {
+    if (!this.isEnabled || !artifacts?.length) return;
+    const logData = { action: 'addArtifacts', artifacts, runId: this.store.runId };
+    this.logToFile(logData);
+  }
+
   async sync() {
     this.flushBufferedTests();
   }

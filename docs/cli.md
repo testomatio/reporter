@@ -234,20 +234,23 @@ npx @testomatio/reporter xml "pytest-results.xml" --timelimit 300 --env-file .en
 
 ### 5. upload-artifacts
 
-Testomat.io reporter automatically uploads artifacts during run. However, either some artifacts failed to upload or you intentioanlly disabled file upload during tests to speed up reporting. In this case you can use this command to upload artifacts after the run.
-
-It is important to have the `TESTOMATIO_RUN` environment variable set to the run ID.
+Testomat.io reporter automatically uploads artifacts during run. However, either some artifacts failed to upload or you intentionally disabled file upload during tests to speed up reporting. In this case you can use this command to upload artifacts after the run.
 
 **Usage:**
 
 ```bash
-npx @testomatio/reporter upload-artifacts [options]
+npx @testomatio/reporter upload-artifacts [jsonl-file] [options]
 ```
+
+**Arguments:**
+
+- `jsonl-file` (optional) - Path to JSONL debug file to upload artifacts from. When provided, artifacts are loaded from the debug file instead of local temp storage.
 
 **Environment Variables:**
 
 - `TESTOMATIO`: Your Testomat.io API key (required).
 - `TESTOMATIO_RUN`: The previous run ID you want to upload artifacts (optional). If none set, latest run will be used.
+- `TESTOMATIO_URL`: Testomat.io server URL (optional, defaults to `https://app.testomat.io`).
 
 **Options:**
 
@@ -256,7 +259,7 @@ npx @testomatio/reporter upload-artifacts [options]
 
 You still need [S3 artifacts configuration](./artifacts.md) to be set to upload artifacts to storage. In order to disable artifacts upload during tests you can use `TESTOMATIO_DISABLE_ARTIFACTS=1` while running tests.
 
-**Examples:**
+**Upload from local temp storage (default mode):**
 
 ```bash
 npx @testomatio/reporter upload-artifacts
@@ -286,6 +289,28 @@ TESTOMATIO=tstmt_* npx @testomatio/reporter upload-artifacts
 ```
 
 However, `upload-artifacts` command will upload all files after the run, without blocking the final result.
+
+**Upload from JSONL debug file:**
+
+You can upload artifacts from a JSONL debug file generated during test execution with `TESTOMATIO_DEBUG=1`. This mode reads artifact paths from the debug file and uploads them to the correct tests.
+
+```bash
+# Run tests with debug mode enabled
+TESTOMATIO=tstmt_* TESTOMATIO_DEBUG=1 npx playwright test
+
+# Upload artifacts from the debug file
+TESTOMATIO=tstmt_* npx @testomatio/reporter upload-artifacts ./testomatio.debug.json
+```
+
+This approach is useful when:
+- You need to re-upload artifacts after a failed upload
+- You want to upload artifacts to a different run
+- The original upload was skipped due to size limits
+
+**Notes:**
+- The JSONL file must contain a valid `runId` and tests with `test_id` set
+- **CodeceptJS only**: trace.zip and video files are automatically recorded when using `TESTOMATIO_DEBUG=1`
+- Artifacts are uploaded to the test level (Artifacts tab), not within individual steps
 
 ### 6. replay
 
@@ -329,7 +354,7 @@ npx @testomatio/reporter replay --env-file .env.staging
 
 **How it works:**
 
-The replay command uses the `ReplayService` class (located in `src/replay.js`) to:
+The replay command uses the `Replay` class (located in `src/replay.js`) to:
 
 1. Parse the debug file line by line
 2. Extract environment variables, run parameters, test data, and finish parameters

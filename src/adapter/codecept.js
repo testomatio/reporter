@@ -278,6 +278,13 @@ async function uploadAttachments(client, attachments, messagePrefix, attachmentT
     log.info(`Attachments: ${messagePrefix} ${attachments.length} ${attachmentType} ...`);
   }
 
+  if (client.pipes?.length) {
+    const debugPipe = client.pipes.find(p => p.constructor.name === 'DebugPipe');
+    if (debugPipe?.isEnabled) {
+      debugPipe.addArtifacts(attachments);
+    }
+  }
+
   const promises = attachments.map(async attachment => {
     const { rid, title, path, type } = attachment;
     const file = { path, type, title };
