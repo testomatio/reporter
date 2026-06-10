@@ -126,7 +126,7 @@ class PlaywrightReporter {
       logs,
       links,
       manuallyAttachedArtifacts,
-      files: files.length ? files : undefined,
+      // files are uploaded in onEnd to avoid duplicate uploads
       meta: {
         browser: project.browser,
         isMobile: project.isMobile,
