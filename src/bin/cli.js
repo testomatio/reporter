@@ -7,7 +7,7 @@ import createDebugMessages from 'debug';
 import TestomatClient from '../client.js';
 import XmlReader from '../xmlReader.js';
 import AllureReader from '../allureReader.js';
-import { APP_PREFIX, STATUS } from '../constants.js';
+import { APP_PREFIX, STATUS, DEBUG_FILE, BATCH_MODE } from '../constants.js';
 import { cleanLatestRunId, getPackageVersion, applyFilter } from '../utils/utils.js';
 import { config } from '../config.js';
 import { readLatestRunId } from '../utils/utils.js';
@@ -16,21 +16,33 @@ import { filesize as prettyBytes } from 'filesize';
 import dotenv from 'dotenv';
 import Replay from '../replay.js';
 import { log } from '../utils/log.js';
+import { formatFilterListIds } from '../utils/pipe_utils.js';
 
 const debug = createDebugMessages('@testomatio/reporter:cli');
 const version = getPackageVersion();
-console.log(pc.cyan(pc.bold(` 🤩 Testomat.io Reporter v${version}`)));
 const program = new Command();
 
 program
   .version(version)
   .option('--env-file <envfile>', 'Load environment variables from env file')
-  .hook('preAction', thisCommand => {
+  .hook('preAction', (thisCommand, actionCommand) => {
     const opts = thisCommand.opts();
     if (opts.envFile) {
       dotenv.config({ path: opts.envFile });
     } else {
       dotenv.config();
+    }
+
+    // --format / --filter-list produce machine-readable output on stdout, so route
+    // remaining output to stderr, skip the banner, and silence info-level logs so
+    // stdout stays clean for capture (e.g. RUN_ID=$(... start --format id)).
+    // Set TESTOMATIO_LOG_LEVEL=INFO to re-enable progress logs for debugging.
+    const subOpts = actionCommand.opts();
+    if (subOpts.filterList || subOpts.format) {
+      process.env.TESTOMATIO_LOG_STDERR = '1';
+      process.env.TESTOMATIO_LOG_LEVEL ||= 'WARN';
+    } else {
+      console.log(pc.cyan(pc.bold(` 🤩 Testomat.io Reporter v${version}`)));
     }
   });
 
@@ -38,22 +50,42 @@ program
   .command('start')
   .description('Start a new run and return its ID')
   .option('--kind <type>', 'Specify run type: automated, manual, or mixed')
+  .option('--filter <filter>', 'Scope the prepared run to tests matching the filter (no execution)')
+  .option('--format <format>', 'Machine-readable output: print only the run id to stdout (e.g. --format id)')
   .action(async opts => {
     cleanLatestRunId();
 
-    console.log('Starting a new Run on Testomat.io...');
+    log.info('Starting a new Run on Testomat.io...');
     const apiKey = process.env['INPUT_TESTOMATIO-KEY'] || config.TESTOMATIO;
     const client = new TestomatClient({ apiKey });
 
     const createRunParams = {};
-    if (opts.kind) {
-      createRunParams.kind = opts.kind;
+    if (opts.kind) createRunParams.kind = opts.kind;
+
+    if (opts.filter) {
+      const [pipe, ...optsArray] = opts.filter.split(':');
+      const tests = await client.prepareRun({ pipe, pipeOptions: optsArray.join(':') });
+      if (!tests || tests.length === 0) {
+        log.warn(pc.yellow('No tests found for the filter. Run not created.'));
+        process.exit(1);
+      }
+      createRunParams.configuration = {
+        tests: tests.filter(id => id.startsWith('T')).map(id => id.slice(1)),
+        suites: tests.filter(id => id.startsWith('S')).map(id => id.slice(1)),
+      };
     }
 
-    client.createRun(createRunParams).then(() => {
-      console.log(process.env.runId);
-      process.exit(0);
-    });
+    await client.createRun(createRunParams);
+
+    const runId = client.pipeStore.runId || process.env.runId;
+    if (!runId) {
+      log.error(pc.red('Failed to create run on Testomat.io.'));
+      process.exit(1);
+    }
+
+    // stdout carries ONLY the run id so it can be captured: RUN_ID=$(reporter start)
+    console.log(runId);
+    process.exit(0);
   });
 
 program
@@ -84,8 +116,27 @@ program
   .argument('[command]', 'Test runner command')
   .option('--filter <filter>', 'Additional execution filter')
   .option('--filter-list <filter>', 'Get a list of all tests by filter before running')
+  .option('--format <format>', 'Machine-readable output format for --filter-list (grep, json, newline, ids)')
   .option('--kind <type>', 'Specify run type: automated, manual, or mixed')
+  .option('--remote <profile>', 'Trigger run on the named Testomat.io CI profile instead of executing locally')
+  .option(
+    '--remote-param <kv>',
+    'key=value pair forwarded to the CI profile config (repeat for multiple)',
+    (value, prev) => prev.concat([value]),
+    [],
+  )
   .action(async (command, opts) => {
+    if (opts.remote) {
+      if (opts.filterList) {
+        log.warn(pc.red('⚠️  --filter-list cannot be combined with --remote'));
+        process.exit(1);
+      }
+      process.env.TESTOMATIO_CI_PROFILE = opts.remote;
+      if (opts.remoteParam?.length) {
+        process.env.TESTOMATIO_CI_PARAMS = opts.remoteParam.join(',');
+      }
+    }
+
     const apiKey = process.env['INPUT_TESTOMATIO-KEY'] || config.TESTOMATIO;
     const title = process.env.TESTOMATIO_TITLE;
     const client = new TestomatClient({ apiKey, title });
@@ -94,7 +145,7 @@ program
       log.info('Filtering tests...');
       // Example of use: npx @testomatio/reporter run "npx jest" --filter "testomatio:tag-name=frontend"
       // Example of use: npx @testomatio/reporter run "npx jest" --filter "coverage:file=coverage.yml"
-      // Example of use: npx @testomatio/reporter run "npx jest" --filter-list "coverage:file=coverage.yml"
+      // Example of use: npx @testomatio/reporter run --filter-list "coverage:file=coverage.yml" --format grep
       const [pipe, ...optsArray] = opts?.filter ? opts?.filter.split(':') : opts?.filterList.split(':');
       const pipeOptions = optsArray.join(':');
 
@@ -107,29 +158,65 @@ program
         const tests = await client.prepareRun(prepareRunParams);
 
         if (!tests || tests.length === 0) {
-          log.info( pc.yellow('No tests found.'));
+          log.warn( pc.yellow('No tests found.'));
+          // Exit non-zero on --filter-list so scripts can detect "nothing to run"
+          // via $? and skip launching the runner.
+          if (opts.filterList) process.exit(1);
           return;
         }
 
-        const pattern = `(${tests.join('|')})`;
-        const filteredCommand = applyFilter(command, tests);
-
-        debug(`Execution pattern: "${pattern}"`);
-
-        if(opts.filterList) {
-          log.info( pc.blue(`Matched test/suite IDs: ${tests.join(', ')}`));
-          if (command) log.info( pc.green(`Full Running Command: ${filteredCommand}`));
+        if (opts.filterList) {
+          const out = formatFilterListIds(tests, opts.format || 'ids');
+          if (out) console.log(out);
+          // Show the runnable-command hint only in interactive mode (no explicit --format).
+          // When --format is set the user is scripting and doesn't need stderr noise.
+          if (command && !opts.format) {
+            log.info(pc.green(`Full Running Command: ${applyFilter(command, tests)}`));
+          }
           return;
         }
 
-        if (command && command.split) {
-          command = filteredCommand;
+        if (command && command.split && !opts.remote) {
+          command = applyFilter(command, tests);
         }
       }
       catch (err) {
-        log.info( err.message || err);
+        log.error( err.message || err);
+        if (opts.filterList) process.exit(1);
         return;
       }
+    }
+
+    if (opts.remote) {
+      if (!apiKey) {
+        log.warn(pc.red('⚠️  TESTOMATIO API key required for --remote'));
+        process.exit(1);
+      }
+      if (command) {
+        log.warn(pc.yellow('Note: positional command is ignored when --remote is set; CI runs the workflow.'));
+      }
+
+      const createRunParams = {};
+      if (title) createRunParams.title = title;
+      if (opts.kind) createRunParams.kind = opts.kind;
+
+      try {
+        await client.createRun(createRunParams);
+      } catch (err) {
+        log.error(pc.red(`CI launch failed: ${err.message || err}`));
+        process.exit(1);
+      }
+
+      // createRun swallows pipe-level errors, so a resolved promise is not proof
+      // the launch succeeded — the pipe only records runUrl on a real 2xx response.
+      if (!client.pipeStore.runUrl) {
+        log.error(pc.red('CI launch failed — no run was created (see the error above).'));
+        process.exit(1);
+      }
+
+      log.info(`🚀 CI build triggered on profile ${pc.cyan(opts.remote)}`);
+      log.info(`📊 Report URL: ${pc.magenta(client.pipeStore.runUrl)}`);
+      return process.exit(0);
     }
 
     // just create a run (wich tests which match filters) without executing tests
@@ -317,7 +404,7 @@ program
     const client = new TestomatClient({
       apiKey,
       runId,
-      isBatchEnabled: false,
+      batchMode: BATCH_MODE.DISABLED,
     });
 
     let testruns = client.uploader.readUploadedFiles(runId);
@@ -405,7 +492,7 @@ program
 program
   .command('replay')
   .description('Replay test data from debug file and re-send to Testomat.io')
-  .argument('[debug-file]', 'Path to debug file (defaults to /tmp/testomatio.debug.latest.json)')
+  .argument('[debug-file]', `Path to debug file. Defaults to ./${DEBUG_FILE}.json`)
   .option('--dry-run', 'Preview the data without sending to Testomat.io')
   .action(async (debugFile, opts) => {
     try {

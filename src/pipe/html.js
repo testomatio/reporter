@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import pc from 'picocolors';
 import handlebars from 'handlebars';
+import { marked } from 'marked';
 import fileUrl from 'file-url';
 import { fileSystem, isSameTest, ansiRegExp, formatStep } from '../utils/utils.js';
 import { HTML_REPORT } from '../constants.js';
@@ -18,8 +19,9 @@ class HtmlPipe {
   constructor(params, store = {}) {
     this.store = store || {};
     this.title = params.title || process.env.TESTOMATIO_TITLE;
+    this.description = params.description || process.env.TESTOMATIO_DESCRIPTION;
     this.apiKey = params.apiKey || process.env.TESTOMATIO;
-    this.isHtml = process.env.TESTOMATIO_HTML_REPORT_SAVE;
+    this.isHtml = params.html ?? process.env.TESTOMATIO_HTML_REPORT_SAVE;
 
     debug('HTML Pipe: ', this.apiKey ? 'API KEY' : '*no api key provided*');
 
@@ -27,10 +29,14 @@ class HtmlPipe {
     this.htmlOutputPath = '';
     this.filenameMsg = '';
     this.tests = [];
+    this.configuration = null;
 
     if (this.isHtml) {
       this.isEnabled = true;
-      this.htmlReportDir = process.env.TESTOMATIO_HTML_REPORT_FOLDER || HTML_REPORT.FOLDER;
+      this.htmlReportDir = params.reportDir || process.env.TESTOMATIO_HTML_REPORT_FOLDER || HTML_REPORT.FOLDER;
+      if (process.env.TESTOMATIO_RUNGROUP_TITLE) {
+        this.htmlReportDir = path.join(this.htmlReportDir, process.env.TESTOMATIO_RUNGROUP_TITLE);
+      }
 
       if (process.env.TESTOMATIO_HTML_FILENAME && process.env.TESTOMATIO_HTML_FILENAME.endsWith('.html')) {
         this.htmlReportName = process.env.TESTOMATIO_HTML_FILENAME;
@@ -61,8 +67,10 @@ class HtmlPipe {
     }
   }
 
-  async createRun() {
-    // empty
+  async createRun(params = {}) {
+    if (params?.configuration && typeof params.configuration === 'object') {
+      this.configuration = { ...(this.configuration || {}), ...params.configuration };
+    }
   }
 
   async prepareRun() {}
@@ -250,6 +258,13 @@ class HtmlPipe {
       runUrl: this.store.runUrl || '',
       executionTime: testExecutionSumTime(aggregatedTests),
       executionDate: getCurrentDateTimeFormatted(),
+      description:
+        [runParams.description || this.store.coverageDescription || this.store.description, this.description]
+          .filter(Boolean)
+          .join('\n\n') || '',
+      configuration: buildDisplayConfiguration(
+        this.configuration || this.store.configuration || runParams.configuration || null,
+      ),
       tests: aggregatedTests,
       envVars: collectEnvironmentVariables(),
     };
@@ -303,6 +318,11 @@ class HtmlPipe {
       'getTestsByStatus',
       (tests, status) => tests.filter(test => test.status.toLowerCase() === status.toLowerCase()).length,
     );
+
+    handlebars.registerHelper('markdown', value => {
+      if (typeof value !== 'string' || !value.trim()) return '';
+      return new handlebars.SafeString(marked.parse(value, { async: false }));
+    });
 
     handlebars.registerHelper('formatDuration', milliseconds => {
       if (!milliseconds || milliseconds === 0) return '0ms';
@@ -906,121 +926,31 @@ function dropISayEcho(lines) {
   return out;
 }
 
-/**
- * Collects all Testomatio and S3 environment variables
- * Uses hardcoded list to avoid file system dependencies for end users
- * @returns {Object} Object with TESTOMATIO_ and S3_ variables grouped
- */
-function collectEnvironmentVariables() {
-  return getHardcodedEnvVars();
+const SENSITIVE_ENV_PATTERNS = [/TOKEN/, /SECRET/, /PASSWORD/, /KEY/, /^TESTOMATIO$/];
+
+function isSensitiveEnvName(name) {
+  return SENSITIVE_ENV_PATTERNS.some(re => re.test(name));
 }
 
-/**
- * Process environment variables configuration and collect their values
- * @param {Object} varConfigs - Object with variable configurations { [key]: { description } }
- * @param {Set} sensitiveVars - Set of sensitive variable names
- * @returns {Object} Processed environment variables with metadata
- */
-function processEnvironmentVariables(varConfigs, sensitiveVars) {
-  const result = {};
+function collectEnvironmentVariables() {
+  const groups = { testomatio: {}, s3: {} };
 
-  for (const [key, config] of Object.entries(varConfigs)) {
-    const value = process.env[key];
-    const isSensitive = sensitiveVars.has(key);
+  for (const [name, value] of Object.entries(process.env)) {
+    if (value === undefined) continue;
 
-    if (isSensitive) {
-      if (value !== undefined) {
-        result[key] = { value: '***', description: config.description, isSet: true, isSensitive: true };
-      } else {
-        result[key] = { value: '', description: config.description, isSet: false, isSensitive: true };
-      }
-    } else {
-      if (value !== undefined) {
-        result[key] = { value, description: config.description, isSet: true };
-      } else {
-        result[key] = { value: '', description: config.description, isSet: false };
-      }
-    }
+    let group = null;
+    if (name === 'TESTOMATIO' || name.startsWith('TESTOMATIO_')) group = 'testomatio';
+    else if (name.startsWith('S3_')) group = 's3';
+    if (!group) continue;
+
+    const isSensitive = isSensitiveEnvName(name);
+    let displayValue = value;
+    if (isSensitive) displayValue = '***';
+
+    groups[group][name] = { value: displayValue, isSet: true, isSensitive };
   }
 
-  return result;
-}
-
-/**
- * Hardcoded environment variables stored in code
- * This is the main source of truth for env vars to avoid file system dependencies
- * @returns {Object} Object with TESTOMATIO_ and S3_ variables
- */
-function getHardcodedEnvVars() {
-  const allVars = {
-    testomatio: {
-      TESTOMATIO: { description: 'API Key for Testomat.io' },
-      TESTOMATIO_API_KEY: { description: 'API Key (alias for TESTOMATIO)' },
-      TESTOMATIO_CREATE: { description: 'Create new tests in Testomat.io' },
-      TESTOMATIO_DEBUG: { description: 'Enable debug mode' },
-      TESTOMATIO_DISABLE_BATCH_UPLOAD: { description: 'Disable batch upload' },
-      TESTOMATIO_ENV: { description: 'Environment label (e.g., "Windows, Chrome")' },
-      TESTOMATIO_EXCLUDE_FILES_FROM_REPORT_GLOB_PATTERN: { description: 'Glob pattern to exclude files' },
-      TESTOMATIO_EXCLUDE_SKIPPED: { description: 'Exclude skipped tests from report' },
-      TESTOMATIO_FILENAME: { description: 'HTML report filename' },
-      TESTOMATIO_HTML_FILENAME: { description: 'HTML report filename' },
-      TESTOMATIO_HTML_REPORT_FOLDER: { description: 'Folder for HTML report' },
-      TESTOMATIO_HTML_REPORT_SAVE: { description: 'Save HTML report' },
-      TESTOMATIO_INTERCEPT_CONSOLE_LOGS: { description: 'Intercept console logs' },
-      TESTOMATIO_MARK_DETACHED: { description: 'Mark tests as detached' },
-      TESTOMATIO_MAX_REQUEST_FAILURES: { description: 'Max request failures' },
-      TESTOMATIO_MAX_REQUEST_FAILURES_COUNT: { description: 'Max request failures count' },
-      TESTOMATIO_MAX_REQUEST_RETRIES_WITHIN_TIME_SECONDS: { description: 'Max retries within time period' },
-      TESTOMATIO_NO_STEPS: { description: 'Disable steps reporting' },
-      TESTOMATIO_NO_TIMESTAMP: { description: 'Remove timestamps from logs' },
-      TESTOMATIO_PROCEED: { description: 'Proceed even if tests fail' },
-      TESTOMATIO_PUBLISH: { description: 'Publish results to Testomat.io' },
-      TESTOMATIO_REQUEST_TIMEOUT: { description: 'Request timeout in milliseconds' },
-      TESTOMATIO_RUN: { description: 'Run ID to report tests to' },
-      TESTOMATIO_RUNGROUP_TITLE: { description: 'Title for run group' },
-      TESTOMATIO_SHARED_RUN: { description: 'Share run for parallel execution' },
-      TESTOMATIO_SHARED_RUN_TIMEOUT: { description: 'Timeout for shared run (in seconds)' },
-      TESTOMATIO_STACK_ARTIFACTS: { description: 'Stack artifacts in report' },
-      TESTOMATIO_STACK_FILTER: { description: 'Filter stack traces' },
-      TESTOMATIO_STACK_PASSED: { description: 'Report stack for passed tests' },
-      TESTOMATIO_STEPS_PASSED: { description: 'Report steps for passed tests' },
-      TESTOMATIO_SUITE: { description: 'Suite ID for new tests' },
-      TESTOMATIO_TOKEN: { description: 'API Token (alias for TESTOMATIO)' },
-      TESTOMATIO_TITLE: { description: 'Title for the test run' },
-      TESTOMATIO_URL: { description: 'Testomat.io URL (custom instance)' },
-      TESTOMATIO_WORKDIR: { description: 'Working directory for relative paths' },
-    },
-    s3: {
-      S3_ACCESS_KEY_ID: { description: 'S3 access key ID' },
-      S3_BUCKET: { description: 'S3 bucket name' },
-      S3_ENDPOINT: { description: 'S3 endpoint URL' },
-      S3_FORCE_PATH_STYLE: { description: 'S3 force path style' },
-      S3_KEY: { description: 'S3 access key' },
-      S3_PREFIX: { description: 'S3 key prefix' },
-      S3_REGION: { description: 'S3 region' },
-      S3_SECRET: { description: 'S3 secret key' },
-      S3_SECRET_ACCESS_KEY: { description: 'S3 secret access key' },
-      S3_SESSION_TOKEN: { description: 'S3 session token' },
-    },
-  };
-
-  const sensitiveVars = new Set([
-    'TESTOMATIO',
-    'TESTOMATIO_TOKEN',
-    'TESTOMATIO_API_KEY',
-    'S3_KEY',
-    'S3_SECRET',
-    'S3_ACCESS_KEY_ID',
-    'S3_SECRET_ACCESS_KEY',
-    'S3_SESSION_TOKEN',
-  ]);
-
-  const envVars = {
-    testomatio: processEnvironmentVariables(allVars.testomatio, sensitiveVars),
-    s3: processEnvironmentVariables(allVars.s3, sensitiveVars),
-  };
-
-  return envVars;
+  return groups;
 }
 
 /**
@@ -1197,6 +1127,26 @@ function loadTracesFromFiles(test) {
         test.traces = traceDataList;
       }
     }
+  }
+}
+
+function buildDisplayConfiguration(configuration) {
+  if (!configuration || typeof configuration !== 'object') return null;
+  const entries = Object.entries(configuration).filter(([k]) => k !== 'tests' && k !== 'suites');
+  if (!entries.length) return null;
+  entries.sort((a, b) => a[0].localeCompare(b[0]));
+  return entries.map(([key, value]) => ({ key, value: formatConfigDisplayValue(value) }));
+}
+
+function formatConfigDisplayValue(value) {
+  if (value == null) return '';
+  if (typeof value === 'boolean' || typeof value === 'number' || typeof value === 'string') {
+    return String(value);
+  }
+  try {
+    return JSON.stringify(value);
+  } catch (_) {
+    return String(value);
   }
 }
 

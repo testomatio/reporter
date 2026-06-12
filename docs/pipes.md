@@ -31,6 +31,8 @@ Pipes Concepts:
 - [GitHub](./pipes/github.md)
 - [Gitlab](./pipes/gitlab.md)
 - [CSV](./pipes/csv.md)
+- [HTML report](./pipes/html.md)
+- [Markdown report](./pipes/markdown.md)
 - [Bitbucket](./pipes/bitbucket.md)
 - [Debug](./pipes/debug.md)
 - [Coverage](./pipes/coverage.md)

@@ -3,7 +3,7 @@ import path from 'path';
 import pc from 'picocolors';
 import fs from 'fs';
 import { XMLParser } from 'fast-xml-parser';
-import { APP_PREFIX, STATUS } from './constants.js';
+import { APP_PREFIX, STATUS, BATCH_MODE } from './constants.js';
 import { randomUUID } from 'crypto';
 import { fileURLToPath } from 'url';
 import { NUnitXmlParser } from './junit-adapter/nunit-parser.js';
@@ -18,6 +18,7 @@ import {
   transformEnvVarToBoolean,
 } from './utils/utils.js';
 import { pipesFactory } from './pipe/index.js';
+import { splitTestsIntoChunks } from './utils/pipe_utils.js';
 import adapterFactory from './junit-adapter/index.js';
 import { config } from './config.js';
 import { S3Uploader } from './uploader.js';
@@ -39,7 +40,12 @@ const {
   TESTOMATIO_RUN,
   TESTOMATIO_MARK_DETACHED,
   TESTOMATIO_LEGACY_NUNIT,
+  TESTOMATIO_MAX_ENTITY_EXPANSIONS,
 } = process.env;
+
+const MAX_OUTPUT_LENGTH = parseInt(TESTOMATIO_MAX_STACK_TRACE, 10) || 10000;
+const MAX_ENTITY_EXPANSIONS = parseInt(TESTOMATIO_MAX_ENTITY_EXPANSIONS, 10) || 10000;
+const ENTITY_EXPANSION_LIMIT_REGEXP = /Entity expansion limit exceeded/i;
 
 const options = {
   ignoreDeclaration: true,
@@ -47,9 +53,15 @@ const options = {
   alwaysCreateTextNode: false,
   attributeNamePrefix: '',
   parseTagValue: true,
+  processEntities: {
+    enabled: true,
+    maxEntitySize: 10000,
+    maxExpansionDepth: 10,
+    maxTotalExpansions: MAX_ENTITY_EXPANSIONS,
+    maxExpandedLength: 100000,
+    maxEntityCount: 10000,
+  },
 };
-
-const MAX_OUTPUT_LENGTH = parseInt(TESTOMATIO_MAX_STACK_TRACE, 10) || 10000;
 
 const reduceOptions = {};
 
@@ -62,8 +74,7 @@ class XmlReader {
       env: TESTOMATIO_ENV,
       group_title: TESTOMATIO_RUNGROUP_TITLE,
       detach: TESTOMATIO_MARK_DETACHED,
-      // batch uploading is implemented for xml already
-      isBatchEnabled: false,
+      batchMode: BATCH_MODE.MANUAL,
     };
     this.runId = opts.runId || TESTOMATIO_RUN;
     this.adapter = adapterFactory(opts.lang?.toLowerCase(), opts);
@@ -113,7 +124,20 @@ class XmlReader {
       xmlData = xmlData.replace(regex, (_, p1, p2, p3) => `${p1}${p2.substring(0, MAX_OUTPUT_LENGTH)}${p3}`);
     }
 
-    const jsonResult = this.parser.parse(xmlData);
+    let jsonResult;
+    try {
+      jsonResult = this.parser.parse(xmlData);
+    } catch (error) {
+      if (ENTITY_EXPANSION_LIMIT_REGEXP.test(error.message)) {
+        throw new Error(
+          `${error.message}\n\n` +
+            `XML report contains more entity references than the current limit (${MAX_ENTITY_EXPANSIONS}). ` +
+            'If this XML report is trusted, increase the limit with TESTOMATIO_MAX_ENTITY_EXPANSIONS, for example:\n' +
+            `TESTOMATIO_MAX_ENTITY_EXPANSIONS=${MAX_ENTITY_EXPANSIONS * 2} npx report-xml "{pattern}" --lang={lang}`,
+        );
+      }
+      throw error;
+    }
     let jsonSuite;
 
     if (jsonResult.testsuites) {
@@ -519,7 +543,7 @@ class XmlReader {
       title: this.requestParams.title,
       env: this.requestParams.env,
       group_title: this.requestParams.group_title,
-      isBatchEnabled: this.requestParams.isBatchEnabled,
+      batchMode: this.requestParams.batchMode,
     };
 
     debug('Run', runParams);
@@ -528,52 +552,6 @@ class XmlReader {
     const run = await Promise.all(this.pipes.map(p => p.createRun(runParams)));
     this.uploader.checkEnabled();
     return run;
-  }
-
-  /**
-   * Calculate the approximate size of data in bytes (JSON stringified length)
-   * @param {Object} data - Data to measure
-   * @returns {number} Size in bytes
-   */
-  #getObjectSize(data) {
-    const body = JSON.stringify(data);
-    return new TextEncoder().encode(body).length;
-  }
-
-  /**
-   * Split tests array into chunks based on data size
-   * @param {Array} tests - Array of tests to split
-   * @returns {Array<Array>} Array of test chunks
-   */
-  #splitTestsIntoChunks(tests) {
-    const maxSizeBytes = 1 * 1024 * 1024;
-
-    const chunks = [];
-    let currentChunk = [];
-    let currentChunkSize = 0;
-
-    for (const test of tests) {
-      const testSize = this.#getObjectSize(test);
-
-      const wouldExceedSize = currentChunkSize + testSize > maxSizeBytes;
-
-      if (wouldExceedSize) {
-        if (currentChunk.length > 0) {
-          chunks.push(currentChunk);
-        }
-        currentChunk = [];
-        currentChunkSize = 0;
-      }
-
-      currentChunk.push(test);
-      currentChunkSize += testSize;
-    }
-
-    if (currentChunk.length > 0) {
-      chunks.push(currentChunk);
-    }
-
-    return chunks;
   }
 
   async uploadData() {
@@ -587,7 +565,7 @@ class XmlReader {
     this.pipes = this.pipes || (await this.pipesPromise);
 
     // Create run before uploading tests to ensure runId is set
-    await this.createRun();
+    // await this.createRun(); // makes reporting stuck after finish, thus commenting out
 
     if (!this.tests || !Array.isArray(this.tests) || this.tests.length === 0) {
       debug('No tests to upload, finishing run');
@@ -600,7 +578,7 @@ class XmlReader {
       return Promise.all(this.pipes.map(p => p.finishRun(finishData)));
     }
 
-    const testChunks = this.#splitTestsIntoChunks(this.tests);
+    const testChunks = splitTestsIntoChunks(this.tests);
 
     const totalChunks = testChunks.length;
     const totalTests = this.tests.length;

@@ -81,6 +81,34 @@ npx @testomatio/reporter run --filter-list "coverage:file=coverage/coverage.yml,
 
 ```
 
+### Machine-readable output with `--format`
+
+`--filter-list` always prints the matched test IDs to `stdout` in a format suitable for piping. The CLI banner is suppressed, progress logs are silenced, and any remaining warnings/errors go to `stderr` — so the terminal shows only the test list, and the output is safe to copy or capture. The default format is `ids` (comma-separated); use `--format` to switch.
+
+Set `TESTOMATIO_LOG_LEVEL=INFO` to bring the progress logs back for debugging.
+
+Supported values:
+
+| Format    | Output                                  | Example                       |
+| --------- | --------------------------------------- | ----------------------------- |
+| `grep`    | Alternation pattern wrapped in `(...)`  | `(t1234abcd\|t5678efgh)`      |
+| `json`    | JSON array of IDs                       | `["t1234abcd","t5678efgh"]`   |
+| `newline` | One ID per line                         | `t1234abcd\nt5678efgh`        |
+| `ids`     | Comma-separated IDs (default behaviour) | `t1234abcd,t5678efgh`         |
+
+**Example: feed matched tests into a runner's grep flag**
+
+```bash
+GREP=$(npx @testomatio/reporter run --filter-list "coverage:file=coverage.yml" --format grep)
+npx playwright test --grep "$GREP"
+```
+
+**Example: capture IDs as JSON for further processing**
+
+```bash
+npx @testomatio/reporter run --filter-list "coverage:file=coverage.yml" --format json > affected-tests.json
+```
+
 ### Run tests based on changed files _(by the default `master` Git branch)_:
 
 **Example:**

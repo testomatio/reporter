@@ -1,4 +1,5 @@
 import createDebugMessages from 'debug';
+import path from 'path';
 import pc from 'picocolors';
 import TestomatClient from '../client.js';
 import { STATUS, APP_PREFIX, TESTOMAT_TMP_STORAGE_DIR, SCREENSHOTS_ON_STEPS } from '../constants.js';
@@ -47,15 +48,15 @@ if (MAJOR_VERSION === 3 && MINOR_VERSION < 7) {
 
 function CodeceptReporter(config) {
   const failedTests = [];
+  const reportedTestUids = new Set();
   let videos = [];
   let traces = [];
   const reportTestPromises = [];
   let isRunFinalized = false;
 
   const testTimeMap = {};
-  const { apiKey } = config;
-
-  const client = new TestomatClient({ apiKey });
+  const clientConfig = buildCodeceptClientConfig(config);
+  const client = new TestomatClient(clientConfig);
 
   // Store original output methods for fallback
   const originalOutput = {
@@ -161,6 +162,7 @@ function CodeceptReporter(config) {
     const error = hook?.ctx?.currentTest?.err;
 
     for (const test of suite.tests) {
+      reportedTestUids.add(test.uid);
       const reportTestPromise = client.addTestRun('failed', {
         ...stripExampleFromTitle(test.title),
         rid: test.uid,
@@ -197,9 +199,29 @@ function CodeceptReporter(config) {
     });
   });
 
+  event.dispatcher.on(event.test.skipped, test => {
+    const { uid, tags, title } = test.simplify();
+
+    if (uid && reportedTestUids.has(uid)) return;
+
+    services.setContext(null);
+
+    const reportTestPromise = client.addTestRun(STATUS.SKIPPED, {
+      ...stripExampleFromTitle(title),
+      rid: uid,
+      test_id: getTestomatIdFromTestTitle(`${title} ${tags?.join(' ')}`),
+      suite_title: test.parent && stripTagsFromTitle(stripExampleFromTitle(test.parent.title).title),
+      time: test.duration,
+      meta: test.meta,
+    });
+    reportTestPromises.push(reportTestPromise);
+    reportedTestUids.add(uid);
+  });
+
   event.dispatcher.on(event.test.after, test => {
     const { uid, tags, title, artifacts } = test.simplify();
     const error = test.err || null;
+    reportedTestUids.add(uid);
     failedTests.push(uid || title);
     const testObj = getTestAndMessage(title);
     const files = buildArtifactFiles(artifacts);
@@ -211,8 +233,8 @@ function CodeceptReporter(config) {
 
     // Build step hierarchy with screenshot from screenshotOnFail
     const stepHierarchy = buildUnifiedStepHierarchy(
-      test.steps, 
-      hookSteps, 
+      test.steps,
+      hookSteps,
       screenshotOnFailPath
     );
 
@@ -490,11 +512,16 @@ function formatHookName(hookName) {
   return hookName.replace(/Hook$/, '');
 }
 
+function getCodeceptStepCategory(origin = 'test') {
+  if (origin === 'hook') return 'hook';
+  return 'user';
+}
+
 // Format CodeceptJS step using its built-in methods
 function formatCodeceptStep(step, screenshotOnFailPath = null) {
   if (!step) return null;
 
-  const category = step.constructor.name === 'HelperStep' ? 'framework' : 'user';
+  const category = getCodeceptStepCategory('test');
   const title = truncate(String(step));
   const duration = step.duration || 0;
 
@@ -548,7 +575,7 @@ function formatHookStep(step) {
   title = truncate(title);
 
   const formattedStep = formatStep({
-    category: 'hook',
+    category: getCodeceptStepCategory('hook'),
     title,
     duration: step.duration || 0,
   });
@@ -577,3 +604,45 @@ function formatHookStep(step) {
 
 export { CodeceptReporter };
 export default CodeceptReporter;
+
+function buildCodeceptClientConfig(config = {}) {
+  const outputDir = resolveCodeceptOutputDir(config);
+  const reportDir = resolveCodeceptReportDir(config, outputDir);
+
+  return {
+    ...config,
+    apiKey: config.apiKey,
+    framework: 'codeceptjs',
+    outputDir,
+    reportDir,
+    html: config.html,
+    markdown: config.markdown,
+    csv: config.csv,
+  };
+}
+
+function resolveCodeceptOutputDir(config = {}) {
+  const codeceptStore = /** @type {{ outputDir?: string }} */ (codeceptjs.store || {});
+  const candidates = [
+    config.outputDir,
+    config.output,
+    codeceptStore.outputDir,
+    codecept?.config?.get?.()?.output,
+    codecept?.config?.output,
+  ];
+
+  const outputDir = candidates.find(value => typeof value === 'string' && value.trim());
+  return outputDir || 'output';
+}
+
+function resolveCodeceptReportDir(config = {}, outputDir = 'output') {
+  if (typeof config.reportDir === 'string' && config.reportDir.trim()) {
+    return config.reportDir;
+  }
+
+  if (path.isAbsolute(outputDir)) {
+    return path.join(outputDir, 'report');
+  }
+
+  return path.join(outputDir, 'report');
+}

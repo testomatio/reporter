@@ -20,9 +20,12 @@ class CsvPipe {
     this.title = params.title || process.env.TESTOMATIO_TITLE;
     this.results = [];
 
-    this.outputDir = 'export';
+    this.outputDir = params.reportDir || 'export';
+    if (process.env.TESTOMATIO_RUNGROUP_TITLE) {
+      this.outputDir = path.join(this.outputDir, process.env.TESTOMATIO_RUNGROUP_TITLE);
+    }
     this.defaultReportName = 'report.csv';
-    this.csvFilename = process.env.TESTOMATIO_CSV_FILENAME;
+    this.csvFilename = resolveCsvFilename(params);
     this.isEnabled = false;
 
     if (this.csvFilename) {
@@ -57,7 +60,7 @@ class CsvPipe {
    */
   checkExportDir() {
     if (!fs.existsSync(this.outputDir)) {
-      return fs.mkdirSync(this.outputDir);
+      return fs.mkdirSync(this.outputDir, { recursive: true });
     }
   }
 
@@ -142,3 +145,17 @@ class CsvPipe {
 }
 
 export default CsvPipe;
+
+function resolveCsvFilename(params = {}) {
+  if (typeof params.csvFilename === 'string' && params.csvFilename.trim()) {
+    return params.csvFilename;
+  }
+
+  if (typeof process.env.TESTOMATIO_CSV_FILENAME === 'string' && process.env.TESTOMATIO_CSV_FILENAME.trim()) {
+    return process.env.TESTOMATIO_CSV_FILENAME;
+  }
+
+  if (params.csv) return 'report.csv';
+
+  return null;
+}

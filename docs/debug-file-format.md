@@ -14,25 +14,15 @@ Debug files use **JSONL (JSON Lines)** format, not standard JSON. Each line cont
 
 ## File Storage
 
-### File Location
+### Latest Debug Run
 
-Debug files are stored in the system's temporary directory:
-
-**Primary File (timestamped):**
+The latest debug run is always accessible at:
 
 ```
-{os.tmpdir()}/testomatio.debug.{timestamp}.json
+./testomatio.debug.json
 ```
 
-Example: `/tmp/testomatio.debug.1705315800000.json`
-
-**Symlink (latest):**
-
-```
-{os.tmpdir()}/testomatio.debug.latest.json
-```
-
-The symlink always points to the most recently created debug file, providing a consistent access point for tools like the replay command.
+Run history can be found in `/tmp/testomatio.debug.<datetime>.json` (ISO 8601 format)
 
 ### File Creation
 
@@ -121,7 +111,7 @@ Every entry in the debug file follows this base structure:
     "title": "Test Run Title",
     "env": "staging",
     "parallel": true,
-    "isBatchEnabled": true
+    "batchMode": "auto"
   }
 }
 ```
@@ -223,7 +213,7 @@ Every entry in the debug file follows this base structure:
 | `params.env`            | string  | No       | Environment name                        |
 | `params.parallel`       | boolean | No       | Whether run supports parallel execution |
 | `params.status`         | string  | No       | Run status (for finishRun)              |
-| `params.isBatchEnabled` | boolean | No       | Whether batch upload is enabled         |
+| `params.batchMode`      | string  | No       | Batch upload mode: `auto`, `manual`, or `disabled` |
 
 #### `addTest` / `addTestsBatch`
 
@@ -346,11 +336,11 @@ npm test
 ### Replay from Debug File
 
 ```bash
-# Replay from latest debug file
+# Replay from latest debug file (uses ./testomatio.debug.json)
 npx testomatio-reporter replay
 
 # Replay from specific file
-npx testomatio-reporter replay /tmp/testomatio.debug.1705315800000.json
+npx testomatio-reporter replay /tmp/testomatio.debug.2025-01-15T14-30-45.json
 ```
 
 ### Reading Debug Files
@@ -359,7 +349,8 @@ npx testomatio-reporter replay /tmp/testomatio.debug.1705315800000.json
 import fs from 'fs';
 
 // Read debug file line by line
-const content = fs.readFileSync('/tmp/testomatio.debug.latest.json', 'utf-8');
+// Use project root path (symlink to latest run in /tmp)
+const content = fs.readFileSync('./testomatio.debug.json', 'utf-8');
 const lines = content
   .trim()
   .split('\n')
@@ -386,8 +377,7 @@ for (const line of lines) {
 ### Batch Processing
 
 - Tests can be logged individually or in batches
-- Batch interval is 5 seconds by default
-- Batch upload is triggered on intervals and during finishRun
+- Batched tests are gathered in memory and written on `sync()` / `finishRun()`
 
 ### Error Handling
 

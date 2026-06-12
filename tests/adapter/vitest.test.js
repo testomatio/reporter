@@ -1,9 +1,9 @@
 import { expect } from 'chai';
 import { exec } from 'child_process';
 import fs from 'fs';
-import os from 'os';
 import path from 'path';
 import { promisify } from 'util';
+import { extractTestEntries } from './utils/extract-test-entries.js';
 
 const execAsync = promisify(exec);
 
@@ -18,17 +18,24 @@ describe('Vitest Adapter Tests', function () {
   });
 
   beforeEach(() => {
-    // Clean up any existing debug files before starting
-    debugFilePath = path.join(os.tmpdir(), 'testomatio.debug.latest.json');
-    if (fs.existsSync(debugFilePath)) {
+    // Debug symlink is created in the cwd of the spawned vitest process (exampleDir),
+    // not in the test runner's cwd. Use lstatSync — existsSync follows the link and
+    // returns false for dangling symlinks, leaving them in place.
+    debugFilePath = path.join(exampleDir, 'testomatio.debug.json');
+    try {
+      fs.lstatSync(debugFilePath);
       fs.unlinkSync(debugFilePath);
+    } catch (e) {
+      if (e.code !== 'ENOENT') throw e;
     }
   });
 
   afterEach(() => {
-    // Clean up debug file after each test
-    if (fs.existsSync(debugFilePath)) {
+    try {
+      fs.lstatSync(debugFilePath);
       fs.unlinkSync(debugFilePath);
+    } catch (e) {
+      if (e.code !== 'ENOENT') throw e;
     }
   });
 
@@ -65,25 +72,8 @@ describe('Vitest Adapter Tests', function () {
     // Wait a moment for debug file to be finalized
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    // Find the most recent debug file created during this test
-    const tmpFiles = fs
-      .readdirSync(os.tmpdir())
-      .filter(f => f.startsWith('testomatio.debug.') && f.endsWith('.json') && !f.includes('latest'))
-      .map(f => ({
-        name: f,
-        path: path.join(os.tmpdir(), f),
-        mtime: fs.statSync(path.join(os.tmpdir(), f)).mtime,
-      }))
-      .sort((a, b) => b.mtime - a.mtime);
-
-    console.log(
-      'Found debug files:',
-      tmpFiles.map(f => f.name),
-    );
-    expect(tmpFiles.length).to.be.greaterThan(0, 'No debug files found');
-
-    // Use the most recent debug file
-    debugFilePath = tmpFiles[0].path;
+    // Use the symlink to the latest debug file (lives in the spawned process's cwd)
+    debugFilePath = path.join(exampleDir, 'testomatio.debug.json');
     console.log('Using debug file:', debugFilePath);
 
     const debugContent = fs.readFileSync(debugFilePath, 'utf-8');
@@ -94,7 +84,7 @@ describe('Vitest Adapter Tests', function () {
     expect(debugLines.length).to.be.greaterThan(0);
 
     const debugData = debugLines.map(line => JSON.parse(line));
-    const testEntries = debugData.filter(entry => entry.action === 'addTest');
+    const testEntries = extractTestEntries(debugData);
     expect(testEntries.length).to.be.greaterThan(0);
 
     return { debugData, testEntries };

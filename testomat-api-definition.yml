@@ -140,11 +140,53 @@ components:
         parallel:
           type: boolean
           description: Whether to create a parallel run
+        kind:
+          type: string
+          enum: [automated, manual, mixed]
+          description: Run kind. Defaults to `automated`.
+        ci:
+          $ref: '#/components/schemas/CiLaunchParams'
+          description: |
+            Optional. When present, the server creates the run and triggers a
+            build on the named CI profile (configured on the project) with the
+            supplied grep pattern and config overrides.
       example:
         title: 'My Test Run'
         env: 'production'
         group_title: 'Release 1.0'
         tags: ['smoke', 'api']
+        ci:
+          profile: 'github'
+          grep: 'T123|T456'
+          override:
+            branch: 'develop'
+
+    CiLaunchParams:
+      type: object
+      required: [profile]
+      properties:
+        profile:
+          type: string
+          description: Name of the CI profile configured on the project (e.g. `github`, `gitlab`, `jenkins`).
+        grep:
+          type: string
+          description: Pre-resolved grep string passed verbatim to the CI workflow (e.g. `T1|T2|S3`).
+        override:
+          type: object
+          additionalProperties: true
+          description: Key-value overrides merged into the CI profile config at launch time (e.g. `branch`, `ref`, env vars).
+        type:
+          type: string
+          enum: [plan, run, run_failed, relaunch, label, requirement, tag, issue, jira, test, suite]
+          description: Alternative to `grep` — ask the server to resolve a grep via the named selector type.
+        id:
+          type: string
+          description: UID or identifier for the `type` lookup (e.g. a plan UID when `type=plan`).
+      example:
+        profile: 'github'
+        grep: 'T123|T456'
+        override:
+          branch: 'develop'
 
     UpdateRunData:
       type: object
@@ -175,6 +217,12 @@ components:
           items:
             $ref: '#/components/schemas/TestData'
           description: The details of each test
+        ci:
+          $ref: '#/components/schemas/CiLaunchParams'
+          description: >
+            Launch this already-prepared run on CI. When present, the run is
+            triggered on the named CI profile (with the resolved grep or
+            `type`/`id` selector) instead of applying a normal status update.
       example:
         status_event: 'finish'
         duration: 25.5

@@ -4,7 +4,7 @@ import pc from 'picocolors';
 import humanizeDuration from 'humanize-duration';
 import merge from 'lodash.merge';
 import { testomatLogoURL } from '../constants.js';
-import { ansiRegExp, isSameTest } from '../utils/utils.js';
+import { ansiRegExp, isSameTest, truncate } from '../utils/utils.js';
 import { statusEmoji, fullName } from '../utils/pipe_utils.js';
 import { log } from '../utils/log.js';
 
@@ -22,6 +22,7 @@ class GitHubPipe {
     this.store = store;
     this.tests = [];
     this.token = params.GH_PAT || process.env.GH_PAT;
+    this.description = params.description || process.env.TESTOMATIO_DESCRIPTION;
     this.ref = process.env.GITHUB_REF;
     this.repo = process.env.GITHUB_REPOSITORY;
     this.jobKey = `${process.env.GITHUB_WORKFLOW || ''} / ${process.env.GITHUB_JOB || ''}`;
@@ -143,6 +144,9 @@ class GitHubPipe {
       });
 
     let body = summary;
+    if (this.description) {
+      body += `\n\n> ${truncate(this.description, 1024).replace(/\r?\n/g, '\n> ')}`;
+    }
     const coverageConfiguration = this.store?.coverageConfiguration;
     const isManualRun = this.store?.runKind === 'manual';
     if (isManualRun && coverageConfiguration) {

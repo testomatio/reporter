@@ -4,7 +4,7 @@ import yaml from 'js-yaml';
 import { execSync } from 'child_process';
 import { Gaxios } from 'gaxios';
 import { minimatch } from 'minimatch';
-import { APP_PREFIX, AXIOS_TIMEOUT, REPORTER_REQUEST_RETRIES } from '../constants.js';
+import { APP_PREFIX, REQUEST_TIMEOUT, REPORTER_REQUEST_RETRIES } from '../constants.js';
 import { generateFilterRequestParams } from '../utils/pipe_utils.js';
 import { parsePipeOptions } from '../utils/pipe_utils.js';
 import { config } from '../config.js';
@@ -57,8 +57,7 @@ class CoveragePipe { // or Changes for the future???
         this.isBranchDefault = !options.diff && !process.env.COVERAGE_BRANCH;
 
         if (this.isBranchDefault) {
-            console.log(
-                APP_PREFIX,
+            log.info(
                 `🟡 No "diff" branch provided. That's why we use default one = "${this.branch}".\n` +
                 '👉 You can set it via --filter "coverage:file=coverage.yml,diff=your-branch"'
             );
@@ -76,7 +75,7 @@ class CoveragePipe { // or Changes for the future???
         // Create a new instance of gaxios with a custom config
         this.client = new Gaxios({
             baseURL: `${this.url.trim()}`,
-            timeout: AXIOS_TIMEOUT,
+            timeout: REQUEST_TIMEOUT,
             proxy: proxy ? proxy.toString() : undefined,
             retry: true,
             retryConfig: {
@@ -141,7 +140,7 @@ class CoveragePipe { // or Changes for the future???
         }
 
         if (lines.size === 0) {
-            log.info( 'ℹ️  No matching entries in coverage file for provided Git changes.');
+            log.warn( 'ℹ️  No matching entries in coverage file for provided Git changes.');
             return [];
         }
 
@@ -154,8 +153,7 @@ class CoveragePipe { // or Changes for the future???
 
                 if (!tests) return [];
 
-                console.log(
-                    APP_PREFIX,
+                log.info(
                     `✅ We found ${tests.length === 1 ? 'one entry' : `${tests.length} (test/suite) entries`}` +
                     ' in Testomat.io service side.'
                 );
@@ -165,12 +163,13 @@ class CoveragePipe { // or Changes for the future???
         }
 
         if (this.tests.size === 0 && this.suiteIds.size === 0) {
-            log.info( 'ℹ️  No tests found for execution based on Git changes.');
+            log.warn( 'ℹ️  No tests found for execution based on Git changes.');
             return [];
         }
 
         this.results = [...this.tests, ...this.suiteIds];
         if (this.store) {
+            this.store.preparedTestIds = this.results;
             this.store.coverageConfiguration = {
                 tests: [...this.tests],
                 suites: [...this.suiteIds],
@@ -236,7 +235,7 @@ class CoveragePipe { // or Changes for the future???
             });
 
             if (!Array.isArray(resp.data?.tests) && resp.data?.tests?.length === 0) {
-                log.info( `🔍 No test by ${type}=${id} were found on the Testomat.io server side!`);
+                log.warn( `🔍 No test by ${type}=${id} were found on the Testomat.io server side!`);
 
                 return undefined;
             }
@@ -262,9 +261,10 @@ class CoveragePipe { // or Changes for the future???
      */
     #getChangedFilesFromGit(cmd) {
         try {
+            // Capture stderr (instead of ignoring it) so Git's actual error is available for diagnostics
             const result = execSync(cmd, {
                 encoding: 'utf-8',
-                stdio: ['pipe', 'pipe', 'ignore']
+                stdio: ['pipe', 'pipe', 'pipe']
             });
 
             return result
@@ -273,16 +273,33 @@ class CoveragePipe { // or Changes for the future???
                 .filter(Boolean);
         }
         catch (err) {
-            const errorMessage = err.message || '';
-            // Git edge: Not a git repository or other error
+            // Prefer Git's own stderr output, fall back to the generic error message
+            const gitOutput = (err.stderr || '').toString().trim();
+            const errorMessage = gitOutput || err.message || '';
+
+            // Git edge: Not a git repository
             if (errorMessage.includes('Not a git repository')) {
-                log.error( '❌ Error: This folder is not a Git repository.');
-            }
-            else {
-                throw new Error(`❌ Git command failed ("${cmd}"):\n`, errorMessage);
+                log.error('❌ Error: This folder is not a Git repository.');
+                return [];
             }
 
-            return [];
+            // Git edge: the branch/ref to diff against is not available locally.
+            // This is common in CI, where a shallow checkout fetches only the current branch.
+            if (
+                errorMessage.includes('unknown revision') ||
+                errorMessage.includes('ambiguous argument') ||
+                errorMessage.includes('bad revision')
+            ) {
+                log.error(`❌ Git command failed ("${cmd}"):\n${errorMessage}`);
+                log.error(
+                    `🔍 Branch "${this.branch}" was not found locally. ` +
+                    `In CI this usually means a shallow checkout — fetch full history first, e.g. ` +
+                    `actions/checkout with "fetch-depth: 0", or run "git fetch origin ${this.branch}:${this.branch}".`
+                );
+                return [];
+            }
+
+            throw new Error(`❌ Git command failed ("${cmd}"):\n${errorMessage}`);
         }
     }
 
@@ -324,7 +341,7 @@ class CoveragePipe { // or Changes for the future???
             return undefined;
         }
 
-        log.error( `ℹ️  We will use '${cmd}' Git command.`);
+        log.info( `We will use '${cmd}' Git command.`);
 
         try {
             // For clear unit testing process -> Like test_defaultGitChangedFile = todomvc-tests/edit-todos_test.js
@@ -335,10 +352,7 @@ class CoveragePipe { // or Changes for the future???
                 this.changedFiles =  this.#getChangedFilesFromGit(cmd);
 
                 if (this.changedFiles.length === 0) {
-                    console.log(
-                        APP_PREFIX,
-                        'ℹ️  No files changed in the latest Git commit. Skipping coverage processing.'
-                    );
+                    log.warn('ℹ️  No files changed in the latest Git commit. Skipping coverage processing.');
 
                     return undefined;
                 }
@@ -370,20 +384,20 @@ class CoveragePipe { // or Changes for the future???
     validateCoverageFile() {
         // Validate the presence of the coverage filepath
         if (!fs.existsSync(this.coverageFilePath)) {
-            log.info( '❌ Coverage file not found:', this.coverageFilePath);
+            log.error( '❌ Coverage file not found:', this.coverageFilePath);
             return undefined;
         }
 
         // Ensure the given path is a file (not a directory or other type)
         const stat = fs.statSync(this.coverageFilePath);
         if (!stat.isFile()) {
-            log.info( '❌ Provided coverage path is not a file:', this.coverageFilePath);
+            log.error( '❌ Provided coverage path is not a file:', this.coverageFilePath);
             return undefined;
         }
 
         // Validate the file extension to be ".yml" to ensure it's a YAML file
         if (path.extname(this.coverageFilePath) !== ".yml") {
-            log.info( '❌ Coverage file must have a .yml extension:', this.coverageFilePath);
+            log.error( '❌ Coverage file must have a .yml extension:', this.coverageFilePath);
             return undefined;
         }
 

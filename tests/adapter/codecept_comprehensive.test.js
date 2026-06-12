@@ -1,4 +1,6 @@
 import { expect } from 'chai';
+import fs from 'fs';
+import path from 'path';
 import { runTests, runWorkers, CodeceptTestRunner } from './utils/codecept.js';
 
 describe('CodeceptJS Comprehensive Adapter Tests', function () {
@@ -235,6 +237,21 @@ describe('CodeceptJS Comprehensive Adapter Tests', function () {
         expect(entry.testId.rid).to.be.a('string');
         expect(entry.testId.rid.length).to.be.greaterThan(0);
       });
+    });
+
+    it('should create html, markdown, and csv reports from CodeceptJS plugin config', async () => {
+      const reportDir = path.join(testRunner.exampleDir, 'output', 'report');
+      await fs.promises.rm(reportDir, { recursive: true, force: true });
+
+      await runTests('simple_test.js', {
+        TESTOMATIO_CODECEPT_HTML: '1',
+        TESTOMATIO_CODECEPT_MARKDOWN: '1',
+        TESTOMATIO_CODECEPT_CSV: '1',
+      });
+
+      expect(fs.existsSync(path.join(reportDir, 'testomatio-report.html'))).to.equal(true);
+      expect(fs.existsSync(path.join(reportDir, 'testomatio-report.md'))).to.equal(true);
+      expect(fs.existsSync(path.join(reportDir, 'report.csv'))).to.equal(true);
     });
   });
 

@@ -122,9 +122,14 @@ describe('HTML report tests', () => {
   });
   after(async () => {
     try {
-      await fs.promises.rm(testOutputDir, { recursive: true });
+      await fs.promises.rm(testOutputDir, { recursive: true, force: true });
     } catch (err) {
       console.error(`Unknown error while deleting ${testOutputDir}.`);
+    }
+    try {
+      await fs.promises.rm(path.resolve(process.cwd(), 'output'), { recursive: true, force: true });
+    } catch (err) {
+      console.error('Unknown error while deleting output directory.');
     }
   });
   it(
@@ -454,6 +459,80 @@ describe('HTML report tests', () => {
 
     expect(htmlContent).to.include('https://example-bucket.r2.cloudflarestorage.com/run-1/skipped-test.png');
     expect(htmlContent).to.not.include('file:///D:/testomat/reporter/https:/example-bucket.r2.cloudflarestorage.com');
+  });
+
+  it('renders run description (markdown) from store as a Description section', () => {
+    process.env.TESTOMATIO_HTML_REPORT_SAVE = '1';
+
+    const template = path.resolve(dirname, '../../..', 'src', 'template', 'testomatio.hbs');
+    const out = path.resolve(testOutputDir, 'with-description.html');
+    const store = {
+      coverageDescription:
+        'Changes to **3** files in feature to main.\n\n* `src/a.js`\n* `src/b.js`',
+    };
+    const pipe = new HtmlPipe({}, store);
+    pipe.buildReport({
+      runParams: { status: 'passed' },
+      tests: DATA.tests.slice(0, 1),
+      outputPath: out,
+      templatePath: template,
+      warningMsg: '',
+    });
+    const html = fs.readFileSync(out, 'utf-8');
+    const dom = new JSDOM(html);
+    const document = dom.window.document;
+    const section = document.querySelector('section.description-section');
+    expect(section).to.exist;
+    expect(section.querySelector('.description-body strong').textContent).to.equal('3');
+    expect(section.querySelector('.description-body code').textContent).to.equal('src/a.js');
+  });
+
+  it('omits the Description section when no description is present', () => {
+    const htmlContent = fs.readFileSync(filepath, 'utf-8');
+    const dom = new JSDOM(htmlContent);
+    const section = dom.window.document.querySelector('section.description-section');
+    expect(section).to.equal(null);
+  });
+
+  it('renders run configuration as a key/value table', async () => {
+    process.env.TESTOMATIO_HTML_REPORT_SAVE = '1';
+    const template = path.resolve(dirname, '../../..', 'src', 'template', 'testomatio.hbs');
+    const out = path.resolve(testOutputDir, 'with-configuration.html');
+    const pipe = new HtmlPipe({}, {});
+    await pipe.createRun({ configuration: { exploratory: true, browser: 'chromium', shard: 2 } });
+    pipe.buildReport({
+      runParams: { status: 'passed' },
+      tests: DATA.tests.slice(0, 1),
+      outputPath: out,
+      templatePath: template,
+      warningMsg: '',
+    });
+    const html = fs.readFileSync(out, 'utf-8');
+    const dom = new JSDOM(html);
+    const document = dom.window.document;
+    const section = document.querySelector('section.configuration-section');
+    expect(section).to.exist;
+    const rows = Array.from(section.querySelectorAll('.configuration-table tr')).map(tr => [
+      tr.querySelector('th').textContent.trim(),
+      tr.querySelector('td').textContent.trim(),
+    ]);
+    expect(rows).to.deep.include(['browser', 'chromium']);
+    expect(rows).to.deep.include(['exploratory', 'true']);
+    expect(rows).to.deep.include(['shard', '2']);
+  });
+
+  it('omits the Configuration section when no configuration is present', () => {
+    const htmlContent = fs.readFileSync(filepath, 'utf-8');
+    const dom = new JSDOM(htmlContent);
+    const section = dom.window.document.querySelector('section.configuration-section');
+    expect(section).to.equal(null);
+  });
+
+  it('uses runtime CodeceptJS reportDir config', () => {
+    const pipe = new HtmlPipe({ html: true, reportDir: path.join('output', 'report') }, {});
+
+    expect(pipe.isEnabled).to.equal(true);
+    expect(pipe.htmlReportDir).to.equal(path.join('output', 'report'));
   });
 });
 

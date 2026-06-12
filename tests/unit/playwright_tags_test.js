@@ -2,7 +2,6 @@ import { expect } from 'chai';
 import { afterEach, before, beforeEach, describe, it } from 'mocha';
 import { exec } from 'child_process';
 import fs from 'fs';
-import os from 'os';
 import path from 'path';
 import { promisify } from 'util';
 import { extractTags } from '../../src/adapter/playwright.js';
@@ -21,10 +20,11 @@ describe('Playwright Tags Extraction', () => {
     });
 
     beforeEach(() => {
-      debugFilePath = path.join(os.tmpdir(), 'testomatio.debug.latest.json');
-      const symlinkPath = path.join(os.tmpdir(), 'testomatio.debug.latest.json');
-      if (fs.existsSync(symlinkPath)) {
-        fs.unlinkSync(symlinkPath);
+      // Debug file (symlink) is created in the cwd of the spawned Playwright process,
+      // which is exampleDir — not the test runner's cwd.
+      debugFilePath = path.join(exampleDir, 'testomatio.debug.json');
+      if (fs.existsSync(debugFilePath)) {
+        fs.unlinkSync(debugFilePath);
       }
     });
 
@@ -59,26 +59,21 @@ describe('Playwright Tags Extraction', () => {
 
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      const tmpFiles = fs
-        .readdirSync(os.tmpdir())
-        .filter(f => f.startsWith('testomatio.debug.') && f.endsWith('.json') && !f.includes('latest'))
-        .map(f => ({
-          name: f,
-          path: path.join(os.tmpdir(), f),
-          mtime: fs.statSync(path.join(os.tmpdir(), f)).mtime,
-        }))
-        .sort((a, b) => b.mtime - a.mtime);
+      const debugPath = path.join(exampleDir, 'testomatio.debug.json');
+      expect(fs.existsSync(debugPath), 'Debug file not found').to.be.true;
 
-      expect(tmpFiles.length).to.be.greaterThan(0, 'No debug files found for tags test');
-
-      const latestDebugPath = tmpFiles[0].path;
-      const debugContent = fs.readFileSync(latestDebugPath, 'utf-8');
+      const debugContent = fs.readFileSync(debugPath, 'utf-8');
       const debugLines = debugContent
         .trim()
         .split('\n')
         .filter(line => line.trim());
       const debugData = debugLines.map(line => JSON.parse(line));
-      const testEntries = debugData.filter(entry => entry.action === 'addTest');
+      // DebugPipe buffers tests and flushes them as a single `addTestsBatch` entry on sync/finishRun.
+      // Flatten those batches into per-test entries shaped like the legacy `addTest` log
+      // ({ testId: <testData> }) so the assertions below can stay test-data oriented.
+      const testEntries = debugData
+        .filter(entry => entry.action === 'addTestsBatch')
+        .flatMap(entry => (entry.tests || []).map(test => ({ action: 'addTest', testId: test })));
 
       return { debugData, testEntries };
     }

@@ -6,6 +6,7 @@ import GitHubPipe from './github.js';
 import GitLabPipe from './gitlab.js';
 import CsvPipe from './csv.js';
 import HtmlPipe from './html.js';
+import MarkdownPipe from './markdown.js';
 import CoveragePipe from './coverage.js';
 import { BitbucketPipe } from './bitbucket.js';
 import { DebugPipe } from './debug.js';
@@ -48,6 +49,7 @@ export async function pipesFactory(params, opts) {
     new GitLabPipe(params, opts),
     new CsvPipe(params, opts),
     new HtmlPipe(params, opts),
+    new MarkdownPipe(params, opts),
     new BitbucketPipe(params, opts),
     new CoveragePipe(params, opts),
     new DebugPipe(params, opts),

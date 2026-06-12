@@ -232,6 +232,11 @@ export interface HtmlTestData extends TestData {
 }
 
 /**
+ * Extended test data for Markdown reporter.
+ */
+export interface MarkdownTestData extends HtmlTestData { }
+
+/**
  * Object representing a result of a Run.
  */
 export interface RunData {
@@ -262,6 +267,9 @@ export interface RunData {
   /** If duration is pre-set value as in XML tests set it */
   duration?: number;
 
+  /** Free-form run description (from `TESTOMATIO_DESCRIPTION`); appended to any coverage-derived description. */
+  description?: string;
+
   /**
    * An array of `TestData` objects representing the individual test cases in the test run.
    * Used for JUNit report when we don't send the tests in realtime but in a batch as a part of final result */
@@ -280,12 +288,19 @@ export enum RunStatus {
   Finished = 'finished',
 }
 
+/** Batch upload strategy:
+ * `auto` (by time interval, e.g. every 5 seconds),
+ * `manual` (send tests via manually invoking sync() ),
+ * `disabled` (one test per request, no batching).
+ */
+export type BatchMode = 'auto' | 'manual' | 'disabled';
+
 export interface Pipe {
   isEnabled: boolean;
   store: {};
 
   /** starts run  */
-  createRun(): Promise<void>;
+  createRun(params?: CreateRunParams): Promise<void>;
 
   /** adds a test to the current run */
   addTest(test: TestData): any;
@@ -306,6 +321,28 @@ export interface PipeResult {
 
   /** the result that pipe returned */
   result?: any;
+}
+
+/**
+ * Parameters accepted by `Client.createRun`.
+ *
+ * Remote CI launch (via `--remote <profile>` / matching `TESTOMATIO_CI_PROFILE`
+ * env var) is **not** passed through this object — `TestomatioPipe` reads the
+ * env vars directly and assembles the request body. See
+ * `TESTOMATIO_CI_PROFILE` and `TESTOMATIO_CI_OVERRIDE`.
+ */
+export interface CreateRunParams {
+  /** Run kind. Defaults to `automated` server-side. */
+  kind?: 'automated' | 'manual' | 'mixed';
+
+  /** Run title. */
+  title?: string;
+
+  /** Run configuration merged into the server-side run configuration. */
+  configuration?: Record<string, any>;
+
+  /** Override batch upload mode. */
+  batchMode?: BatchMode;
 }
 
 /**

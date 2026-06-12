@@ -2,7 +2,14 @@ import createDebugMessages from 'debug';
 import pc from 'picocolors';
 import { Gaxios } from 'gaxios';
 import JsonCycle from 'json-cycle';
-import { APP_PREFIX, STATUS, AXIOS_TIMEOUT, REPORTER_REQUEST_RETRIES } from '../constants.js';
+import {
+  APP_PREFIX,
+  STATUS,
+  BATCH_MODE,
+  REQUEST_TIMEOUT,
+  getCreateRunRequestTimeout,
+  REPORTER_REQUEST_RETRIES,
+} from '../constants.js';
 import {
   isValidUrl,
   foundedTestLog,
@@ -19,19 +26,46 @@ const debug = createDebugMessages('@testomatio/reporter:pipe:testomatio');
 if (process.env.TESTOMATIO_RUN) process.env.runId = process.env.TESTOMATIO_RUN;
 
 /**
+ * Parse `TESTOMATIO_CI_PARAMS` (comma-separated `key=value` pairs) into an object.
+ * Entries without `=` or with empty keys are skipped. Returns undefined when input is empty.
+ *
+ * @param {string|undefined} raw
+ * @returns {Record<string, string>|undefined}
+ */
+function parseCiParams(raw) {
+  if (!raw) return undefined;
+  /** @type {Record<string, string>} */
+  const result = {};
+  for (const entry of raw.split(',')) {
+    const idx = entry.indexOf('=');
+    if (idx <= 0) continue;
+    result[entry.slice(0, idx).trim()] = entry.slice(idx + 1);
+  }
+  return Object.keys(result).length ? result : undefined;
+}
+
+/**
  * @typedef {import('../../types/types.js').Pipe} Pipe
  * @typedef {import('../../types/types.js').TestData} TestData
+ * @typedef {import('../../types/types.js').BatchMode} BatchMode
+ * @typedef {import('../../types/types.js').CreateRunParams} CreateRunParams
  * @class TestomatioPipe
  * @implements {Pipe}
  */
 class TestomatioPipe {
   constructor(params, store) {
     this.batch = {
-      isEnabled: params?.isBatchEnabled ?? !process.env.TESTOMATIO_DISABLE_BATCH_UPLOAD,
+      /** @type {BatchMode}
+       * Batch upload mode:
+       * - `auto`: upload tests automatically by time interval (e.g. every 5 seconds).
+       * - `manual`: buffer tests and upload only when `sync()` is invoked manually.
+       * - `disabled`: send one test per request, no batching.
+       */
+      mode: params.batchMode || (process.env.TESTOMATIO_DISABLE_BATCH_UPLOAD ? BATCH_MODE.DISABLED : BATCH_MODE.AUTO),
       intervalFunction: null, // will be created in createRun by setInterval function
-      intervalTime: 5000, // how often tests are sent
+      intervalTime: 6000, // how often tests are sent
       tests: [], // array of tests in batch
-      batchIndex: 0, // represents the current batch index (starts from 1 and increments by 1 for each batch)
+      batchIndex: 0,  // represents the current batch index (starts from 1 and increments by 1 for each batch)
       numberOfTimesCalledWithoutTests: 0, // how many times batch was called without tests
     };
     this.retriesTimestamps = [];
@@ -77,11 +111,19 @@ class TestomatioPipe {
     this.groupTitle = params.groupTitle || process.env.TESTOMATIO_RUNGROUP_TITLE;
     this.env = process.env.TESTOMATIO_ENV;
     this.label = process.env.TESTOMATIO_LABEL;
+    this.description = params.description || process.env.TESTOMATIO_DESCRIPTION;
+
+    // Remote CI launch — when `TESTOMATIO_CI_PROFILE` is set the run will be created
+    // on the server *and* the named CI profile will be dispatched. Optional
+    // `TESTOMATIO_CI_PARAMS` is a comma-separated list of `key=value` pairs
+    // forwarded to the CI profile config (e.g. `branch=develop,REGION=eu`).
+    this.ciProfile = process.env.TESTOMATIO_CI_PROFILE;
+    this.ciParams = parseCiParams(process.env.TESTOMATIO_CI_PARAMS);
 
     // Create a new instance of gaxios with a custom config
     this.client = new Gaxios({
       baseURL: `${this.url.trim()}`,
-      timeout: AXIOS_TIMEOUT,
+      timeout: REQUEST_TIMEOUT,
       proxy: proxy ? proxy.toString() : undefined,
       retry: true,
       retryConfig: {
@@ -177,6 +219,7 @@ class TestomatioPipe {
 
       if (Array.isArray(resp.data?.tests) && resp.data?.tests?.length > 0) {
         foundedTestLog(APP_PREFIX, resp.data.tests);
+        if (this.store) this.store.preparedTestIds = resp.data.tests;
         return resp.data.tests;
       }
 
@@ -188,13 +231,13 @@ class TestomatioPipe {
 
   /**
    * Creates a new run on Testomat.io
-   * @param {{isBatchEnabled?: boolean, kind?: string}} params
+   * @param {CreateRunParams} params
    * @returns Promise<void>
    */
   async createRun(params = {}) {
-    this.batch.isEnabled = params.isBatchEnabled ?? this.batch.isEnabled;
+    if (params.batchMode) this.batch.mode = params.batchMode;
     if (!this.isEnabled) return;
-    if (this.batch.isEnabled && this.isEnabled)
+    if (this.batch.mode === BATCH_MODE.AUTO && this.isEnabled)
       this.batch.intervalFunction = setInterval(this.#batchUpload, this.batch.intervalTime);
     if (this.store) {
       this.store.runKind = params.kind;
@@ -221,14 +264,44 @@ class TestomatioPipe {
     const accessEvent = process.env.TESTOMATIO_PUBLISH ? 'publish' : null;
 
     const coverageConfiguration = this.store?.coverageConfiguration;
-    let description = null;
+    let coverageDescription = null;
     let configuration = null;
     if (coverageConfiguration && (coverageConfiguration.tests?.length || coverageConfiguration.suites?.length)) {
-      description = this.store?.coverageDescription || null;
+      coverageDescription = this.store?.coverageDescription || null;
       configuration = {
         tests: coverageConfiguration.tests?.map(id => id.replace(/^T/, '')) || [],
         suites: coverageConfiguration.suites?.map(id => id.replace(/^S/, '')) || [],
       };
+    }
+    // Run description: coverage-derived block (if any) with the user-provided TESTOMATIO_DESCRIPTION appended after it.
+    const description = [coverageDescription, this.description].filter(Boolean).join('\n\n') || null;
+
+    // Merge caller-supplied configuration (e.g. { exploratory: true }) into runParams.configuration.
+    // Caller values win on key conflict; coverage-derived tests/suites lists are preserved when not overridden.
+    if (params.configuration && typeof params.configuration === 'object') {
+      configuration = { ...(configuration || {}), ...params.configuration };
+      if (this.store) {
+        this.store.configuration = { ...(this.store.configuration || {}), ...params.configuration };
+      }
+    }
+
+    // Assemble the `ci` block when the user asked for a remote CI launch via
+    // TESTOMATIO_CI_PROFILE (e.g. `--remote github`). Grep is taken from whatever
+    // `--filter` resolution already stashed in the shared pipeStore. When launching
+    // an already-prepared run (TESTOMATIO_RUN set) with no fresh filter, ask the
+    // server to grep that run's own stored scope via `{ type: 'run', id }`.
+    /** @type {{profile: string, grep?: string, type?: string, id?: string, override?: Record<string, any>}|null} */
+    let ci = null;
+    if (this.ciProfile) {
+      ci = { profile: this.ciProfile };
+      const grepIds = this.store?.preparedTestIds;
+      if (grepIds?.length) {
+        ci.grep = grepIds.join('|');
+      } else if (this.runId) {
+        ci.type = 'run';
+        ci.id = this.runId;
+      }
+      if (this.ciParams) ci.override = this.ciParams;
     }
     const runParams = Object.fromEntries(
       Object.entries({
@@ -245,6 +318,7 @@ class TestomatioPipe {
         kind: params.kind,
         configuration,
         description,
+        ci,
       }).filter(([, value]) => !!value),
     );
     debug(' >>>>>> Run params', JSON.stringify(runParams, null, 2));
@@ -256,6 +330,7 @@ class TestomatioPipe {
         method: 'PUT',
         url: `/api/reporter/${this.runId}`,
         data: runParams,
+        timeout: getCreateRunRequestTimeout(),
         responseType: 'json',
       });
       if (resp.data.artifacts) setS3Credentials(resp.data.artifacts);
@@ -277,6 +352,7 @@ class TestomatioPipe {
         method: 'POST',
         url: '/api/reporter',
         data: runParams,
+        timeout: getCreateRunRequestTimeout(),
         maxContentLength: Infinity,
         responseType: 'json',
       });
@@ -294,14 +370,13 @@ class TestomatioPipe {
       process.env.runId = this.runId;
       debug('Run created', this.runId);
     } catch (err) {
+      if (!this.apiKey) console.error('Testomat.io API key is not set');
       const errorText = err.response?.data?.message || err.message;
       debug('Error creating run', err);
-      console.log(errorText || err);
+      console.log(APP_PREFIX, errorText || err);
       if (err.response?.status === 403) this.#disablePipe();
-      if (!this.apiKey) console.error('Testomat.io API key is not set');
-      if (!this.apiKey?.startsWith('tstmt')) console.error('Testomat.io API key is invalid');
 
-      if (process.env.DEBUG || process.env.TESTOMATIO_DEBUG) this.#logFailedResponse(err);
+      this.#logFailedResponse(err);
 
       console.error(
         APP_PREFIX,
@@ -366,15 +441,15 @@ class TestomatioPipe {
   /**
    * Uploads tests as a batch (multiple tests at once). Intended to be used with a setInterval
    */
-  #batchUpload = async (opts = {}) => {
-    if (!this.batch.isEnabled) return;
+  #batchUpload = async () => {
+    if (this.batch.mode === BATCH_MODE.DISABLED) return;
     if (!this.batch.tests.length) return;
     if (this.#cancelTestReportingInCaseOfTooManyReqFailures()) return;
     // prevent infinite loop
     if (this.batch.numberOfTimesCalledWithoutTests > 10) {
       debug('📨 Batch upload: no tests to send for 10 times, stopping batch');
       clearInterval(this.batch.intervalFunction);
-      this.batch.isEnabled = false;
+      this.batch.mode = BATCH_MODE.DISABLED;
     }
     if (!this.batch.tests.length) {
       debug('📨 Batch upload: no tests to send');
@@ -395,7 +470,6 @@ class TestomatioPipe {
           api_key: this.apiKey,
           tests: testsToSend,
           batch_index: this.batch.batchIndex,
-          bulk: opts.bulk || undefined,
         },
         headers: {
           'Content-Type': 'application/json',
@@ -431,11 +505,11 @@ class TestomatioPipe {
     this.#formatData(data);
 
     let uploading = null;
-    if (!this.batch.isEnabled) uploading = this.#uploadSingleTest(data);
+    if (this.batch.mode === BATCH_MODE.DISABLED) uploading = this.#uploadSingleTest(data);
     else this.batch.tests.push(data);
 
-    // if test is added after run which is already finished
-    if (!this.batch.intervalFunction) uploading = this.#batchUpload();
+    // auto mode but no interval running yet (e.g. createRun hasn't started it): flush immediately
+    if (this.batch.mode === BATCH_MODE.AUTO && !this.batch.intervalFunction) uploading = this.#batchUpload();
 
     // return promise to be able to wait for it
     return uploading;
@@ -447,7 +521,7 @@ class TestomatioPipe {
    */
   async sync() {
     if (!this.isEnabled) return;
-    await this.#batchUpload({ bulk: true });
+    await this.#batchUpload();
   }
 
   /**
@@ -464,7 +538,7 @@ class TestomatioPipe {
       // (e.g. if test has artifacts, add test function will be invoked only after artifacts are uploaded)
       // batch stops working after run is finished; thus, disable it to use single test uploading
       this.batch.intervalFunction = null;
-      this.batch.isEnabled = false;
+      this.batch.mode = BATCH_MODE.DISABLED;
     }
 
     debug('Finishing run...');
@@ -533,8 +607,8 @@ class TestomatioPipe {
         );
       }
     } catch (err) {
-      log.info('Error updating status, skipping...', err);
-      if (process.env.DEBUG || process.env.TESTOMATIO_DEBUG) this.#logFailedResponse(err);
+      console.log(APP_PREFIX, 'Error updating status, skipping...', err);
+      this.#logFailedResponse(err);
       printCreateIssue();
     }
     debug('Run finished');
@@ -548,7 +622,7 @@ class TestomatioPipe {
     if (this.batch.intervalFunction) {
       clearInterval(this.batch.intervalFunction);
       this.batch.intervalFunction = null;
-      this.batch.isEnabled = false;
+      this.batch.mode = BATCH_MODE.DISABLED;
     }
     this.batch.tests = [];
   }
@@ -559,19 +633,32 @@ class TestomatioPipe {
     responseBody = hideTestomatioToken(responseBody);
 
     const statusCode = error.status || error.code || error.response?.status || '<unknown status code>';
-    const method = error.response?.config.method || '<unknown method>';
-    const url = error.response?.config.url || '<unknown url>';
+    const method = error.response?.config?.method || '<unknown method>';
+    const url = String(error.response?.config?.url || '<unknown url>');
+    const statusText = error.response?.statusText || '';
 
-    let message = pc.yellow('\n⚠️ Request to Testomat.io failed:\n');
-    message += pc.bold(`${pc.red(statusCode)} ${method} ${url}\n`);
+    let message = pc.yellow('⚠️ Request to Testomat.io failed:\n');
+    message += pc.bold(`${pc.red(statusCode)} ${method} ${pc.gray(url)}\n`);
+
+    const apiMessage = error.response?.data?.message;
+    if (statusCode === 403) {
+      message += `\t${pc.red('Please check your API token. It might be invalid or expired.')}\n`;
+    } else if (apiMessage) {
+      message += `\t${pc.red(apiMessage)}\n`;
+    } else if (statusText) {
+      message += `\t${pc.red(statusText)}\n`;
+    }
+
     message += `\t${pc.bold('response: ')}${pc.gray(responseBody)}\n`;
 
     const requestBody = hideTestomatioToken(stringify(error.response?.config?.data));
-    if (process.env.DEBUG || process.env.TESTOMATIO_DEBUG) {
+    if (process.env.DEBUG || process.env.TESTOMATIO_DEBUG || requestBody.length < 1000) {
+      // full body
       message += `\t${pc.bold('request: ')}${pc.gray(requestBody)}\n`;
     } else {
+      // cut body
       const requestBodyCut = requestBody.slice(0, 1000);
-      message += `\t${pc.bold('request: ')}${pc.gray(`${requestBodyCut}.....`)}\n`;
+      message += `\t${pc.bold('request: ')}${pc.gray(`${requestBodyCut}...`)}\n`;
       message += '\trequest body is cut, run with TESTOMATIO_DEBUG=1 to see full body\n';
     }
 

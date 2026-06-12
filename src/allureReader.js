@@ -3,12 +3,13 @@ import path from 'path';
 import pc from 'picocolors';
 import fs from 'fs';
 import { glob } from 'glob';
-import { APP_PREFIX, STATUS } from './constants.js';
+import { APP_PREFIX, STATUS, BATCH_MODE } from './constants.js';
 import { randomUUID } from 'crypto';
 import { fileURLToPath } from 'url';
 import { config } from './config.js';
 import { S3Uploader } from './uploader.js';
 import { pipesFactory } from './pipe/index.js';
+import { splitTestsIntoChunks } from './utils/pipe_utils.js';
 import {
   fetchSourceCode,
   fetchIdFromCode,
@@ -31,7 +32,9 @@ class AllureReader {
       title: TESTOMATIO_TITLE,
       env: TESTOMATIO_ENV,
       group_title: TESTOMATIO_RUNGROUP_TITLE,
-      isBatchEnabled: true,
+      // Buffer tests and flush them manually in size-limited chunks, exactly like XmlReader.
+      // No setInterval auto-upload means each test is sent exactly once (no double-send).
+      batchMode: BATCH_MODE.MANUAL,
     };
     this.runId = opts.runId || TESTOMATIO_RUN;
     this.opts = opts || {};
@@ -71,7 +74,7 @@ class AllureReader {
       title: this.requestParams.title,
       env: this.requestParams.env,
       group_title: this.requestParams.group_title,
-      isBatchEnabled: this.requestParams.isBatchEnabled,
+      batchMode: this.requestParams.batchMode,
     };
 
     debug('Run', runParams);
@@ -516,22 +519,53 @@ class AllureReader {
 
     this.pipes = this.pipes || (await this.pipesPromise);
 
-    // Upload tests individually via addTest (like XML reader does)
-    // so each pipe processes them through its own pipeline
-    for (const test of this._tests) {
-      await Promise.all(this.pipes.map(p => p.addTest(test)));
-    }
-
-    // Flush any batched tests
-    await Promise.all(this.pipes.map(p => p.sync()));
-
-    debug('Uploaded %d tests, finishing run', this._tests.length);
-
     const finishData = {
       api_key: this.requestParams.apiKey,
       status: 'finished',
       duration: this.stats.duration,
     };
+
+    if (!this._tests || !Array.isArray(this._tests) || this._tests.length === 0) {
+      debug('No tests to upload, finishing run');
+      return Promise.all(this.pipes.map(p => p.finishRun(finishData)));
+    }
+
+    // Upload tests in size-limited chunks (max 1MB each), exactly like XmlReader.
+    // The testomatio pipe runs in MANUAL batch mode, so addTest only buffers tests and
+    // sync() flushes one batch request per chunk. There is no setInterval auto-upload,
+    // so each test is sent exactly once (no double-send) and requests stay under the limit.
+    const testChunks = splitTestsIntoChunks(this._tests);
+
+    const totalChunks = testChunks.length;
+    const totalTests = this._tests.length;
+
+    debug(`Split ${totalTests} tests into ${totalChunks} chunks (max 1MB per chunk)`);
+
+    let uploadedTests = 0;
+    for (let i = 0; i < testChunks.length; i++) {
+      const chunk = testChunks[i];
+
+      if (totalChunks > 1) {
+        debug(`Uploading chunk ${i + 1}/${totalChunks} (${chunk.length} tests)`);
+      }
+
+      // Buffer each test in the chunk, then flush the whole chunk as a single batch
+      for (const test of chunk) {
+        await Promise.all(this.pipes.map(p => p.addTest(test)));
+      }
+      await Promise.all(this.pipes.map(p => p.sync()));
+
+      uploadedTests += chunk.length;
+      debug(`Uploaded ${uploadedTests}/${totalTests} tests`);
+    }
+
+    if (totalChunks > 1) {
+      console.log(APP_PREFIX, `✅ Successfully uploaded ${uploadedTests} tests in ${totalChunks} chunks`);
+    } else {
+      console.log(APP_PREFIX, `✅ Successfully uploaded ${uploadedTests} tests`);
+    }
+
+    debug('Uploaded %d tests, finishing run', this._tests.length);
 
     return Promise.all(this.pipes.map(p => p.finishRun(finishData)));
   }

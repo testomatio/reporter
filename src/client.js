@@ -116,8 +116,9 @@ class Client {
    * @returns {Promise<any>} - resolves to Run id which should be used to update / add test
    */
   async createRun(params = {}) {
+    const pipeParams = { ...(this.paramsForPipesFactory || {}), ...(params || {}) };
     if (!this.pipes || !this.pipes.length)
-      this.pipes = await pipesFactory(params || this.paramsForPipesFactory || {}, this.pipeStore);
+      this.pipes = await pipesFactory(pipeParams, this.pipeStore);
     debug('Creating run...');
     // all pipes disabled, skipping
     if (!this.pipes?.filter(p => p.isEnabled).length) return Promise.resolve();
@@ -215,6 +216,10 @@ class Client {
     const { rid, error = null, steps: originalSteps, title, suite_title } = testData;
     let steps = originalSteps;
 
+    // Capture step artifact paths BEFORE uploadStepArtifacts mutates them to URLs,
+    // so we can exclude them from the test-level artifacts list later.
+    const stepArtifactPaths = collectStepArtifactPaths(steps);
+
     // Upload artifacts from steps
     try {
       await this.uploadStepArtifacts(steps, rid);
@@ -228,7 +233,6 @@ class Client {
     const {
       time = 0,
       example = null,
-      files = [],
       filesBuffers = [],
       code = null,
       file,
@@ -236,11 +240,18 @@ class Client {
       test_id,
       timestamp,
       links,
-      manuallyAttachedArtifacts,
       overwrite,
       tags,
     } = testData;
-    let { message = '', meta = {} } = testData;
+    let { files = [], manuallyAttachedArtifacts, message = '', meta = {} } = testData;
+
+    if (stepArtifactPaths.size) {
+      const isStepArtifact = item => stepArtifactPaths.has(typeof item === 'object' ? item?.path : item);
+      files = files.filter(f => !isStepArtifact(f));
+      if (Array.isArray(manuallyAttachedArtifacts)) {
+        manuallyAttachedArtifacts = manuallyAttachedArtifacts.filter(a => !isStepArtifact(a));
+      }
+    }
 
     meta = Object.entries(meta)
       .filter(([, value]) => value !== null && value !== undefined)
@@ -448,6 +459,29 @@ class Client {
 
     return this.queue;
   }
+}
+
+/**
+ * Walks the step tree and returns the set of artifact path/url values
+ * referenced by `step.artifacts` at any depth.
+ *
+ * @param {any} steps
+ * @param {Set<string>} [paths]
+ * @returns {Set<string>}
+ */
+function collectStepArtifactPaths(steps, paths = new Set()) {
+  if (!Array.isArray(steps)) return paths;
+  for (const step of steps) {
+    if (!step) continue;
+    if (Array.isArray(step.artifacts)) {
+      for (const a of step.artifacts) {
+        if (typeof a === 'string') paths.add(a);
+        else if (a && typeof a === 'object' && typeof a.path === 'string') paths.add(a.path);
+      }
+    }
+    collectStepArtifactPaths(step.steps, paths);
+  }
+  return paths;
 }
 
 /**
