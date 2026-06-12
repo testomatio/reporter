@@ -193,6 +193,13 @@ class AllureReader {
       overwrite: true,
     };
 
+    // Use the @TmsLink / Testomat.io link as the test id so reported tests MATCH
+    // existing cases instead of creating duplicates on every run.
+    const testId = this.extractTestId(result);
+    if (testId) {
+      test.test_id = testId;
+    }
+
     // Add description if present
     if (result.description) {
       test.description = result.description;
@@ -346,6 +353,49 @@ class AllureReader {
     return links.length > 0 ? links : undefined;
   }
 
+  /**
+   * Extract a Testomat.io test id from Allure links so reported tests match
+   * existing cases instead of creating duplicates.
+   *
+   * Allure's `@TmsLink("T1a2b3c4d")` produces a link with `type: "tms"`. Some exporters
+   * omit the type but still point the link URL at a Testomat.io test page; both are
+   * accepted. The link `name` is used as the id (falling back to the last URL segment).
+   *
+   * @param {object} result - Parsed Allure result JSON
+   * @returns {string|null} Normalized test id, or null when no usable link exists
+   */
+  extractTestId(result) {
+    const links = result.links || [];
+    if (!links.length) return null;
+
+    const isTmsLink = l => typeof l?.type === 'string' && l.type.toLowerCase() === 'tms';
+    const isTestomatioLink = l => typeof l?.url === 'string' && /testomat\.io\/[^\s]*\/test\//i.test(l.url);
+
+    const link = links.find(isTmsLink) || links.find(isTestomatioLink);
+    if (!link) return null;
+
+    let id = (link.name ?? '').toString().trim();
+    if (!id && typeof link.url === 'string') {
+      id = link.url.split(/[/?#]/).filter(Boolean).pop() || '';
+    }
+
+    return this.normalizeTestId(id);
+  }
+
+  /**
+   * Normalize a Testomat.io test id by stripping the optional `@` and `T` markers,
+   * matching how the XML reader stores ids (e.g. `@T1a2b3c4d` -> `1a2b3c4d`).
+   * @param {string} id
+   * @returns {string|null}
+   */
+  normalizeTestId(id) {
+    if (!id) return null;
+    let value = id.toString().trim();
+    if (value.startsWith('@')) value = value.slice(1);
+    if (value.startsWith('T')) value = value.slice(1);
+    return value || null;
+  }
+
   convertSteps(steps, depth = 0) {
     if (depth >= 10) return null;
 
@@ -482,8 +532,10 @@ class AllureReader {
           debug('Fetched code for test %s', t.title);
         }
 
+        // Don't override an id already taken from a @TmsLink — the link is the
+        // explicit, source-independent match key the client maintains.
         const testId = fetchIdFromCode(contents, { lang: this.getLanguage() });
-        if (testId) {
+        if (testId && !t.test_id) {
           t.test_id = testId;
           debug('Fetched test id %s for test %s', testId, t.title);
         }

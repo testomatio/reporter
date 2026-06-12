@@ -183,6 +183,78 @@ describe('AllureReader', () => {
     });
   });
 
+  describe('Test ID Extraction (TmsLink)', () => {
+    it('should use a tms link name as the test id', () => {
+      const result = {
+        links: [{ name: 'T1a2b3c4d', type: 'tms', url: 'https://app.testomat.io/p/x/test/1a2b3c4d' }],
+      };
+      expect(reader.extractTestId(result)).to.equal('1a2b3c4d');
+    });
+
+    it('should match tms type case-insensitively', () => {
+      const result = { links: [{ name: '1a2b3c4d', type: 'TMS' }] };
+      expect(reader.extractTestId(result)).to.equal('1a2b3c4d');
+    });
+
+    it('should keep ids that already have no marker prefix', () => {
+      const result = { links: [{ name: '00062226', type: 'tms' }] };
+      expect(reader.extractTestId(result)).to.equal('00062226');
+    });
+
+    it('should fall back to a Testomat.io link even when type is null', () => {
+      const result = {
+        links: [{ name: '00062226', url: 'https://app.testomat.io/projects/ios-86637/test/00062226', type: null }],
+      };
+      expect(reader.extractTestId(result)).to.equal('00062226');
+    });
+
+    it('should derive the id from the URL when the link name is empty', () => {
+      const result = {
+        links: [{ name: '', type: 'tms', url: 'https://app.testomat.io/projects/x/test/abcd1234' }],
+      };
+      expect(reader.extractTestId(result)).to.equal('abcd1234');
+    });
+
+    it('should prefer a tms link over an unrelated link', () => {
+      const result = {
+        links: [
+          { name: 'BUG-1', type: 'issue', url: 'https://jira/BUG-1' },
+          { name: 'deadbeef', type: 'tms' },
+        ],
+      };
+      expect(reader.extractTestId(result)).to.equal('deadbeef');
+    });
+
+    it('should ignore non-tms links that are not Testomat.io test pages', () => {
+      const result = {
+        links: [{ name: '102308', url: 'https://allure.betterme.world/project/37/test-cases/102308' }],
+      };
+      expect(reader.extractTestId(result)).to.be.null;
+    });
+
+    it('should return null when there are no links', () => {
+      expect(reader.extractTestId({})).to.be.null;
+      expect(reader.extractTestId({ links: [] })).to.be.null;
+    });
+
+    it('should set test_id on the processed test from a tms link', () => {
+      const result = {
+        uuid: 'u-1',
+        name: 'My test',
+        status: 'passed',
+        links: [{ name: 'T00062226', type: 'tms' }],
+      };
+      const test = reader.processAllureResult(result, '/tmp');
+      expect(test.test_id).to.equal('00062226');
+    });
+
+    it('should not set test_id when no usable link exists', () => {
+      const result = { uuid: 'u-2', name: 'No link test', status: 'passed' };
+      const test = reader.processAllureResult(result, '/tmp');
+      expect(test).to.not.have.property('test_id');
+    });
+  });
+
   describe('Step Conversion', () => {
     it('should convert simple step', () => {
       const step = {

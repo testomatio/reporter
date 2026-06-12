@@ -38,6 +38,29 @@ The reporter automatically finds Allure result files (`*-result.json`) and conta
 | **Parameters** | `parameters` array | Converted to `example` object |
 | **Description** | `description` field | Mapped directly |
 | **Message/Stack** | `statusDetails` | Error information from failed tests |
+| **Test ID** | `@TmsLink` (`links[type=tms]`) | Used to match existing Testomat.io test cases |
+
+## Matching Existing Tests with @TmsLink
+
+To make reported results **update existing test cases instead of creating duplicates**, annotate
+tests with `@TmsLink` pointing at the Testomat.io test ID:
+
+```java
+@TmsLink("T1a2b3c4d")   // or the bare id: @TmsLink("1a2b3c4d")
+@Test
+void testLogin() { ... }
+```
+
+Allure writes this into the result JSON as a link with `type: "tms"`:
+
+```json
+"links": [{ "name": "T1a2b3c4d", "type": "tms", "url": "https://app.testomat.io/.../test/1a2b3c4d" }]
+```
+
+The reader reads that link's name and sends it as the test's `test_id`, so Testomat.io matches the
+existing case. The optional `@`/`T` markers are stripped automatically. Links whose URL points at a
+Testomat.io test page are also recognized even when `type` is missing. When no `@TmsLink` is present,
+the reader falls back to an ID parsed from the source code (if available).
 
 ## Retry Deduplication
 
