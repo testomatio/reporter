@@ -303,8 +303,45 @@ describe('AllureReader', () => {
       expect(converted).to.deep.equal({
         category: 'user',
         title: 'Login',
+        status: 'passed',
         duration: 1,
       });
+    });
+
+    it('should apply passed status to a passing step', () => {
+      const converted = reader.convertSteps([{ name: 'ok', status: 'passed', steps: [] }])[0];
+      expect(converted.status).to.equal('passed');
+    });
+
+    it('should apply failed status to a failing step', () => {
+      const converted = reader.convertSteps([{ name: 'boom', status: 'failed', steps: [] }])[0];
+      expect(converted.status).to.equal('failed');
+    });
+
+    it('should map a broken step to failed', () => {
+      const converted = reader.convertSteps([{ name: 'oops', status: 'broken', steps: [] }])[0];
+      expect(converted.status).to.equal('failed');
+    });
+
+    it('should map a skipped step to none', () => {
+      const converted = reader.convertSteps([{ name: 'skip', status: 'skipped', steps: [] }])[0];
+      expect(converted.status).to.equal('none');
+    });
+
+    it('should default to none when a step has no status', () => {
+      const converted = reader.convertSteps([{ name: 'no status', steps: [] }])[0];
+      expect(converted.status).to.equal('none');
+    });
+
+    it('should apply status to nested steps as well', () => {
+      const step = {
+        name: 'Outer',
+        status: 'failed',
+        steps: [{ name: 'Inner', status: 'failed', steps: [] }],
+      };
+      const converted = reader.convertSteps([step])[0];
+      expect(converted.status).to.equal('failed');
+      expect(converted.steps[0].status).to.equal('failed');
     });
 
     it('should convert nested steps', () => {

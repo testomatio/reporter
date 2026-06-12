@@ -240,6 +240,29 @@ class AllureReader {
     return statusMap[status] || 'failed';
   }
 
+  /**
+   * Map an Allure step status to the Testomat.io Step status enum
+   * (`passed | failed | none | custom`, see testomat-api-definition.yml).
+   *
+   * Allure marks a step `broken` when it threw an unexpected error — that is a
+   * failure for reporting purposes, matching how `mapStatus` treats tests.
+   * `skipped` and anything unknown/absent become `none` (the neutral value),
+   * since the step enum has no `skipped`.
+   *
+   * @param {string} status - Allure step status
+   * @returns {'passed'|'failed'|'none'} Testomat.io step status
+   */
+  mapStepStatus(status) {
+    const statusMap = {
+      passed: 'passed',
+      failed: 'failed',
+      broken: 'failed',
+      skipped: 'none',
+      pending: 'none',
+    };
+    return statusMap[status] || 'none';
+  }
+
   extractSuiteTitle(result) {
     const labels = result.labels || [];
 
@@ -413,6 +436,7 @@ class AllureReader {
         const convertedStep = {
           category: 'user',
           title: step.name || step.title || 'Unknown step',
+          status: this.mapStepStatus(step.status),
           duration: this.calculateRunTime(step),
           steps: this.convertSteps(step.steps || [], depth + 1),
         };

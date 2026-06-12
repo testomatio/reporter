@@ -33,7 +33,7 @@ The reporter automatically finds Allure result files (`*-result.json`) and conta
 | **Feature** | `feature` label | Sent as link `{ label: "feature:Value" }` |
 | **File** | `testClass` label + `language` | Source file name (e.g., `LoginTest.kt`) |
 | **Code** | Source file | Fetched if file exists (see [Source Code](#source-code)) |
-| **Steps** | `steps` array | Converted with category="user" |
+| **Steps** | `steps` array | Converted with category="user"; per-step `status` mapped (passed, broken/failed → failed, skipped → none) |
 | **Attachments** | `attachments` array | Uploaded as artifacts |
 | **Parameters** | `parameters` array | Converted to `example` object |
 | **Description** | `description` field | Mapped directly |
