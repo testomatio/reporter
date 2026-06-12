@@ -374,26 +374,35 @@ class AllureReader {
     const link = links.find(isTmsLink) || links.find(isTestomatioLink);
     if (!link) return null;
 
-    let id = (link.name ?? '').toString().trim();
+    // Prefer the explicit link name; fall back to the id segment of a Testomat.io URL.
+    let id = this.normalizeTestId(link.name);
     if (!id && typeof link.url === 'string') {
-      id = link.url.split(/[/?#]/).filter(Boolean).pop() || '';
+      const fromUrl = link.url.match(/\/test\/([\w\d]{8})(?=$|[/?#])/i);
+      if (fromUrl) id = fromUrl[1];
     }
 
-    return this.normalizeTestId(id);
+    return id;
   }
 
   /**
-   * Normalize a Testomat.io test id by stripping the optional `@` and `T` markers,
-   * matching how the XML reader stores ids (e.g. `@T1a2b3c4d` -> `1a2b3c4d`).
-   * @param {string} id
-   * @returns {string|null}
+   * Normalize a value into a Testomat.io test id.
+   *
+   * Testomat.io test ids are exactly **8 word characters**. The value may arrive bare
+   * (`1a2b3c4d`), or carrying the `T` / `@T` markers Testomat uses in code and titles
+   * (`T1a2b3c4d`, `@T1a2b3c4d`). The markers are removed only when doing so still leaves
+   * a valid 8-char id, so a real id that happens to start with `T` is preserved.
+   *
+   * Anything that does not resolve to a valid 8-char id — a numeric Allure TestOps id
+   * like `12345`, a JIRA key, a 6-digit TMS number — is rejected (returns null) so we
+   * never send an unmatchable id that would create duplicates.
+   *
+   * @param {string|number|null|undefined} value
+   * @returns {string|null} The bare 8-char id, or null when the value is not a valid id
    */
-  normalizeTestId(id) {
-    if (!id) return null;
-    let value = id.toString().trim();
-    if (value.startsWith('@')) value = value.slice(1);
-    if (value.startsWith('T')) value = value.slice(1);
-    return value || null;
+  normalizeTestId(value) {
+    if (value === null || value === undefined) return null;
+    const match = value.toString().trim().match(/^@?T?([\w\d]{8})$/);
+    return match ? match[1] : null;
   }
 
   convertSteps(steps, depth = 0) {

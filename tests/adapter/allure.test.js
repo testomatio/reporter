@@ -232,6 +232,41 @@ describe('AllureReader', () => {
       expect(reader.extractTestId(result)).to.be.null;
     });
 
+    it('should reject a tms id that is not exactly 8 chars (e.g. Allure TestOps numeric id)', () => {
+      expect(reader.extractTestId({ links: [{ name: '12345', type: 'tms' }] })).to.be.null;
+      expect(reader.extractTestId({ links: [{ name: 'PROJ-123', type: 'tms' }] })).to.be.null;
+      expect(reader.extractTestId({ links: [{ name: '123456789', type: 'tms' }] })).to.be.null;
+    });
+
+    it('should strip the @T prefix from a full marker', () => {
+      expect(reader.extractTestId({ links: [{ name: '@T1a2b3c4d', type: 'tms' }] })).to.equal('1a2b3c4d');
+    });
+
+    it('should preserve a valid 8-char id that starts with T (not over-strip)', () => {
+      // Tabcdef0 is a valid 8-char id; stripping T would corrupt it to 7 chars
+      expect(reader.extractTestId({ links: [{ name: 'Tabcdef0', type: 'tms' }] })).to.equal('Tabcdef0');
+    });
+
+    it('should extract the id from a Testomat.io URL carrying a query string', () => {
+      const result = {
+        links: [{ name: '', type: 'tms', url: 'https://app.testomat.io/projects/x/test/abcd1234?utm=1' }],
+      };
+      expect(reader.extractTestId(result)).to.equal('abcd1234');
+    });
+
+    it('always yields an 8-char id when it yields one at all', () => {
+      const samples = [
+        { name: '1a2b3c4d', type: 'tms' },
+        { name: 'T1a2b3c4d', type: 'tms' },
+        { name: '@T1a2b3c4d', type: 'tms' },
+        { name: '00062226', url: 'https://app.testomat.io/p/x/test/00062226', type: null },
+      ];
+      for (const link of samples) {
+        const id = reader.extractTestId({ links: [link] });
+        expect(id, `id for ${link.name || link.url}`).to.have.length(8);
+      }
+    });
+
     it('should return null when there are no links', () => {
       expect(reader.extractTestId({})).to.be.null;
       expect(reader.extractTestId({ links: [] })).to.be.null;

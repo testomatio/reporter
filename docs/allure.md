@@ -58,9 +58,16 @@ Allure writes this into the result JSON as a link with `type: "tms"`:
 ```
 
 The reader reads that link's name and sends it as the test's `test_id`, so Testomat.io matches the
-existing case. The optional `@`/`T` markers are stripped automatically. Links whose URL points at a
-Testomat.io test page are also recognized even when `type` is missing. When no `@TmsLink` is present,
-the reader falls back to an ID parsed from the source code (if available).
+existing case. Links whose URL points at a Testomat.io test page are also recognized even when `type`
+is missing (e.g. `.../test/1a2b3c4d`). When no `@TmsLink` is present, the reader falls back to an ID
+parsed from the source code (if available).
+
+**ID format.** Testomat.io test IDs are exactly **8 characters**. The reader accepts the bare id
+(`1a2b3c4d`) or the `T` / `@T` markers Testomat uses (`T1a2b3c4d`, `@T1a2b3c4d`) and normalizes them
+to the bare 8-char id. Values that are not valid 8-char Testomat IDs — a numeric Allure TestOps ID
+(`@AllureId(12345)`), a JIRA key, or a 6-digit TMS number — are **ignored** rather than sent, so they
+never produce unmatchable IDs. Those tests are still imported; they just match by title/`historyId` or
+are created fresh.
 
 ## Retry Deduplication
 
