@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { formatFilterListIds } from '../../src/utils/pipe_utils.js';
+import { formatFilterListIds, getObjectSize, splitTestsIntoChunks } from '../../src/utils/pipe_utils.js';
 
 describe('formatFilterListIds', () => {
   const ids = ['t1234abcd', 't5678efgh', 'tabcdef01'];
@@ -94,5 +94,76 @@ describe('formatFilterListIds', () => {
         expect(extract(out), `format=${format} should round-trip`).to.deep.equal(ids);
       }
     });
+  });
+});
+
+describe('splitTestsIntoChunks', () => {
+  // build a test whose serialized size is roughly `bytes`
+  const makeTest = (i, bytes = 100) => ({
+    title: `Test ${i}`,
+    status: 'passed',
+    stack: 'x'.repeat(Math.max(0, bytes)),
+  });
+
+  it('returns no chunks for an empty array', () => {
+    expect(splitTestsIntoChunks([])).to.deep.equal([]);
+  });
+
+  it('keeps a small suite in a single chunk', () => {
+    const tests = Array.from({ length: 10 }, (_, i) => makeTest(i, 100));
+    const chunks = splitTestsIntoChunks(tests);
+    expect(chunks).to.have.length(1);
+    expect(chunks[0]).to.have.length(10);
+  });
+
+  it('splits a large suite of 1000 tests into multiple chunks', () => {
+    // ~50KB each → 1000 tests ≈ 50MB → must split well beyond a single 1MB chunk
+    const tests = Array.from({ length: 1000 }, (_, i) => makeTest(i, 50_000));
+    const chunks = splitTestsIntoChunks(tests);
+
+    expect(chunks.length).to.be.greaterThan(1);
+
+    // every test ends up in exactly one chunk, in order, none lost or duplicated
+    const flat = chunks.flat();
+    expect(flat).to.have.length(1000);
+    expect(flat.map(t => t.title)).to.deep.equal(tests.map(t => t.title));
+  });
+
+  it('keeps each chunk at or below the size limit (except unavoidable oversized singletons)', () => {
+    const maxSizeBytes = 1 * 1024 * 1024;
+    const tests = Array.from({ length: 1000 }, (_, i) => makeTest(i, 50_000));
+    const chunks = splitTestsIntoChunks(tests);
+
+    for (const chunk of chunks) {
+      const size = getObjectSize(chunk);
+      // a chunk may exceed the limit only when it holds a single test bigger than the limit
+      if (chunk.length > 1) {
+        expect(size).to.be.at.most(maxSizeBytes);
+      }
+    }
+  });
+
+  it('places a single oversized test into its own chunk', () => {
+    const tests = [
+      makeTest(0, 100),
+      makeTest(1, 2 * 1024 * 1024), // 2MB, bigger than the 1MB limit
+      makeTest(2, 100),
+    ];
+    const chunks = splitTestsIntoChunks(tests);
+
+    expect(chunks.flat()).to.have.length(3);
+    // the oversized test is isolated in its own chunk
+    const oversizedChunk = chunks.find(c => c.length === 1 && c[0].title === 'Test 1');
+    expect(oversizedChunk, 'oversized test should be isolated').to.exist;
+  });
+
+  it('respects a custom maxSizeBytes', () => {
+    const tests = Array.from({ length: 20 }, (_, i) => makeTest(i, 100));
+    const single = splitTestsIntoChunks(tests, 10 * 1024 * 1024);
+    const many = splitTestsIntoChunks(tests, 200); // tiny limit forces many chunks
+
+    expect(single).to.have.length(1);
+    expect(many.length).to.be.greaterThan(1);
+    expect(many.flat()).to.have.length(20);
   });
 });
