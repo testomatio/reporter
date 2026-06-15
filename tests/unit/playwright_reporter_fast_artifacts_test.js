@@ -51,6 +51,11 @@ describe('PlaywrightReporter fast artifacts', () => {
             contentType: 'image/png',
             name: 'screenshot',
           },
+          {
+            body: Buffer.from('video'),
+            contentType: 'video/webm',
+            name: 'video',
+          },
         ],
         duration: 10,
         status: 'passed',
@@ -67,12 +72,15 @@ describe('PlaywrightReporter fast artifacts', () => {
     await testEndPromise;
 
     expect(addTestRunCalls).to.have.length(1);
-    expect(addTestRunCalls[0].data.files).to.be.undefined;
+    expect(addTestRunCalls[0].data.files).to.have.length(1);
+    expect(addTestRunCalls[0].data.files[0].title).to.equal('screenshot');
+    expect(addTestRunCalls[0].data.files[0].type).to.equal('image/png');
 
     await reporter.onEnd({ status: 'passed' });
 
     expect(addTestRunCalls).to.have.length(2);
     expect(addTestRunCalls[1].data.files).to.have.length(1);
-    expect(addTestRunCalls[1].data.files[0].type).to.equal('image/png');
+    expect(addTestRunCalls[1].data.files[0].title).to.equal('fast test with artifact');
+    expect(addTestRunCalls[1].data.files[0].type).to.equal('video/webm');
   });
 });
