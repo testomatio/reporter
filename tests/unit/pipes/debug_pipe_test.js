@@ -123,6 +123,19 @@ describe('DebugPipe logging tests', () => {
     expect(savedData[4]).to.contain(JSON.stringify({ action: 'secondTest' }).slice(1, -1));
   });
 
+  it('should log delayed artifacts for replay upload', async () => {
+    debugPipe.store.runId = 'run-123';
+    const artifacts = [{ rid: 'test-1', title: 'Test 1', path: 'trace.zip', type: 'application/zip' }];
+
+    await debugPipe.addArtifacts(artifacts);
+
+    const savedData = fs.readFileSync(logFilePath, 'utf-8').trim().split('\n');
+    expect(savedData.length).to.equal(4);
+    expect(savedData[3]).to.contain(
+      JSON.stringify({ action: 'addArtifacts', artifacts, runId: 'run-123' }).slice(1, -1),
+    );
+  });
+
   describe('DebugPipe file management', () => {
     it('should create timestamped files in tmp dir and symlink in project root', () => {
       const paths = getDebugFilePath();
