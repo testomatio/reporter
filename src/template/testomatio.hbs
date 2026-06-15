@@ -681,8 +681,9 @@
 
         .test-group-header {
             padding: 20px;
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
-            color: white;
+            background: var(--gray-50);
+            color: var(--gray-800);
+            border-left: 4px solid var(--primary-color);
             cursor: pointer;
             display: flex;
             justify-content: space-between;
@@ -691,7 +692,37 @@
         }
 
         .test-group-header:hover {
-            filter: brightness(1.1);
+            background: var(--gray-100);
+        }
+
+        .test-group-header.has-failures {
+            background: #fef2f2;
+            color: var(--gray-900);
+            border-left-color: var(--danger-color);
+        }
+
+        .test-group-header.has-failures:hover {
+            background: #fee2e2;
+        }
+
+        .test-group-header.has-skips {
+            background: #fffbeb;
+            color: var(--gray-900);
+            border-left-color: var(--warning-color);
+        }
+
+        .test-group-header.has-skips:hover {
+            background: #fef3c7;
+        }
+
+        .test-group-header.all-passed {
+            background: #ecfdf5;
+            color: var(--gray-900);
+            border-left-color: var(--success-color);
+        }
+
+        .test-group-header.all-passed:hover {
+            background: #d1fae5;
         }
 
         .test-group-title {
@@ -707,28 +738,56 @@
         }
 
         .test-group-count {
-            background: rgba(255, 255, 255, 0.2);
+            background: white;
+            color: var(--gray-600);
             padding: 6px 16px;
             border-radius: 20px;
             font-size: 14px;
             font-weight: 600;
+            border: 1px solid var(--gray-200);
         }
 
         .test-group-stats {
             display: flex;
-            gap: 20px;
+            gap: 8px;
             font-size: 14px;
             margin-right: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
         }
 
         .test-group-stat {
             display: flex;
             align-items: center;
             gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-weight: 700;
+            background: white;
+            border: 1px solid currentColor;
+        }
+
+        .test-group-stat.passed {
+            color: var(--success-color);
+        }
+
+        .test-group-stat.failed {
+            color: white;
+            background: var(--danger-color);
+            border-color: var(--danger-color);
+            box-shadow: 0 1px 3px rgba(239, 68, 68, 0.35);
+        }
+
+        .test-group-stat.skipped {
+            color: var(--warning-color);
+        }
+
+        .test-group-stat.todo {
+            color: #8b5cf6;
         }
 
         .test-group-expand {
-            color: white;
+            color: var(--gray-500);
             transition: var(--transition);
             font-size: 18px;
         }
@@ -3366,11 +3425,18 @@
             const failedCount = group.tests.filter(t => t.status.toLowerCase() === 'failed').length;
             const skippedCount = group.tests.filter(t => t.status.toLowerCase() === 'skipped').length;
             const todoCount = group.tests.filter(t => t.status.toLowerCase() === 'todo').length;
+            const groupStateClass = failedCount > 0
+                ? 'has-failures'
+                : skippedCount > 0 || todoCount > 0
+                    ? 'has-skips'
+                    : passedCount > 0
+                        ? 'all-passed'
+                        : '';
 
             const groupIcon = group.type === 'suite' ? 'layer-group' : 'file-code';
 
             const header = document.createElement('div');
-            header.className = 'test-group-header';
+            header.className = ['test-group-header', groupStateClass].filter(Boolean).join(' ');
             header.innerHTML = `
                 <div class='test-group-title'>
                     <i class='fas fa-${groupIcon}'></i>
@@ -3378,10 +3444,10 @@
                     <div class='test-group-count'>${group.tests.length} tests</div>
                 </div>
                 <div class='test-group-stats'>
-                    ${passedCount > 0 ? `<div class='test-group-stat' style='color: #10b981;'><i class='fas fa-check-circle'></i> ${passedCount}</div>` : ''}
-                    ${failedCount > 0 ? `<div class='test-group-stat' style='color: #ef4444;'><i class='fas fa-times-circle'></i> ${failedCount}</div>` : ''}
-                    ${skippedCount > 0 ? `<div class='test-group-stat' style='color: #f59e0b;'><i class='fas fa-forward'></i> ${skippedCount}</div>` : ''}
-                    ${todoCount > 0 ? `<div class='test-group-stat' style='color: #8b5cf6;'><i class='fas fa-clock'></i> ${todoCount}</div>` : ''}
+                    ${passedCount > 0 ? `<div class='test-group-stat passed'><i class='fas fa-check-circle'></i> ${passedCount}</div>` : ''}
+                    ${failedCount > 0 ? `<div class='test-group-stat failed'><i class='fas fa-times-circle'></i> ${failedCount}</div>` : ''}
+                    ${skippedCount > 0 ? `<div class='test-group-stat skipped'><i class='fas fa-forward'></i> ${skippedCount}</div>` : ''}
+                    ${todoCount > 0 ? `<div class='test-group-stat todo'><i class='fas fa-clock'></i> ${todoCount}</div>` : ''}
                 </div>
                 <i class='fas fa-chevron-down test-group-expand'></i>
             `;
