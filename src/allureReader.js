@@ -441,6 +441,15 @@ class AllureReader {
           steps: this.convertSteps(step.steps || [], depth + 1),
         };
 
+        // Attach the failure description (error message + trace with the failing
+        // code line) straight onto the failed step. Testomat.io renders a step's
+        // `error` inline in the step tree, so the failure shows up on the exact
+        // step that broke instead of only at the test level.
+        const error = this.extractStepError(step);
+        if (error) {
+          convertedStep.error = error;
+        }
+
         if (convertedStep.steps && convertedStep.steps.length === 0) {
           delete convertedStep.steps;
         }
@@ -452,6 +461,29 @@ class AllureReader {
         return convertedStep;
       })
       .filter(Boolean);
+  }
+
+  /**
+   * Build the `error` payload for a failed step from its Allure `statusDetails`.
+   *
+   * Allure stores the failure message and stack trace (which includes the failing
+   * source line) in `statusDetails` on the step itself. We only surface it for
+   * failed/broken steps — passing or skipped steps carry no error. Returns null
+   * when there is no usable failure information so the field is omitted entirely.
+   *
+   * @param {object} step - Allure step
+   * @returns {{message: string, stack: string}|null}
+   */
+  extractStepError(step) {
+    if (this.mapStepStatus(step.status) !== 'failed') return null;
+
+    const details = step.statusDetails || {};
+    const message = details.message || '';
+    const stack = details.trace || '';
+
+    if (!message && !stack) return null;
+
+    return { message, stack };
   }
 
   calculateRunTime(item) {

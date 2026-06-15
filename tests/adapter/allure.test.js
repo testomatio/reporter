@@ -333,6 +333,64 @@ describe('AllureReader', () => {
       expect(converted.status).to.equal('none');
     });
 
+    it('should attach error (message + trace) to a failed step', () => {
+      const step = {
+        name: 'I see "Welcome"',
+        status: 'failed',
+        statusDetails: {
+          message: 'Expected "Welcome" but got "Goodbye"',
+          trace: 'AssertionError\n    at LoginTest.java:42',
+        },
+        steps: [],
+      };
+      const converted = reader.convertSteps([step])[0];
+      expect(converted.status).to.equal('failed');
+      expect(converted.error).to.deep.equal({
+        message: 'Expected "Welcome" but got "Goodbye"',
+        stack: 'AssertionError\n    at LoginTest.java:42',
+      });
+    });
+
+    it('should attach error to a broken step', () => {
+      const step = {
+        name: 'I click "Submit"',
+        status: 'broken',
+        statusDetails: { message: 'Element not found', trace: 'at page.js:10' },
+        steps: [],
+      };
+      const converted = reader.convertSteps([step])[0];
+      expect(converted.error).to.deep.equal({ message: 'Element not found', stack: 'at page.js:10' });
+    });
+
+    it('should not attach error to a passing step', () => {
+      const converted = reader.convertSteps([
+        { name: 'ok', status: 'passed', statusDetails: { message: 'ignored' }, steps: [] },
+      ])[0];
+      expect(converted).to.not.have.property('error');
+    });
+
+    it('should not attach error to a failed step without statusDetails', () => {
+      const converted = reader.convertSteps([{ name: 'boom', status: 'failed', steps: [] }])[0];
+      expect(converted).to.not.have.property('error');
+    });
+
+    it('should attach error to a failed nested step', () => {
+      const step = {
+        name: 'Outer',
+        status: 'failed',
+        steps: [
+          {
+            name: 'Inner',
+            status: 'failed',
+            statusDetails: { message: 'inner boom', trace: 'at inner.js:5' },
+            steps: [],
+          },
+        ],
+      };
+      const converted = reader.convertSteps([step])[0];
+      expect(converted.steps[0].error).to.deep.equal({ message: 'inner boom', stack: 'at inner.js:5' });
+    });
+
     it('should apply status to nested steps as well', () => {
       const step = {
         name: 'Outer',
