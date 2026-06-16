@@ -17,6 +17,7 @@ To enable HTML reports, set the TESTOMATIO_HTML_REPORT_SAVE environment variable
 - TESTOMATIO_HTML_REPORT_SAVE=1
 - TESTOMATIO_HTML_REPORT_FOLDER: Specify the folder for HTML reports
 - TESTOMATIO_HTML_FILENAME: Set the desired filename for the HTML report
+- TESTOMATIO_HTML_REPORT_COPY_ARTIFACTS=1: Copy local artifacts, such as screenshots, into the HTML report folder and rewrite their links to relative paths
 
 _!!!Please note that the name must include the extension ".html". If the extension is missing, the report will be saved with the default name = testomatio-report.html_
 
@@ -34,7 +35,22 @@ If a run-level description is provided (e.g. by the Coverage pipe via `coverageD
 
 If `client.createRun({ configuration: { ... } })` is called with a key/value object, the report renders it as a Configuration table beneath the description.
 
+### Portable Local Artifacts
+
+By default, local artifact links keep their original file URLs. This preserves the existing behavior for users who open the generated report on the same machine where tests were executed.
+
+For CI artifact viewers, such as Jenkins, local file URLs can be inaccessible after the report is published. Enable `TESTOMATIO_HTML_REPORT_COPY_ARTIFACTS=1` to make the report folder portable. In this mode, local artifacts are copied to an `artifacts/` folder next to the HTML report, and the report references them with relative links such as `./artifacts/failure.png`.
+
+When this option is enabled, archive or publish the whole report folder, for example `html-report/**`, not only the `.html` file.
+
 #### Example Command
+
+Generate a portable HTML report for Jenkins or another CI artifact viewer:
+
+```
+TESTOMATIO_HTML_REPORT_SAVE=1 TESTOMATIO_HTML_REPORT_COPY_ARTIFACTS=1 TESTOMATIO={API_KEY} npx codeceptjs run
+
+```
 
 📊 Generate a report without triggering the TESTOMATIO pipe (no data sent to the client)
 

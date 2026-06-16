@@ -461,6 +461,111 @@ describe('HTML report tests', () => {
     expect(htmlContent).to.not.include('file:///D:/testomat/reporter/https:/example-bucket.r2.cloudflarestorage.com');
   });
 
+  it('keeps local artifact file URLs by default', () => {
+    process.env.TESTOMATIO_HTML_REPORT_SAVE = '1';
+
+    const template = path.resolve(dirname, '../../..', 'src', 'template', 'testomatio.hbs');
+    const out = path.resolve(testOutputDir, 'with-default-local-artifact.html');
+    const artifactPath = path.resolve(testOutputDir, 'default-local-screenshot.png');
+    fs.writeFileSync(artifactPath, 'fake image');
+
+    const pipe = new HtmlPipe({}, {});
+    pipe.buildReport({
+      runParams: { status: 'failed' },
+      tests: [
+        {
+          title: 'failed with default screenshot behavior',
+          suite_title: 'suite',
+          status: 'failed',
+          message: 'failure',
+          artifacts: [artifactPath],
+        },
+      ],
+      outputPath: out,
+      templatePath: template,
+      warningMsg: '',
+    });
+
+    const copiedArtifact = path.join(testOutputDir, 'artifacts', 'default-local-screenshot.png');
+    const html = fs.readFileSync(out, 'utf-8');
+
+    expect(fs.existsSync(copiedArtifact)).to.equal(false);
+    expect(html).to.include(`file:///${artifactPath.replace(/\\/g, '/')}`);
+    expect(html).to.not.include('./artifacts/default-local-screenshot.png');
+  });
+
+  it('copies local test artifacts next to HTML report and rewrites links to relative paths', () => {
+    process.env.TESTOMATIO_HTML_REPORT_SAVE = '1';
+
+    const template = path.resolve(dirname, '../../..', 'src', 'template', 'testomatio.hbs');
+    const out = path.resolve(testOutputDir, 'with-local-artifact.html');
+    const artifactPath = path.resolve(testOutputDir, 'failed screenshot.png');
+    fs.writeFileSync(artifactPath, 'fake image');
+
+    const pipe = new HtmlPipe({ htmlCopyArtifacts: true }, {});
+    pipe.buildReport({
+      runParams: { status: 'failed' },
+      tests: [
+        {
+          title: 'failed with screenshot',
+          suite_title: 'suite',
+          status: 'failed',
+          message: 'failure',
+          artifacts: [artifactPath],
+        },
+      ],
+      outputPath: out,
+      templatePath: template,
+      warningMsg: '',
+    });
+
+    const copiedArtifact = path.join(testOutputDir, 'artifacts', 'failed screenshot.png');
+    const html = fs.readFileSync(out, 'utf-8');
+
+    expect(fs.existsSync(copiedArtifact)).to.equal(true);
+    expect(html).to.include('./artifacts/failed screenshot.png');
+    expect(html).to.not.include(`file:///${artifactPath.replace(/\\/g, '/')}`);
+  });
+
+  it('copies local step artifacts next to HTML report and rewrites step links to relative paths', () => {
+    process.env.TESTOMATIO_HTML_REPORT_SAVE = '1';
+
+    const template = path.resolve(dirname, '../../..', 'src', 'template', 'testomatio.hbs');
+    const out = path.resolve(testOutputDir, 'with-local-step-artifact.html');
+    const artifactPath = path.resolve(testOutputDir, 'step-screenshot.png');
+    fs.writeFileSync(artifactPath, 'fake image');
+
+    const pipe = new HtmlPipe({ htmlCopyArtifacts: true }, {});
+    pipe.buildReport({
+      runParams: { status: 'failed' },
+      tests: [
+        {
+          title: 'failed step with screenshot',
+          suite_title: 'suite',
+          status: 'failed',
+          message: 'failure',
+          steps: [
+            {
+              category: 'user',
+              title: 'Click submit',
+              artifacts: [artifactPath],
+            },
+          ],
+        },
+      ],
+      outputPath: out,
+      templatePath: template,
+      warningMsg: '',
+    });
+
+    const copiedArtifact = path.join(testOutputDir, 'artifacts', 'step-screenshot.png');
+    const html = fs.readFileSync(out, 'utf-8');
+
+    expect(fs.existsSync(copiedArtifact)).to.equal(true);
+    expect(html).to.include('./artifacts/step-screenshot.png');
+    expect(html).to.not.include(`file:///${artifactPath.replace(/\\/g, '/')}`);
+  });
+
   it('renders run description (markdown) from store as a Description section', () => {
     process.env.TESTOMATIO_HTML_REPORT_SAVE = '1';
 
