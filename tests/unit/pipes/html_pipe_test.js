@@ -4,6 +4,7 @@ import path from 'path';
 import { JSDOM } from 'jsdom';
 import HtmlPipe from '../../../src/pipe/html.js';
 import { fileURLToPath } from 'url';
+import fileUrl from 'file-url';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -428,7 +429,9 @@ describe('HTML report tests', () => {
 
     expect(htmlContent).to.include('.message-block.passed');
     expect(htmlContent).to.include("if (hasMessage) return 'message';");
-    expect(htmlContent).to.include("const initialTab = getInitialTestTab({ isTodo, hasMessage, hasSteps: test.stepsArray?.length || test.steps });");
+    expect(htmlContent).to.include(
+      "const initialTab = getInitialTestTab({ isTodo, hasMessage, hasSteps: test.stepsArray?.length || test.steps });",
+    );
     expect(htmlContent).to.include("button class='test-tab${initialMessageClass}'");
     expect(htmlContent).to.include("div class='test-tab-content${initialMessageClass}' data-tab='message'");
   });
@@ -490,7 +493,7 @@ describe('HTML report tests', () => {
     const html = fs.readFileSync(out, 'utf-8');
 
     expect(fs.existsSync(copiedArtifact)).to.equal(false);
-    expect(html).to.include(`file:///${artifactPath.replace(/\\/g, '/')}`);
+    expect(html).to.include(artifactFileUrl(artifactPath));
     expect(html).to.not.include('./artifacts/default-local-screenshot.png');
   });
 
@@ -524,7 +527,7 @@ describe('HTML report tests', () => {
 
     expect(fs.existsSync(copiedArtifact)).to.equal(true);
     expect(html).to.include('./artifacts/failed screenshot.png');
-    expect(html).to.not.include(`file:///${artifactPath.replace(/\\/g, '/')}`);
+    expect(html).to.not.include(artifactFileUrl(artifactPath));
   });
 
   it('copies local step artifacts next to HTML report and rewrites step links to relative paths', () => {
@@ -563,7 +566,7 @@ describe('HTML report tests', () => {
 
     expect(fs.existsSync(copiedArtifact)).to.equal(true);
     expect(html).to.include('./artifacts/step-screenshot.png');
-    expect(html).to.not.include(`file:///${artifactPath.replace(/\\/g, '/')}`);
+    expect(html).to.not.include(artifactFileUrl(artifactPath));
   });
 
   it('renders run description (markdown) from store as a Description section', () => {
@@ -648,4 +651,8 @@ function getCurrentDate() {
   const year = currentDate.getFullYear();
 
   return `(${day}/${month}/${year}`;
+}
+
+function artifactFileUrl(filePath) {
+  return fileUrl(filePath, { resolve: true });
 }
