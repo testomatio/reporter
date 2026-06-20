@@ -8,7 +8,7 @@
   "main": "lib/reporter.js",
   "module": "src/reporter.js",
   "types": "types/types.d.ts",
-  "repository": "git@github.com:testomatio/reporter.git",
+  "repository": "git+https://github.com/testomatio/reporter.git",
   "author": "Michael Bodnarchuk <davert@testomat.io>,Koushik Mohan <koushikmohan1996@gmail.com>",
   "license": "MIT",
   "type": "module",
