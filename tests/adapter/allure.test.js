@@ -497,17 +497,19 @@ describe('AllureReader', () => {
       expect(result.stack).to.contain('stack2');
     });
 
-    it('should mark as failed when test passed after retries', () => {
+    it('should mark as passed and keep failure history when test passed after retries', () => {
       const attempts = [
-        { _stop: 1000, status: 'failed', title: 'test1', message: 'first fail' },
-        { _stop: 2000, status: 'failed', title: 'test1', message: 'second fail' },
+        { _stop: 1000, status: 'failed', title: 'test1', message: 'first fail', stack: 'trace1' },
+        { _stop: 2000, status: 'failed', title: 'test1', message: 'second fail', stack: 'trace2' },
         { _stop: 3000, status: 'passed', title: 'test1' },
       ];
       const result = reader.combineRetryAttempts(attempts);
 
-      expect(result.status).to.equal('failed');
-      expect(result.message).to.contain('Test passed after 2 retries');
+      expect(result.status).to.equal('passed');
       expect(result.retries).to.equal(2);
+      expect(result.message).to.contain('Test passed after 2 retries');
+      expect(result.message).to.contain('[Attempt 1] first fail');
+      expect(result.stack).to.contain('--- Attempt 1 ---');
     });
 
     it('should handle three failed attempts', () => {

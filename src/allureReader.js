@@ -540,8 +540,10 @@ class AllureReader {
       finalTest.stack = failureStacks.join('\n');
     }
 
+    // When the final attempt passed (after earlier failures) keep the test as passed —
+    // this mirrors the server's overwrite-by-latest retry model. The aggregated failure
+    // message/stack built above is retained so the flakiness history stays visible.
     if (finalTest.status === 'passed') {
-      finalTest.status = 'failed';
       const retryMsg = `Test passed after ${failedAttempts.length} retries. Previous failures:\n`;
       finalTest.message = retryMsg + finalTest.message;
     }
