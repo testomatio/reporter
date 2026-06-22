@@ -23,8 +23,7 @@ class HtmlPipe {
     this.description = params.description || process.env.TESTOMATIO_DESCRIPTION;
     this.apiKey = params.apiKey || process.env.TESTOMATIO;
     this.isHtml = params.html ?? process.env.TESTOMATIO_HTML_REPORT_SAVE;
-    this.htmlCopyArtifacts =
-      params.htmlCopyArtifacts ?? transformEnvVarToBoolean(process.env.TESTOMATIO_HTML_REPORT_COPY_ARTIFACTS);
+    this.htmlCopyArtifacts = params.htmlCopyArtifacts;
 
     debug('HTML Pipe: ', this.apiKey ? 'API KEY' : '*no api key provided*');
 
@@ -154,6 +153,7 @@ class HtmlPipe {
 
     const aggregatedTests = aggregateTestRetries(tests);
 
+    const copyLocalArtifacts = resolveHtmlCopyArtifacts(this.htmlCopyArtifacts);
     const portableArtifacts = new Map();
     aggregatedTests.forEach(test => {
       const logsRaw =
@@ -233,7 +233,7 @@ class HtmlPipe {
       }
 
       test.artifacts = normalizeArtifacts(test);
-      if (this.htmlCopyArtifacts) {
+      if (copyLocalArtifacts) {
         makeLocalArtifactsPortable(test, outputPath, portableArtifacts);
       }
 
@@ -1029,6 +1029,18 @@ function normalizeArtifacts(test) {
         artifact.relativePath?.endsWith('.zip'));
       return !isTrace;
     });
+}
+
+function resolveHtmlCopyArtifacts(value) {
+  if (value !== undefined) return transformEnvVarToBoolean(value);
+  if (process.env.TESTOMATIO_HTML_REPORT_COPY_ARTIFACTS !== undefined) {
+    return transformEnvVarToBoolean(process.env.TESTOMATIO_HTML_REPORT_COPY_ARTIFACTS);
+  }
+  return !isS3ArtifactsUploadEnabled();
+}
+
+function isS3ArtifactsUploadEnabled() {
+  return Boolean(process.env.S3_BUCKET && !transformEnvVarToBoolean(process.env.TESTOMATIO_DISABLE_ARTIFACTS));
 }
 
 function normalizeArtifact(artifact) {

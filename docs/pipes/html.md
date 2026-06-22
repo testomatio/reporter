@@ -17,7 +17,7 @@ To enable HTML reports, set the TESTOMATIO_HTML_REPORT_SAVE environment variable
 - TESTOMATIO_HTML_REPORT_SAVE=1
 - TESTOMATIO_HTML_REPORT_FOLDER: Specify the folder for HTML reports
 - TESTOMATIO_HTML_FILENAME: Set the desired filename for the HTML report
-- TESTOMATIO_HTML_REPORT_COPY_ARTIFACTS=1: Copy local artifacts, such as screenshots, into the HTML report folder and rewrite their links to relative paths
+- TESTOMATIO_HTML_REPORT_COPY_ARTIFACTS=0|1: Override automatic local artifact handling
 
 _!!!Please note that the name must include the extension ".html". If the extension is missing, the report will be saved with the default name = testomatio-report.html_
 
@@ -37,18 +37,20 @@ If `client.createRun({ configuration: { ... } })` is called with a key/value obj
 
 ### Portable Local Artifacts
 
-By default, local artifact links keep their original file URLs. This preserves the existing behavior for users who open the generated report on the same machine where tests were executed.
+When S3 artifact uploading is not configured, local artifacts such as screenshots are copied to an `artifacts/` folder next to the HTML report, and the report references them with relative links such as `./artifacts/failure.png`.
 
-For CI artifact viewers, such as Jenkins, local file URLs can be inaccessible after the report is published. Enable `TESTOMATIO_HTML_REPORT_COPY_ARTIFACTS=1` to make the report folder portable. In this mode, local artifacts are copied to an `artifacts/` folder next to the HTML report, and the report references them with relative links such as `./artifacts/failure.png`.
+This makes the report folder portable for CI artifact viewers, such as Jenkins, where `file://` links are inaccessible after the report is published. When S3 artifact uploading is configured, the HTML report keeps local file URLs by default because artifacts are expected to be uploaded separately.
 
-When this option is enabled, archive or publish the whole report folder, for example `html-report/**`, not only the `.html` file.
+Set `TESTOMATIO_HTML_REPORT_COPY_ARTIFACTS=1` to force portable local links even when S3 is configured. Set `TESTOMATIO_HTML_REPORT_COPY_ARTIFACTS=0` to keep original local file URLs.
+
+When portable local links are used, archive or publish the whole report folder, for example `html-report/**`, not only the `.html` file.
 
 #### Example Command
 
 Generate a portable HTML report for Jenkins or another CI artifact viewer:
 
 ```
-TESTOMATIO_HTML_REPORT_SAVE=1 TESTOMATIO_HTML_REPORT_COPY_ARTIFACTS=1 TESTOMATIO={API_KEY} npx codeceptjs run
+TESTOMATIO_HTML_REPORT_SAVE=1 TESTOMATIO={API_KEY} npx codeceptjs run
 
 ```
 

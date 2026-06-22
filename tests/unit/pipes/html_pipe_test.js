@@ -115,11 +115,27 @@ describe('HTML report tests', () => {
   // const testOutputDir = path.resolve(dirname, 'htmlOutput');
   const testOutputDir = path.resolve(process.cwd(), 'htmlOutput');
   let filepath = '';
+  let originalS3Bucket;
+  let originalDisableArtifacts;
+  let originalHtmlCopyArtifacts;
 
   before(() => {
     if (!fs.existsSync(testOutputDir)) {
       fs.mkdirSync(testOutputDir);
     }
+  });
+  beforeEach(() => {
+    originalS3Bucket = process.env.S3_BUCKET;
+    originalDisableArtifacts = process.env.TESTOMATIO_DISABLE_ARTIFACTS;
+    originalHtmlCopyArtifacts = process.env.TESTOMATIO_HTML_REPORT_COPY_ARTIFACTS;
+    delete process.env.S3_BUCKET;
+    delete process.env.TESTOMATIO_DISABLE_ARTIFACTS;
+    delete process.env.TESTOMATIO_HTML_REPORT_COPY_ARTIFACTS;
+  });
+  afterEach(() => {
+    restoreEnv('S3_BUCKET', originalS3Bucket);
+    restoreEnv('TESTOMATIO_DISABLE_ARTIFACTS', originalDisableArtifacts);
+    restoreEnv('TESTOMATIO_HTML_REPORT_COPY_ARTIFACTS', originalHtmlCopyArtifacts);
   });
   after(async () => {
     try {
@@ -464,11 +480,11 @@ describe('HTML report tests', () => {
     expect(htmlContent).to.not.include('file:///D:/testomat/reporter/https:/example-bucket.r2.cloudflarestorage.com');
   });
 
-  it('keeps local artifact file URLs by default', () => {
+  it('copies local artifact links by default when S3 uploading is not configured', () => {
     process.env.TESTOMATIO_HTML_REPORT_SAVE = '1';
 
     const template = path.resolve(dirname, '../../..', 'src', 'template', 'testomatio.hbs');
-    const out = path.resolve(testOutputDir, 'with-default-local-artifact.html');
+    const out = path.resolve(testOutputDir, 'with-default-portable-local-artifact.html');
     const artifactPath = path.resolve(testOutputDir, 'default-local-screenshot.png');
     fs.writeFileSync(artifactPath, 'fake image');
 
@@ -492,9 +508,147 @@ describe('HTML report tests', () => {
     const copiedArtifact = path.join(testOutputDir, 'artifacts', 'default-local-screenshot.png');
     const html = fs.readFileSync(out, 'utf-8');
 
+    expect(fs.existsSync(copiedArtifact)).to.equal(true);
+    expect(html).to.include('./artifacts/default-local-screenshot.png');
+    expect(html).to.not.include(artifactFileUrl(artifactPath));
+  });
+
+  it('keeps local artifact file URLs by default when S3 uploading is configured', () => {
+    process.env.TESTOMATIO_HTML_REPORT_SAVE = '1';
+    process.env.S3_BUCKET = 'test-bucket';
+
+    const template = path.resolve(dirname, '../../..', 'src', 'template', 'testomatio.hbs');
+    const out = path.resolve(testOutputDir, 'with-s3-local-artifact.html');
+    const artifactPath = path.resolve(testOutputDir, 's3-local-screenshot.png');
+    fs.writeFileSync(artifactPath, 'fake image');
+
+    const pipe = new HtmlPipe({}, {});
+    pipe.buildReport({
+      runParams: { status: 'failed' },
+      tests: [
+        {
+          title: 'failed with s3 screenshot behavior',
+          suite_title: 'suite',
+          status: 'failed',
+          message: 'failure',
+          artifacts: [artifactPath],
+        },
+      ],
+      outputPath: out,
+      templatePath: template,
+      warningMsg: '',
+    });
+
+    const copiedArtifact = path.join(testOutputDir, 'artifacts', 's3-local-screenshot.png');
+    const html = fs.readFileSync(out, 'utf-8');
+
     expect(fs.existsSync(copiedArtifact)).to.equal(false);
     expect(html).to.include(artifactFileUrl(artifactPath));
-    expect(html).to.not.include('./artifacts/default-local-screenshot.png');
+    expect(html).to.not.include('./artifacts/s3-local-screenshot.png');
+  });
+
+  it('checks S3 uploading config when building the HTML report', () => {
+    process.env.TESTOMATIO_HTML_REPORT_SAVE = '1';
+
+    const template = path.resolve(dirname, '../../..', 'src', 'template', 'testomatio.hbs');
+    const out = path.resolve(testOutputDir, 'with-late-s3-local-artifact.html');
+    const artifactPath = path.resolve(testOutputDir, 'late-s3-local-screenshot.png');
+    fs.writeFileSync(artifactPath, 'fake image');
+
+    const pipe = new HtmlPipe({}, {});
+    process.env.S3_BUCKET = 'test-bucket';
+
+    pipe.buildReport({
+      runParams: { status: 'failed' },
+      tests: [
+        {
+          title: 'failed with late s3 screenshot behavior',
+          suite_title: 'suite',
+          status: 'failed',
+          message: 'failure',
+          artifacts: [artifactPath],
+        },
+      ],
+      outputPath: out,
+      templatePath: template,
+      warningMsg: '',
+    });
+
+    const copiedArtifact = path.join(testOutputDir, 'artifacts', 'late-s3-local-screenshot.png');
+    const html = fs.readFileSync(out, 'utf-8');
+
+    expect(fs.existsSync(copiedArtifact)).to.equal(false);
+    expect(html).to.include(artifactFileUrl(artifactPath));
+    expect(html).to.not.include('./artifacts/late-s3-local-screenshot.png');
+  });
+
+  it('copies local artifact links when S3 uploading is disabled', () => {
+    process.env.TESTOMATIO_HTML_REPORT_SAVE = '1';
+    process.env.S3_BUCKET = 'test-bucket';
+    process.env.TESTOMATIO_DISABLE_ARTIFACTS = '1';
+
+    const template = path.resolve(dirname, '../../..', 'src', 'template', 'testomatio.hbs');
+    const out = path.resolve(testOutputDir, 'with-disabled-s3-local-artifact.html');
+    const artifactPath = path.resolve(testOutputDir, 'disabled-s3-local-screenshot.png');
+    fs.writeFileSync(artifactPath, 'fake image');
+
+    const pipe = new HtmlPipe({}, {});
+    pipe.buildReport({
+      runParams: { status: 'failed' },
+      tests: [
+        {
+          title: 'failed with disabled s3 screenshot behavior',
+          suite_title: 'suite',
+          status: 'failed',
+          message: 'failure',
+          artifacts: [artifactPath],
+        },
+      ],
+      outputPath: out,
+      templatePath: template,
+      warningMsg: '',
+    });
+
+    const copiedArtifact = path.join(testOutputDir, 'artifacts', 'disabled-s3-local-screenshot.png');
+    const html = fs.readFileSync(out, 'utf-8');
+
+    expect(fs.existsSync(copiedArtifact)).to.equal(true);
+    expect(html).to.include('./artifacts/disabled-s3-local-screenshot.png');
+    expect(html).to.not.include(artifactFileUrl(artifactPath));
+  });
+
+  it('allows explicit env override to keep local artifact file URLs without S3', () => {
+    process.env.TESTOMATIO_HTML_REPORT_SAVE = '1';
+    process.env.TESTOMATIO_HTML_REPORT_COPY_ARTIFACTS = '0';
+
+    const template = path.resolve(dirname, '../../..', 'src', 'template', 'testomatio.hbs');
+    const out = path.resolve(testOutputDir, 'with-disabled-local-copy-artifact.html');
+    const artifactPath = path.resolve(testOutputDir, 'disabled-copy-screenshot.png');
+    fs.writeFileSync(artifactPath, 'fake image');
+
+    const pipe = new HtmlPipe({}, {});
+    pipe.buildReport({
+      runParams: { status: 'failed' },
+      tests: [
+        {
+          title: 'failed with disabled copy screenshot behavior',
+          suite_title: 'suite',
+          status: 'failed',
+          message: 'failure',
+          artifacts: [artifactPath],
+        },
+      ],
+      outputPath: out,
+      templatePath: template,
+      warningMsg: '',
+    });
+
+    const copiedArtifact = path.join(testOutputDir, 'artifacts', 'disabled-copy-screenshot.png');
+    const html = fs.readFileSync(out, 'utf-8');
+
+    expect(fs.existsSync(copiedArtifact)).to.equal(false);
+    expect(html).to.include(artifactFileUrl(artifactPath));
+    expect(html).to.not.include('./artifacts/disabled-copy-screenshot.png');
   });
 
   it('copies local test artifacts next to HTML report and rewrites links to relative paths', () => {
@@ -655,4 +809,12 @@ function getCurrentDate() {
 
 function artifactFileUrl(filePath) {
   return fileUrl(filePath, { resolve: true });
+}
+
+function restoreEnv(name, value) {
+  if (value === undefined) {
+    delete process.env[name];
+    return;
+  }
+  process.env[name] = value;
 }
