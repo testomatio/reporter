@@ -48,14 +48,8 @@ class PlaywrightReporter {
     const { title } = test;
     const { error, duration } = result;
     const pwAttachments = (result.attachments || []).filter(a => a.body || a.path);
-
-    const files = pwAttachments
-      .map(att => ({
-        path: this.#getArtifactPath(att),
-        title: att.name || title,
-        type: att.contentType,
-      }))
-      .filter(f => f.path);
+    const files = buildArtifactFiles(pwAttachments, attachment => this.#getArtifactPath(attachment), title);
+    const artifactsForUpload = processArtifactsForUpload(pwAttachments);
 
     const suite_title = test.parent ? test.parent?.title : path.basename(test?.location?.file);
 
@@ -150,7 +144,7 @@ class PlaywrightReporter {
     this.uploads.push({
       rid: `${rid}-${project.name}`,
       title: test.title,
-      files: pwAttachments,
+      files: artifactsForUpload,
       file: test.location?.file,
     });
     // remove empty uploads
@@ -227,6 +221,25 @@ function checkStatus(status) {
       passed: Status.PASSED,
     }[status] || Status.FAILED
   );
+}
+
+function buildArtifactFiles(attachments, getArtifactPath, title) {
+  return attachments
+    .filter(isScreenshotArtifact)
+    .map(attachment => ({
+      path: getArtifactPath(attachment),
+      title: attachment.name || title,
+      type: attachment.contentType,
+    }))
+    .filter(file => file.path);
+}
+
+function processArtifactsForUpload(attachments) {
+  return attachments.filter(attachment => !isScreenshotArtifact(attachment));
+}
+
+function isScreenshotArtifact(attachment) {
+  return attachment?.contentType === 'image/png' && attachment?.name === 'screenshot';
 }
 
 function appendStep(step, shift = 0) {
