@@ -394,6 +394,24 @@ describe('HTML report tests', () => {
     expect(htmlContent).to.include('.test-status-icon');
   });
 
+  it('should style grouped test headers by status priority', () => {
+    const htmlContent = fs.readFileSync(filepath, 'utf-8');
+
+    expect(htmlContent).to.include('.test-group-header.has-failures');
+    expect(htmlContent).to.include('.test-group-header.has-skips');
+    expect(htmlContent).to.include('.test-group-header.all-passed');
+    expect(htmlContent).to.include("const groupStateClass = failedCount > 0");
+    expect(htmlContent).to.include("? 'has-failures'");
+    expect(htmlContent).to.include("? 'has-skips'");
+    expect(htmlContent).to.include("? 'all-passed'");
+    expect(htmlContent).to.include("header.className = ['test-group-header', groupStateClass].filter(Boolean).join(' ')");
+    expect(htmlContent).to.include("class='test-group-stat failed'");
+    expect(htmlContent).to.include('background: #fef2f2;');
+    expect(htmlContent).to.include('background: #fffbeb;');
+    expect(htmlContent).to.include('background: #ecfdf5;');
+    expect(htmlContent).to.include('background: var(--danger-color);');
+  });
+
   it('should verify that all test data from different statuses is properly processed', () => {
     const htmlContent = fs.readFileSync(filepath, 'utf-8');
 
