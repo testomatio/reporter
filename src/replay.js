@@ -49,6 +49,7 @@ export class Replay {
     const testsWithoutRid = []; // For tests without rid (backward compatibility)
     const envVars = {};
     let runId = null;
+    const artifactsToAdd = []; // Store artifacts to add after all tests are loaded
 
     // Parse debug file line by line
     for (const [lineIndex, line] of lines.entries()) {
@@ -119,6 +120,11 @@ export class Replay {
             // Handle tests without rid (no deduplication)
             testsWithoutRid.push({ ...test });
           }
+        } else if (logEntry.action === 'addArtifacts' && logEntry.artifacts) {
+          if (logEntry.runId && !runId) {
+            runId = logEntry.runId;
+          }
+          artifactsToAdd.push(...logEntry.artifacts);
         } else if (logEntry.action === 'finishRun') {
           finishParams = logEntry.params || {};
           if (logEntry.runId && !runId) {
@@ -136,6 +142,21 @@ export class Replay {
 
     if (parseErrors > 3) {
       this.onError(`${parseErrors - 3} more parse errors occurred`);
+    }
+
+    for (const artifact of artifactsToAdd) {
+      if (artifact.rid) {
+        const ridToFind = artifact.rid;
+        const fullRid = runId ? `${runId}-${ridToFind}` : ridToFind;
+
+        const test = testsMap.get(fullRid) || testsMap.get(ridToFind);
+        if (test && artifact.path) {
+          if (!test.files) test.files = [];
+          if (!test.files.includes(artifact.path)) {
+            test.files.push(artifact.path);
+          }
+        }
+      }
     }
 
     // Combine tests with rid and tests without rid

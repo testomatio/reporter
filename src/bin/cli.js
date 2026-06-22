@@ -16,6 +16,10 @@ import dotenv from 'dotenv';
 import Replay from '../replay.js';
 import { log } from '../utils/log.js';
 import { formatFilterListIds } from '../utils/pipe_utils.js';
+import fs from 'fs';
+import path from 'path';
+import { Gaxios } from 'gaxios';
+import { generateShortFilename } from '../adapter/utils/step-formatter.js';
 
 const debug = createDebugMessages('@testomatio/reporter:cli');
 const version = getPackageVersion();
@@ -354,9 +358,100 @@ program
 program
   .command('upload-artifacts')
   .description('Upload artifacts to Testomat.io')
+  .argument('[jsonl-file]', 'Path to JSONL debug file (optional)')
   .option('--force', 'Re-upload artifacts even if they were uploaded before')
-  .action(async opts => {
+  .action(async (jsonlFile, opts) => {
     const apiKey = config.TESTOMATIO;
+
+    // JSONL file mode: upload artifacts from debug file
+    if (jsonlFile) {
+      if (!fs.existsSync(jsonlFile)) {
+        log.error(`JSONL file not found: ${jsonlFile}`);
+        return process.exit(1);
+      }
+
+      const replay = new Replay({ apiKey });
+      const { tests, runId } = replay.parseDebugFile(jsonlFile);
+
+      if (!runId) {
+        log.error('runId not found in JSONL file');
+        return process.exit(1);
+      }
+
+      log.info(`Processing ${tests.length} tests from ${jsonlFile}`);
+
+      const client = new TestomatClient({
+        apiKey,
+        runId,
+        batchMode: BATCH_MODE.DISABLED,
+      });
+
+      await client.createRun();
+      client.uploader.checkEnabled();
+      client.uploader.disableLogStorage();
+
+      const apiUrl = process.env.TESTOMATIO_URL || 'https://app.testomat.io';
+      const http = new Gaxios();
+      let uploadedCount = 0;
+      let failedCount = 0;
+
+      for (const test of tests) {
+        const testId = test.test_id;
+        if (!testId) continue;
+
+        const artifacts = [];
+
+        const collect = (items) => {
+          for (const item of items || []) {
+            const p = typeof item === 'object' ? item?.path : item;
+            if (p && fs.existsSync(p)) artifacts.push(p);
+          }
+        };
+        collect(test.files);
+
+        const walkSteps = (steps) => {
+          for (const step of steps || []) {
+            collect(step.artifacts);
+            walkSteps(step.steps);
+          }
+        };
+        walkSteps(test.steps);
+
+        if (artifacts.length === 0) continue;
+
+        const urls = [];
+        for (const artifact of artifacts) {
+          try {
+            const s3Id = test.rid || testId.replace('@', '');
+            const filename = generateShortFilename(artifact);
+            const result = await client.uploader.uploadFileByPath(artifact, [runId, s3Id, filename]);
+            if (result) urls.push(typeof result === 'string' ? result : result.link);
+          } catch (e) {
+            debug(`Failed to upload ${artifact}:`, e.message);
+          }
+        }
+
+        if (urls.length === 0) continue;
+
+        try {
+          await http.request({
+            method: 'POST',
+            url: `${apiUrl}/api/reporter/${runId}/testrun?api_key=${apiKey}`,
+            data: { test_id: testId, artifacts: urls },
+          });
+          uploadedCount++;
+        } catch (e) {
+          log.error(`Failed ${testId}: ${e.message}`);
+          failedCount++;
+        }
+      }
+
+      log.info(`🗄️ ${uploadedCount} tests with artifacts uploaded`);
+      if (failedCount > 0) {
+        log.warn(`⚠️ ${failedCount} tests failed to upload artifacts`);
+      }
+      return;
+    }
 
     process.env.TESTOMATIO_DISABLE_ARTIFACTS = '';
     const runId = process.env.TESTOMATIO_RUN || process.env.runId || readLatestRunId();

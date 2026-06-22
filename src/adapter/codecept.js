@@ -278,6 +278,8 @@ async function uploadAttachments(client, attachments, messagePrefix, attachmentT
     log.info(`Attachments: ${messagePrefix} ${attachments.length} ${attachmentType} ...`);
   }
 
+  await Promise.all(client.pipes?.map(pipe => pipe.addArtifacts?.(attachments)) || []);
+
   const promises = attachments.map(async attachment => {
     const { rid, title, path, type } = attachment;
     const file = { path, type, title };
