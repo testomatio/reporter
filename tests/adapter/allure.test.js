@@ -391,6 +391,45 @@ describe('AllureReader', () => {
       expect(converted.steps[0].error).to.deep.equal({ message: 'inner boom', stack: 'at inner.js:5' });
     });
 
+    it('should keep the error on the deepest failed step only, not on its failed ancestors', () => {
+      // Allure propagates the failure statusDetails up the whole chain, so the
+      // parent step carries the same message as the failing child. Only the
+      // child (the real failure point) should surface the error.
+      const step = {
+        name: 'Check the description of Typical day screen',
+        status: 'failed',
+        statusDetails: { message: 'Failed AssertTextEquals', trace: 'at outer.js:1' },
+        steps: [
+          { name: 'Assert title', status: 'passed', steps: [] },
+          {
+            name: 'Assert description',
+            status: 'failed',
+            statusDetails: { message: 'Failed AssertTextEquals', trace: 'at inner.js:5' },
+            steps: [],
+          },
+        ],
+      };
+      const converted = reader.convertSteps([step])[0];
+      expect(converted).to.not.have.property('error');
+      expect(converted.steps[0]).to.not.have.property('error');
+      expect(converted.steps[1].error).to.deep.equal({
+        message: 'Failed AssertTextEquals',
+        stack: 'at inner.js:5',
+      });
+    });
+
+    it('should surface the error on the nearest failed ancestor when the deepest failed step has no statusDetails', () => {
+      const step = {
+        name: 'Outer',
+        status: 'failed',
+        statusDetails: { message: 'boom', trace: 'at outer.js:1' },
+        steps: [{ name: 'Inner', status: 'failed', steps: [] }],
+      };
+      const converted = reader.convertSteps([step])[0];
+      expect(converted.error).to.deep.equal({ message: 'boom', stack: 'at outer.js:1' });
+      expect(converted.steps[0]).to.not.have.property('error');
+    });
+
     it('should apply status to nested steps as well', () => {
       const step = {
         name: 'Outer',

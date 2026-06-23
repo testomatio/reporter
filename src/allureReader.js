@@ -445,8 +445,14 @@ class AllureReader {
         // code line) straight onto the failed step. Testomat.io renders a step's
         // `error` inline in the step tree, so the failure shows up on the exact
         // step that broke instead of only at the test level.
+        //
+        // Allure propagates a failure's statusDetails up the whole step chain, so
+        // every ancestor of the real failure point is also `failed` and carries
+        // the same message. To avoid repeating it at every level, only surface the
+        // error on the deepest failed step — skip it whenever a descendant step
+        // already shows the error.
         const error = this.extractStepError(step);
-        if (error) {
+        if (error && !this.subtreeHasError(convertedStep.steps)) {
           convertedStep.error = error;
         }
 
@@ -461,6 +467,19 @@ class AllureReader {
         return convertedStep;
       })
       .filter(Boolean);
+  }
+
+  /**
+   * Check whether any step in the given (already converted) subtree already
+   * carries an `error`. Used to keep the failure message on the deepest failed
+   * step only, instead of repeating it on every ancestor in the failure chain.
+   *
+   * @param {Array<object>|undefined} steps - converted child steps
+   * @returns {boolean}
+   */
+  subtreeHasError(steps) {
+    if (!steps || !steps.length) return false;
+    return steps.some(step => step.error || this.subtreeHasError(step.steps));
   }
 
   /**
