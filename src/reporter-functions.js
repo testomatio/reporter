@@ -1,7 +1,10 @@
+import { createRequire } from 'module';
 import { playwrightLogsMarkers } from './adapter/utils/playwright.js';
 import { isPlaywright } from './helpers.js';
 import { services } from './services/index.js';
 import pc from 'picocolors';
+
+const requireModule = createRequire(`${process.cwd()}/package.json`);
 
 /**
  * Stores path to file as artifact and uploads it to the S3 storage
@@ -65,6 +68,16 @@ function setKeyValue(keyValue, value = undefined) {
   if (isPlaywright) {
     console.log(`${playwrightLogsMarkers.meta} ${JSON.stringify(keyValue)}`);
     return;
+  }
+
+  if (process.env.VITEST || process.env.VITEST_WORKER_ID) {
+    try {
+      const vitestTest = requireModule('@vitest/runner').getCurrentTest?.();
+      if (vitestTest) {
+        Object.assign((vitestTest.meta ||= {}), keyValue);
+        return;
+      }
+    } catch {}
   }
 
   // in this case keyValue is expected to be an object
