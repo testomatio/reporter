@@ -34,7 +34,7 @@ TESTOMATIO={API_KEY} TESTOMATIO_CREATE=1 TESTOMATIO_WORKDIR=/path/to/project <ac
 
 #### `TESTOMATIO_SUITE`
 
-Place newly created tests into a specific suite. Can be used on XML import or combined with `TESTOMATIO_CREATE=1`. Suite should be specified by its ID:
+Place newly created tests into a specific folder. Can be used on XML import or combined with `TESTOMATIO_CREATE=1`. Folder should be specified by its ID:
 
 ```
 TESTOMATIO={API_KEY} TESTOMATIO_CREATE=1 TESTOMATIO_SUITE=@S1235678 <actual run command>
