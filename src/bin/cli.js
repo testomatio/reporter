@@ -378,6 +378,12 @@ program
         return process.exit(1);
       }
 
+      const testsWithoutId = tests.filter(test => !test.test_id);
+      if (testsWithoutId.length > 0) {
+        log.error('test_id not found in JSONL file');
+        return process.exit(1);
+      }
+
       log.info(`Processing ${tests.length} tests from ${jsonlFile}`);
 
       const client = new TestomatClient({
