@@ -441,6 +441,40 @@ describe('HTML report tests', () => {
     expect(todoTestsFromData).to.have.length(1);
   });
 
+  it('should render CodeceptJS DataTable examples in test titles', () => {
+    process.env.TESTOMATIO_HTML_REPORT_SAVE = '1';
+
+    const template = path.resolve(dirname, '../../..', 'src', 'template', 'testomatio.hbs');
+    const out = path.resolve(testOutputDir, 'datatable-examples.html');
+    const pipe = new HtmlPipe({}, {});
+    pipe.buildReport({
+      runParams: { status: 'passed' },
+      tests: [
+        {
+          rid: 'datatable-1',
+          title: 'test something',
+          suite_title: 'My',
+          status: 'passed',
+          example: { input: 'input1', expected: 'expected1' },
+        },
+        {
+          rid: 'datatable-2',
+          title: 'test something',
+          suite_title: 'My',
+          status: 'passed',
+          example: { input: 'input2', expected: 'expected2' },
+        },
+      ],
+      outputPath: out,
+      templatePath: template,
+      warningMsg: '',
+    });
+
+    const html = fs.readFileSync(out, 'utf-8');
+    expect(html).to.include('test something | {\\"input\\":\\"input1\\",\\"expected\\":\\"expected1\\"}');
+    expect(html).to.include('test something | {\\"input\\":\\"input2\\",\\"expected\\":\\"expected2\\"}');
+  });
+
   it('should style passed messages without failed color and prefer message tab when message exists', () => {
     const htmlContent = fs.readFileSync(filepath, 'utf-8');
 

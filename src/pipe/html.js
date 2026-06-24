@@ -228,6 +228,8 @@ class HtmlPipe {
         test.title = 'Unknown test title';
       }
 
+      test.title = buildExampleTitle(test.title, test.example);
+
       test.artifacts = normalizeArtifacts(test);
 
       const allPossibleArtifacts = [
@@ -458,6 +460,21 @@ function parseRetryInfo(test) {
     const n = Number(test.meta.retryCount);
     if (!Number.isNaN(n)) test.retries.retryCount = n;
   }
+}
+
+function buildExampleTitle(title, example) {
+  if (example == null) return title;
+
+  let exampleText;
+  try {
+    exampleText = JSON.stringify(example);
+  } catch (e) {
+    return title;
+  }
+
+  if (!exampleText || title.includes(exampleText)) return title;
+
+  return `${title} | ${exampleText}`;
 }
 
 function escapeHtml(str = '') {
