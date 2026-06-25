@@ -290,6 +290,143 @@ describe('AllureReader', () => {
     });
   });
 
+  describe('Test ID Recovery from @TmsLink in source', () => {
+    const kotlinSource = `package com.app.tests
+
+import org.junit.Ignore
+import io.qameta.allure.TmsLink
+
+class CalorieTrackerTest {
+
+    @Test
+    @TmsLink("00062226")
+    fun testCanLogDish() {
+        // ...
+    }
+
+    @Ignore("flaky")
+    @Test
+    @TmsLink("00100538")
+    fun testCanCheckRecentDishesListAfterRestartApp() {
+        // ...
+    }
+
+    @Test
+    fun testWithoutTmsLink() {
+        // ...
+    }
+}
+`;
+
+    describe('extractTmsIdFromSource', () => {
+      it('reads the @TmsLink id from the matching method (skipped test)', () => {
+        const test = { title: 'testCanCheckRecentDishesListAfterRestartApp' };
+        expect(reader.extractTmsIdFromSource(kotlinSource, test)).to.equal('00100538');
+      });
+
+      it('picks the id of the requested method, not another method in the same file', () => {
+        const test = { title: 'testCanLogDish' };
+        expect(reader.extractTmsIdFromSource(kotlinSource, test)).to.equal('00062226');
+      });
+
+      it('returns null when the method has no @TmsLink', () => {
+        const test = { title: 'testWithoutTmsLink' };
+        expect(reader.extractTmsIdFromSource(kotlinSource, test)).to.be.null;
+      });
+
+      it('returns null when the method is not in the file', () => {
+        const test = { title: 'testThatDoesNotExist' };
+        expect(reader.extractTmsIdFromSource(kotlinSource, test)).to.be.null;
+      });
+
+      it('works for Java method declarations', () => {
+        const javaSource = `class LoginTest {
+    @Disabled
+    @Test
+    @TmsLink("abcd1234")
+    public void canLogin() {}
+}`;
+        expect(reader.extractTmsIdFromSource(javaSource, { title: 'canLogin' })).to.equal('abcd1234');
+      });
+
+      it('rejects a @TmsLink value that is not a valid 8-char id', () => {
+        const src = `@TmsLink("PROJ-123")\nfun testX() {}`;
+        expect(reader.extractTmsIdFromSource(src, { title: 'testX' })).to.be.null;
+      });
+    });
+
+    describe('recoverTestIdsFromSource', () => {
+      let srcRoot;
+
+      beforeEach(() => {
+        srcRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'allure-src-'));
+        const dir = path.join(srcRoot, 'com', 'app', 'tests');
+        fs.mkdirSync(dir, { recursive: true });
+        fs.writeFileSync(path.join(dir, 'CalorieTrackerTest.kt'), kotlinSource);
+      });
+
+      afterEach(() => {
+        fs.rmSync(srcRoot, { recursive: true, force: true });
+      });
+
+      it('recovers test_id for an id-less (skipped) test from source', () => {
+        reader.opts.javaTests = srcRoot;
+        reader._tests = [
+          {
+            title: 'testCanCheckRecentDishesListAfterRestartApp',
+            status: 'skipped',
+            file: 'CalorieTrackerTest.java',
+            meta: { testFile: 'CalorieTrackerTest.kt' },
+          },
+        ];
+
+        reader.recoverTestIdsFromSource();
+
+        expect(reader._tests[0].test_id).to.equal('00100538');
+      });
+
+      it('does not override an existing test_id', () => {
+        reader.opts.javaTests = srcRoot;
+        reader._tests = [
+          {
+            title: 'testCanCheckRecentDishesListAfterRestartApp',
+            test_id: 'deadbeef',
+            file: 'CalorieTrackerTest.java',
+            meta: { testFile: 'CalorieTrackerTest.kt' },
+          },
+        ];
+
+        reader.recoverTestIdsFromSource();
+
+        expect(reader._tests[0].test_id).to.equal('deadbeef');
+      });
+
+      it('is a no-op when no source root is configured', () => {
+        reader.opts.javaTests = undefined;
+        reader._tests = [{ title: 'testCanCheckRecentDishesListAfterRestartApp', meta: {} }];
+
+        reader.recoverTestIdsFromSource();
+
+        expect(reader._tests[0]).to.not.have.property('test_id');
+      });
+
+      it('leaves test_id unset when the method has no @TmsLink', () => {
+        reader.opts.javaTests = srcRoot;
+        reader._tests = [
+          {
+            title: 'testWithoutTmsLink',
+            file: 'CalorieTrackerTest.java',
+            meta: { testFile: 'CalorieTrackerTest.kt' },
+          },
+        ];
+
+        reader.recoverTestIdsFromSource();
+
+        expect(reader._tests[0]).to.not.have.property('test_id');
+      });
+    });
+  });
+
   describe('Step Conversion', () => {
     it('should convert simple step', () => {
       const step = {

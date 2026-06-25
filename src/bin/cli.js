@@ -359,8 +359,16 @@ program
   .option('-d, --dir <dir>', 'Project directory')
   .option('--timelimit <time>', 'default time limit in seconds to kill a stuck process')
   .option('--with-package', 'Keep full package path in file names (default: strip package prefix)')
+  .option(
+    '--java-tests [path]',
+    'Path to test sources; recovers test ids from @TmsLink in source for skipped tests (default: src/test)',
+  )
+  .option('--lang <lang>', 'Language used (java, kotlin, ...)')
   .action(async (pattern, opts) => {
-    const runReader = new AllureReader({ withPackage: opts.withPackage });
+    let javaTests = opts.javaTests;
+    if (javaTests === true) javaTests = 'src/test';
+
+    const runReader = new AllureReader({ withPackage: opts.withPackage, javaTests, lang: opts.lang });
 
     let timeoutTimer;
     if (opts.timelimit) {

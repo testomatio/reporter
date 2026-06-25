@@ -428,6 +428,53 @@ class AllureReader {
     return match ? match[1] : null;
   }
 
+  /**
+   * Recover a Testomat.io test id from the `@TmsLink("…")` annotation in test source.
+   *
+   * Allure does not emit link annotations for skipped (`@Ignore` / `@Disabled`) tests,
+   * so their results carry no `tms` link and `extractTestId` returns null — which makes
+   * the server create a duplicate case. The id still lives in the source, on the test
+   * method, so we read it from there as a fallback.
+   *
+   * The lookup is method-scoped: we locate the test method declaration by name, then
+   * scan upward across its annotation/comment block (the lines directly above it) for
+   * `@TmsLink`. Scanning stops at the first real code line so an unrelated method's
+   * annotation can never be picked up.
+   *
+   * @param {string} contents - full source file
+   * @param {object} test - converted test (uses `title`)
+   * @returns {string|null} normalized 8-char id, or null
+   */
+  extractTmsIdFromSource(contents, test) {
+    if (!contents || !test || !test.title) return null;
+
+    const lines = contents.split('\n');
+    const title = test.title.replace(/[([].*$/, '').trim();
+    if (!title) return null;
+    const escaped = title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+    // Locate the test method declaration (Kotlin `fun name(`, then a typed declaration,
+    // then a generic `name(` fallback for other JVM languages).
+    let idx = lines.findIndex(l => new RegExp(`\\bfun\\s+${escaped}\\s*\\(`).test(l));
+    if (idx === -1) idx = lines.findIndex(l => new RegExp(`\\b[\\w.<>\\[\\]]+\\s+${escaped}\\s*\\(`).test(l));
+    if (idx === -1) idx = lines.findIndex(l => new RegExp(`\\b${escaped}\\s*\\(`).test(l));
+    if (idx === -1) return null;
+
+    const tmsRe = /@TmsLink\s*\(\s*["']([^"']+)["']\s*\)/;
+    for (let i = idx - 1; i >= 0; i--) {
+      const line = lines[i].trim();
+      if (line === '') continue;
+      const isAnnotation = line.startsWith('@');
+      const isComment =
+        line.startsWith('//') || line.startsWith('*') || line.startsWith('/*') || line.startsWith('*/');
+      if (!isAnnotation && !isComment) break; // reached code outside this method's annotation block
+      const match = line.match(tmsRe);
+      if (match) return this.normalizeTestId(match[1]);
+    }
+
+    return null;
+  }
+
   convertSteps(steps, depth = 0) {
     if (depth >= 10) return null;
 
@@ -636,6 +683,121 @@ class AllureReader {
     return this._tests[0].meta?.language || this.opts.lang;
   }
 
+  /**
+   * Fill in `test_id` for tests that have none by reading the `@TmsLink` annotation
+   * from their source. This rescues skipped (`@Ignore` / `@Disabled`) tests, whose
+   * Allure results drop the `@TmsLink` link and would otherwise create duplicate cases.
+   *
+   * Opt-in: only runs when `--java-tests` (a source root) is provided. The source
+   * files are indexed once by basename; for each id-less test we read the candidate
+   * file(s) matching its `testFile` / class name and parse the method's `@TmsLink`.
+   */
+  recoverTestIdsFromSource() {
+    const root = this.opts.javaTests;
+    if (!root) return;
+
+    const missing = this._tests.filter(t => !t.test_id);
+    if (!missing.length) return;
+
+    if (!fs.existsSync(root)) {
+      debug('java-tests source root not found: %s', root);
+      return;
+    }
+
+    const index = this.indexSourceFiles(root);
+    let recovered = 0;
+
+    for (const t of missing) {
+      for (const filePath of this.sourceCandidatesForTest(t, index)) {
+        let contents;
+        try {
+          contents = fs.readFileSync(filePath).toString();
+        } catch (err) {
+          debug('Failed to read source %s: %s', filePath, err.message);
+          continue;
+        }
+        const id = this.extractTmsIdFromSource(contents, t);
+        if (id) {
+          t.test_id = id;
+          recovered++;
+          debug('Recovered test id %s from @TmsLink in %s for %s', id, filePath, t.title);
+          break;
+        }
+      }
+    }
+
+    if (recovered) {
+      console.log(APP_PREFIX, `🔗 Recovered ${pc.bold(recovered)} test id(s) from @TmsLink in source`);
+    }
+  }
+
+  /**
+   * Build (and cache) a basename -> [absolute paths] index of source files under `root`.
+   * Walks synchronously, skipping common build/dependency directories.
+   *
+   * @param {string} root
+   * @returns {Map<string, string[]>}
+   */
+  indexSourceFiles(root) {
+    if (this._sourceIndex) return this._sourceIndex;
+
+    const exts = new Set(['.kt', '.java', '.py', '.rb', '.cs']);
+    const skipDirs = new Set(['node_modules', '.git', 'build', 'out', 'target', '.gradle', 'dist', 'bin']);
+    const index = new Map();
+    const stack = [root];
+
+    while (stack.length) {
+      const dir = stack.pop();
+      let entries;
+      try {
+        entries = fs.readdirSync(dir, { withFileTypes: true });
+      } catch (err) {
+        debug('Failed to read dir %s: %s', dir, err.message);
+        continue;
+      }
+      for (const entry of entries) {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          if (!skipDirs.has(entry.name)) stack.push(full);
+        } else if (exts.has(path.extname(entry.name))) {
+          const list = index.get(entry.name) || [];
+          list.push(full);
+          index.set(entry.name, list);
+        }
+      }
+    }
+
+    this._sourceIndex = index;
+    return index;
+  }
+
+  /**
+   * Candidate source file paths for a test, looked up in the basename index.
+   * Uses the `testFile` meta label (e.g. `Foo.kt`) and the class name from `file`,
+   * trying both `.kt` and `.java` extensions. Ambiguity (same basename in several
+   * dirs) is harmless: only the file that actually declares the method will match.
+   *
+   * @param {object} t
+   * @param {Map<string, string[]>} index
+   * @returns {string[]}
+   */
+  sourceCandidatesForTest(t, index) {
+    const names = new Set();
+    if (t.meta?.testFile) names.add(t.meta.testFile);
+    if (t.file) {
+      const base = path.basename(t.file);
+      names.add(base);
+      const stem = base.replace(/\.[^.]+$/, '');
+      ['kt', 'java'].forEach(ext => names.add(`${stem}.${ext}`));
+    }
+
+    const paths = [];
+    for (const name of names) {
+      (index.get(name) || []).forEach(p => paths.push(p));
+    }
+    return paths;
+  }
+
   async uploadArtifacts() {
     for (const test of this._tests.filter(t => t.files && t.files.length > 0)) {
       const runId = this.runId || this.store.runId || Date.now().toString();
@@ -654,6 +816,7 @@ class AllureReader {
     await this.uploadArtifacts();
     this.calculateStats();
     this.fetchSourceCode();
+    this.recoverTestIdsFromSource();
 
     this.pipes = this.pipes || (await this.pipesPromise);
 

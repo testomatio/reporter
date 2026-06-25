@@ -69,6 +69,28 @@ to the bare 8-char id. Values that are not valid 8-char Testomat IDs — a numer
 never produce unmatchable IDs. Those tests are still imported; they just match by title/`historyId` or
 are created fresh.
 
+### Skipped tests (`@Ignore` / `@Disabled`)
+
+Allure processes `@TmsLink` during test execution, so **skipped tests never get a `tms` link** in
+their result JSON — the annotation is simply absent. Left alone, those tests reach Testomat.io with no
+`test_id` and create duplicate cases titled with the raw method name.
+
+The reader recovers the id by reading the `@TmsLink` straight from the **test source**. Point it at
+your test sources with `--java-tests` (works for Java and Kotlin):
+
+```bash
+npx @testomatio/reporter allure "allure-results/*-result.json" --java-tests src/test
+```
+
+For each test that still has no `test_id`, the reader locates the test method in source and reads the
+`@TmsLink` on it (the lookup is method-scoped, so the right method's id is always used). This requires
+the test sources to be present on the machine that runs the reporter.
+
+If the sources are **not** available at report time, fix it on the generation side instead — make the
+link available even when the test is skipped, e.g. move it to a place Allure always records (a
+class-level link, or a non-skip exclusion such as `Assumptions.assumeTrue(false)` inside the body
+instead of `@Disabled`), so `@TmsLink` ends up in the result JSON.
+
 ## Retry Deduplication
 
 If a test was run multiple times (retries), results are combined into **1 test**. Tests are deduplicated by `historyId` - so 3 retry attempts of the same test count as **1 test**, not 3.
