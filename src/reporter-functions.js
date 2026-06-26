@@ -48,6 +48,36 @@ function addStep(message, logs) {
 }
 
 /**
+ * Returns the currently running Vitest test task, so `meta()` (and similar
+ * functions) can attach data to it. The task `.meta` object is serialized by
+ * Vitest back to the reporter (works across all pools: threads, forks, vmThreads).
+ *
+ * Resolution order matters:
+ * 1. `globalThis.__vitest_worker__.current` — set by Vitest in every worker and
+ *    independent of module resolution, so it works even when the reporter is the
+ *    externalized package and `@vitest/runner` is deduped to a different instance
+ *    (monorepos, pnpm, hoisting). This is also populated inside hooks (afterEach),
+ *    pointing at the test that the hook belongs to.
+ * 2. `@vitest/runner` `getCurrentTest()` — fallback for setups/versions where the
+ *    worker global is not exposed.
+ *
+ * @returns {any | null} Vitest test task or null when no test is active
+ */
+function getCurrentVitestTest() {
+  // @ts-ignore - injected by Vitest into the worker global scope
+  const worker = globalThis.__vitest_worker__;
+  const current = worker?.current;
+  if (current && (current.type === 'test' || current.type === undefined)) return current;
+
+  try {
+    const test = requireModule('@vitest/runner').getCurrentTest?.();
+    if (test) return test;
+  } catch {}
+
+  return null;
+}
+
+/**
  * Add key-value pair(s) to the test report
  * @param {{[key: string]: string} | string} keyValue - object { key: value } (multiple props allowed) OR key (string)
  * @param {string|undefined} [value=undefined] - optional value when keyValue is a string
@@ -71,13 +101,11 @@ function setKeyValue(keyValue, value = undefined) {
   }
 
   if (process.env.VITEST || process.env.VITEST_WORKER_ID) {
-    try {
-      const vitestTest = requireModule('@vitest/runner').getCurrentTest?.();
-      if (vitestTest) {
-        Object.assign((vitestTest.meta ||= {}), keyValue);
-        return;
-      }
-    } catch {}
+    const vitestTest = getCurrentVitestTest();
+    if (vitestTest) {
+      Object.assign((vitestTest.meta ||= {}), keyValue);
+      return;
+    }
   }
 
   // in this case keyValue is expected to be an object

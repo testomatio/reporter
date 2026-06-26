@@ -74,6 +74,62 @@ describe('Vitest meta', () => {
 
     expect(vitestTest.meta).to.deep.equal({ build: '456' });
   });
+
+  describe('worker global', () => {
+    afterEach(() => {
+      // @ts-ignore - test cleanup
+      delete globalThis.__vitest_worker__;
+    });
+
+    it('attaches meta to the task from globalThis.__vitest_worker__.current', () => {
+      const vitestTest = { type: 'test', meta: {} };
+      // @ts-ignore - simulate Vitest worker global
+      globalThis.__vitest_worker__ = { current: vitestTest };
+      // ensure the runner fallback is NOT used
+      setCurrentTest(null);
+
+      reporterFunctions.keyValue('browser', 'chrome');
+
+      expect(vitestTest.meta).to.deep.equal({ browser: 'chrome' });
+    });
+
+    it('prefers the worker global over the @vitest/runner singleton', () => {
+      const fromGlobal = { type: 'test', meta: {} };
+      const fromRunner = { type: 'test', meta: {} };
+      // @ts-ignore - simulate Vitest worker global
+      globalThis.__vitest_worker__ = { current: fromGlobal };
+      setCurrentTest(fromRunner);
+
+      reporterFunctions.keyValue({ env: 'staging' });
+
+      expect(fromGlobal.meta).to.deep.equal({ env: 'staging' });
+      expect(fromRunner.meta).to.deep.equal({});
+    });
+
+    it('initializes meta when missing on the current task', () => {
+      const vitestTest = { type: 'test' };
+      // @ts-ignore - simulate Vitest worker global
+      globalThis.__vitest_worker__ = { current: vitestTest };
+      setCurrentTest(null);
+
+      reporterFunctions.keyValue('user', 'u1');
+
+      expect(vitestTest.meta).to.deep.equal({ user: 'u1' });
+    });
+
+    it('ignores a suite as current and falls back to the runner test', () => {
+      const suite = { type: 'suite', meta: {} };
+      const runnerTest = { meta: {} };
+      // @ts-ignore - simulate Vitest worker global pointing at a suite
+      globalThis.__vitest_worker__ = { current: suite };
+      setCurrentTest(runnerTest);
+
+      reporterFunctions.keyValue({ scope: 'smoke' });
+
+      expect(suite.meta).to.deep.equal({});
+      expect(runnerTest.meta).to.deep.equal({ scope: 'smoke' });
+    });
+  });
 });
 
 function pathToImportUrl(relativePath) {
