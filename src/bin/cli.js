@@ -361,7 +361,7 @@ program
   .option('--with-package', 'Keep full package path in file names (default: strip package prefix)')
   .option(
     '--java-tests [path]',
-    'Path to test sources; recovers test ids from @TmsLink in source for skipped tests (default: src/test)',
+    'Path to test sources; links cases from @TmsLink in source for skipped tests (default: src/test)',
   )
   .option('--lang <lang>', 'Language used (java, kotlin, ...)')
   .action(async (pattern, opts) => {

@@ -38,15 +38,15 @@ The reporter automatically finds Allure result files (`*-result.json`) and conta
 | **Parameters** | `parameters` array | Converted to `example` object |
 | **Description** | `description` field | Mapped directly |
 | **Message/Stack** | `statusDetails` | Error information from failed tests |
-| **Test ID** | `@TmsLink` (`links[type=tms]`) | Used to match existing Testomat.io test cases |
+| **Linked cases** | `@TmsLink` (`links[type=tms]`) | Each id links the result to an existing Testomat.io case |
 
-## Matching Existing Tests with @TmsLink
+## Linking results to existing cases with @TmsLink
 
 To make reported results **update existing test cases instead of creating duplicates**, annotate
 tests with `@TmsLink` pointing at the Testomat.io test ID:
 
 ```java
-@TmsLink("T1a2b3c4d")   // or the bare id: @TmsLink("1a2b3c4d")
+@TmsLink("1a2b3c4d")
 @Test
 void testLogin() { ... }
 ```
@@ -54,13 +54,26 @@ void testLogin() { ... }
 Allure writes this into the result JSON as a link with `type: "tms"`:
 
 ```json
-"links": [{ "name": "T1a2b3c4d", "type": "tms", "url": "https://app.testomat.io/.../test/1a2b3c4d" }]
+"links": [{ "name": "1a2b3c4d", "type": "tms", "url": "https://app.testomat.io/.../test/1a2b3c4d" }]
 ```
 
-The reader reads that link's name and sends it as the test's `test_id`, so Testomat.io matches the
-existing case. Links whose URL points at a Testomat.io test page are also recognized even when `type`
-is missing (e.g. `.../test/1a2b3c4d`). When no `@TmsLink` is present, the reader falls back to an ID
-parsed from the source code (if available).
+The reader maps **every** `@TmsLink` to a linked case (`{ "test": "<id>" }`), so a single run updates
+all of them — the same mechanism as the runtime `linkTest()` helper. A test linked to several cases is
+fully supported:
+
+```java
+@TmsLinks({ @TmsLink("00056731"), @TmsLink("00056729") })   // both cases get updated
+@Test
+void testCheckout() { ... }
+```
+
+Links whose URL points at a Testomat.io test page are also recognized even when `type` is missing
+(e.g. `.../test/1a2b3c4d`).
+
+> **`test_id` and `@TmsLink` are separate.** `@TmsLink` only **links** cases — it is never used as the
+> test's `test_id`. The `test_id` is a distinct field, set only from a native Testomat.io id found in
+> the source (e.g. a `// @T1a2b3c4d` marker). This keeps a test's own identity separate from the cases
+> it is linked to.
 
 **ID format.** Testomat.io test IDs are exactly **8 characters**. The reader accepts the bare id
 (`1a2b3c4d`) or the `T` / `@T` markers Testomat uses (`T1a2b3c4d`, `@T1a2b3c4d`) and normalizes them
@@ -72,19 +85,20 @@ are created fresh.
 ### Skipped tests (`@Ignore` / `@Disabled`)
 
 Allure processes `@TmsLink` during test execution, so **skipped tests never get a `tms` link** in
-their result JSON — the annotation is simply absent. Left alone, those tests reach Testomat.io with no
-`test_id` and create duplicate cases titled with the raw method name.
+their result JSON — the annotation is simply absent. Left alone, those tests reach Testomat.io
+unlinked and create duplicate cases titled with the raw method name.
 
-The reader recovers the id by reading the `@TmsLink` straight from the **test source**. Point it at
+The reader recovers the links by reading `@TmsLink` straight from the **test source**. Point it at
 your test sources with `--java-tests` (works for Java and Kotlin):
 
 ```bash
 npx @testomatio/reporter allure "allure-results/*-result.json" --java-tests src/test
 ```
 
-For each test that still has no `test_id`, the reader locates the test method in source and reads the
-`@TmsLink` on it (the lookup is method-scoped, so the right method's id is always used). This requires
-the test sources to be present on the machine that runs the reporter.
+For each test that is not yet linked, the reader locates the test method in source and reads **all**
+its `@TmsLink`s — including `@TmsLinks(...)` containers (single- or multi-line). The lookup is
+method-scoped, so only that method's links are used. This requires the test sources to be present on
+the machine that runs the reporter.
 
 If the sources are **not** available at report time, fix it on the generation side instead — make the
 link available even when the test is skipped, e.g. move it to a place Allure always records (a

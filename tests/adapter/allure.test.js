@@ -272,7 +272,19 @@ describe('AllureReader', () => {
       expect(reader.extractTestId({ links: [] })).to.be.null;
     });
 
-    it('should set test_id on the processed test from a tms link', () => {
+    it('extractTmsIds returns every tms id in order, de-duplicated', () => {
+      const result = {
+        links: [
+          { name: '00056731', type: 'tms' },
+          { name: 'BUG-1', type: 'issue' },
+          { name: '00056729', type: 'tms' },
+          { name: '00056731', type: 'tms' },
+        ],
+      };
+      expect(reader.extractTmsIds(result)).to.deep.equal(['00056731', '00056729']);
+    });
+
+    it('links a processed test to a tms-link case instead of setting test_id', () => {
       const result = {
         uuid: 'u-1',
         name: 'My test',
@@ -280,21 +292,56 @@ describe('AllureReader', () => {
         links: [{ name: 'T00062226', type: 'tms' }],
       };
       const test = reader.processAllureResult(result, '/tmp');
-      expect(test.test_id).to.equal('00062226');
+      expect(test).to.not.have.property('test_id');
+      expect(test.links).to.deep.include({ test: '00062226' });
     });
 
-    it('should not set test_id when no usable link exists', () => {
+    it('links a processed test to ALL tms-link cases (multiple @TmsLink)', () => {
+      const result = {
+        uuid: 'u-3',
+        name: 'Multi link test',
+        status: 'passed',
+        links: [
+          { name: '00056731', type: 'tms' },
+          { name: '00056729', type: 'tms' },
+        ],
+      };
+      const test = reader.processAllureResult(result, '/tmp');
+      expect(test).to.not.have.property('test_id');
+      expect(test.links).to.deep.include({ test: '00056731' });
+      expect(test.links).to.deep.include({ test: '00056729' });
+    });
+
+    it('keeps epic/feature labels alongside linked tms cases', () => {
+      const result = {
+        uuid: 'u-4',
+        name: 'Labelled test',
+        status: 'passed',
+        labels: [
+          { name: 'epic', value: 'Premium Pack' },
+          { name: 'feature', value: 'My Progress' },
+        ],
+        links: [{ name: '00056731', type: 'tms' }],
+      };
+      const test = reader.processAllureResult(result, '/tmp');
+      expect(test.links).to.deep.include({ label: 'epic:Premium Pack' });
+      expect(test.links).to.deep.include({ test: '00056731' });
+    });
+
+    it('should not set test_id or add test links when no usable link exists', () => {
       const result = { uuid: 'u-2', name: 'No link test', status: 'passed' };
       const test = reader.processAllureResult(result, '/tmp');
       expect(test).to.not.have.property('test_id');
+      expect((test.links || []).some(l => l.test)).to.equal(false);
     });
   });
 
-  describe('Test ID Recovery from @TmsLink in source', () => {
+  describe('TmsLink linking from source', () => {
     const kotlinSource = `package com.app.tests
 
 import org.junit.Ignore
 import io.qameta.allure.TmsLink
+import io.qameta.allure.TmsLinks
 
 class CalorieTrackerTest {
 
@@ -311,6 +358,23 @@ class CalorieTrackerTest {
         // ...
     }
 
+    @Ignore("flaky")
+    @Test
+    @TmsLinks(TmsLink("00056731"), TmsLink("00056729"))
+    fun testCanCheckSnapYourMealLogicForTakingPhoto() {
+        // ...
+    }
+
+    @Ignore("flaky")
+    @Test
+    @TmsLinks(
+        TmsLink("00011111"),
+        TmsLink("00022222"),
+    )
+    fun testMultiLineContainer() {
+        // ...
+    }
+
     @Test
     fun testWithoutTmsLink() {
         // ...
@@ -318,25 +382,33 @@ class CalorieTrackerTest {
 }
 `;
 
-    describe('extractTmsIdFromSource', () => {
+    describe('extractTmsIdsFromSource', () => {
       it('reads the @TmsLink id from the matching method (skipped test)', () => {
         const test = { title: 'testCanCheckRecentDishesListAfterRestartApp' };
-        expect(reader.extractTmsIdFromSource(kotlinSource, test)).to.equal('00100538');
+        expect(reader.extractTmsIdsFromSource(kotlinSource, test)).to.deep.equal(['00100538']);
       });
 
-      it('picks the id of the requested method, not another method in the same file', () => {
+      it('reads ALL ids from a single-line @TmsLinks container', () => {
+        const test = { title: 'testCanCheckSnapYourMealLogicForTakingPhoto' };
+        expect(reader.extractTmsIdsFromSource(kotlinSource, test)).to.deep.equal(['00056731', '00056729']);
+      });
+
+      it('reads ALL ids from a multi-line @TmsLinks container', () => {
+        const test = { title: 'testMultiLineContainer' };
+        expect(reader.extractTmsIdsFromSource(kotlinSource, test)).to.deep.equal(['00011111', '00022222']);
+      });
+
+      it('picks the ids of the requested method, not another method in the same file', () => {
         const test = { title: 'testCanLogDish' };
-        expect(reader.extractTmsIdFromSource(kotlinSource, test)).to.equal('00062226');
+        expect(reader.extractTmsIdsFromSource(kotlinSource, test)).to.deep.equal(['00062226']);
       });
 
-      it('returns null when the method has no @TmsLink', () => {
-        const test = { title: 'testWithoutTmsLink' };
-        expect(reader.extractTmsIdFromSource(kotlinSource, test)).to.be.null;
+      it('returns [] when the method has no @TmsLink', () => {
+        expect(reader.extractTmsIdsFromSource(kotlinSource, { title: 'testWithoutTmsLink' })).to.deep.equal([]);
       });
 
-      it('returns null when the method is not in the file', () => {
-        const test = { title: 'testThatDoesNotExist' };
-        expect(reader.extractTmsIdFromSource(kotlinSource, test)).to.be.null;
+      it('returns [] when the method is not in the file', () => {
+        expect(reader.extractTmsIdsFromSource(kotlinSource, { title: 'testThatDoesNotExist' })).to.deep.equal([]);
       });
 
       it('works for Java method declarations', () => {
@@ -346,16 +418,16 @@ class CalorieTrackerTest {
     @TmsLink("abcd1234")
     public void canLogin() {}
 }`;
-        expect(reader.extractTmsIdFromSource(javaSource, { title: 'canLogin' })).to.equal('abcd1234');
+        expect(reader.extractTmsIdsFromSource(javaSource, { title: 'canLogin' })).to.deep.equal(['abcd1234']);
       });
 
-      it('rejects a @TmsLink value that is not a valid 8-char id', () => {
+      it('drops a @TmsLink value that is not a valid 8-char id', () => {
         const src = `@TmsLink("PROJ-123")\nfun testX() {}`;
-        expect(reader.extractTmsIdFromSource(src, { title: 'testX' })).to.be.null;
+        expect(reader.extractTmsIdsFromSource(src, { title: 'testX' })).to.deep.equal([]);
       });
     });
 
-    describe('recoverTestIdsFromSource', () => {
+    describe('recoverTmsLinksFromSource', () => {
       let srcRoot;
 
       beforeEach(() => {
@@ -369,7 +441,7 @@ class CalorieTrackerTest {
         fs.rmSync(srcRoot, { recursive: true, force: true });
       });
 
-      it('recovers test_id for an id-less (skipped) test from source', () => {
+      it('links a single-@TmsLink skipped test to its case (test_id stays unset)', () => {
         reader.opts.javaTests = srcRoot;
         reader._tests = [
           {
@@ -380,37 +452,75 @@ class CalorieTrackerTest {
           },
         ];
 
-        reader.recoverTestIdsFromSource();
+        reader.recoverTmsLinksFromSource();
 
-        expect(reader._tests[0].test_id).to.equal('00100538');
+        expect(reader._tests[0]).to.not.have.property('test_id');
+        expect(reader._tests[0].links).to.deep.equal([{ test: '00100538' }]);
       });
 
-      it('does not override an existing test_id', () => {
+      it('links a skipped test to ALL cases from a @TmsLinks container', () => {
         reader.opts.javaTests = srcRoot;
         reader._tests = [
           {
-            title: 'testCanCheckRecentDishesListAfterRestartApp',
-            test_id: 'deadbeef',
+            title: 'testCanCheckSnapYourMealLogicForTakingPhoto',
+            status: 'skipped',
             file: 'CalorieTrackerTest.java',
             meta: { testFile: 'CalorieTrackerTest.kt' },
           },
         ];
 
-        reader.recoverTestIdsFromSource();
+        reader.recoverTmsLinksFromSource();
 
-        expect(reader._tests[0].test_id).to.equal('deadbeef');
+        expect(reader._tests[0]).to.not.have.property('test_id');
+        expect(reader._tests[0].links).to.deep.equal([{ test: '00056731' }, { test: '00056729' }]);
+      });
+
+      it('keeps existing label links and appends the test links', () => {
+        reader.opts.javaTests = srcRoot;
+        reader._tests = [
+          {
+            title: 'testCanCheckSnapYourMealLogicForTakingPhoto',
+            file: 'CalorieTrackerTest.java',
+            links: [{ label: 'epic:Premium Pack' }],
+            meta: { testFile: 'CalorieTrackerTest.kt' },
+          },
+        ];
+
+        reader.recoverTmsLinksFromSource();
+
+        expect(reader._tests[0].links).to.deep.equal([
+          { label: 'epic:Premium Pack' },
+          { test: '00056731' },
+          { test: '00056729' },
+        ]);
+      });
+
+      it('does not touch a test that already has a tms link', () => {
+        reader.opts.javaTests = srcRoot;
+        reader._tests = [
+          {
+            title: 'testCanCheckSnapYourMealLogicForTakingPhoto',
+            links: [{ test: '99999999' }],
+            file: 'CalorieTrackerTest.java',
+            meta: { testFile: 'CalorieTrackerTest.kt' },
+          },
+        ];
+
+        reader.recoverTmsLinksFromSource();
+
+        expect(reader._tests[0].links).to.deep.equal([{ test: '99999999' }]);
       });
 
       it('is a no-op when no source root is configured', () => {
         reader.opts.javaTests = undefined;
         reader._tests = [{ title: 'testCanCheckRecentDishesListAfterRestartApp', meta: {} }];
 
-        reader.recoverTestIdsFromSource();
+        reader.recoverTmsLinksFromSource();
 
-        expect(reader._tests[0]).to.not.have.property('test_id');
+        expect((reader._tests[0].links || []).some(l => l.test)).to.equal(false);
       });
 
-      it('leaves test_id unset when the method has no @TmsLink', () => {
+      it('leaves a test unlinked when its method has no @TmsLink', () => {
         reader.opts.javaTests = srcRoot;
         reader._tests = [
           {
@@ -420,9 +530,9 @@ class CalorieTrackerTest {
           },
         ];
 
-        reader.recoverTestIdsFromSource();
+        reader.recoverTmsLinksFromSource();
 
-        expect(reader._tests[0]).to.not.have.property('test_id');
+        expect((reader._tests[0].links || []).some(l => l.test)).to.equal(false);
       });
     });
   });

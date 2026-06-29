@@ -193,12 +193,12 @@ class AllureReader {
       overwrite: true,
     };
 
-    // Use the @TmsLink / Testomat.io link as the test id so reported tests MATCH
-    // existing cases instead of creating duplicates on every run.
-    const testId = this.extractTestId(result);
-    if (testId) {
-      test.test_id = testId;
-    }
+    // @TmsLink references link the result to existing Testomat.io cases. Add EVERY id as
+    // a linked case ({ test: id }) so all of them are updated from this one result, with
+    // consistent behaviour whether the test has one or many @TmsLink. The test_id is kept
+    // a SEPARATE concern — it is never derived from @TmsLink; it is only set from a native
+    // Testomat.io id found in source (see fetchSourceCode / fetchIdFromCode).
+    this.addLinkedTestIds(test, this.extractTmsIds(result));
 
     // Add description if present
     if (result.description) {
@@ -377,34 +377,67 @@ class AllureReader {
   }
 
   /**
-   * Extract a Testomat.io test id from Allure links so reported tests match
+   * Extract all Testomat.io test ids from Allure links so reported results match
    * existing cases instead of creating duplicates.
    *
-   * Allure's `@TmsLink("T1a2b3c4d")` produces a link with `type: "tms"`. Some exporters
-   * omit the type but still point the link URL at a Testomat.io test page; both are
-   * accepted. The link `name` is used as the id (falling back to the last URL segment).
+   * A test may carry several `@TmsLink`s (e.g. `@TmsLinks(@TmsLink("…"), @TmsLink("…"))`),
+   * each producing a link with `type: "tms"`. Some exporters omit the type but still point
+   * the link URL at a Testomat.io test page; both are accepted. The link `name` is used as
+   * the id (falling back to the id segment of a Testomat.io URL). Ids are normalized and
+   * de-duplicated, preserving order so the first one stays the primary `test_id`.
    *
    * @param {object} result - Parsed Allure result JSON
-   * @returns {string|null} Normalized test id, or null when no usable link exists
+   * @returns {string[]} Normalized test ids (possibly empty)
    */
-  extractTestId(result) {
+  extractTmsIds(result) {
     const links = result.links || [];
-    if (!links.length) return null;
+    if (!links.length) return [];
 
     const isTmsLink = l => typeof l?.type === 'string' && l.type.toLowerCase() === 'tms';
     const isTestomatioLink = l => typeof l?.url === 'string' && /testomat\.io\/[^\s]*\/test\//i.test(l.url);
 
-    const link = links.find(isTmsLink) || links.find(isTestomatioLink);
-    if (!link) return null;
+    const ids = [];
+    for (const link of links) {
+      if (!isTmsLink(link) && !isTestomatioLink(link)) continue;
 
-    // Prefer the explicit link name; fall back to the id segment of a Testomat.io URL.
-    let id = this.normalizeTestId(link.name);
-    if (!id && typeof link.url === 'string') {
-      const fromUrl = link.url.match(/\/test\/([\w\d]{8})(?=$|[/?#])/i);
-      if (fromUrl) id = fromUrl[1];
+      // Prefer the explicit link name; fall back to the id segment of a Testomat.io URL.
+      let id = this.normalizeTestId(link.name);
+      if (!id && typeof link.url === 'string') {
+        const fromUrl = link.url.match(/\/test\/([\w\d]{8})(?=$|[/?#])/i);
+        if (fromUrl) id = fromUrl[1];
+      }
+      if (id && !ids.includes(id)) ids.push(id);
     }
 
-    return id;
+    return ids;
+  }
+
+  /**
+   * The primary Testomat.io test id (the first `@TmsLink`), or null when there is none.
+   *
+   * @param {object} result - Parsed Allure result JSON
+   * @returns {string|null}
+   */
+  extractTestId(result) {
+    return this.extractTmsIds(result)[0] || null;
+  }
+
+  /**
+   * Attach additional linked test cases to a reported test as `{ test: id }` link entries
+   * (the same shape `linkTest()` uses), so a single result updates every case it is linked
+   * to — not just the primary `test_id`. Existing links are preserved; duplicates skipped.
+   *
+   * @param {object} test - converted test
+   * @param {string[]} ids - additional test ids to link
+   */
+  addLinkedTestIds(test, ids) {
+    if (!ids || !ids.length) return;
+    if (!Array.isArray(test.links)) test.links = [];
+    for (const id of ids) {
+      if (!test.links.some(l => l && l.test === id)) {
+        test.links.push({ test: id });
+      }
+    }
   }
 
   /**
@@ -436,21 +469,22 @@ class AllureReader {
    * the server create a duplicate case. The id still lives in the source, on the test
    * method, so we read it from there as a fallback.
    *
-   * The lookup is method-scoped: we locate the test method declaration by name, then
-   * scan upward across its annotation/comment block (the lines directly above it) for
-   * `@TmsLink`. Scanning stops at the first real code line so an unrelated method's
-   * annotation can never be picked up.
+   * The lookup is method-scoped: we locate the test method declaration by name, collect
+   * its annotation/comment block (the lines directly above it, up to the previous code
+   * construct) and read every `@TmsLink` from it — so an unrelated method's annotation can
+   * never be picked up. Both `@TmsLink("…")` and the container forms
+   * `@TmsLinks(@TmsLink("…"), @TmsLink("…"))` (single- or multi-line) are supported.
    *
    * @param {string} contents - full source file
    * @param {object} test - converted test (uses `title`)
-   * @returns {string|null} normalized 8-char id, or null
+   * @returns {string[]} normalized 8-char ids in source order (possibly empty)
    */
-  extractTmsIdFromSource(contents, test) {
-    if (!contents || !test || !test.title) return null;
+  extractTmsIdsFromSource(contents, test) {
+    if (!contents || !test || !test.title) return [];
 
     const lines = contents.split('\n');
     const title = test.title.replace(/[([].*$/, '').trim();
-    if (!title) return null;
+    if (!title) return [];
     const escaped = title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
     // Locate the test method declaration (Kotlin `fun name(`, then a typed declaration,
@@ -458,21 +492,43 @@ class AllureReader {
     let idx = lines.findIndex(l => new RegExp(`\\bfun\\s+${escaped}\\s*\\(`).test(l));
     if (idx === -1) idx = lines.findIndex(l => new RegExp(`\\b[\\w.<>\\[\\]]+\\s+${escaped}\\s*\\(`).test(l));
     if (idx === -1) idx = lines.findIndex(l => new RegExp(`\\b${escaped}\\s*\\(`).test(l));
-    if (idx === -1) return null;
+    if (idx === -1) return [];
 
-    const tmsRe = /@TmsLink\s*\(\s*["']([^"']+)["']\s*\)/;
-    for (let i = idx - 1; i >= 0; i--) {
-      const line = lines[i].trim();
-      if (line === '') continue;
-      const isAnnotation = line.startsWith('@');
-      const isComment =
-        line.startsWith('//') || line.startsWith('*') || line.startsWith('/*') || line.startsWith('*/');
-      if (!isAnnotation && !isComment) break; // reached code outside this method's annotation block
-      const match = line.match(tmsRe);
-      if (match) return this.normalizeTestId(match[1]);
+    // Collect the annotation/comment block above the declaration. Stop at the previous
+    // code construct (a line ending in `{`/`}` or another method declaration) so we never
+    // read into a sibling method. Multi-line `@TmsLinks(...)` continuation lines (e.g. a
+    // lone `@TmsLink("…"),` or a closing `)`) are kept because they aren't boundaries.
+    const block = [];
+    for (let i = idx - 1, scanned = 0; i >= 0 && scanned < 60; i--, scanned++) {
+      const trimmed = lines[i].trim();
+      if (trimmed.endsWith('{') || trimmed.endsWith('}')) break;
+      if (/\bfun\s+\w+\s*\(/.test(trimmed)) break;
+      block.push(lines[i]);
     }
 
-    return null;
+    const ids = [];
+    const tmsRe = /\bTmsLink\s*\(\s*["']([^"']+)["']/g;
+    let match;
+    // block was collected bottom-up; reverse so ids come out in source order
+    const text = block.reverse().join('\n');
+    while ((match = tmsRe.exec(text)) !== null) {
+      const id = this.normalizeTestId(match[1]);
+      if (id && !ids.includes(id)) ids.push(id);
+    }
+
+    return ids;
+  }
+
+  /**
+   * The primary `@TmsLink` id for a test method in source, or null. Convenience wrapper
+   * around {@link extractTmsIdsFromSource}.
+   *
+   * @param {string} contents - full source file
+   * @param {object} test - converted test (uses `title`)
+   * @returns {string|null}
+   */
+  extractTmsIdFromSource(contents, test) {
+    return this.extractTmsIdsFromSource(contents, test)[0] || null;
   }
 
   convertSteps(steps, depth = 0) {
@@ -684,20 +740,23 @@ class AllureReader {
   }
 
   /**
-   * Fill in `test_id` for tests that have none by reading the `@TmsLink` annotation
-   * from their source. This rescues skipped (`@Ignore` / `@Disabled`) tests, whose
-   * Allure results drop the `@TmsLink` link and would otherwise create duplicate cases.
+   * Link tests to their Testomat.io cases by reading `@TmsLink` from source for tests that
+   * carry no `{ test: … }` link yet. This rescues skipped (`@Ignore` / `@Disabled`) tests,
+   * whose Allure results drop the `@TmsLink` link and would otherwise create duplicate
+   * cases. Every `@TmsLink` on the method is linked (consistent with executed tests); the
+   * `test_id` is left untouched — links and test_id are separate concerns.
    *
-   * Opt-in: only runs when `--java-tests` (a source root) is provided. The source
-   * files are indexed once by basename; for each id-less test we read the candidate
-   * file(s) matching its `testFile` / class name and parse the method's `@TmsLink`.
+   * Opt-in: only runs when `--java-tests` (a source root) is provided. The source files are
+   * indexed once by basename; for each not-yet-linked test we read the candidate file(s)
+   * matching its `testFile` / class name and parse the method's `@TmsLink`(s).
    */
-  recoverTestIdsFromSource() {
+  recoverTmsLinksFromSource() {
     const root = this.opts.javaTests;
     if (!root) return;
 
-    const missing = this._tests.filter(t => !t.test_id);
-    if (!missing.length) return;
+    const hasTestLink = t => Array.isArray(t.links) && t.links.some(l => l && l.test);
+    const unlinked = this._tests.filter(t => !hasTestLink(t));
+    if (!unlinked.length) return;
 
     if (!fs.existsSync(root)) {
       debug('java-tests source root not found: %s', root);
@@ -707,7 +766,7 @@ class AllureReader {
     const index = this.indexSourceFiles(root);
     let recovered = 0;
 
-    for (const t of missing) {
+    for (const t of unlinked) {
       for (const filePath of this.sourceCandidatesForTest(t, index)) {
         let contents;
         try {
@@ -716,18 +775,18 @@ class AllureReader {
           debug('Failed to read source %s: %s', filePath, err.message);
           continue;
         }
-        const id = this.extractTmsIdFromSource(contents, t);
-        if (id) {
-          t.test_id = id;
+        const ids = this.extractTmsIdsFromSource(contents, t);
+        if (ids.length) {
+          this.addLinkedTestIds(t, ids);
           recovered++;
-          debug('Recovered test id %s from @TmsLink in %s for %s', id, filePath, t.title);
+          debug('Linked %s to case(s) %s from @TmsLink in %s', t.title, ids.join(', '), filePath);
           break;
         }
       }
     }
 
     if (recovered) {
-      console.log(APP_PREFIX, `🔗 Recovered ${pc.bold(recovered)} test id(s) from @TmsLink in source`);
+      console.log(APP_PREFIX, `🔗 Linked ${pc.bold(recovered)} test(s) to cases from @TmsLink in source`);
     }
   }
 
@@ -816,7 +875,7 @@ class AllureReader {
     await this.uploadArtifacts();
     this.calculateStats();
     this.fetchSourceCode();
-    this.recoverTestIdsFromSource();
+    this.recoverTmsLinksFromSource();
 
     this.pipes = this.pipes || (await this.pipesPromise);
 
