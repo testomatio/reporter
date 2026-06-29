@@ -22,6 +22,72 @@ describe('Client Stack Artifacts', () => {
     delete process.env.TESTOMATIO_STACK_ARTIFACTS;
   });
 
+  it('uploads step artifacts into steps and excludes them from test artifacts', async () => {
+    const pipeCalls = [];
+    client.pipes = [
+      {
+        isEnabled: true,
+        toString: () => 'FakePipe',
+        addTest: async data => {
+          pipeCalls.push(data);
+        },
+      },
+    ];
+
+    client.uploader.isEnabled = true;
+    client.uploader.uploadFileByPath = async (filePath, s3Path) => {
+      uploadCalls.push({ filePath, path: s3Path });
+      return `https://bucket.example/${s3Path.join('/')}`;
+    };
+
+    await client.addTestRun('failed', {
+      rid: 'test-rid',
+      test_id: '@T123',
+      title: 'Test with step artifact',
+      suite_title: 'Suite',
+      files: [
+        { path: 'logs/test/test_1.jpg' },
+        { path: 'logs/step/Step_1.jpg' },
+      ],
+      steps: [
+        {
+          title: 'Parent step',
+          artifacts: ['logs/step/Step_1.jpg'],
+          steps: [
+            {
+              title: 'Nested step',
+              artifacts: [{ path: 'logs/step/Step_2.jpg' }],
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(uploadCalls).to.have.length(3);
+    expect(uploadCalls[0].path).to.deep.equal([
+      'test-run-123',
+      'test-rid',
+      'steps',
+      'Step_1.jpg',
+    ]);
+    expect(uploadCalls[1].path).to.deep.equal([
+      'test-run-123',
+      'test-rid',
+      'steps',
+      'Step_2.jpg',
+    ]);
+    expect(uploadCalls[2].path).to.deep.equal(['test-run-123', 'test-rid', 'test_1.jpg']);
+
+    expect(pipeCalls).to.have.length(1);
+    expect(pipeCalls[0].artifacts).to.deep.equal(['https://bucket.example/test-run-123/test-rid/test_1.jpg']);
+    expect(pipeCalls[0].steps[0].artifacts).to.deep.equal([
+      'https://bucket.example/test-run-123/test-rid/steps/Step_1.jpg',
+    ]);
+    expect(pipeCalls[0].steps[0].steps[0].artifacts).to.deep.equal([
+      'https://bucket.example/test-run-123/test-rid/steps/Step_2.jpg',
+    ]);
+  });
+
   it('keeps constructor pipe config when createRun receives runtime params', async () => {
     const reportDir = path.join('output', 'report');
     const reportRoot = path.resolve(process.cwd(), 'output');

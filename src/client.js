@@ -159,11 +159,12 @@ class Client {
 
         const uploadedArtifacts = [];
         for (const artifact of step.artifacts) {
-          if (typeof artifact === 'string' && !isHttpUrl(artifact)) {
-            const filename = generateShortFilename(artifact);
+          const artifactPath = typeof artifact === 'object' ? artifact?.path : artifact;
+          if (typeof artifactPath === 'string' && !isHttpUrl(artifactPath)) {
+            const filename = generateShortFilename(artifactPath);
             try {
               const uploadResult = await this.uploader.uploadFileByPath(
-                artifact, 
+                artifactPath,
                 [this.runId, testRid, 'steps', filename]
               );
               if (uploadResult) {
