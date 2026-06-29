@@ -535,6 +535,34 @@ class CalorieTrackerTest {
         expect((reader._tests[0].links || []).some(l => l.test)).to.equal(false);
       });
     });
+
+    describe('applyPrimaryTestIdFromLinks', () => {
+      it('adopts the first linked case as test_id when test_id is missing', () => {
+        reader._tests = [{ title: 't', links: [{ label: 'epic:X' }, { test: '00056731' }, { test: '00056729' }] }];
+
+        reader.applyPrimaryTestIdFromLinks();
+
+        expect(reader._tests[0].test_id).to.equal('00056731');
+        // every linked case is still kept
+        expect(reader._tests[0].links).to.deep.include({ test: '00056729' });
+      });
+
+      it('does not override an existing (native) test_id', () => {
+        reader._tests = [{ title: 't', test_id: 'deadbeef', links: [{ test: '00056731' }] }];
+
+        reader.applyPrimaryTestIdFromLinks();
+
+        expect(reader._tests[0].test_id).to.equal('deadbeef');
+      });
+
+      it('leaves test_id unset when there are no linked cases', () => {
+        reader._tests = [{ title: 't', links: [{ label: 'epic:X' }] }];
+
+        reader.applyPrimaryTestIdFromLinks();
+
+        expect(reader._tests[0]).to.not.have.property('test_id');
+      });
+    });
   });
 
   describe('Step Conversion', () => {

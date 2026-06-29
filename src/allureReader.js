@@ -791,6 +791,25 @@ class AllureReader {
   }
 
   /**
+   * Fallback: when a test has no `test_id`, adopt the first linked case (`@TmsLink`) as its
+   * `test_id` so it matches an existing case instead of creating a method-named duplicate.
+   *
+   * Runs after `fetchSourceCode`, so a native Testomat.io id parsed from source always wins.
+   * The id stays in `links` as well — every linked case is still updated; this only gives the
+   * test a primary identity to match on.
+   */
+  applyPrimaryTestIdFromLinks() {
+    for (const t of this._tests) {
+      if (t.test_id) continue;
+      const firstTestLink = Array.isArray(t.links) ? t.links.find(l => l && l.test) : null;
+      if (firstTestLink) {
+        t.test_id = firstTestLink.test;
+        debug('Using first linked case %s as test_id for %s', firstTestLink.test, t.title);
+      }
+    }
+  }
+
+  /**
    * Build (and cache) a basename -> [absolute paths] index of source files under `root`.
    * Walks synchronously, skipping common build/dependency directories.
    *
@@ -876,6 +895,7 @@ class AllureReader {
     this.calculateStats();
     this.fetchSourceCode();
     this.recoverTmsLinksFromSource();
+    this.applyPrimaryTestIdFromLinks();
 
     this.pipes = this.pipes || (await this.pipesPromise);
 

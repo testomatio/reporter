@@ -70,10 +70,11 @@ void testCheckout() { ... }
 Links whose URL points at a Testomat.io test page are also recognized even when `type` is missing
 (e.g. `.../test/1a2b3c4d`).
 
-> **`test_id` and `@TmsLink` are separate.** `@TmsLink` only **links** cases — it is never used as the
-> test's `test_id`. The `test_id` is a distinct field, set only from a native Testomat.io id found in
-> the source (e.g. a `// @T1a2b3c4d` marker). This keeps a test's own identity separate from the cases
-> it is linked to.
+> **`test_id` and `@TmsLink` are separate concerns.** `@TmsLink` **links** cases. The `test_id` is a
+> distinct field, set from a native Testomat.io id in the source (e.g. a `// @T1a2b3c4d` marker) when
+> present. As a fallback, when a test has **no** `test_id`, the first linked case is adopted as the
+> `test_id` so the test matches an existing case instead of creating a method-named duplicate — the id
+> still stays in `links`, so every linked case is updated.
 
 **ID format.** Testomat.io test IDs are exactly **8 characters**. The reader accepts the bare id
 (`1a2b3c4d`) or the `T` / `@T` markers Testomat uses (`T1a2b3c4d`, `@T1a2b3c4d`) and normalizes them
