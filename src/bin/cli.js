@@ -23,28 +23,6 @@ const debug = createDebugMessages('@testomatio/reporter:cli');
 const version = getPackageVersion();
 const program = new Command();
 
-function hasExistingArtifacts(test) {
-  const hasExistingFile = items => {
-    for (const item of items || []) {
-      const artifactPath = typeof item === 'object' ? item?.path : item;
-      if (artifactPath && fs.existsSync(artifactPath)) return true;
-    }
-    return false;
-  };
-
-  if (hasExistingFile(test.files)) return true;
-
-  const stack = [...(test.steps || [])];
-  while (stack.length) {
-    const step = stack.pop();
-    if (!step) continue;
-    if (hasExistingFile(step.artifacts)) return true;
-    if (Array.isArray(step.steps)) stack.push(...step.steps);
-  }
-
-  return false;
-}
-
 program
   .version(version)
   .option('--env-file <envfile>', 'Load environment variables from env file')
@@ -573,6 +551,28 @@ program
       process.exit(1);
     }
   });
+
+function hasExistingArtifacts(test) {
+  const hasExistingFile = items => {
+    for (const item of items || []) {
+      const artifactPath = typeof item === 'object' ? item?.path : item;
+      if (artifactPath && fs.existsSync(artifactPath)) return true;
+    }
+    return false;
+  };
+
+  if (hasExistingFile(test.files)) return true;
+
+  const stack = [...(test.steps || [])];
+  while (stack.length) {
+    const step = stack.pop();
+    if (!step) continue;
+    if (hasExistingFile(step.artifacts)) return true;
+    if (Array.isArray(step.steps)) stack.push(...step.steps);
+  }
+
+  return false;
+}
 
 program.parse(process.argv);
 
