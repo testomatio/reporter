@@ -310,7 +310,7 @@ This approach is useful when:
 **Notes:**
 - The JSONL file must contain a valid `runId` and tests with `test_id` set
 - **CodeceptJS only**: trace.zip and video files are automatically recorded when using `TESTOMATIO_DEBUG=1`
-- Artifacts are uploaded to the test level (Artifacts tab), not within individual steps
+- Test-level `files` are uploaded to the test artifacts tab; `steps[].artifacts` are uploaded back into their corresponding steps
 
 ### 6. replay
 

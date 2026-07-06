@@ -18,8 +18,6 @@ import { log } from '../utils/log.js';
 import { formatFilterListIds } from '../utils/pipe_utils.js';
 import fs from 'fs';
 import path from 'path';
-import { Gaxios } from 'gaxios';
-import { generateShortFilename } from '../adapter/utils/step-formatter.js';
 
 const debug = createDebugMessages('@testomatio/reporter:cli');
 const version = getPackageVersion();
@@ -390,58 +388,17 @@ program
       client.uploader.checkEnabled();
       client.uploader.disableLogStorage();
 
-      const apiUrl = process.env.TESTOMATIO_URL || 'https://app.testomat.io';
-      const http = new Gaxios();
       let uploadedCount = 0;
       let failedCount = 0;
 
       for (const test of tests) {
-        const testId = test.test_id;
-        if (!testId) continue;
-
-        const artifacts = [];
-
-        const collect = (items) => {
-          for (const item of items || []) {
-            const p = typeof item === 'object' ? item?.path : item;
-            if (p && fs.existsSync(p)) artifacts.push(p);
-          }
-        };
-        collect(test.files);
-
-        const walkSteps = (steps) => {
-          for (const step of steps || []) {
-            collect(step.artifacts);
-            walkSteps(step.steps);
-          }
-        };
-        walkSteps(test.steps);
-
-        if (artifacts.length === 0) continue;
-
-        const urls = [];
-        for (const artifact of artifacts) {
-          try {
-            const s3Id = test.rid || testId.replace('@', '');
-            const filename = generateShortFilename(artifact);
-            const result = await client.uploader.uploadFileByPath(artifact, [runId, s3Id, filename]);
-            if (result) urls.push(typeof result === 'string' ? result : result.link);
-          } catch (e) {
-            debug(`Failed to upload ${artifact}:`, e.message);
-          }
-        }
-
-        if (urls.length === 0) continue;
+        if (!hasExistingArtifacts(test)) continue;
 
         try {
-          await http.request({
-            method: 'POST',
-            url: `${apiUrl}/api/reporter/${runId}/testrun?api_key=${apiKey}`,
-            data: { test_id: testId, artifacts: urls },
-          });
+          await client.addTestRun(undefined, { ...test, overwrite: true });
           uploadedCount++;
         } catch (e) {
-          log.error(`Failed ${testId}: ${e.message}`);
+          log.error(`Failed ${test.test_id || test.rid || test.title}: ${e.message}`);
           failedCount++;
         }
       }
@@ -594,6 +551,28 @@ program
       process.exit(1);
     }
   });
+
+function hasExistingArtifacts(test) {
+  const hasExistingFile = items => {
+    for (const item of items || []) {
+      const artifactPath = typeof item === 'object' ? item?.path : item;
+      if (artifactPath && fs.existsSync(artifactPath)) return true;
+    }
+    return false;
+  };
+
+  if (hasExistingFile(test.files)) return true;
+
+  const stack = [...(test.steps || [])];
+  while (stack.length) {
+    const step = stack.pop();
+    if (!step) continue;
+    if (hasExistingFile(step.artifacts)) return true;
+    if (Array.isArray(step.steps)) stack.push(...step.steps);
+  }
+
+  return false;
+}
 
 program.parse(process.argv);
 
