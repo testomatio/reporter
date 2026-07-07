@@ -274,6 +274,9 @@ export interface RunData {
    * An array of `TestData` objects representing the individual test cases in the test run.
    * Used for JUNit report when we don't send the tests in realtime but in a batch as a part of final result */
   tests?: TestData[];
+
+  /** Force-finish a shared run even if other participants haven't finished yet. Set via `TESTOMATIO_FINISH_SHARED_RUN`. */
+  force_finish_shared_run?: boolean;
 }
 
 export enum TestStatus {

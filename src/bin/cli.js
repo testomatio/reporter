@@ -104,8 +104,11 @@ program
     const apiKey = process.env['INPUT_TESTOMATIO-KEY'] || config.TESTOMATIO;
     const client = new TestomatClient({ apiKey });
 
+    const finishParams = {};
+    if (process.env.TESTOMATIO_FINISH_SHARED_RUN) finishParams.force_finish_shared_run = true;
+
     // @ts-ignore
-    client.updateRunStatus(STATUS.FINISHED).then(() => {
+    client.updateRunStatus(STATUS.FINISHED, finishParams).then(() => {
       process.exit(0);
     });
   });

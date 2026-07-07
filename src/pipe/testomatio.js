@@ -569,6 +569,7 @@ class TestomatioPipe {
             status_event,
             detach: params.detach,
             tests: params.tests,
+            ...(params.force_finish_shared_run && { force_finish_shared_run: true }),
           },
         });
 
