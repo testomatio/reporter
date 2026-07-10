@@ -154,21 +154,40 @@ function CodeceptReporter(config) {
 
   // mark as failed all tests inside the failed hook
   event.dispatcher.on(event.hook.failed, hook => {
-    if (hook.name !== 'BeforeSuiteHook' && hook.name !== 'BeforeHook') return;
-    const suite = hook.runnable.parent;
+    const error = hook?.ctx?.currentTest?.err || hook?.err;
 
-    if (!suite) return;
+    // Handle BeforeSuite and Before hooks: mark all tests in suite as failed
+    if (hook.name === 'BeforeSuiteHook' || hook.name === 'BeforeHook') {
+      const suite = hook.runnable.parent;
+      if (!suite) return;
 
-    const error = hook?.ctx?.currentTest?.err;
+      for (const test of suite.tests) {
+        reportedTestUids.add(test.uid);
+        const reportTestPromise = client.addTestRun('failed', {
+          ...stripExampleFromTitle(test.title),
+          rid: test.uid,
+          test_id: getTestomatIdFromTestTitle(test.title),
+          suite_title: stripTagsFromTitle(suite.title),
+          error,
+          time: hook?.runnable?.duration,
+        });
+        reportTestPromises.push(reportTestPromise);
+      }
+    }
 
-    for (const test of suite.tests) {
-      reportedTestUids.add(test.uid);
+    if (hook.name === 'AfterSuiteHook') {
+      const suite = hook.runnable?.parent || hook.suite;
+      const suiteTitle = suite ? stripTagsFromTitle(suite.title) : 'Unknown Suite';
+
+      const stepHierarchy = buildUnifiedStepHierarchy(null, hookSteps);
+
+      // Report the hook failure as a separate test entry
       const reportTestPromise = client.addTestRun('failed', {
-        ...stripExampleFromTitle(test.title),
-        rid: test.uid,
-        test_id: getTestomatIdFromTestTitle(test.title),
-        suite_title: stripTagsFromTitle(suite.title),
+        title: 'AfterSuite Hook',
+        suite_title: suiteTitle,
         error,
+        message: error?.message || 'AfterSuite hook failed',
+        steps: stepHierarchy,
         time: hook?.runnable?.duration,
       });
       reportTestPromises.push(reportTestPromise);
@@ -194,8 +213,10 @@ function CodeceptReporter(config) {
   });
 
   event.dispatcher.on(event.all.after, () => {
-    recorder.add('Finishing run', async () => {
-      await finalizeRun('all.after');
+    setImmediate(() => {
+      finalizeRun('all.after').catch(err => {
+        debug('Error finalizing run:', err);
+      });
     });
   });
 
