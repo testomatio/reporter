@@ -6,11 +6,12 @@ import pc from 'picocolors';
 import handlebars from 'handlebars';
 import { marked } from 'marked';
 import fileUrl from 'file-url';
-import { fileSystem, isSameTest, ansiRegExp, formatStep } from '../utils/utils.js';
+import { fileSystem, isSameTest, ansiRegExp, formatStep, transformEnvVarToBoolean } from '../utils/utils.js';
 import { HTML_REPORT } from '../constants.js';
 import { fileURLToPath } from 'node:url';
 
 const debug = createDebugMessages('@testomatio/reporter:pipe:html');
+const HTML_ARTIFACTS_DIR = 'artifacts';
 
 // @ts-ignore – this line will be removed in compiled code (already defined in the global scope of commonjs)
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -22,6 +23,7 @@ class HtmlPipe {
     this.description = params.description || process.env.TESTOMATIO_DESCRIPTION;
     this.apiKey = params.apiKey || process.env.TESTOMATIO;
     this.isHtml = params.html ?? process.env.TESTOMATIO_HTML_REPORT_SAVE;
+    this.htmlCopyArtifacts = params.htmlCopyArtifacts;
 
     debug('HTML Pipe: ', this.apiKey ? 'API KEY' : '*no api key provided*');
 
@@ -151,6 +153,8 @@ class HtmlPipe {
 
     const aggregatedTests = aggregateTestRetries(tests);
 
+    const copyLocalArtifacts = resolveHtmlCopyArtifacts(this.htmlCopyArtifacts);
+    const portableArtifacts = new Map();
     aggregatedTests.forEach(test => {
       const logsRaw =
         test.logs || test.meta?.logs || test.meta?.console || test.meta?.stdout || test.meta?.stderr || '';
@@ -231,6 +235,9 @@ class HtmlPipe {
       test.title = buildExampleTitle(test.title, test.example);
 
       test.artifacts = normalizeArtifacts(test);
+      if (copyLocalArtifacts) {
+        makeLocalArtifactsPortable(test, outputPath, portableArtifacts);
+      }
 
       const allPossibleArtifacts = [
         ...(test.artifacts || []),
@@ -1030,57 +1037,7 @@ function normalizeArtifacts(test) {
   ];
 
   return allArtifacts
-    .map(artifact => {
-      if (typeof artifact === 'string') {
-        if (/^https?:\/\//i.test(artifact)) {
-          const base = path.basename(new URL(artifact).pathname) || artifact;
-
-          return {
-            name: base,
-            title: base,
-            path: artifact,
-            fsPath: null,
-            relativePath: artifact,
-          };
-        }
-
-        const abs = path.isAbsolute(artifact) ? artifact : path.resolve(process.cwd(), artifact);
-        const href = artifact.startsWith('file://') ? artifact : fileUrl(abs, { resolve: true });
-        const base = path.basename(abs);
-
-        return {
-          name: base,
-          title: base,
-          path: href,
-          fsPath: abs,
-          relativePath: artifact,
-        };
-      }
-
-      if (artifact?.path) {
-        const raw = String(artifact.path);
-        const isFileUrl = raw.startsWith('file://');
-        const isHttpUrl = /^https?:\/\//i.test(raw);
-        const abs = isFileUrl || isHttpUrl ? null : path.isAbsolute(raw) ? raw : path.resolve(process.cwd(), raw);
-        const href = isFileUrl || isHttpUrl ? raw : fileUrl(abs, { resolve: true });
-        const base = abs
-          ? path.basename(abs)
-          : isHttpUrl
-            ? path.basename(new URL(raw).pathname) || artifact.name || artifact.title || 'attachment'
-            : artifact.name || artifact.title || 'attachment';
-
-        return {
-          ...artifact,
-          name: artifact.name || artifact.title || base,
-          title: artifact.title || artifact.name || base,
-          path: href,
-          fsPath: abs || artifact.fsPath || null,
-          relativePath: artifact.relativePath || raw,
-        };
-      }
-
-      return artifact;
-    })
+    .map(normalizeArtifact)
     .filter(Boolean)
     .filter(artifact => {
       const isTrace = (artifact.title === 'trace' || artifact.name === 'trace') &&
@@ -1089,6 +1046,151 @@ function normalizeArtifacts(test) {
         artifact.relativePath?.endsWith('.zip'));
       return !isTrace;
     });
+}
+
+function resolveHtmlCopyArtifacts(value) {
+  if (value !== undefined) return transformEnvVarToBoolean(value);
+  if (process.env.TESTOMATIO_HTML_REPORT_COPY_ARTIFACTS !== undefined) {
+    return transformEnvVarToBoolean(process.env.TESTOMATIO_HTML_REPORT_COPY_ARTIFACTS);
+  }
+  return !isS3ArtifactsUploadEnabled();
+}
+
+function isS3ArtifactsUploadEnabled() {
+  return Boolean(process.env.S3_BUCKET && !transformEnvVarToBoolean(process.env.TESTOMATIO_DISABLE_ARTIFACTS));
+}
+
+function normalizeArtifact(artifact) {
+  if (typeof artifact === 'string') {
+    return normalizeArtifactPath({ raw: artifact });
+  }
+
+  if (artifact?.path) {
+    return normalizeArtifactPath({
+      raw: String(artifact.path),
+      artifact,
+    });
+  }
+
+  return artifact;
+}
+
+/**
+ * @param {{
+ *   raw: string,
+ *   artifact?: { name?: string, title?: string, relativePath?: string, [key: string]: any }
+ * }} params
+ */
+function normalizeArtifactPath({ raw, artifact = {} }) {
+  const url = parseUrl(raw);
+  const fsPath = getLocalArtifactPath(raw, url);
+  const base = getArtifactBaseName({ raw, url, fsPath, artifact });
+  const href = fsPath && url?.protocol !== 'file:' ? fileUrl(fsPath, { resolve: true }) : raw;
+
+  return {
+    ...artifact,
+    name: artifact.name || artifact.title || base,
+    title: artifact.title || artifact.name || base,
+    path: href,
+    fsPath,
+    relativePath: artifact.relativePath || raw,
+  };
+}
+
+function makeLocalArtifactsPortable(test, outputPath, portableArtifacts) {
+  const reportDir = path.dirname(path.resolve(outputPath));
+
+  test.artifacts = makeArtifactsPortable(test.artifacts, reportDir, portableArtifacts);
+
+  if (Array.isArray(test.stepsArray)) {
+    makeStepArtifactsPortable(test.stepsArray, reportDir, portableArtifacts);
+  }
+}
+
+function makeStepArtifactsPortable(steps, reportDir, portableArtifacts) {
+  steps.forEach(step => {
+    if (Array.isArray(step.artifacts)) {
+      const normalizedArtifacts = step.artifacts.map(normalizeArtifact).filter(Boolean);
+      step.artifacts = makeArtifactsPortable(normalizedArtifacts, reportDir, portableArtifacts);
+    }
+
+    if (Array.isArray(step.steps)) {
+      makeStepArtifactsPortable(step.steps, reportDir, portableArtifacts);
+    }
+  });
+}
+
+function makeArtifactsPortable(artifacts, reportDir, portableArtifacts) {
+  if (!Array.isArray(artifacts)) return artifacts;
+
+  return artifacts.map(artifact => {
+    const fsPath = artifact?.fsPath;
+    if (!fsPath || !fs.existsSync(fsPath)) return artifact;
+
+    const relativePath = copyArtifactToReport(fsPath, reportDir, portableArtifacts);
+    return { ...artifact, path: relativePath, relativePath };
+  });
+}
+
+function copyArtifactToReport(fsPath, reportDir, portableArtifacts) {
+  const absoluteSource = path.resolve(fsPath);
+  if (portableArtifacts.has(absoluteSource)) return portableArtifacts.get(absoluteSource);
+
+  const artifactsDir = path.join(reportDir, HTML_ARTIFACTS_DIR);
+  const ext = path.extname(absoluteSource);
+  const baseName = path.basename(absoluteSource, ext) || 'attachment';
+  let destinationPath = path.join(artifactsDir, `${baseName}${ext}`);
+  let index = 1;
+
+  while (Array.from(portableArtifacts.values()).includes(getRelativeArtifactPath(reportDir, destinationPath))) {
+    destinationPath = path.join(artifactsDir, `${baseName}-${index}${ext}`);
+    index += 1;
+  }
+
+  fs.mkdirSync(path.dirname(destinationPath), { recursive: true });
+  fs.copyFileSync(absoluteSource, destinationPath);
+
+  const relativePath = getRelativeArtifactPath(reportDir, destinationPath);
+  portableArtifacts.set(absoluteSource, relativePath);
+  return relativePath;
+}
+
+function getLocalArtifactPath(raw, url = parseUrl(raw)) {
+  if (path.isAbsolute(raw)) return raw;
+  if (isRemoteUrl(url)) return null;
+
+  if (url?.protocol === 'file:') {
+    try {
+      return fileURLToPath(url);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  if (url) return null;
+  return path.resolve(process.cwd(), raw);
+}
+
+function getArtifactBaseName({ raw, url, fsPath, artifact }) {
+  if (fsPath) return path.basename(fsPath);
+  if (url?.pathname) return path.basename(url.pathname) || artifact.name || artifact.title || 'attachment';
+  return artifact.name || artifact.title || path.basename(raw) || 'attachment';
+}
+
+function parseUrl(value) {
+  try {
+    return new URL(String(value));
+  } catch (_) {
+    return null;
+  }
+}
+
+function isRemoteUrl(url) {
+  return url?.protocol === 'http:' || url?.protocol === 'https:';
+}
+
+function getRelativeArtifactPath(reportDir, artifactPath) {
+  return `./${String(path.relative(reportDir, artifactPath)).split(path.sep).join('/')}`;
 }
 
 /**
