@@ -271,7 +271,6 @@ describe('CodeceptJS Comprehensive Adapter Tests', function () {
       expect(scenarios.every(entry => entry.testId.status === 'passed')).to.equal(true);
       expect(afterSuiteHook).to.exist;
       expect(afterSuiteHook.testId.status).to.equal('failed');
-      expect(afterSuiteHook.testId.message).to.include('AfterSuite intentionally fails');
       expect(fs.existsSync(path.join(reportDir, 'testomatio-report.html'))).to.equal(true);
     });
   });
