@@ -243,15 +243,36 @@ describe('CodeceptJS Comprehensive Adapter Tests', function () {
       const reportDir = path.join(testRunner.exampleDir, 'output', 'report');
       await fs.promises.rm(reportDir, { recursive: true, force: true });
 
-      await runTests('simple_test.js', {
+      const { debugData } = await runTests('simple_test.js', {
         TESTOMATIO_CODECEPT_HTML: '1',
         TESTOMATIO_CODECEPT_MARKDOWN: '1',
         TESTOMATIO_CODECEPT_CSV: '1',
       });
 
+      expect(debugData.some(entry => entry.action === 'finishRun')).to.equal(true);
       expect(fs.existsSync(path.join(reportDir, 'testomatio-report.html'))).to.equal(true);
       expect(fs.existsSync(path.join(reportDir, 'testomatio-report.md'))).to.equal(true);
       expect(fs.existsSync(path.join(reportDir, 'report.csv'))).to.equal(true);
+    });
+
+    it('should finalize the HTML report when AfterSuite fails', async () => {
+      const reportDir = path.join(testRunner.exampleDir, 'output', 'report');
+      await fs.promises.rm(reportDir, { recursive: true, force: true });
+
+      const { debugData, testEntries } = await runTests('aftersuite_bug_demo_test.js', {
+        TESTOMATIO_CODECEPT_HTML: '1',
+      });
+
+      const scenarios = testEntries.filter(entry => entry.testId.title.includes('passing test'));
+      const afterSuiteHook = testEntries.find(entry => entry.testId.title === 'AfterSuite Hook');
+
+      expect(debugData.some(entry => entry.action === 'finishRun')).to.equal(true);
+      expect(scenarios).to.have.length(3);
+      expect(scenarios.every(entry => entry.testId.status === 'passed')).to.equal(true);
+      expect(afterSuiteHook).to.exist;
+      expect(afterSuiteHook.testId.status).to.equal('failed');
+      expect(afterSuiteHook.testId.message).to.include('AfterSuite intentionally fails');
+      expect(fs.existsSync(path.join(reportDir, 'testomatio-report.html'))).to.equal(true);
     });
   });
 
