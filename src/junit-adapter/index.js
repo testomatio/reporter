@@ -4,6 +4,7 @@ import JavaAdapter from './java.js';
 import PythonAdapter from './python.js';
 import RubyAdapter from './ruby.js';
 import CSharpAdapter from './csharp.js';
+import KotlinAdapter from './kotlin.js';
 
 function AdapterFactory(lang, opts) {
   if (lang === 'java') {
@@ -20,6 +21,9 @@ function AdapterFactory(lang, opts) {
   }
   if (lang === 'c#' || lang === 'csharp') {
     return new CSharpAdapter(opts);
+  }
+  if (lang === 'kotlin') {
+    return new KotlinAdapter(opts);
   }
 
   return new Adapter(opts);

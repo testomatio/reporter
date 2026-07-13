@@ -289,6 +289,11 @@ const fetchSourceCode = (contents, opts = {}) => {
       if (lineIndex === -1) lineIndex = lines.findIndex(l => l.includes(`@DisplayName("${title}`));
       if (lineIndex === -1) lineIndex = lines.findIndex(l => l.includes(`public void ${title}`));
       if (lineIndex === -1) lineIndex = lines.findIndex(l => l.includes(`${title}(`));
+    } else if (opts.lang === 'kotlin') {
+      lineIndex = lines.findIndex(l => l.includes(`fun test${title}`));
+      if (lineIndex === -1) lineIndex = lines.findIndex(l => l.includes(`@DisplayName("${title}`));
+      if (lineIndex === -1) lineIndex = lines.findIndex(l => l.includes(`fun ${title}`));
+      if (lineIndex === -1) lineIndex = lines.findIndex(l => l.includes(`${title}(`));
     } else if (opts.lang === 'csharp') {
       // Find the method declaration line
       let methodLineIndex = lines.findIndex(l => l.includes(`public void ${title}(`));

@@ -18,6 +18,7 @@ import {
   transformEnvVarToBoolean,
 } from './utils/utils.js';
 import { pipesFactory } from './pipe/index.js';
+import { splitTestsIntoChunks } from './utils/pipe_utils.js';
 import adapterFactory from './junit-adapter/index.js';
 import { config } from './config.js';
 import { S3Uploader } from './uploader.js';
@@ -553,52 +554,6 @@ class XmlReader {
     return run;
   }
 
-  /**
-   * Calculate the approximate size of data in bytes (JSON stringified length)
-   * @param {Object} data - Data to measure
-   * @returns {number} Size in bytes
-   */
-  #getObjectSize(data) {
-    const body = JSON.stringify(data);
-    return new TextEncoder().encode(body).length;
-  }
-
-  /**
-   * Split tests array into chunks based on data size
-   * @param {Array} tests - Array of tests to split
-   * @returns {Array<Array>} Array of test chunks
-   */
-  #splitTestsIntoChunks(tests) {
-    const maxSizeBytes = 1 * 1024 * 1024;
-
-    const chunks = [];
-    let currentChunk = [];
-    let currentChunkSize = 0;
-
-    for (const test of tests) {
-      const testSize = this.#getObjectSize(test);
-
-      const wouldExceedSize = currentChunkSize + testSize > maxSizeBytes;
-
-      if (wouldExceedSize) {
-        if (currentChunk.length > 0) {
-          chunks.push(currentChunk);
-        }
-        currentChunk = [];
-        currentChunkSize = 0;
-      }
-
-      currentChunk.push(test);
-      currentChunkSize += testSize;
-    }
-
-    if (currentChunk.length > 0) {
-      chunks.push(currentChunk);
-    }
-
-    return chunks;
-  }
-
   async uploadData() {
     await this.uploadArtifacts();
     this.calculateStats();
@@ -623,7 +578,7 @@ class XmlReader {
       return Promise.all(this.pipes.map(p => p.finishRun(finishData)));
     }
 
-    const testChunks = this.#splitTestsIntoChunks(this.tests);
+    const testChunks = splitTestsIntoChunks(this.tests);
 
     const totalChunks = testChunks.length;
     const totalTests = this.tests.length;

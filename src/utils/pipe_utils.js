@@ -162,6 +162,53 @@ function parsePipeOptions(optionsStr) {
 }
 
 /**
+ * Calculate the approximate size of data in bytes (JSON stringified, UTF-8 encoded length).
+ * @param {Object} data - Data to measure
+ * @returns {number} Size in bytes
+ */
+function getObjectSize(data) {
+  const body = JSON.stringify(data);
+  return new TextEncoder().encode(body).length;
+}
+
+/**
+ * Split a tests array into chunks bounded by serialized size.
+ * Used by the XML and Allure readers so both upload tests with identical batching:
+ * each chunk becomes a single batch request (manual batch mode), which keeps requests
+ * under the size limit and guarantees every test is sent exactly once.
+ *
+ * @param {Array} tests - Array of tests to split
+ * @param {number} [maxSizeBytes=1048576] - Maximum serialized size per chunk (default 1MB)
+ * @returns {Array<Array>} Array of test chunks
+ */
+function splitTestsIntoChunks(tests, maxSizeBytes = 1 * 1024 * 1024) {
+  const chunks = [];
+  let currentChunk = [];
+  let currentChunkSize = 0;
+
+  for (const test of tests) {
+    const testSize = getObjectSize(test);
+
+    const wouldExceedSize = currentChunkSize + testSize > maxSizeBytes;
+
+    if (wouldExceedSize && currentChunk.length > 0) {
+      chunks.push(currentChunk);
+      currentChunk = [];
+      currentChunkSize = 0;
+    }
+
+    currentChunk.push(test);
+    currentChunkSize += testSize;
+  }
+
+  if (currentChunk.length > 0) {
+    chunks.push(currentChunk);
+  }
+
+  return chunks;
+}
+
+/**
  * Format a list of test IDs for `--filter-list` machine-readable output.
  * Used when the CLI `--format` option is passed,
  * e.g. `--filter-list "coverage:file=..." --format grep`.
@@ -190,4 +237,6 @@ export {
   fullName,
   parsePipeOptions,
   formatFilterListIds,
+  getObjectSize,
+  splitTestsIntoChunks,
 };
