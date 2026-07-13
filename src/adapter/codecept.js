@@ -152,12 +152,33 @@ function CodeceptReporter(config) {
     services.setContext(null);
   });
 
-  // mark as failed all tests inside the failed hook
+  // Report setup hook failures against the current test while preserving skipped tests in the suite.
   event.dispatcher.on(event.hook.failed, hook => {
     const error = hook?.ctx?.currentTest?.err || hook?.err;
 
-    // Handle BeforeSuite and Before hooks: mark all tests in suite as failed
-    if (hook.name === 'BeforeSuiteHook' || hook.name === 'BeforeHook') {
+    // CodeceptJS does not emit test.after for the test associated with a failed BeforeSuite,
+    // so report that test here. The remaining tests are emitted as skipped.
+    if (hook.name === 'BeforeSuiteHook') {
+      const suite = hook.runnable?.parent || hook.suite;
+      if (!suite) return;
+
+      const test = hook?.ctx?.currentTest || hook?.test || suite.tests?.[0];
+      if (!test) return;
+
+      reportedTestUids.add(test.uid);
+      const reportTestPromise = client.addTestRun(STATUS.FAILED, {
+        ...stripExampleFromTitle(test.title),
+        rid: test.uid,
+        test_id: getTestomatIdFromTestTitle(test.title),
+        suite_title: stripTagsFromTitle(suite.title),
+        error,
+        time: hook?.runnable?.duration,
+      });
+      reportTestPromises.push(reportTestPromise);
+    }
+
+    // Preserve the existing Before hook behavior: mark all tests in the suite as failed.
+    if (hook.name === 'BeforeHook') {
       const suite = hook.runnable.parent;
       if (!suite) return;
 

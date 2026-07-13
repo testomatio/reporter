@@ -4,11 +4,8 @@ import { runTests } from '../adapter/utils/codecept.js';
 describe('CodeceptJS BeforeSuite Failure Tests', function () {
   this.timeout(60000);
 
-  it('should mark all tests as failed when BeforeSuite fails', async () => {
-    const { debugData } = await runTests('beforesuite_failure_test.js');
-
-    // Find all test entries
-    const testEntries = debugData.filter(entry => entry.action === 'addTest' && entry.testId && entry.testId.title);
+  it('should fail the current test and skip the remaining tests when BeforeSuite fails', async () => {
+    const { testEntries } = await runTests('beforesuite_failure_test.js');
 
     // Should have 3 tests
     expect(testEntries).to.have.lengthOf(3);
@@ -20,19 +17,18 @@ describe('CodeceptJS BeforeSuite Failure Tests', function () {
       'test teams can be deleted',
     ]);
 
-    // All tests should have failed status
-    for (const entry of testEntries) {
-      expect(entry.testId.status).to.equal('failed');
-    }
+    const failedTests = testEntries.filter(entry => entry.testId.status === 'failed');
+    const skippedTests = testEntries.filter(entry => entry.testId.status === 'skipped');
+
+    expect(failedTests).to.have.lengthOf(1);
+    expect(failedTests[0].testId.title).to.equal('test teams can be created');
+    expect(skippedTests).to.have.lengthOf(2);
   });
 
   it('should report BeforeSuite failure in test results', async () => {
-    const { debugData } = await runTests('beforesuite_failure_test.js');
+    const { testEntries } = await runTests('beforesuite_failure_test.js');
 
-    // Find any failed test (they should all have the BeforeSuite error)
-    const failedTest = debugData.find(
-      entry => entry.action === 'addTest' && entry.testId && entry.testId.status === 'failed',
-    );
+    const failedTest = testEntries.find(entry => entry.testId.status === 'failed');
 
     expect(failedTest).to.exist;
 
