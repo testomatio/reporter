@@ -113,7 +113,7 @@ function CodeceptReporter(config) {
   event.dispatcher.on(event.workers.after, () => {
     recorder.add('Finishing run', async () => {
       await finalizeRun('workers.after');
-    });
+    }, true);
   });
 
   // Listening to events
@@ -213,11 +213,9 @@ function CodeceptReporter(config) {
   });
 
   event.dispatcher.on(event.all.after, () => {
-    setImmediate(() => {
-      finalizeRun('all.after').catch(err => {
-        debug('Error finalizing run:', err);
-      });
-    });
+    recorder.add('Finishing run', async () => {
+      await finalizeRun('all.after');
+    }, true);
   });
 
   event.dispatcher.on(event.test.skipped, test => {
