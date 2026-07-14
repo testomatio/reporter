@@ -1141,6 +1141,63 @@ describe('TestomatioPipe', () => {
         expect(testData.create).to.equal(true);
       });
     });
+
+    describe('timestamp normalization', () => {
+      it('should convert a microsecond timestamp to Unix seconds', () => {
+        const testData = {
+          title: 'Test with microsecond timestamp',
+          status: 'passed',
+          timestamp: 1750000000000000, // microseconds
+        };
+
+        pipe.addTest(testData);
+        expect(testData.timestamp).to.equal(1750000000);
+      });
+
+      it('should convert a millisecond timestamp to Unix seconds', () => {
+        const testData = {
+          title: 'Test with millisecond timestamp',
+          status: 'passed',
+          timestamp: 1750000000000, // milliseconds
+        };
+
+        pipe.addTest(testData);
+        expect(testData.timestamp).to.equal(1750000000);
+      });
+
+      it('should leave a timestamp already in Unix seconds unchanged', () => {
+        const testData = {
+          title: 'Test with seconds timestamp',
+          status: 'passed',
+          timestamp: 1750000000, // seconds
+        };
+
+        pipe.addTest(testData);
+        expect(testData.timestamp).to.equal(1750000000);
+      });
+
+      it('should not add a timestamp when none is provided', () => {
+        const testData = {
+          title: 'Test without timestamp',
+          status: 'passed',
+        };
+
+        pipe.addTest(testData);
+        expect(testData.timestamp).to.be.undefined;
+      });
+
+      it('should not re-divide the timestamp when the object is formatted twice', () => {
+        const testData = {
+          title: 'Test with microsecond timestamp',
+          status: 'passed',
+          timestamp: 1750000000000000, // microseconds
+        };
+
+        pipe.addTest(testData);
+        pipe.addTest(testData);
+        expect(testData.timestamp).to.equal(1750000000);
+      });
+    });
   });
 
   describe('error logging behavior (testing via public methods)', () => {
