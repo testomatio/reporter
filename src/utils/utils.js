@@ -354,6 +354,10 @@ const fetchSourceCode = (contents, opts = {}) => {
           }
         }
       }
+    } else if (opts.lang === 'dart') {
+      // For Dart we prefer to grab the whole main() body, regardless of test title
+      const mainIndex = lines.findIndex(l => l.includes('void main()'));
+      lineIndex = mainIndex;
     } else {
       lineIndex = lines.findIndex(l => l.includes(title));
     }
@@ -371,8 +375,8 @@ const fetchSourceCode = (contents, opts = {}) => {
     for (let i = lineIndex; i < lineIndex + limit; i++) {
       if (lines[i] === undefined) continue;
 
-      // Track brace depth for C# to stop after method closes
-      if (opts.lang === 'csharp') {
+      // Track brace depth for C# and Dart to stop after method/main closes
+      if (opts.lang === 'csharp' || opts.lang === 'dart') {
         const line = lines[i];
         // Count opening and closing braces
         const openBraces = (line.match(/\{/g) || []).length;
