@@ -7,7 +7,7 @@ import createDebugMessages from 'debug';
 import TestomatClient from '../client.js';
 import XmlReader from '../xmlReader.js';
 import { APP_PREFIX, STATUS, DEBUG_FILE, BATCH_MODE } from '../constants.js';
-import { cleanLatestRunId, getPackageVersion, applyFilter } from '../utils/utils.js';
+import { cleanLatestRunId, getPackageVersion, applyFilter, transformEnvVarToBoolean } from '../utils/utils.js';
 import { config } from '../config.js';
 import { readLatestRunId } from '../utils/utils.js';
 import pc from 'picocolors';
@@ -105,7 +105,7 @@ program
     const client = new TestomatClient({ apiKey });
 
     const finishParams = {};
-    if (process.env.TESTOMATIO_FINISH_SHARED_RUN) finishParams.force_finish_shared_run = true;
+    if (transformEnvVarToBoolean(process.env.TESTOMATIO_FINISH_SHARED_RUN)) finishParams.force_finish_shared_run = true;
 
     // @ts-ignore
     client.updateRunStatus(STATUS.FINISHED, finishParams).then(() => {

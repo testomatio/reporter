@@ -66,6 +66,17 @@ describe('cli finish', () => {
     expect(req.body).to.not.have.property('force_finish_shared_run');
   });
 
+  it('does not send force_finish_shared_run when TESTOMATIO_FINISH_SHARED_RUN=0', async () => {
+    server.on(replyFinish());
+
+    const { code } = await runCli(['finish'], { TESTOMATIO_FINISH_SHARED_RUN: '0' });
+
+    expect(code).to.equal(0);
+    const [req] = server.requests({ method: 'PUT', path: `/api/reporter/${RUN_ID}` });
+    expect(req).to.exist;
+    expect(req.body).to.not.have.property('force_finish_shared_run');
+  });
+
   it('sends force_finish_shared_run=true when TESTOMATIO_FINISH_SHARED_RUN is set', async () => {
     server.on(replyFinish());
 
