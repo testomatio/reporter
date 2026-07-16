@@ -355,9 +355,33 @@ const fetchSourceCode = (contents, opts = {}) => {
         }
       }
     } else if (opts.lang === 'dart') {
-      // For Dart we prefer to grab the whole main() body, regardless of test title
-      const mainIndex = lines.findIndex(l => l.includes('void main()'));
-      lineIndex = mainIndex;
+      // For Dart, locate the specific patrolTest/testWidgets block by title first —
+      // otherwise every test sharing the same main() gets the same @T comment.
+      const rawTitle = opts.title || '';
+      let dartTestTitle = '';
+
+      if (rawTitle.startsWith('runDartTest[')) {
+        // Android: runDartTest[<path> <test name>]
+        const spaceIndex = rawTitle.indexOf(' ');
+        if (spaceIndex > -1) {
+          dartTestTitle = rawTitle.slice(spaceIndex + 1).replace(/\]$/, '');
+        }
+      } else {
+        // iOS: <ClassName> <test.path> <test name>
+        const parts = rawTitle.split(' ');
+        if (parts.length > 2 && parts[1] && parts[1].includes('.')) {
+          dartTestTitle = parts.slice(2).join(' ');
+        }
+      }
+
+      let testLineIndex = -1;
+      if (dartTestTitle) {
+        testLineIndex = lines.findIndex(
+          l => (l.includes('patrolTest(') || l.includes('testWidgets(')) && l.includes(dartTestTitle),
+        );
+      }
+
+      lineIndex = testLineIndex !== -1 ? testLineIndex : lines.findIndex(l => l.includes('void main()'));
     } else {
       lineIndex = lines.findIndex(l => l.includes(title));
     }

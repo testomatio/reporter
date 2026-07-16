@@ -4,7 +4,7 @@ import Adapter from './adapter.js';
 class DartAdapter extends Adapter {
   
   getFilePath(t) {
-    if (t.title.includes('[')) {
+    if (t.title.startsWith('runDartTest[')) {
       // Android: runDartTest[tests.path.to.test Test name]
       const fileName = namespaceToFileName(t.title.split('[')[1].split(' ')[0]);
       return fileName;
@@ -16,14 +16,13 @@ class DartAdapter extends Adapter {
   }
 
   formatTest(t) {
-    // Save original title for file path resolution before any transformations
-    t.originalTitle = t.title;
-
-    if (t.title.includes('[')) {
+    if (t.title.startsWith('runDartTest[')) {
       // Android: runDartTest[<path> <name>]
       // First space is between the path and the test name; strip up to and including it, remove trailing ']'
       const spaceIndex = t.title.indexOf(' ');
       if (spaceIndex > -1) {
+        const pathToken = t.title.slice('runDartTest['.length, spaceIndex);
+        t.file = namespaceToFileName(pathToken);
         t.title = t.title.slice(spaceIndex + 1).replace(/\]$/, '');
       }
     } else {
@@ -59,7 +58,7 @@ class DartAdapter extends Adapter {
       if (params.length === 1) params[0] = 'param';
       let paramIndex = 0;
 
-      t.title = t.title.replace(/: \[(.*?)\]/g, () => {
+      t.title = t.title.replace(/\[(.*?)\]/g, () => {
         if (params.length < 2) return `\${param}`;
         const paramName = params[paramIndex] || `param${paramIndex + 1}`;
         paramIndex++;
