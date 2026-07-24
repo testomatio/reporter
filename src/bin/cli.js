@@ -60,6 +60,10 @@ program
 
     log.info('Starting a new Run on Testomat.io...');
     const apiKey = process.env['INPUT_TESTOMATIO-KEY'] || config.TESTOMATIO;
+    if (!apiKey) {
+      log.error(pc.red('⚠️  TESTOMATIO API key required — the TESTOMATIO environment variable is empty or not set.'));
+      process.exit(1);
+    }
     const client = new TestomatClient({ apiKey });
 
     const createRunParams = {};
