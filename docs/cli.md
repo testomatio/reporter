@@ -56,6 +56,7 @@ npx @testomatio/reporter start --filter "testomatio:tag-name=smoke"
 - `--kind <type>`: Specify run type: `automated`, `manual`, or `mixed`. Determines how the test run is categorized in Testomat.io.
 - `--filter <filter>`: Scope the prepared run to the tests matching the filter (same syntax as [`run --filter`](#31-filter-pipes)). The run is created with that test list but **not** executed — useful to prepare a run and launch it later on CI (see [Prepare a run, then launch it on CI](#34-prepare-a-run-then-launch-it-on-ci)).
 - `--format <format>`: Print **only the run id** to `stdout` (banner and logs go to `stderr`) so it can be captured: `RUN_ID=$(npx @testomatio/reporter start --format id)`.
+- `--warn`: Exit `0` instead of `1` when the filter matches no tests — the warning is still printed. Use in pipelines where an empty scope is a normal outcome (e.g. a PR touching no mapped files).
 
 > Previously known as: `npx start-test-run --launch` _(before 1.6.0)_
 
@@ -107,6 +108,7 @@ Alias for this command – `test`, e.g. `npx @testomatio/reporter test [options]
 - `--kind <type>`: Specify run type: `automated`, `manual`, or `mixed`. Determines how the test run is categorized in Testomat.io.
 - `--remote <profile>`: Trigger the run on a CI profile configured on the Testomat.io project (e.g. `github`, `gitlab`, `jenkins`) instead of executing tests locally. The CLI creates the run on Testomat.io, asks the backend to dispatch the named CI workflow, and exits. Equivalent to setting [`TESTOMATIO_CI_PROFILE`](./configuration.md#testomatio_ci_profile).
 - `--remote-param <kv>`: `key=value` pair forwarded to the CI profile config (e.g. `branch=develop`). Repeat the option to pass multiple params. Equivalent to setting [`TESTOMATIO_CI_PARAMS`](./configuration.md#testomatio_ci_params).
+- `--warn`: Exit `0` instead of `1` when the filter matches no tests (applies to `--filter-list` too).
 
 **Examples:**
 
@@ -389,7 +391,7 @@ Prints the IDs of the tests matching the filter **without running them**. `--for
 | `json`    | JSON array                    | `["T1","T2","S3"]`   |
 | `newline` | one ID per line               | `T1` / `T2` / `S3`   |
 
-**Exit codes:** `0` when at least one test matched, `1` when nothing matched or filter resolution failed — so CI can branch on `$?` and skip launching the runner when there is nothing to run.
+**Exit codes:** `0` when at least one test matched, `1` when nothing matched or filter resolution failed — so CI can branch on `$?` and skip launching the runner when there is nothing to run. With `--warn`, the nothing-matched case also exits `0`.
 
 ```bash
 # Feed the selection straight into a runner's grep flag
