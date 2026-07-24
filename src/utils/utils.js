@@ -271,6 +271,26 @@ const fetchIdFromOutput = output => {
   return output.match(TID_FULL_PATTERN)?.[2];
 };
 
+const findDartTestLine = (lines, expectedTitle) => {
+  const testFunctions = ['patrolTest', 'testWidgets'];
+  const quotedTitles = [`'${expectedTitle}',`, `"${expectedTitle}",`, `r'${expectedTitle}',`, `r"${expectedTitle}",`];
+
+  return lines.findIndex((_line, index) => {
+    const declaration = lines
+      .slice(index, index + 5)
+      .map(line => line.trim())
+      .join(' ');
+    const functionName = testFunctions.find(name => declaration.startsWith(name));
+    if (!functionName) return false;
+
+    const argumentsList = declaration.slice(functionName.length).trimStart();
+    if (!argumentsList.startsWith('(')) return false;
+
+    const firstArgument = argumentsList.slice(1).trimStart();
+    return quotedTitles.some(title => firstArgument.startsWith(title));
+  });
+};
+
 const fetchSourceCode = (contents, opts = {}) => {
   if (!opts.title && !opts.line) return '';
 
@@ -376,12 +396,10 @@ const fetchSourceCode = (contents, opts = {}) => {
 
       let testLineIndex = -1;
       if (dartTestTitle) {
-        testLineIndex = lines.findIndex(
-          l => (l.includes('patrolTest(') || l.includes('testWidgets(')) && l.includes(dartTestTitle),
-        );
+        testLineIndex = findDartTestLine(lines, dartTestTitle);
       }
 
-      lineIndex = testLineIndex !== -1 ? testLineIndex : lines.findIndex(l => l.includes('void main()'));
+      lineIndex = testLineIndex;
     } else {
       lineIndex = lines.findIndex(l => l.includes(title));
     }

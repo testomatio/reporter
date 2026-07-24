@@ -5,20 +5,28 @@ import DartAdapter from '../../src/junit-adapter/dart.js';
 const sampleDartCode = `import 'package:patrol/patrol.dart';
 
 void main() {
-  patrolTest('Login test', ($) async {
-    // @T00000001
-    await $.tap(find.text('Login'));
-  });
-
   patrolTest('Login test: [admin]', ($) async {
     // @T00000002
     await $.tap(find.text('Login as admin'));
+  });
+
+  patrolTest('Login test', ($) async {
+    // @T00000001
+    await $.tap(find.text('Login'));
   });
 
   testWidgets('Logout test', (tester) async {
     // @T00000003
     await tester.tap(find.text('Logout'));
   });
+
+  patrolTest(
+    "Multiline test",
+    ($) async {
+      // @T00000004
+      await $.tap(find.text('Multiline'));
+    },
+  );
 }`;
 
 describe('Dart Code Import Tests', function () {
@@ -61,13 +69,26 @@ describe('Dart Code Import Tests', function () {
       expect(result).to.not.include('@T00000002');
     });
 
-    it('falls back to main() when the test title cannot be matched', () => {
+    it('finds a test whose title is on the next line', () => {
+      const result = fetchSourceCode(sampleDartCode, {
+        title: 'runDartTest[tests.multiline_test Multiline test]',
+        lang: 'dart',
+      });
+
+      expect(result).to.include('patrolTest(');
+      expect(result).to.include('"Multiline test"');
+      expect(result).to.include('@T00000004');
+      expect(result).to.not.include('@T00000003');
+    });
+
+    it('returns no code when the test title cannot be matched', () => {
       const result = fetchSourceCode(sampleDartCode, {
         title: 'runDartTest[tests.unknown_test Unknown test]',
         lang: 'dart',
       });
 
-      expect(result).to.include('void main()');
+      expect(result).to.be.undefined;
+      expect(fetchIdFromCode(result, { lang: 'dart' })).to.be.null;
     });
   });
 
