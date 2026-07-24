@@ -54,6 +54,7 @@ program
   .option('--kind <type>', 'Specify run type: automated, manual, or mixed')
   .option('--filter <filter>', 'Scope the prepared run to tests matching the filter (no execution)')
   .option('--format <format>', 'Machine-readable output: print only the run id to stdout (e.g. --format id)')
+  .option('--warn', 'Exit 0 instead of 1 when the filter matches no tests (warn only)')
   .action(async opts => {
     cleanLatestRunId();
 
@@ -69,7 +70,8 @@ program
       const tests = await client.prepareRun({ pipe, pipeOptions: optsArray.join(':') });
       if (!tests || tests.length === 0) {
         log.warn(pc.yellow('No tests found for the filter. Run not created.'));
-        process.exit(1);
+        // --warn treats an empty match as a normal outcome (e.g. a PR touching no mapped files)
+        process.exit(opts.warn ? 0 : 1);
       }
       createRunParams.configuration = {
         tests: tests.filter(id => id.startsWith('T')).map(id => id.slice(1)),
@@ -127,6 +129,7 @@ program
     (value, prev) => prev.concat([value]),
     [],
   )
+  .option('--warn', 'Exit 0 instead of 1 when the filter matches no tests (warn only)')
   .action(async (command, opts) => {
     if (opts.remote) {
       if (opts.filterList) {
@@ -162,8 +165,8 @@ program
         if (!tests || tests.length === 0) {
           log.warn( pc.yellow('No tests found.'));
           // Exit non-zero on --filter-list so scripts can detect "nothing to run"
-          // via $? and skip launching the runner.
-          if (opts.filterList) process.exit(1);
+          // via $? and skip launching the runner. --warn downgrades it to 0.
+          if (opts.filterList && !opts.warn) process.exit(1);
           return;
         }
 
