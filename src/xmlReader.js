@@ -472,6 +472,7 @@ class XmlReader {
           if (file.endsWith('.js')) this.stats.language = 'js';
           if (file.endsWith('.ts')) this.stats.language = 'ts';
           if (file.endsWith('.cs')) this.stats.language = 'csharp';
+          if (file.endsWith('.dart')) this.stats.language = 'dart';
         }
 
         if (!fs.existsSync(file)) {

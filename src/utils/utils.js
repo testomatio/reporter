@@ -271,6 +271,26 @@ const fetchIdFromOutput = output => {
   return output.match(TID_FULL_PATTERN)?.[2];
 };
 
+const findDartTestLine = (lines, expectedTitle) => {
+  const testFunctions = ['patrolTest', 'testWidgets'];
+  const quotedTitles = [`'${expectedTitle}',`, `"${expectedTitle}",`, `r'${expectedTitle}',`, `r"${expectedTitle}",`];
+
+  return lines.findIndex((_line, index) => {
+    const declaration = lines
+      .slice(index, index + 5)
+      .map(line => line.trim())
+      .join(' ');
+    const functionName = testFunctions.find(name => declaration.startsWith(name));
+    if (!functionName) return false;
+
+    const argumentsList = declaration.slice(functionName.length).trimStart();
+    if (!argumentsList.startsWith('(')) return false;
+
+    const firstArgument = argumentsList.slice(1).trimStart();
+    return quotedTitles.some(title => firstArgument.startsWith(title));
+  });
+};
+
 const fetchSourceCode = (contents, opts = {}) => {
   if (!opts.title && !opts.line) return '';
 
@@ -354,6 +374,32 @@ const fetchSourceCode = (contents, opts = {}) => {
           }
         }
       }
+    } else if (opts.lang === 'dart') {
+      // For Dart, locate the specific patrolTest/testWidgets block by title first —
+      // otherwise every test sharing the same main() gets the same @T comment.
+      const rawTitle = opts.title || '';
+      let dartTestTitle = '';
+
+      if (rawTitle.startsWith('runDartTest[')) {
+        // Android: runDartTest[<path> <test name>]
+        const spaceIndex = rawTitle.indexOf(' ');
+        if (spaceIndex > -1) {
+          dartTestTitle = rawTitle.slice(spaceIndex + 1).replace(/\]$/, '');
+        }
+      } else {
+        // iOS: <ClassName> <test.path> <test name>
+        const parts = rawTitle.split(' ');
+        if (parts.length > 2 && parts[1] && parts[1].includes('.')) {
+          dartTestTitle = parts.slice(2).join(' ');
+        }
+      }
+
+      let testLineIndex = -1;
+      if (dartTestTitle) {
+        testLineIndex = findDartTestLine(lines, dartTestTitle);
+      }
+
+      lineIndex = testLineIndex;
     } else {
       lineIndex = lines.findIndex(l => l.includes(title));
     }
@@ -371,8 +417,8 @@ const fetchSourceCode = (contents, opts = {}) => {
     for (let i = lineIndex; i < lineIndex + limit; i++) {
       if (lines[i] === undefined) continue;
 
-      // Track brace depth for C# to stop after method closes
-      if (opts.lang === 'csharp') {
+      // Track brace depth for C# and Dart to stop after method/main closes
+      if (opts.lang === 'csharp' || opts.lang === 'dart') {
         const line = lines[i];
         // Count opening and closing braces
         const openBraces = (line.match(/\{/g) || []).length;
