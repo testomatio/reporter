@@ -140,7 +140,7 @@ class MarkdownPipe {
       executionTime: testExecutionSumTime(aggregated),
       executionDate: getCurrentDateTimeFormatted(),
       description:
-        [runParams?.description || this.store.coverageDescription || this.store.description, this.description]
+        [this.description, runParams?.description || this.store.coverageDescription || this.store.description]
           .filter(Boolean)
           .join('\n\n') || '',
       configuration: this.configuration || this.store.configuration || runParams?.configuration || null,

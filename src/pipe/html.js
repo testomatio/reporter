@@ -268,7 +268,7 @@ class HtmlPipe {
       executionTime: testExecutionSumTime(aggregatedTests),
       executionDate: getCurrentDateTimeFormatted(),
       description:
-        [runParams.description || this.store.coverageDescription || this.store.description, this.description]
+        [this.description, runParams.description || this.store.coverageDescription || this.store.description]
           .filter(Boolean)
           .join('\n\n') || '',
       configuration: buildDisplayConfiguration(

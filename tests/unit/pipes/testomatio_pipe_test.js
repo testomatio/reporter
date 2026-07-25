@@ -490,7 +490,7 @@ describe('TestomatioPipe', () => {
       expect(receivedRequestBody.data).to.have.property('description', 'Nightly regression on staging');
     });
 
-    it('should append TESTOMATIO_DESCRIPTION after the coverage description', async () => {
+    it('should add the coverage description after TESTOMATIO_DESCRIPTION', async () => {
       process.env.TESTOMATIO_DESCRIPTION = 'User note';
       let receivedRequestBody = null;
 
@@ -530,7 +530,7 @@ describe('TestomatioPipe', () => {
       await pipe.createRun({ kind: 'automated' });
 
       expect(receivedRequestBody).to.not.be.null;
-      expect(receivedRequestBody.data.description).to.equal('Coverage scope: 1 test affected\n\nUser note');
+      expect(receivedRequestBody.data.description).to.equal('User note\n\nCoverage scope: 1 test affected');
     });
 
     it('should build ci block from env vars and pipeStore for remote launch', async () => {

@@ -117,6 +117,7 @@ function statusEmoji(status) {
   if (status === 'passed') return '🟢';
   if (status === 'failed') return '🔴';
   if (status === 'skipped') return '🟡';
+  if (status === 'pending') return '🕐';
   return '';
 }
 
