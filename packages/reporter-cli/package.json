@@ -27,7 +27,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.279.0",
     "@aws-sdk/lib-storage": "^3.279.0",
-    "@cucumber/cucumber": "^10.9.0",
+    "@cucumber/cucumber": "^13.2.0",
     "@octokit/rest": "^21.1.1",
     "callsite-record": "^4.1.4",
     "commander": "^12",
