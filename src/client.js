@@ -206,9 +206,9 @@ class Client {
         suite_title: 'Unknown suite',
       };
 
-    // Add timestamp if not already present (microseconds since Unix epoch)
+    // Add timestamp if not already present (Unix seconds)
     if (!testData.timestamp && !process.env.TESTOMATIO_NO_TIMESTAMP) {
-      testData.timestamp = Math.floor((performance.timeOrigin + performance.now()) * 1000);
+      testData.timestamp = Math.floor((performance.timeOrigin + performance.now()) / 1000);
     }
 
     /**

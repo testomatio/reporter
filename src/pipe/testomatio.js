@@ -167,6 +167,12 @@ class TestomatioPipe {
     // add test ID + run ID
     if (data.rid) data.rid = `${this.runId}-${data.rid}`;
 
+    // convert timestamp to seconds
+    if (data.timestamp > 1e11) {
+      if (data.timestamp > 1e14) data.timestamp = Math.floor(data.timestamp / 1e6); // convert microseconds
+      else if (data.timestamp > 1e11) data.timestamp = Math.floor(data.timestamp / 1e3); // convert milliseconds
+    }
+
     if (!process.env.TESTOMATIO_STACK_PASSED && data.status === STATUS.PASSED) {
       data.stack = null;
     }
