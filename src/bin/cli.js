@@ -8,7 +8,7 @@ import TestomatClient from '../client.js';
 import XmlReader from '../xmlReader.js';
 import AllureReader from '../allureReader.js';
 import { APP_PREFIX, STATUS, DEBUG_FILE, BATCH_MODE } from '../constants.js';
-import { cleanLatestRunId, getPackageVersion, applyFilter } from '../utils/utils.js';
+import { cleanLatestRunId, getPackageVersion, applyFilter, transformEnvVarToBoolean } from '../utils/utils.js';
 import { config } from '../config.js';
 import { readLatestRunId } from '../utils/utils.js';
 import pc from 'picocolors';
@@ -107,8 +107,11 @@ program
     const apiKey = process.env['INPUT_TESTOMATIO-KEY'] || config.TESTOMATIO;
     const client = new TestomatClient({ apiKey });
 
+    const finishParams = {};
+    if (transformEnvVarToBoolean(process.env.TESTOMATIO_FINISH_SHARED_RUN)) finishParams.force_finish_shared_run = true;
+
     // @ts-ignore
-    client.updateRunStatus(STATUS.FINISHED).then(() => {
+    client.updateRunStatus(STATUS.FINISHED, finishParams).then(() => {
       process.exit(0);
     });
   });

@@ -73,6 +73,8 @@ npx @testomatio/reporter finish [options]
 **Environment Variables:**
 
 - `TESTOMATIO`: Your Testomat.io API key in format: `tstmt_*` (required).
+- `TESTOMATIO_RUN`: ID of the run to finish (required if not stored from a previous `start` command).
+- `TESTOMATIO_FINISH_SHARED_RUN`: Set to `1` to manually finish a shared run.
 
 **Options:**
 
