@@ -87,6 +87,11 @@ program
       process.exit(1);
     }
 
+    // tests are executed later, so report the run as pending with the tests it was scoped to:
+    // pipes add their report now and replace it when the run is finished
+    const plannedTests = (client.pipeStore.preparedTestIds || []).map(id => ({ test_id: id, title: id }));
+    await client.updateRunStatus('pending', { tests: plannedTests });
+
     // stdout carries ONLY the run id so it can be captured: RUN_ID=$(reporter start)
     console.log(runId);
     process.exit(0);

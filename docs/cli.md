@@ -58,6 +58,8 @@ npx @testomatio/reporter start --filter "testomatio:tag-name=smoke"
 - `--format <format>`: Print **only the run id** to `stdout` (banner and logs go to `stderr`) so it can be captured: `RUN_ID=$(npx @testomatio/reporter start --format id)`.
 - `--warn`: Exit `0` instead of `1` when the filter matches no tests — the warning is still printed. Use in pipelines where an empty scope is a normal outcome (e.g. a PR touching no mapped files).
 
+The run is reported as **pending** right after it is created, so pipes which comment on a pull request ([GitHub](./pipes/github.md), [GitLab](./pipes/gitlab.md), [Bitbucket](./pipes/bitbucket.md)) add their report immediately — the same report as on finish, listing the tests the run was scoped to with `--filter` instead of results. It is replaced once the run is finished.
+
 > Previously known as: `npx start-test-run --launch` _(before 1.6.0)_
 
 ### 2. finish

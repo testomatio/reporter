@@ -289,6 +289,8 @@ export enum RunStatus {
   Passed = 'passed',
   Failed = 'failed',
   Finished = 'finished',
+  /** run created but not executed yet, reported by `reporter start` */
+  Pending = 'pending',
 }
 
 /** Batch upload strategy:

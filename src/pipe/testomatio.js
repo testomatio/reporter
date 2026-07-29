@@ -279,8 +279,9 @@ class TestomatioPipe {
         suites: coverageConfiguration.suites?.map(id => id.replace(/^S/, '')) || [],
       };
     }
-    // Run description: coverage-derived block (if any) with the user-provided TESTOMATIO_DESCRIPTION appended after it.
-    const description = [coverageDescription, this.description].filter(Boolean).join('\n\n') || null;
+    // Run description: the user-provided TESTOMATIO_DESCRIPTION with the coverage-derived block
+    // (if any) added after it. Neither overrides the other.
+    const description = [this.description, coverageDescription].filter(Boolean).join('\n\n') || null;
 
     // Merge caller-supplied configuration (e.g. { exploratory: true }) into runParams.configuration.
     // Caller values win on key conflict; coverage-derived tests/suites lists are preserved when not overridden.
@@ -557,6 +558,9 @@ class TestomatioPipe {
     }
 
     const { status } = params;
+
+    // a pending run was just created: nothing to update here, only other pipes report it
+    if (status === 'pending') return;
 
     let status_event;
 

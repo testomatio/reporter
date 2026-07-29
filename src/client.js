@@ -371,7 +371,7 @@ class Client {
   /**
    *
    * Updates the status of the current test run and finishes the run.
-   * @param {'passed' | 'failed' | 'skipped' | 'finished'} status - The status of the current test run.
+   * @param {'passed' | 'failed' | 'skipped' | 'finished' | 'pending'} status - The status of the current test run.
    * @param {Partial<import('../types/types.js').RunData>} [params] - Additional run params (e.g. duration).
    * Must be one of "passed", "failed", or "finished"
    * @returns {Promise<any>} - A Promise that resolves when finishes the run.
