@@ -255,7 +255,8 @@ function appendStep(step, shift = 0) {
       newCategory = 'hook';
       break;
     case 'attach':
-      return null; // Skip steps with category 'attach'
+    case 'test.attach':
+      return null; // Attachments are reported as artifacts, not standalone steps
     default:
       newCategory = 'framework';
   }
@@ -286,11 +287,11 @@ function appendStep(step, shift = 0) {
     resultStep.log = truncate(String(step.log), 250);
   }
 
-  // Add artifacts from attachments
-  if (step.attachments && step.attachments.length > 0 && SCREENSHOTS_ON_STEPS) {
-    const screenshotAttachment = step.attachments.find(att =>
-      att.contentType === 'image/png' && att.name === 'screenshot'
-    );
+  // Playwright also associates automatic failure screenshots with the active
+  // hook. Only attachments created for an explicit test.step belong to a step;
+  // hook and fixture attachments remain test-level result artifacts.
+  if (step.category === 'test.step' && step.attachments?.length && SCREENSHOTS_ON_STEPS) {
+    const screenshotAttachment = step.attachments.find(isScreenshotArtifact);
     if (screenshotAttachment && screenshotAttachment.path) {
       const artifacts = { screenshot: screenshotAttachment.path };
       addArtifactsToStep(resultStep, artifacts);
