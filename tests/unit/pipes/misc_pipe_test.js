@@ -1,5 +1,10 @@
 import { expect } from 'chai';
-import { parseFilterParams, updateFilterType, generateFilterRequestParams } from '../../../src/utils/pipe_utils.js';
+import {
+  parseFilterParams,
+  updateFilterType,
+  generateFilterRequestParams,
+  plannedTestsLabel,
+} from '../../../src/utils/pipe_utils.js';
 
 describe('testing utils/pipe_utils.js functions', () => {
   describe('updateFilterType function', () => {
@@ -89,6 +94,35 @@ describe('testing utils/pipe_utils.js functions', () => {
       const input = { type: 'tag', apiKey: 'myApiKey' };
       const result = generateFilterRequestParams(input);
       expect(result).to.be.undefined;
+    });
+  });
+
+  describe('plannedTestsLabel function', () => {
+    const suites = [{ test_id: 'S1' }, { test_id: 'S2' }, { test_id: 'S3' }];
+    const tests = [{ test_id: 'T1' }, { test_id: 'T2' }];
+
+    it('should prefer the tests count reported by the server', () => {
+      expect(plannedTestsLabel(suites, 159)).to.equal('**159** tests planned');
+    });
+
+    it('should count suites as suites when the server reported no count', () => {
+      expect(plannedTestsLabel(suites, undefined)).to.equal('**3** suites planned');
+    });
+
+    it('should count tests as tests when the server reported no count', () => {
+      expect(plannedTestsLabel(tests, undefined)).to.equal('**2** tests planned');
+    });
+
+    it('should report tests and suites separately when both are scheduled', () => {
+      expect(plannedTestsLabel([...tests, ...suites], undefined)).to.equal('**2** tests and **3** suites planned');
+    });
+
+    it('should ignore a zero tests count reported by the server', () => {
+      expect(plannedTestsLabel(suites, 0)).to.equal('**3** suites planned');
+    });
+
+    it('should treat tests without an id as tests', () => {
+      expect(plannedTestsLabel([{ title: 'no id' }], undefined)).to.equal('**1** tests planned');
     });
   });
 });

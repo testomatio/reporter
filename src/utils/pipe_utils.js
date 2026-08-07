@@ -229,6 +229,29 @@ function formatFilterListIds(ids, format) {
   }
 }
 
+/**
+ * Describe the scope of a run that was prepared but not executed yet.
+ *
+ * The server expands a run configuration (suites, plans) into tests, so `testsCount` — when the
+ * server reported one — is the only accurate number. Without it we can only describe the ids the
+ * run was scoped to, which are a mix of test (`T…`) and suite (`S…`) ids; calling a suite a test
+ * would understate the run by however many tests that suite holds.
+ *
+ * @param {Array<{test_id?: string}>} tests - Prepared tests the run was scoped to.
+ * @param {number} [testsCount] - Real number of tests, as reported by Testomat.io.
+ * @returns {string} Markdown label, e.g. `**159** tests planned` or `**6** suites planned`.
+ */
+function plannedTestsLabel(tests, testsCount) {
+  if (testsCount > 0) return `**${testsCount}** tests planned`;
+
+  const suitesCount = tests.filter(t => `${t.test_id || ''}`.startsWith('S')).length;
+  const knownTestsCount = tests.length - suitesCount;
+
+  if (!suitesCount) return `**${knownTestsCount}** tests planned`;
+  if (!knownTestsCount) return `**${suitesCount}** suites planned`;
+  return `**${knownTestsCount}** tests and **${suitesCount}** suites planned`;
+}
+
 export {
   updateFilterType,
   parseFilterParams,
@@ -236,6 +259,7 @@ export {
   setS3Credentials,
   statusEmoji,
   fullName,
+  plannedTestsLabel,
   parsePipeOptions,
   formatFilterListIds,
   getObjectSize,

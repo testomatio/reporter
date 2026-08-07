@@ -1,6 +1,6 @@
 import { APP_PREFIX, testomatLogoURL } from '../constants.js';
 import { ansiRegExp, isSameTest, truncate } from '../utils/utils.js';
-import { statusEmoji, fullName } from '../utils/pipe_utils.js';
+import { statusEmoji, fullName, plannedTestsLabel } from '../utils/pipe_utils.js';
 import { Gaxios } from 'gaxios';
 import pc from 'picocolors';
 import humanizeDuration from 'humanize-duration';
@@ -107,13 +107,23 @@ export class BitbucketPipe {
     const failedCount = this.tests.filter(t => t.status === 'failed').length;
     const skippedCount = this.tests.filter(t => t.status === 'skipped').length;
 
+    // a pending run was only scheduled, so it has no results, counters or durations to report yet
+    const isPendingRun = runParams.status === 'pending';
+
     // Constructing the table
     let summary = `${this.hiddenCommentData}
-    
+
   | ![Testomat.io Report](${testomatLogoURL}) | ${statusEmoji(
     runParams.status,
   )} ${runParams.status.toUpperCase()} ${statusEmoji(runParams.status)} |
-  | --- | --- |
+  | --- | --- |`;
+
+    if (isPendingRun) {
+      const planned = plannedTestsLabel(this.tests, this.store.runTestsCount);
+      if (this.tests.length) summary += `\n  | **Tests** | ⚪ ${planned} |`;
+      summary += '\n  ';
+    } else {
+      summary += `
   | **Tests** | ✔️ **${this.tests.length}** tests run |
   | **Summary** | ${statusEmoji('failed')} **${failedCount}** failed; ${statusEmoji(
     'passed',
@@ -128,6 +138,7 @@ export class BitbucketPipe {
     },
   )}** |
   `;
+    }
 
     if (this.ENV.BITBUCKET_BRANCH && this.ENV.BITBUCKET_COMMIT) {
       // eslint-disable-next-line max-len
@@ -182,7 +193,7 @@ export class BitbucketPipe {
       }
     }
 
-    if (this.tests.length > 0) {
+    if (this.tests.length > 0 && !isPendingRun) {
       body += `\n\n**🐢 Slowest Tests**\n\n`;
       body += this.tests
         .sort((a, b) => b.run_time - a.run_time)

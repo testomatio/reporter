@@ -31,6 +31,12 @@ paths:
                     description: Run ID used to send data to in following requests
                   url:
                     type: string
+                  tests_count:
+                    type: integer
+                    description: >
+                      Number of tests the run holds. For manual and mixed runs the configuration
+                      (suites, plans) is already expanded into tests, so this is the real scope of
+                      the run. Automated runs report 0, as their tests are only known once executed.
         400:
           description: Bad request - check the request body and/or parameters
         401:

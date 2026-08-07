@@ -6,7 +6,7 @@ import merge from 'lodash.merge';
 import path from 'path';
 import { APP_PREFIX, testomatLogoURL } from '../constants.js';
 import { ansiRegExp, isSameTest, truncate } from '../utils/utils.js';
-import { statusEmoji, fullName } from '../utils/pipe_utils.js';
+import { statusEmoji, fullName, plannedTestsLabel } from '../utils/pipe_utils.js';
 import { log } from '../utils/log.js';
 
 const debug = createDebugMessages('@testomatio/reporter:pipe:gitlab');
@@ -85,13 +85,23 @@ class GitLabPipe {
     const failedCount = this.tests.filter(t => t.status === 'failed').length;
     const skippedCount = this.tests.filter(t => t.status === 'skipped').length;
 
+    // a pending run was only scheduled, so it has no results, counters or durations to report yet
+    const isPendingRun = runParams.status === 'pending';
+
     // constructing the table
     let summary = `${this.hiddenCommentData}
-    
+
   | [![Testomat.io Report](${testomatLogoURL})](https://testomat.io)  | ${statusEmoji(
     runParams.status,
   )} ${runParams.status.toUpperCase()} ${statusEmoji(runParams.status)} |
-  | --- | --- |
+  | --- | --- |`;
+
+    if (isPendingRun) {
+      const planned = plannedTestsLabel(this.tests, this.store.runTestsCount);
+      if (this.tests.length) summary += `\n  | Tests | ⚪  ${planned}  |`;
+      summary += '\n  ';
+    } else {
+      summary += `
   | Tests | ✔️  **${this.tests.length}** tests run  |
   | Summary | ${statusEmoji('failed')} **${failedCount}** failed; ${statusEmoji(
     'passed',
@@ -106,6 +116,7 @@ class GitLabPipe {
     },
   )}** |
   `;
+    }
 
     if (this.ENV.CI_JOB_NAME && this.ENV.CI_JOB_ID) {
       // eslint-disable-next-line max-len
@@ -158,7 +169,7 @@ class GitLabPipe {
       body += '\n\n</details>';
     }
 
-    if (this.tests.length > 0) {
+    if (this.tests.length > 0 && !isPendingRun) {
       body += '\n<details>\n<summary><h3>🐢 Slowest Tests</h3></summary>\n\n';
       body += this.tests
         .sort((a, b) => b?.run_time - a?.run_time)

@@ -373,6 +373,10 @@ class TestomatioPipe {
       this.store.runUrl = this.runUrl;
       this.store.runPublicUrl = this.runPublicUrl;
       this.store.runId = this.runId;
+      // manual & mixed runs are created from a configuration (suites, plans) which the server expands
+      // into tests, so only the server knows how many tests a prepared run actually holds.
+      // Automated runs report 0 here, as their tests are only known once they are executed.
+      if (resp.data.tests_count > 0) this.store.runTestsCount = resp.data.tests_count;
       log.info('📊 Report created. Report ID:', this.runId);
       process.env.runId = this.runId;
       debug('Run created', this.runId);

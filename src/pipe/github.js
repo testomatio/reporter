@@ -5,7 +5,7 @@ import humanizeDuration from 'humanize-duration';
 import merge from 'lodash.merge';
 import { testomatLogoURL } from '../constants.js';
 import { ansiRegExp, isSameTest, truncate } from '../utils/utils.js';
-import { statusEmoji, fullName } from '../utils/pipe_utils.js';
+import { statusEmoji, fullName, plannedTestsLabel } from '../utils/pipe_utils.js';
 import { log } from '../utils/log.js';
 
 const debug = createDebugMessages('@testomatio/reporter:pipe:github');
@@ -79,25 +79,34 @@ class GitHubPipe {
     const failedCount = this.tests.filter(t => t.status === 'failed').length;
     const skippedCount = this.tests.filter(t => t.status === 'skipped').length;
 
+    // a pending run was only scheduled, so it has no results, counters or durations to report yet
+    const isPendingRun = runParams.status === 'pending';
+
     let summary = `${this.hiddenCommentData}
 
 | [![Testomat.io Report](${testomatLogoURL})](https://testomat.io)  | ${statusEmoji(
       runParams.status,
     )} ${`${process.env.GITHUB_JOB} ${runParams.status}`.toUpperCase()} |
-| --- | --- |        
+| --- | --- |        `;
+
+    if (isPendingRun) {
+      if (this.tests.length) summary += `\n| Tests | ⚪  ${plannedTestsLabel(this.tests, this.store.runTestsCount)}  |`;
+    } else {
+      summary += `
 | Tests | ✔️  **${this.tests.length}** tests run  |
 | Summary | ${failedCount ? `${statusEmoji('failed')} **${failedCount}** failed; ` : ''} ${statusEmoji(
-      'passed',
-    )} **${passedCount}** passed; **${statusEmoji('skipped')}** ${skippedCount} skipped |
+        'passed',
+      )} **${passedCount}** passed; **${statusEmoji('skipped')}** ${skippedCount} skipped |
 | Duration | 🕐  **${humanizeDuration(
-      parseInt(
-        this.tests.reduce((a, t) => a + (t.run_time || 0), 0),
-        10,
-      ),
-      {
-        maxDecimalPoints: 0,
-      },
-    )}** |`;
+        parseInt(
+          this.tests.reduce((a, t) => a + (t.run_time || 0), 0),
+          10,
+        ),
+        {
+          maxDecimalPoints: 0,
+        },
+      )}** |`;
+    }
 
     if (this.store.runUrl) {
       summary += `\n| Testomat.io Report | 📊 [Run #${this.store.runId}](${this.store.runUrl})  | `;
@@ -170,7 +179,7 @@ class GitHubPipe {
       body += '\n\n</details>';
     }
 
-    if (this.tests.length > 0) {
+    if (this.tests.length > 0 && !isPendingRun) {
       body += '\n<details>\n<summary><h3>🐢 Slowest Tests</h3></summary>\n\n';
       body += this.tests
         .sort((a, b) => b?.run_time - a?.run_time)
