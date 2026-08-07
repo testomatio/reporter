@@ -4,6 +4,9 @@ import {
   updateFilterType,
   generateFilterRequestParams,
   plannedTestsLabel,
+  markdownTable,
+  runSummary,
+  totalDuration,
 } from '../../../src/utils/pipe_utils.js';
 
 describe('testing utils/pipe_utils.js functions', () => {
@@ -123,6 +126,64 @@ describe('testing utils/pipe_utils.js functions', () => {
 
     it('should treat tests without an id as tests', () => {
       expect(plannedTestsLabel([{ title: 'no id' }], undefined)).to.equal('**1** tests planned');
+    });
+  });
+
+  describe('markdownTable function', () => {
+    it('should render a header and rows in insertion order', () => {
+      const table = markdownTable(['Report', 'PASSED'], { Tests: '3 tests run', Duration: '2 seconds' });
+
+      expect(table).to.equal(
+        ['| Report | PASSED |', '| --- | --- |', '| Tests | 3 tests run |', '| Duration | 2 seconds |'].join('\n'),
+      );
+    });
+
+    it('should skip rows without a value', () => {
+      const table = markdownTable(['Report', 'PENDING'], { Tests: '6 tests planned', Summary: '', Duration: undefined });
+
+      expect(table).to.equal(
+        ['| Report | PENDING |', '| --- | --- |', '| Tests | 6 tests planned |'].join('\n'),
+      );
+    });
+
+    it('should render only a header when no row has a value', () => {
+      expect(markdownTable(['Report', 'PENDING'], {})).to.equal('| Report | PENDING |\n| --- | --- |');
+    });
+
+    it('should bold the labels when asked', () => {
+      const table = markdownTable(['Report', 'PASSED'], { Tests: '3 tests run' }, { boldLabels: true });
+
+      expect(table).to.equal('| Report | PASSED |\n| --- | --- |\n| **Tests** | 3 tests run |');
+    });
+  });
+
+  describe('runSummary function', () => {
+    it('should report each status', () => {
+      const tests = [{ status: 'passed' }, { status: 'failed' }, { status: 'skipped' }, { status: 'passed' }];
+
+      expect(runSummary(tests)).to.equal('🔴 **1** failed; 🟢 **2** passed; 🟡 **1** skipped');
+    });
+
+    it('should leave out failures when nothing failed', () => {
+      expect(runSummary([{ status: 'passed' }])).to.equal('🟢 **1** passed; 🟡 **0** skipped');
+    });
+
+    it('should handle a run with no tests', () => {
+      expect(runSummary([])).to.equal('🟢 **0** passed; 🟡 **0** skipped');
+    });
+  });
+
+  describe('totalDuration function', () => {
+    it('should sum the run time of every test', () => {
+      expect(totalDuration([{ run_time: 1200 }, { run_time: 800 }])).to.equal('2 seconds');
+    });
+
+    it('should treat a missing run time as zero', () => {
+      expect(totalDuration([{ run_time: 1000 }, {}])).to.equal('1 second');
+    });
+
+    it('should handle a run with no tests', () => {
+      expect(totalDuration([])).to.equal('0 seconds');
     });
   });
 });

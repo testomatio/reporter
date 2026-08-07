@@ -6,7 +6,14 @@ import merge from 'lodash.merge';
 import path from 'path';
 import { APP_PREFIX, testomatLogoURL } from '../constants.js';
 import { ansiRegExp, isSameTest, truncate } from '../utils/utils.js';
-import { statusEmoji, fullName, plannedTestsLabel } from '../utils/pipe_utils.js';
+import {
+  statusEmoji,
+  fullName,
+  plannedTestsLabel,
+  markdownTable,
+  runSummary,
+  totalDuration,
+} from '../utils/pipe_utils.js';
 import { log } from '../utils/log.js';
 
 const debug = createDebugMessages('@testomatio/reporter:pipe:gitlab');
@@ -81,47 +88,30 @@ class GitLabPipe {
     if (runParams.tests) runParams.tests.forEach(t => this.addTest(t));
 
     // ... create a comment on GitLab
-    const passedCount = this.tests.filter(t => t.status === 'passed').length;
-    const failedCount = this.tests.filter(t => t.status === 'failed').length;
-    const skippedCount = this.tests.filter(t => t.status === 'skipped').length;
-
     // a pending run was only scheduled, so it has no results, counters or durations to report yet
     const isPendingRun = runParams.status === 'pending';
 
-    // constructing the table
-    let summary = `${this.hiddenCommentData}
-
-  | [![Testomat.io Report](${testomatLogoURL})](https://testomat.io)  | ${statusEmoji(
-    runParams.status,
-  )} ${runParams.status.toUpperCase()} ${statusEmoji(runParams.status)} |
-  | --- | --- |`;
+    /** @type {Object<string, string>} */
+    const rows = {};
 
     if (isPendingRun) {
-      const planned = plannedTestsLabel(this.tests, this.store.runTestsCount);
-      if (this.tests.length) summary += `\n  | Tests | ⚪  ${planned}  |`;
-      summary += '\n  ';
+      if (this.tests.length) rows.Tests = `⚪ ${plannedTestsLabel(this.tests, this.store.runTestsCount)}`;
     } else {
-      summary += `
-  | Tests | ✔️  **${this.tests.length}** tests run  |
-  | Summary | ${statusEmoji('failed')} **${failedCount}** failed; ${statusEmoji(
-    'passed',
-  )} **${passedCount}** passed; **${statusEmoji('skipped')}** ${skippedCount} skipped |
-  | Duration | 🕐  **${humanizeDuration(
-    parseInt(
-      this.tests.reduce((a, t) => a + (t.run_time || 0), 0),
-      10,
-    ),
-    {
-      maxDecimalPoints: 0,
-    },
-  )}** |
-  `;
+      rows.Tests = `✔️ **${this.tests.length}** tests run`;
+      rows.Summary = runSummary(this.tests);
+      rows.Duration = `🕐 **${totalDuration(this.tests)}**`;
     }
 
     if (this.ENV.CI_JOB_NAME && this.ENV.CI_JOB_ID) {
       // eslint-disable-next-line max-len
-      summary += `| Job | 👷 [${this.ENV.CI_JOB_ID}](${this.ENV.CI_JOB_URL})<br>Name: **${this.ENV.CI_JOB_NAME}**<br>Stage: **${this.ENV.CI_JOB_STAGE}** | `;
+      rows.Job = `👷 [${this.ENV.CI_JOB_ID}](${this.ENV.CI_JOB_URL})<br>Name: **${this.ENV.CI_JOB_NAME}**<br>Stage: **${this.ENV.CI_JOB_STAGE}**`;
     }
+
+    const header = [
+      `[![Testomat.io Report](${testomatLogoURL})](https://testomat.io)`,
+      `${statusEmoji(runParams.status)} ${runParams.status.toUpperCase()} ${statusEmoji(runParams.status)}`,
+    ];
+    const summary = `${this.hiddenCommentData}\n\n${markdownTable(header, rows)}`;
 
     const failures = this.tests
       .filter(t => t.status === 'failed')

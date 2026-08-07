@@ -1,3 +1,4 @@
+import humanizeDuration from 'humanize-duration';
 import { log } from './log.js';
 
 /**
@@ -230,6 +231,64 @@ function formatFilterListIds(ids, format) {
 }
 
 /**
+ * Summarize how a finished run went, e.g. `🔴 **1** failed; 🟢 **8** passed; 🟡 **1** skipped`.
+ * A run without failures leaves the failed part out rather than reporting a zero.
+ *
+ * @param {Array<{status?: string}>} tests
+ * @returns {string}
+ */
+function runSummary(tests) {
+  const countOf = status => tests.filter(t => t.status === status).length;
+  const failedCount = countOf('failed');
+
+  const parts = [];
+  if (failedCount) parts.push(`${statusEmoji('failed')} **${failedCount}** failed`);
+  parts.push(`${statusEmoji('passed')} **${countOf('passed')}** passed`);
+  parts.push(`${statusEmoji('skipped')} **${countOf('skipped')}** skipped`);
+
+  return parts.join('; ');
+}
+
+/**
+ * Total run time of the given tests, humanized — e.g. `2 seconds`.
+ *
+ * @param {Array<{run_time?: number}>} tests
+ * @returns {string}
+ */
+function totalDuration(tests) {
+  const milliseconds = tests.reduce((total, t) => total + (t.run_time || 0), 0);
+  return humanizeDuration(Math.trunc(milliseconds), { maxDecimalPoints: 0 });
+}
+
+/**
+ * Render a two-column markdown table.
+ *
+ * Rows are a plain object so a report can be assembled as data — adding a key once its value is
+ * known — instead of stitching conditional branches into a template literal. Rows with an empty
+ * value are left out, so an optional row needs no surrounding `if`.
+ *
+ * @param {string[]} header - The two header cells.
+ * @param {Object<string, string>} rows - Label to value, rendered in insertion order.
+ * @param {{ boldLabels?: boolean }} [opts] - Set `boldLabels` to wrap every label in `**`.
+ * @returns {string} The table, with no trailing newline.
+ */
+function markdownTable(header, rows, opts = {}) {
+  const lines = [`| ${header[0]} | ${header[1]} |`, '| --- | --- |'];
+
+  for (const [label, value] of Object.entries(rows)) {
+    if (!value) continue;
+
+    if (opts.boldLabels) {
+      lines.push(`| **${label}** | ${value} |`);
+    } else {
+      lines.push(`| ${label} | ${value} |`);
+    }
+  }
+
+  return lines.join('\n');
+}
+
+/**
  * Describe the scope of a run that was prepared but not executed yet.
  *
  * The server expands a run configuration (suites, plans) into tests, so `testsCount` — when the
@@ -259,6 +318,9 @@ export {
   setS3Credentials,
   statusEmoji,
   fullName,
+  markdownTable,
+  runSummary,
+  totalDuration,
   plannedTestsLabel,
   parsePipeOptions,
   formatFilterListIds,
