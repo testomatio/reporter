@@ -323,6 +323,7 @@ class TestomatioPipe {
         shared_run: this.sharedRun,
         shared_run_timeout: this.sharedRunTimeout,
         kind: params.kind,
+        status: params.status,
         configuration,
         description,
         ci,

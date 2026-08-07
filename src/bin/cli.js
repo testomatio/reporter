@@ -62,7 +62,10 @@ program
     const apiKey = process.env['INPUT_TESTOMATIO-KEY'] || config.TESTOMATIO;
     const client = new TestomatClient({ apiKey });
 
-    const createRunParams = {};
+    // the run is only being prepared here, so it starts out scheduled rather than running:
+    // the server promotes it to running once the first test result is reported, or when it is
+    // launched by hand from Testomat.io
+    const createRunParams = { status: 'scheduled' };
     if (opts.kind) createRunParams.kind = opts.kind;
 
     if (opts.filter) {

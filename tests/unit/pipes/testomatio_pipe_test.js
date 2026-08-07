@@ -378,6 +378,36 @@ describe('TestomatioPipe', () => {
       expect(store.runTestsCount).to.be.undefined;
     });
 
+    it('should pass a scheduled status to API so a prepared run does not report as running', async () => {
+      let receivedRequestBody = null;
+
+      replyToCreateRun({});
+      const originalRequest = testomatioPipe.client.request;
+      testomatioPipe.client.request = async function (config) {
+        receivedRequestBody = config;
+        return originalRequest.call(this, config);
+      };
+
+      await testomatioPipe.createRun({ kind: 'mixed', status: 'scheduled' });
+
+      expect(receivedRequestBody.data).to.have.property('status', 'scheduled');
+    });
+
+    it('should not send a status for a run that starts executing right away', async () => {
+      let receivedRequestBody = null;
+
+      replyToCreateRun({});
+      const originalRequest = testomatioPipe.client.request;
+      testomatioPipe.client.request = async function (config) {
+        receivedRequestBody = config;
+        return originalRequest.call(this, config);
+      };
+
+      await testomatioPipe.createRun({ kind: 'automated' });
+
+      expect(receivedRequestBody.data).to.not.have.property('status');
+    });
+
     it('should pass kind parameter to API when creating a run', async () => {
       let receivedRequestBody = null;
 
