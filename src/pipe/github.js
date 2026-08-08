@@ -5,7 +5,14 @@ import humanizeDuration from 'humanize-duration';
 import merge from 'lodash.merge';
 import { testomatLogoURL } from '../constants.js';
 import { ansiRegExp, isSameTest, truncate } from '../utils/utils.js';
-import { statusEmoji, fullName } from '../utils/pipe_utils.js';
+import {
+  statusEmoji,
+  fullName,
+  plannedTestsLabel,
+  markdownTable,
+  runSummary,
+  totalDuration,
+} from '../utils/pipe_utils.js';
 import { log } from '../utils/log.js';
 
 const debug = createDebugMessages('@testomatio/reporter:pipe:github');
@@ -75,41 +82,36 @@ class GitHubPipe {
     if (!(owner || repo)) return;
 
     // ... create a comment on GitHub
-    const passedCount = this.tests.filter(t => t.status === 'passed').length;
-    const failedCount = this.tests.filter(t => t.status === 'failed').length;
-    const skippedCount = this.tests.filter(t => t.status === 'skipped').length;
+    // a scheduled run has no results yet: no counters, no duration
+    const isPendingRun = runParams.status === 'pending';
 
-    let summary = `${this.hiddenCommentData}
+    /** @type {Object<string, string>} */
+    const rows = {};
 
-| [![Testomat.io Report](${testomatLogoURL})](https://testomat.io)  | ${statusEmoji(
-      runParams.status,
-    )} ${`${process.env.GITHUB_JOB} ${runParams.status}`.toUpperCase()} |
-| --- | --- |        
-| Tests | ✔️  **${this.tests.length}** tests run  |
-| Summary | ${failedCount ? `${statusEmoji('failed')} **${failedCount}** failed; ` : ''} ${statusEmoji(
-      'passed',
-    )} **${passedCount}** passed; **${statusEmoji('skipped')}** ${skippedCount} skipped |
-| Duration | 🕐  **${humanizeDuration(
-      parseInt(
-        this.tests.reduce((a, t) => a + (t.run_time || 0), 0),
-        10,
-      ),
-      {
-        maxDecimalPoints: 0,
-      },
-    )}** |`;
+    if (isPendingRun) {
+      if (this.tests.length) rows.Tests = `⚪ ${plannedTestsLabel(this.tests, this.store.runTestsCount)}`;
+    } else {
+      rows.Tests = `✔️ **${this.tests.length}** tests run`;
+      rows.Summary = runSummary(this.tests);
+      rows.Duration = `🕐 **${totalDuration(this.tests)}**`;
+    }
 
     if (this.store.runUrl) {
-      summary += `\n| Testomat.io Report | 📊 [Run #${this.store.runId}](${this.store.runUrl})  | `;
+      rows['Testomat.io Report'] = `📊 [Run #${this.store.runId}](${this.store.runUrl})`;
     }
     if (process.env.GITHUB_WORKFLOW) {
-      summary += `\n| Job | 🗂️  [${this.jobKey}](${process.env.GITHUB_SERVER_URL || 'https://github.com'}/${
-        this.repo
-      }/actions/runs/${process.env.GITHUB_RUN_ID}) | `;
+      const server = process.env.GITHUB_SERVER_URL || 'https://github.com';
+      rows.Job = `🗂️ [${this.jobKey}](${server}/${this.repo}/actions/runs/${process.env.GITHUB_RUN_ID})`;
     }
     if (process.env.RUNNER_OS) {
-      summary += `\n| Operating System | 🖥️ \`${process.env.RUNNER_OS}\` ${process.env.RUNNER_ARCH || ''} | `;
+      rows['Operating System'] = `🖥️ \`${process.env.RUNNER_OS}\` ${process.env.RUNNER_ARCH || ''}`;
     }
+
+    const header = [
+      `[![Testomat.io Report](${testomatLogoURL})](https://testomat.io)`,
+      `${statusEmoji(runParams.status)} ${`${process.env.GITHUB_JOB} ${runParams.status}`.toUpperCase()}`,
+    ];
+    const summary = `${this.hiddenCommentData}\n\n${markdownTable(header, rows)}`;
 
     const failures = this.tests
       .filter(t => t.status === 'failed')
@@ -170,7 +172,7 @@ class GitHubPipe {
       body += '\n\n</details>';
     }
 
-    if (this.tests.length > 0) {
+    if (this.tests.length > 0 && !isPendingRun) {
       body += '\n<details>\n<summary><h3>🐢 Slowest Tests</h3></summary>\n\n';
       body += this.tests
         .sort((a, b) => b?.run_time - a?.run_time)

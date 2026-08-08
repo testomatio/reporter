@@ -346,6 +346,9 @@ export interface CreateRunParams {
   /** Run configuration merged into the server-side run configuration. */
   configuration?: Record<string, any>;
 
+  /** Initial run status. `scheduled` marks a prepared run; the server flips it to running. */
+  status?: 'scheduled';
+
   /** Override batch upload mode. */
   batchMode?: BatchMode;
 }

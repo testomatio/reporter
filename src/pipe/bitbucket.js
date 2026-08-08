@@ -1,6 +1,13 @@
 import { APP_PREFIX, testomatLogoURL } from '../constants.js';
 import { ansiRegExp, isSameTest, truncate } from '../utils/utils.js';
-import { statusEmoji, fullName } from '../utils/pipe_utils.js';
+import {
+  statusEmoji,
+  fullName,
+  plannedTestsLabel,
+  markdownTable,
+  runSummary,
+  totalDuration,
+} from '../utils/pipe_utils.js';
 import { Gaxios } from 'gaxios';
 import pc from 'picocolors';
 import humanizeDuration from 'humanize-duration';
@@ -103,36 +110,31 @@ export class BitbucketPipe {
     }
 
     // Create a comment on Bitbucket
-    const passedCount = this.tests.filter(t => t.status === 'passed').length;
-    const failedCount = this.tests.filter(t => t.status === 'failed').length;
-    const skippedCount = this.tests.filter(t => t.status === 'skipped').length;
+    // a scheduled run has no results yet: no counters, no duration
+    const isPendingRun = runParams.status === 'pending';
 
-    // Constructing the table
-    let summary = `${this.hiddenCommentData}
-    
-  | ![Testomat.io Report](${testomatLogoURL}) | ${statusEmoji(
-    runParams.status,
-  )} ${runParams.status.toUpperCase()} ${statusEmoji(runParams.status)} |
-  | --- | --- |
-  | **Tests** | ✔️ **${this.tests.length}** tests run |
-  | **Summary** | ${statusEmoji('failed')} **${failedCount}** failed; ${statusEmoji(
-    'passed',
-  )} **${passedCount}** passed; **${statusEmoji('skipped')}** ${skippedCount} skipped |
-  | **Duration** | 🕐 **${humanizeDuration(
-    parseInt(
-      this.tests.reduce((a, t) => a + (t.run_time || 0), 0),
-      10,
-    ),
-    {
-      maxDecimalPoints: 0,
-    },
-  )}** |
-  `;
+    /** @type {Object<string, string>} */
+    const rows = {};
+
+    if (isPendingRun) {
+      if (this.tests.length) rows.Tests = `⚪ ${plannedTestsLabel(this.tests, this.store.runTestsCount)}`;
+    } else {
+      rows.Tests = `✔️ **${this.tests.length}** tests run`;
+      rows.Summary = runSummary(this.tests);
+      rows.Duration = `🕐 **${totalDuration(this.tests)}**`;
+    }
 
     if (this.ENV.BITBUCKET_BRANCH && this.ENV.BITBUCKET_COMMIT) {
-      // eslint-disable-next-line max-len
-      summary += `| **Job** | 👷 [#${this.ENV.BITBUCKET_BUILD_NUMBER}](https://bitbucket.org/${this.ENV.BITBUCKET_REPO_FULL_NAME}/pipelines/results/${this.ENV.BITBUCKET_BUILD_NUMBER}") by commit: **${this.ENV.BITBUCKET_COMMIT}** |`;
+      const buildNumber = this.ENV.BITBUCKET_BUILD_NUMBER;
+      const buildUrl = `https://bitbucket.org/${this.ENV.BITBUCKET_REPO_FULL_NAME}/pipelines/results/${buildNumber}`;
+      rows.Job = `👷 [#${buildNumber}](${buildUrl}) by commit: **${this.ENV.BITBUCKET_COMMIT}**`;
     }
+
+    const header = [
+      `![Testomat.io Report](${testomatLogoURL})`,
+      `${statusEmoji(runParams.status)} ${runParams.status.toUpperCase()} ${statusEmoji(runParams.status)}`,
+    ];
+    const summary = `${this.hiddenCommentData}\n\n${markdownTable(header, rows, { boldLabels: true })}`;
 
     const failures = this.tests
       .filter(t => t.status === 'failed')
@@ -182,7 +184,7 @@ export class BitbucketPipe {
       }
     }
 
-    if (this.tests.length > 0) {
+    if (this.tests.length > 0 && !isPendingRun) {
       body += `\n\n**🐢 Slowest Tests**\n\n`;
       body += this.tests
         .sort((a, b) => b.run_time - a.run_time)

@@ -323,6 +323,7 @@ class TestomatioPipe {
         shared_run: this.sharedRun,
         shared_run_timeout: this.sharedRunTimeout,
         kind: params.kind,
+        status: params.status,
         configuration,
         description,
         ci,
@@ -373,6 +374,8 @@ class TestomatioPipe {
       this.store.runUrl = this.runUrl;
       this.store.runPublicUrl = this.runPublicUrl;
       this.store.runId = this.runId;
+      // only the server knows how many tests a configuration expands to; automated runs report 0
+      if (resp.data.tests_count > 0) this.store.runTestsCount = resp.data.tests_count;
       log.info('📊 Report created. Report ID:', this.runId);
       process.env.runId = this.runId;
       debug('Run created', this.runId);

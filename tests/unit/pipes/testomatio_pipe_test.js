@@ -330,6 +330,84 @@ describe('TestomatioPipe', () => {
   });
 
   describe('createRun', () => {
+    function replyToCreateRun(body) {
+      server.on({
+        method: 'POST',
+        path: '/api/reporter',
+        reply: {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            url: 'https://faketestomat.io/report/abc123',
+            uid: 'test-run-123',
+            public_url: 'https://faketestomat.io/public/xyz123',
+            ...body,
+          }),
+        },
+      });
+    }
+
+    it('should store the number of tests reported for the created run', async () => {
+      const store = {};
+      const pipe = new TestomatioPipe({ apiKey: TESTOMATIO, testomatioUrl: TESTOMATIO_URL, batchMode: 'disabled' }, store);
+
+      replyToCreateRun({ tests_count: 159 });
+      await pipe.createRun({ kind: 'mixed' });
+
+      expect(store.runTestsCount).to.equal(159);
+    });
+
+    it('should not store a tests count when the run holds no tests yet', async () => {
+      const store = {};
+      const pipe = new TestomatioPipe({ apiKey: TESTOMATIO, testomatioUrl: TESTOMATIO_URL, batchMode: 'disabled' }, store);
+
+      // automated runs report 0, as their tests are only known once they are executed
+      replyToCreateRun({ tests_count: 0 });
+      await pipe.createRun({ kind: 'automated' });
+
+      expect(store.runTestsCount).to.be.undefined;
+    });
+
+    it('should not store a tests count when the server does not report one', async () => {
+      const store = {};
+      const pipe = new TestomatioPipe({ apiKey: TESTOMATIO, testomatioUrl: TESTOMATIO_URL, batchMode: 'disabled' }, store);
+
+      replyToCreateRun({});
+      await pipe.createRun({ kind: 'mixed' });
+
+      expect(store.runTestsCount).to.be.undefined;
+    });
+
+    it('should pass a scheduled status to API so a prepared run does not report as running', async () => {
+      let receivedRequestBody = null;
+
+      replyToCreateRun({});
+      const originalRequest = testomatioPipe.client.request;
+      testomatioPipe.client.request = async function (config) {
+        receivedRequestBody = config;
+        return originalRequest.call(this, config);
+      };
+
+      await testomatioPipe.createRun({ kind: 'mixed', status: 'scheduled' });
+
+      expect(receivedRequestBody.data).to.have.property('status', 'scheduled');
+    });
+
+    it('should not send a status for a run that starts executing right away', async () => {
+      let receivedRequestBody = null;
+
+      replyToCreateRun({});
+      const originalRequest = testomatioPipe.client.request;
+      testomatioPipe.client.request = async function (config) {
+        receivedRequestBody = config;
+        return originalRequest.call(this, config);
+      };
+
+      await testomatioPipe.createRun({ kind: 'automated' });
+
+      expect(receivedRequestBody.data).to.not.have.property('status');
+    });
+
     it('should pass kind parameter to API when creating a run', async () => {
       let receivedRequestBody = null;
 
