@@ -88,7 +88,7 @@ class GitLabPipe {
     if (runParams.tests) runParams.tests.forEach(t => this.addTest(t));
 
     // ... create a comment on GitLab
-    // a pending run was only scheduled, so it has no results, counters or durations to report yet
+    // a scheduled run has no results yet: no counters, no duration
     const isPendingRun = runParams.status === 'pending';
 
     /** @type {Object<string, string>} */

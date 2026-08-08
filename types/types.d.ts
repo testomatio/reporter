@@ -346,10 +346,7 @@ export interface CreateRunParams {
   /** Run configuration merged into the server-side run configuration. */
   configuration?: Record<string, any>;
 
-  /**
-   * Initial run status. Use `scheduled` for a run that is only prepared, not executed yet:
-   * the server promotes it to `running` once the first test result is reported.
-   */
+  /** Initial run status. `scheduled` marks a prepared run; the server flips it to running. */
   status?: 'scheduled';
 
   /** Override batch upload mode. */

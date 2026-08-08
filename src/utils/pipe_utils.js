@@ -231,8 +231,8 @@ function formatFilterListIds(ids, format) {
 }
 
 /**
- * Summarize how a finished run went, e.g. `🔴 **1** failed; 🟢 **8** passed; 🟡 **1** skipped`.
- * A run without failures leaves the failed part out rather than reporting a zero.
+ * Summarize a finished run, e.g. `🔴 **1** failed; 🟢 **8** passed; 🟡 **1** skipped`.
+ * The failed part is omitted when nothing failed.
  *
  * @param {Array<{status?: string}>} tests
  * @returns {string}
@@ -261,11 +261,8 @@ function totalDuration(tests) {
 }
 
 /**
- * Render a two-column markdown table.
- *
- * Rows are a plain object so a report can be assembled as data — adding a key once its value is
- * known — instead of stitching conditional branches into a template literal. Rows with an empty
- * value are left out, so an optional row needs no surrounding `if`.
+ * Render a two-column markdown table. Rows with an empty value are skipped, so optional rows
+ * need no surrounding `if`.
  *
  * @param {string[]} header - The two header cells.
  * @param {Object<string, string>} rows - Label to value, rendered in insertion order.
@@ -289,12 +286,8 @@ function markdownTable(header, rows, opts = {}) {
 }
 
 /**
- * Describe the scope of a run that was prepared but not executed yet.
- *
- * The server expands a run configuration (suites, plans) into tests, so `testsCount` — when the
- * server reported one — is the only accurate number. Without it we can only describe the ids the
- * run was scoped to, which are a mix of test (`T…`) and suite (`S…`) ids; calling a suite a test
- * would understate the run by however many tests that suite holds.
+ * Describe the scope of a run that was prepared but not executed yet. Prefers the server's count;
+ * without it, falls back to the scoped ids, which mix tests (`T…`) and suites (`S…`).
  *
  * @param {Array<{test_id?: string}>} tests - Prepared tests the run was scoped to.
  * @param {number} [testsCount] - Real number of tests, as reported by Testomat.io.
