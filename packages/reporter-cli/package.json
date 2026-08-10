@@ -1,6 +1,6 @@
 {
   "name": "testomatio-reporter-cli",
-  "version": "2.12.0",
+  "version": "2.13.0",
   "description": "Yarn Berry compatible standalone CLI for @testomatio/reporter",
   "type": "module",
   "bin": {
