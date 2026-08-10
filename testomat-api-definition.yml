@@ -148,8 +148,11 @@ components:
           description: Whether to create a parallel run
         kind:
           type: string
-          enum: [automated, manual, mixed]
-          description: Run kind. Defaults to `automated`.
+          enum: [automated, manual, mixed, detect]
+          description: >
+            Run kind. Defaults to `automated`. `detect` is not a stored kind — the server resolves it
+            from the tests the run is scoped to: only manual tests make it `manual`, only automated
+            ones make it `automated`, a mix (or an unscoped run) stays `mixed`.
         ci:
           $ref: '#/components/schemas/CiLaunchParams'
           description: |

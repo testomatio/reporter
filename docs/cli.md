@@ -43,6 +43,7 @@ npx @testomatio/reporter start [options]
 npx @testomatio/reporter start
 npx @testomatio/reporter start --kind manual
 npx @testomatio/reporter start --kind mixed
+npx @testomatio/reporter start --kind detect --filter "testomatio:tag-name=smoke"
 npx @testomatio/reporter start --filter "testomatio:tag-name=smoke"
 ```
 
@@ -53,7 +54,7 @@ npx @testomatio/reporter start --filter "testomatio:tag-name=smoke"
 **Options:**
 
 - `--env-file <envfile>`: Load environment variables from a specific env file. If none specified, it will look for `.env` file.
-- `--kind <type>`: Specify run type: `automated`, `manual`, or `mixed`. Determines how the test run is categorized in Testomat.io.
+- `--kind <type>`: Specify run type: `automated`, `manual`, `mixed`, or `detect`. Determines how the test run is categorized in Testomat.io. See [Detecting the run kind](#11-detecting-the-run-kind).
 - `--filter <filter>`: Scope the prepared run to the tests matching the filter (same syntax as [`run --filter`](#31-filter-pipes)). The run is created with that test list but **not** executed — useful to prepare a run and launch it later on CI (see [Prepare a run, then launch it on CI](#34-prepare-a-run-then-launch-it-on-ci)).
 - `--format <format>`: Print **only the run id** to `stdout` (banner and logs go to `stderr`) so it can be captured: `RUN_ID=$(npx @testomatio/reporter start --format id)`.
 - `--warn`: Exit `0` instead of `1` when the filter matches no tests — the warning is still printed. Use in pipelines where an empty scope is a normal outcome (e.g. a PR touching no mapped files).
@@ -63,6 +64,24 @@ The run is created as **scheduled**, not running: nothing has been executed yet.
 It is also reported as **pending** right after it is created, so pipes which comment on a pull request ([GitHub](./pipes/github.md), [GitLab](./pipes/gitlab.md), [Bitbucket](./pipes/bitbucket.md)) add their report immediately — the same report as on finish, listing how many tests the run was scoped to with `--filter` instead of results. It is replaced once the run is finished.
 
 > Previously known as: `npx start-test-run --launch` _(before 1.6.0)_
+
+#### 1.1 Detecting the run kind
+
+`--kind mixed` always produces a mixed run, even when the tests it was scoped to are all of one kind. Use `--kind detect` to let Testomat.io pick the kind from the actual content of the run:
+
+| Tests the run is scoped to | Resulting kind |
+| --- | --- |
+| only manual | `manual` |
+| only automated | `automated` |
+| both | `mixed` |
+
+```bash
+npx @testomatio/reporter start --kind detect --filter "testomatio:plan-id=abc123"
+```
+
+`detect` is resolved once, when the run is created, from the tests that `--filter` scoped it to. A run started without `--filter` has no tests to inspect yet, so it stays `mixed`.
+
+`detect` is resolved by Testomat.io, so it needs a server that knows the option. Self-hosted instances that have not been updated yet reject it — keep using `--kind mixed` there.
 
 ### 2. finish
 
@@ -111,7 +130,7 @@ Alias for this command – `test`, e.g. `npx @testomatio/reporter test [options]
 - `--filter-list <filter>`: Print the list of tests matching the filter without running them. Useful for inspecting which tests would run, or for piping IDs into another command. See [Coverage Pipe](./pipes/coverage.md#machine-readable-output-with---format) for examples.
 - `--format <format>`: Machine-readable output format for `--filter-list`. Supported values: `grep`, `json`, `newline`, `ids`. When set, the CLI banner is suppressed and informational logs go to `stderr` so `stdout` stays clean for piping.
 - `--env-file <envfile>`: Load environment variables from a specific env file.
-- `--kind <type>`: Specify run type: `automated`, `manual`, or `mixed`. Determines how the test run is categorized in Testomat.io.
+- `--kind <type>`: Specify run type: `automated`, `manual`, `mixed`, or `detect`. Determines how the test run is categorized in Testomat.io. See [Detecting the run kind](#11-detecting-the-run-kind).
 - `--remote <profile>`: Trigger the run on a CI profile configured on the Testomat.io project (e.g. `github`, `gitlab`, `jenkins`) instead of executing tests locally. The CLI creates the run on Testomat.io, asks the backend to dispatch the named CI workflow, and exits. Equivalent to setting [`TESTOMATIO_CI_PROFILE`](./configuration.md#testomatio_ci_profile).
 - `--remote-param <kv>`: `key=value` pair forwarded to the CI profile config (e.g. `branch=develop`). Repeat the option to pass multiple params. Equivalent to setting [`TESTOMATIO_CI_PARAMS`](./configuration.md#testomatio_ci_params).
 - `--warn`: Exit `0` instead of `1` when the filter matches no tests (applies to `--filter-list` too).
