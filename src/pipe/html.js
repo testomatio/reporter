@@ -32,6 +32,7 @@ class HtmlPipe {
     this.filenameMsg = '';
     this.tests = [];
     this.configuration = null;
+    this.startedAt = null;
 
     if (this.isHtml) {
       this.isEnabled = true;
@@ -70,6 +71,8 @@ class HtmlPipe {
   }
 
   async createRun(params = {}) {
+    this.startedAt ??= new Date();
+
     if (params?.configuration && typeof params.configuration === 'object') {
       this.configuration = { ...(this.configuration || {}), ...params.configuration };
     }
@@ -266,7 +269,7 @@ class HtmlPipe {
       parallel: runParams.isParallel || 'No parallel info',
       runUrl: this.store.runUrl || '',
       executionTime: testExecutionSumTime(aggregatedTests),
-      executionDate: getCurrentDateTimeFormatted(),
+      executionDate: getDateTimeFormatted(this.startedAt || new Date()),
       description:
         [this.description, runParams.description || this.store.coverageDescription || this.store.description]
           .filter(Boolean)
@@ -722,17 +725,17 @@ function formatDuration(duration) {
 }
 
 /**
- * Retrieves the current date and time in a formatted string.
+ * Formats a date and time for display in the report.
+ * @param {Date} date - Date and time to format.
  * @returns {string} - The formatted date and time string (e.g., "(01/01/2023 12:00:00)").
  */
-function getCurrentDateTimeFormatted() {
-  const currentDate = new Date();
-  const day = currentDate.getDate().toString().padStart(2, '0');
-  const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
-  const year = currentDate.getFullYear();
-  const hours = currentDate.getHours().toString().padStart(2, '0');
-  const minutes = currentDate.getMinutes().toString().padStart(2, '0');
-  const seconds = currentDate.getSeconds().toString().padStart(2, '0');
+function getDateTimeFormatted(date) {
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const seconds = date.getSeconds().toString().padStart(2, '0');
 
   return `(${day}/${month}/${year} ${hours}:${minutes}:${seconds})`;
 }
