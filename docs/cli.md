@@ -79,7 +79,7 @@ It is also reported as **pending** right after it is created, so pipes which com
 npx @testomatio/reporter start --kind detect --filter "testomatio:plan-id=abc123"
 ```
 
-`detect` is resolved once, when the run is created, from the tests that `--filter` scoped it to. A run started without `--filter` has no tests to inspect yet, so it stays `mixed`.
+`detect` is resolved once, when the run is created, from the tests that `--filter` scoped it to. A run created without a scope has no tests to inspect yet, so it stays `mixed`. That makes `detect` useful with `start --filter`, which prepares the run against a list of tests; `run --filter` only narrows what the test runner executes, so a run created by [`run`](#3-run) is unscoped and stays `mixed` unless it is filtered by [coverage](./pipes/coverage.md).
 
 `detect` is resolved by Testomat.io, so it needs a server that knows the option. Self-hosted instances that have not been updated yet reject it — keep using `--kind mixed` there.
 
@@ -130,7 +130,7 @@ Alias for this command – `test`, e.g. `npx @testomatio/reporter test [options]
 - `--filter-list <filter>`: Print the list of tests matching the filter without running them. Useful for inspecting which tests would run, or for piping IDs into another command. See [Coverage Pipe](./pipes/coverage.md#machine-readable-output-with---format) for examples.
 - `--format <format>`: Machine-readable output format for `--filter-list`. Supported values: `grep`, `json`, `newline`, `ids`. When set, the CLI banner is suppressed and informational logs go to `stderr` so `stdout` stays clean for piping.
 - `--env-file <envfile>`: Load environment variables from a specific env file.
-- `--kind <type>`: Specify run type: `automated`, `manual`, `mixed`, or `detect`. Determines how the test run is categorized in Testomat.io. See [Detecting the run kind](#11-detecting-the-run-kind).
+- `--kind <type>`: Specify run type: `automated`, `manual`, `mixed`, or `detect`. Determines how the test run is categorized in Testomat.io. `detect` needs a run scoped to a list of tests to resolve from, which `run --filter` does not create — see [Detecting the run kind](#11-detecting-the-run-kind).
 - `--remote <profile>`: Trigger the run on a CI profile configured on the Testomat.io project (e.g. `github`, `gitlab`, `jenkins`) instead of executing tests locally. The CLI creates the run on Testomat.io, asks the backend to dispatch the named CI workflow, and exits. Equivalent to setting [`TESTOMATIO_CI_PROFILE`](./configuration.md#testomatio_ci_profile).
 - `--remote-param <kv>`: `key=value` pair forwarded to the CI profile config (e.g. `branch=develop`). Repeat the option to pass multiple params. Equivalent to setting [`TESTOMATIO_CI_PARAMS`](./configuration.md#testomatio_ci_params).
 - `--warn`: Exit `0` instead of `1` when the filter matches no tests (applies to `--filter-list` too).
