@@ -91,7 +91,7 @@
     "@types/cross-spawn": "^6.0.6",
     "@types/cucumber": "^7.0.0",
     "@types/mocha": "^10.0.7",
-    "@wdio/reporter": "^7.16.13",
+    "@wdio/reporter": "^8.43.0",
     "chai": "^4.3.6",
     "codeceptjs": "^3.6.5",
     "cucumber": "^6.0.7",
