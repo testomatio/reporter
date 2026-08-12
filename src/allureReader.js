@@ -183,7 +183,7 @@ class AllureReader {
       suite_title: this.extractSuiteTitle(result),
       file: this.extractFile(result),
       run_time: this.calculateRunTime(result),
-      steps: this.convertSteps(result.steps || []),
+      steps: this.convertSteps(result.steps || [], resultsDir),
       message: result.statusDetails?.message || '',
       stack: result.statusDetails?.trace || '',
       meta: this.extractMeta(result),
@@ -209,21 +209,9 @@ class AllureReader {
       test.example = this.convertParameters(result.parameters);
     }
 
-    if (result.attachments && result.attachments.length > 0) {
-      const attachments = result.attachments
-        .map(att => {
-          const fullPath = path.join(resultsDir, att.source);
-          if (fs.existsSync(fullPath)) {
-            return fullPath;
-          }
-          debug('Attachment file not found:', fullPath);
-          return null;
-        })
-        .filter(Boolean);
-
-      if (attachments.length > 0) {
-        test.files = attachments;
-      }
+    const attachments = this.resolveAttachments(result.attachments, resultsDir);
+    if (attachments.length > 0) {
+      test.files = attachments;
     }
 
     return test;
@@ -531,7 +519,7 @@ class AllureReader {
     return this.extractTmsIdsFromSource(contents, test)[0] || null;
   }
 
-  convertSteps(steps, depth = 0) {
+  convertSteps(steps, resultsDir = '', depth = 0) {
     if (depth >= 10) return null;
 
     return steps
@@ -541,8 +529,14 @@ class AllureReader {
           title: step.name || step.title || 'Unknown step',
           status: this.mapStepStatus(step.status),
           duration: this.calculateRunTime(step),
-          steps: this.convertSteps(step.steps || [], depth + 1),
+          steps: this.convertSteps(step.steps || [], resultsDir, depth + 1),
         };
+
+        // step attachments stay on the step; uploadArtifacts() swaps the paths for links
+        const attachments = this.resolveAttachments(step.attachments, resultsDir);
+        if (attachments.length > 0) {
+          convertedStep.artifacts = attachments;
+        }
 
         // Attach the failure description (error message + trace with the failing
         // code line) straight onto the failed step. Testomat.io renders a step's
@@ -876,16 +870,68 @@ class AllureReader {
     return paths;
   }
 
+  /**
+   * @param {Array<{source?: string}>|undefined} attachments
+   * @param {string} resultsDir
+   * @returns {string[]} paths of attachments that exist on disk
+   */
+  resolveAttachments(attachments, resultsDir) {
+    if (!attachments || !attachments.length) return [];
+
+    return attachments
+      .map(att => {
+        if (!att?.source) return null;
+        const fullPath = path.join(resultsDir || '', att.source);
+        if (fs.existsSync(fullPath)) return fullPath;
+        debug('Attachment file not found:', fullPath);
+        return null;
+      })
+      .filter(Boolean);
+  }
+
+  /**
+   * Replaces step artifact paths with S3 links, dropping failed uploads (a local path
+   * would be a dead link in the UI).
+   *
+   * @param {Array<object>|undefined} steps
+   * @param {string} runId
+   * @param {string} rid
+   * @returns {Promise<number>} number of uploaded step artifacts
+   */
+  async uploadStepArtifacts(steps, runId, rid) {
+    if (!steps || !steps.length) return 0;
+
+    let uploaded = 0;
+    for (const step of steps) {
+      if (step.artifacts?.length) {
+        const links = await Promise.all(
+          step.artifacts.map(f => this.uploader.uploadFileByPath(f, [runId, rid, 'steps', path.basename(f)])),
+        );
+        step.artifacts = links.filter(link => !!link);
+        uploaded += step.artifacts.length;
+        if (!step.artifacts.length) delete step.artifacts;
+      }
+      uploaded += await this.uploadStepArtifacts(step.steps, runId, rid);
+    }
+    return uploaded;
+  }
+
   async uploadArtifacts() {
-    for (const test of this._tests.filter(t => t.files && t.files.length > 0)) {
+    for (const test of this._tests) {
       const runId = this.runId || this.store.runId || Date.now().toString();
-      const artifacts = await Promise.all(
-        test.files.map(f => this.uploader.uploadFileByPath(f, [runId, test.rid, path.basename(f)])),
+
+      // uploadFileByPath resolves to a link string, or undefined if skipped or failed
+      const links = await Promise.all(
+        (test.files || []).map(f => this.uploader.uploadFileByPath(f, [runId, test.rid, path.basename(f)])),
       );
-      test.artifacts = artifacts.filter(a => a && a.link).map(a => a.link);
+      test.artifacts = links.filter(link => !!link);
       delete test.files;
-      if (test.artifacts.length > 0) {
-        console.log(APP_PREFIX, `🗄️ Uploaded ${pc.bold(`${test.artifacts.length} artifacts`)} for test ${test.title}`);
+
+      const stepArtifacts = await this.uploadStepArtifacts(test.steps, runId, test.rid);
+
+      const total = test.artifacts.length + stepArtifacts;
+      if (total > 0) {
+        console.log(APP_PREFIX, `🗄️ Uploaded ${pc.bold(`${total} artifacts`)} for test ${test.title}`);
       }
     }
   }
