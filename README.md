@@ -76,7 +76,7 @@ npx testomatio-reporter <command> [options]
 | [TestCafe](./docs/frameworks.md#testcafe)       | [Detox](./docs/frameworks.md#detox)           | [Codeception](https://github.com/testomatio/php-reporter) |
 | [Newman (Postman)](./docs/frameworks.md#newman) | [JUnit](./docs/junit.md#junit)                | [NUnit](./docs/junit.md#nunit)                            |
 | [PyTest](./docs/junit.md#pytest)                | [PHPUnit](./docs/junit.md#phpunit)            | [Protractor](./docs/frameworks.md#protractor)             |
-| [Allure](./docs/allure.md)                      |                                               |                                                           |
+| [Allure](./docs/allure.md)                      | [Robot Framework](./docs/robot-framework.md)  |                                                           |
 
 or **any [other via JUnit](./docs/junit.md)** report....
 
@@ -141,6 +141,7 @@ Bring this reporter on CI and never lose test results again!
 - 📓 [JUnit Reports](./docs/junit.md)
 - 🗄️ [Artifacts](./docs/artifacts.md)
 - 🔬 [Allure Reports](./docs/allure.md)
+- 🤖 [Robot Framework](./docs/robot-framework.md)
 - 🔗 [Linking Tests](./docs/linking-tests.md)
 - 🔂 [Workflows](./docs/workflows.md)
 - 🖊️ [Logger](./docs/logger.md)
