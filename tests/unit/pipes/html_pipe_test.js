@@ -835,6 +835,31 @@ describe('HTML report tests', () => {
     expect(rows).to.deep.include(['shard', '2']);
   });
 
+  it('renders the time captured when the run was created as Started At', async () => {
+    process.env.TESTOMATIO_HTML_REPORT_SAVE = '1';
+    const template = path.resolve(dirname, '../../..', 'src', 'template', 'testomatio.hbs');
+    const out = path.resolve(testOutputDir, 'with-started-at.html');
+    const pipe = new HtmlPipe({}, {});
+    await pipe.createRun();
+    pipe.startedAt = new Date(2024, 0, 2, 3, 4, 5);
+
+    await pipe.createRun();
+    pipe.buildReport({
+      runParams: { status: 'passed' },
+      tests: DATA.tests.slice(0, 1),
+      outputPath: out,
+      templatePath: template,
+      warningMsg: '',
+    });
+
+    const html = fs.readFileSync(out, 'utf-8');
+    const document = new JSDOM(html).window.document;
+    const startedAtLabel = Array.from(document.querySelectorAll('.stat-label')).find(element =>
+      element.textContent.includes('Started At'),
+    );
+    expect(startedAtLabel.nextElementSibling.textContent.trim()).to.equal('(02/01/2024 03:04:05)');
+  });
+
   it('omits the Configuration section when no configuration is present', () => {
     const htmlContent = fs.readFileSync(filepath, 'utf-8');
     const dom = new JSDOM(htmlContent);
