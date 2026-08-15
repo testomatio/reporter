@@ -337,8 +337,8 @@ export interface PipeResult {
  * `TESTOMATIO_CI_PROFILE` and `TESTOMATIO_CI_OVERRIDE`.
  */
 export interface CreateRunParams {
-  /** Run kind. Defaults to `automated` server-side. */
-  kind?: 'automated' | 'manual' | 'mixed';
+  /** Run kind. Defaults to `automated` server-side. `detect` resolves to one of the other three from the scoped tests. */
+  kind?: 'automated' | 'manual' | 'mixed' | 'detect';
 
   /** Run title. */
   title?: string;

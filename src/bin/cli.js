@@ -51,7 +51,7 @@ program
 program
   .command('start')
   .description('Start a new run and return its ID')
-  .option('--kind <type>', 'Specify run type: automated, manual, or mixed')
+  .option('--kind <type>', 'Specify run type: automated, manual, mixed, or detect')
   .option('--filter <filter>', 'Scope the prepared run to tests matching the filter (no execution)')
   .option('--format <format>', 'Machine-readable output: print only the run id to stdout (e.g. --format id)')
   .option('--warn', 'Exit 0 instead of 1 when the filter matches no tests (warn only)')
@@ -130,7 +130,7 @@ program
   .option('--filter <filter>', 'Additional execution filter')
   .option('--filter-list <filter>', 'Get a list of all tests by filter before running')
   .option('--format <format>', 'Machine-readable output format for --filter-list (grep, json, newline, ids)')
-  .option('--kind <type>', 'Specify run type: automated, manual, or mixed')
+  .option('--kind <type>', 'Specify run type: automated, manual, mixed, or detect')
   .option('--remote <profile>', 'Trigger run on the named Testomat.io CI profile instead of executing locally')
   .option(
     '--remote-param <kv>',

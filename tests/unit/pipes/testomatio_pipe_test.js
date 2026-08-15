@@ -408,6 +408,21 @@ describe('TestomatioPipe', () => {
       expect(receivedRequestBody.data).to.not.have.property('status');
     });
 
+    it('should pass a detect kind to API so the server resolves it from the scoped tests', async () => {
+      let receivedRequestBody = null;
+
+      replyToCreateRun({});
+      const originalRequest = testomatioPipe.client.request;
+      testomatioPipe.client.request = async function (config) {
+        receivedRequestBody = config;
+        return originalRequest.call(this, config);
+      };
+
+      await testomatioPipe.createRun({ kind: 'detect' });
+
+      expect(receivedRequestBody.data).to.have.property('kind', 'detect');
+    });
+
     it('should pass kind parameter to API when creating a run', async () => {
       let receivedRequestBody = null;
 
