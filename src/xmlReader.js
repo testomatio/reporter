@@ -533,8 +533,10 @@ class XmlReader {
       if (!files.length) continue;
 
       const runId = this.runId || this.store.runId || Date.now().toString();
-      test.artifacts = await Promise.all(files.map(f => this.uploader.uploadFileByPath(f, [runId, path.basename(f)])));
-      log.info(`🗄️ Uploaded ${pc.bold(`${files.length} artifacts`)} for test ${test.title}`);
+      // undefined for skipped/failed uploads; keeping those serializes as `null` links
+      const links = await Promise.all(files.map(f => this.uploader.uploadFileByPath(f, [runId, path.basename(f)])));
+      test.artifacts = links.filter(link => !!link);
+      log.info(`🗄️ Uploaded ${pc.bold(`${test.artifacts.length} artifacts`)} for test ${test.title}`);
     }
   }
 
