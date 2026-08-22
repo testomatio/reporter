@@ -1,5 +1,10 @@
 import { expect } from 'chai';
-import { formatFilterListIds, getObjectSize, splitTestsIntoChunks } from '../../src/utils/pipe_utils.js';
+import {
+  formatFilterListIds,
+  formatRunOutput,
+  getObjectSize,
+  splitTestsIntoChunks,
+} from '../../src/utils/pipe_utils.js';
 
 describe('formatFilterListIds', () => {
   const ids = ['t1234abcd', 't5678efgh', 'tabcdef01'];
@@ -94,6 +99,38 @@ describe('formatFilterListIds', () => {
         expect(extract(out), `format=${format} should round-trip`).to.deep.equal(ids);
       }
     });
+  });
+});
+
+describe('formatRunOutput', () => {
+  const store = {
+    runId: 'run123',
+    runUrl: 'https://app.testomat.io/projects/demo/runs/run123',
+    runPublicUrl: 'https://app.testomat.io/p/run123',
+  };
+
+  it('returns empty string when there is no run id', () => {
+    expect(formatRunOutput({}, 'json')).to.equal('');
+    expect(formatRunOutput(undefined, 'id')).to.equal('');
+  });
+
+  it('prints the bare run id for non-json formats', () => {
+    expect(formatRunOutput(store, 'id')).to.equal('run123');
+    expect(formatRunOutput(store, undefined)).to.equal('run123');
+  });
+
+  it('prints run details as JSON for the json format', () => {
+    const output = JSON.parse(formatRunOutput(store, 'json'));
+    expect(output).to.deep.equal({
+      runId: 'run123',
+      runUrl: 'https://app.testomat.io/projects/demo/runs/run123',
+      runPublicUrl: 'https://app.testomat.io/p/run123',
+    });
+  });
+
+  it('omits urls the pipe did not provide', () => {
+    const output = JSON.parse(formatRunOutput({ runId: 'run123' }, 'json'));
+    expect(output).to.deep.equal({ runId: 'run123' });
   });
 });
 

@@ -29,7 +29,7 @@ npx @testomatio/reporter <command> [options]
 
 Starts a new test run and returns its ID. This requires an API key to be set in the `TESTOMATIO` environment variable.
 
-With `--format id` (or any `--format`), `start` prints **only the run id to `stdout`** (the banner and progress logs go to `stderr`), so it is safe to capture: `RUN_ID=$(npx @testomatio/reporter start --format id)`. It exits non-zero if the run could not be created.
+With `--format id`, `start` prints **only the run id to `stdout`** (the banner and progress logs go to `stderr`), so it is safe to capture: `RUN_ID=$(npx @testomatio/reporter start --format id)`. Use `--format json` to get the run id together with its URLs as a JSON object. It exits non-zero if the run could not be created.
 
 **Usage:**
 
@@ -56,7 +56,7 @@ npx @testomatio/reporter start --filter "testomatio:tag-name=smoke"
 - `--env-file <envfile>`: Load environment variables from a specific env file. If none specified, it will look for `.env` file.
 - `--kind <type>`: Specify run type: `automated`, `manual`, `mixed`, or `detect`. Determines how the test run is categorized in Testomat.io. See [Detecting the run kind](#11-detecting-the-run-kind).
 - `--filter <filter>`: Scope the prepared run to the tests matching the filter (same syntax as [`run --filter`](#31-filter-pipes)). The run is created with that test list but **not** executed — useful to prepare a run and launch it later on CI (see [Prepare a run, then launch it on CI](#34-prepare-a-run-then-launch-it-on-ci)).
-- `--format <format>`: Print **only the run id** to `stdout` (banner and logs go to `stderr`) so it can be captured: `RUN_ID=$(npx @testomatio/reporter start --format id)`.
+- `--format <format>`: Machine-readable output on `stdout` (banner and logs go to `stderr`): `id` prints the bare run id so it can be captured — `RUN_ID=$(npx @testomatio/reporter start --format id)` — and `json` prints `{"runId", "runUrl", "runPublicUrl"}`.
 - `--warn`: Exit `0` instead of `1` when the filter matches no tests — the warning is still printed. Use in pipelines where an empty scope is a normal outcome (e.g. a PR touching no mapped files).
 
 The run is created as **scheduled**, not running: nothing has been executed yet. Testomat.io promotes it to *running* as soon as the first test result is reported, or when you launch it by hand.
@@ -128,7 +128,7 @@ Alias for this command – `test`, e.g. `npx @testomatio/reporter test [options]
 - `-c, --command <cmd>`: Test runner command (required).
 - `--filter <filter>`: [Filter executed tests](./pipes/testomatio.md#filter-tests) by tag, label, jira, plan.
 - `--filter-list <filter>`: Print the list of tests matching the filter without running them. Useful for inspecting which tests would run, or for piping IDs into another command. See [Coverage Pipe](./pipes/coverage.md#machine-readable-output-with---format) for examples.
-- `--format <format>`: Machine-readable output format for `--filter-list`. Supported values: `grep`, `json`, `newline`, `ids`. When set, the CLI banner is suppressed and informational logs go to `stderr` so `stdout` stays clean for piping.
+- `--format <format>`: Machine-readable output on `stdout`. With `--filter-list` it selects how the matched test IDs are encoded (`grep`, `json`, `newline`, `ids`); otherwise it prints the run the command creates — `id` for the bare run id, `json` for `{"runId", "runUrl", "runPublicUrl"}`. When set, the CLI banner is suppressed and informational logs go to `stderr` so `stdout` stays clean for piping.
 - `--env-file <envfile>`: Load environment variables from a specific env file.
 - `--kind <type>`: Specify run type: `automated`, `manual`, `mixed`, or `detect`. Determines how the test run is categorized in Testomat.io. `detect` needs a run scoped to a list of tests to resolve from, which `run --filter` does not create — see [Detecting the run kind](#11-detecting-the-run-kind).
 - `--remote <profile>`: Trigger the run on a CI profile configured on the Testomat.io project (e.g. `github`, `gitlab`, `jenkins`) instead of executing tests locally. The CLI creates the run on Testomat.io, asks the backend to dispatch the named CI workflow, and exits. Equivalent to setting [`TESTOMATIO_CI_PROFILE`](./configuration.md#testomatio_ci_profile).
@@ -394,7 +394,7 @@ For more details about debug files, see the [Debug Pipe documentation](pipes/deb
 
 ## The `--format` flag
 
-`--format` switches a command into **machine-readable mode**: `stdout` carries only the requested data so it can be captured or piped, while the banner and progress logs are routed to `stderr`. Two commands support it — [`run --filter-list`](#3-run) and [`start`](#1-start) — and machine-readable mode behaves the same way for both.
+`--format` switches a command into **machine-readable mode**: `stdout` carries only the requested data so it can be captured or piped, while the banner and progress logs are routed to `stderr`. It is supported by [`start`](#1-start) and [`run`](#3-run), and machine-readable mode behaves the same way for both.
 
 **What machine-readable mode does (regardless of command or value):**
 
@@ -407,7 +407,7 @@ This is what makes `$( … )` capture and `|` piping reliable — without `--for
 
 ### With `run --filter-list`
 
-Prints the IDs of the tests matching the filter **without running them**. `--format` only takes effect together with `--filter-list`; the value selects the encoding:
+Prints the IDs of the tests matching the filter **without running them**. The value selects the encoding:
 
 | Value     | Output                        | Example              |
 | --------- | ----------------------------- | -------------------- |
@@ -427,30 +427,64 @@ GREP=$(npx @testomatio/reporter run --filter-list "coverage:file=coverage.yml" -
 npx @testomatio/reporter run --filter-list "coverage:file=coverage.yml" --format json > affected-tests.json
 ```
 
+With `--filter-list` no run is created, so `--format json` prints the array of matching test IDs — not the run object described below.
+
 Only the `testomatio:` and `coverage:` filter pipes are supported (see [3.1 Filter pipes](#31-filter-pipes)). The [Coverage Pipe docs](./pipes/coverage.md#machine-readable-output-with---format) cover the formats in more detail.
 
-### With `start`
+### With a command that creates a run
 
-Prints **only the new run id** to `stdout`, so it can be captured directly:
+`start` always creates a run, and so does `run` when it is not listing tests with `--filter-list`. For those invocations `--format` selects how the created run is printed to `stdout`:
+
+| Value  | Output                                                     |
+| ------ | ---------------------------------------------------------- |
+| `id`   | the bare run id (default for any value other than `json`)  |
+| `json` | a JSON object with the run id and its URLs                 |
 
 ```bash
 RUN_ID=$(npx @testomatio/reporter start --format id)
 echo "$RUN_ID"   # e.g. a1b2c3d4
+
+npx @testomatio/reporter start --format json
+# {"runId":"a1b2c3d4","runUrl":"https://app.testomat.io/projects/demo/runs/a1b2c3d4","runPublicUrl":"https://app.testomat.io/p/a1b2c3d4"}
 ```
 
-`start` emits a single value (the run id), so for `start` the format **value is not significant** — `--format id` is the conventional choice, but any value turns on machine-readable mode. `start` exits non-zero if the run could not be created, so `RUN_ID` is set only on success. It combines with `--kind` and `--filter`:
+`runUrl` and `runPublicUrl` are omitted when Testomat.io did not return them. Pick single fields with any JSON tool:
+
+```bash
+RUN_URL=$(npx @testomatio/reporter start --format json | jq -r .runUrl)
+```
+
+`start` exits non-zero if the run could not be created, so `RUN_ID` is set only on success. It combines with `--kind` and `--filter`:
 
 ```bash
 RUN_ID=$(npx @testomatio/reporter start --kind manual --format id)
 RUN_ID=$(npx @testomatio/reporter start --filter "testomatio:tag-name=smoke" --format id)
 ```
 
+The same output is printed by every `run` invocation that creates a run:
+
+```bash
+# create a run without executing tests
+RUN_ID=$(npx @testomatio/reporter run --format id)
+
+# trigger a run on a CI profile
+npx @testomatio/reporter run --remote github --format json
+
+# executing tests: the runner inherits stdout, so the run data is the FIRST line.
+# Capture it all, then slice — piping into `head` closes stdout under the running tests.
+OUT=$(npx @testomatio/reporter run "npx playwright test" --format json)
+RUN=$(printf '%s\n' "$OUT" | head -1)
+```
+
 ### Quick reference
 
-| Command             | Accepted `--format` values       | `stdout` contains      | Needs                |
-| ------------------- | -------------------------------- | ---------------------- | -------------------- |
-| `run --filter-list` | `ids`, `grep`, `json`, `newline` | the matching test IDs  | `--filter-list`      |
-| `start`             | any (use `id`)                   | the new run id         | —                    |
+| Command                    | Accepted `--format` values       | `stdout` contains                       |
+| -------------------------- | -------------------------------- | --------------------------------------- |
+| `run --filter-list`        | `ids`, `grep`, `json`, `newline` | the matching test IDs, no run created   |
+| `start`                    | `id`, `json`                     | the new run                             |
+| `run` (no command)         | `id`, `json`                     | the new run                             |
+| `run --remote <profile>`   | `id`, `json`                     | the run triggered on CI                 |
+| `run "<command>"`          | `id`, `json`                     | the new run on the first line, then the runner output (capture, do not pipe) |
 
 ## Environment Variables
 
