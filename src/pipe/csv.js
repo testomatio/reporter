@@ -6,6 +6,7 @@ import pc from 'picocolors';
 import merge from 'lodash.merge';
 import { isSameTest, getCurrentDateTime, ansiRegExp } from '../utils/utils.js';
 import { CSV_HEADERS } from '../constants.js';
+import { log } from '../utils/log.js';
 
 const debug = createDebugMessages('@testomatio/reporter:pipe:csv');
 /**
@@ -76,11 +77,11 @@ class CsvPipe {
     this.checkExportDir();
 
     if (!this.outputFile) {
-      console.log(pc.yellow(`⚠️  CSV file is not set, ignoring`));
+      log.warn(pc.yellow(`⚠️  CSV file is not set, ignoring`));
       return;
     }
 
-    console.log(pc.yellow(`⏳ The test results will be added to the csv. It will take some time...`));
+    log.info(pc.yellow(`⏳ The test results will be added to the csv. It will take some time...`));
 
     try {
       // Create csv writer object
@@ -91,7 +92,7 @@ class CsvPipe {
       // Save csv file based on the current data
       return await writer.writeRecords(data);
     } catch (e) {
-      console.log('Unknown csv error: ', e);
+      log.error('Unknown csv error: ', e);
     }
   }
 
@@ -135,7 +136,7 @@ class CsvPipe {
     // Save results based on the default headers
     if (this.isEnabled) {
       await this.saveToCsv(this.results, CSV_HEADERS);
-      console.log(pc.green(`🗃️  Recording completed! You can check the result in file = ${this.outputFile}`));
+      log.info(pc.green(`🗃️  Recording completed! You can check the result in file = ${this.outputFile}`));
     }
   }
 

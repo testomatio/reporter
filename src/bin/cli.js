@@ -84,7 +84,7 @@ program
 
     await client.createRun(createRunParams);
 
-    const runId = client.pipeStore.runId || process.env.runId;
+    const runId = client.pipeStore.runId;
     if (!runId) {
       log.error(pc.red('Failed to create run on Testomat.io.'));
       process.exit(1);
@@ -96,7 +96,7 @@ program
     await client.updateRunStatus('pending', { tests: plannedTests });
 
     // stdout carries ONLY the run data so it can be captured: RUN_ID=$(reporter start)
-    console.log(formatRunOutput({ ...client.pipeStore, runId }, opts.format));
+    console.log(formatRunOutput(client.pipeStore, opts.format));
     process.exit(0);
   });
 
@@ -252,15 +252,20 @@ program
 
       if (apiKey) {
         await client.createRun(createRunParams);
-        const runId = process.env.TESTOMATIO_RUN || process.env.runId;
+
+        const runId = client.pipeStore.runId;
+        if (!runId) {
+          log.error(pc.red('Failed to create run on Testomat.io.'));
+          process.exit(1);
+        }
+
         if (client.pipeStore.runUrl) log.info( `📊 Report URL: ${pc.magenta(client.pipeStore.runUrl)}`);
 
         if (opts.kind !== 'manual') {
           log.info( `No command passed, so you need to run tests yourself:`);
           log.info( `TESTOMATIO_RUN=${runId} <command>`);
         }
-        const runOutput = formatRunOutput({ ...client.pipeStore, runId }, opts.format);
-        if (opts.format && runOutput) console.log(runOutput);
+        if (opts.format) console.log(formatRunOutput(client.pipeStore, opts.format));
       } else {
         log.info( '⚠️  No API key provided. Cannot create run without TESTOMATIO key.');
         process.exit(1);

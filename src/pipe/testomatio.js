@@ -18,6 +18,7 @@ import {
   getGitCommitSha,
 } from '../utils/utils.js';
 import { parseFilterParams, generateFilterRequestParams, setS3Credentials } from '../utils/pipe_utils.js';
+import { hideTestomatioToken } from '../utils/hide_token.js';
 import { config } from '../config.js';
 import { log } from '../utils/log.js';
 
@@ -620,7 +621,7 @@ class TestomatioPipe {
         );
       }
     } catch (err) {
-      log.error('Error updating status, skipping...', err);
+      log.error('Error updating status, skipping...', err.message || err);
       this.#logFailedResponse(err);
       printCreateIssue();
     }
@@ -665,28 +666,31 @@ class TestomatioPipe {
     message += `\t${pc.bold('response: ')}${pc.gray(responseBody)}\n`;
 
     let requestBody = hideTestomatioToken(stringify(error.response?.config?.data));
+    let requestTruncated = false;
     if (process.env.DEBUG || process.env.TESTOMATIO_DEBUG || requestBody.length < 1000) {
       // full body
       message += `\t${pc.bold('request: ')}${pc.gray(requestBody)}\n`;
     } else {
       // cut body
+      requestTruncated = true;
       requestBody = `${requestBody.slice(0, 1000)}...`;
       message += `\t${pc.bold('request: ')}${pc.gray(requestBody)}\n`;
       message += '\trequest body is cut, run with TESTOMATIO_DEBUG=1 to see full body\n';
     }
 
     // the JSON line is built from the same values as the text message, with the token already hidden
-    log.errorWithFields(
-      {
-        status: statusCode,
-        method,
-        url,
-        error: apiMessage || statusText || undefined,
-        response: parseIfJson(responseBody),
-        request: parseIfJson(requestBody),
-      },
-      message,
-    );
+    const fields = {
+      status: statusCode,
+      method,
+      url,
+      error: apiMessage || statusText || undefined,
+      response: parseIfJson(responseBody),
+      request: parseIfJson(requestBody),
+    };
+    // a cut body is no longer valid JSON, so consumers are told why `request` is a string
+    if (requestTruncated) fields.requestTruncated = true;
+
+    log.errorWithFields(fields, message);
 
     if (error.response?.data?.message?.includes('could not be matched')) {
       this.hasUnmatchedTests = true;
@@ -714,24 +718,16 @@ function printCreateIssue() {
 }
 
 /**
- * Removes Testomatio token from string data
- *
- * @param {string} data
- * @returns {string}
- */
-function hideTestomatioToken(data) {
-  return (typeof data === 'string' ? data : '')
-    .replace(/"api_key"\s*:\s*"[^"]+"/g, '"api_key": "<hidden>"')
-    .replace(/"(tstmt_[^"]+)"/g, '"tstmt_***"');
-}
-
-/**
  * Stringifies provided data
  *
  * @param {any} anything
  * @param {{ pretty: boolean }} opts
  * @returns {string}
  */
+function stringify(anything, opts = { pretty: false }) {
+  return typeof anything === 'string' ? anything : JSON.stringify(anything, null, opts.pretty ? 2 : undefined);
+}
+
 /**
  * Turn a JSON string back into an object for structured logs; keeps the string if it is not JSON.
  *
@@ -744,10 +740,6 @@ function parseIfJson(data) {
   } catch {
     return data;
   }
-}
-
-function stringify(anything, opts = { pretty: false }) {
-  return typeof anything === 'string' ? anything : JSON.stringify(anything, null, opts.pretty ? 2 : undefined);
 }
 
 export default TestomatioPipe;

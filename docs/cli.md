@@ -415,7 +415,7 @@ npx @testomatio/reporter start --format json 2>errors.log
 {"level":"error","message":"Error creating Testomat.io report (see details above), please check if your API key is valid. Skipping report"}
 ```
 
-A failed request to Testomat.io adds its data as fields — `status`, `method`, `url`, `error`, `response` and `request` (with the API token hidden):
+A failed request to Testomat.io adds its data as fields — `status`, `method`, `url`, `error`, `response` and `request`. The API token is hidden in every log, whichever field or message it appears in. A request body longer than 1000 characters is cut, which makes `request` a string instead of an object and adds `"requestTruncated": true`:
 
 ```json
 {"status":403,"method":"POST","url":"https://app.testomat.io/api/reporter","error":"Project API Token is invalid","level":"error","message":"⚠️ Request to Testomat.io failed: ..."}
@@ -472,7 +472,7 @@ npx @testomatio/reporter start --format json
 RUN_URL=$(npx @testomatio/reporter start --format json | jq -r .runUrl)
 ```
 
-`start` exits non-zero if the run could not be created, so `RUN_ID` is set only on success. It combines with `--kind` and `--filter`:
+Every command listed here exits non-zero and prints nothing to `stdout` if the run could not be created, so a captured variable is set only on success. `start` combines with `--kind` and `--filter`:
 
 ```bash
 RUN_ID=$(npx @testomatio/reporter start --kind manual --format id)

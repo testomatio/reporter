@@ -293,12 +293,39 @@ describe('Logger Utility', () => {
       expect(JSON.parse(calls[0][0]).level).to.equal('error');
     });
 
+    it('hides the API token of a raw error object', () => {
+      const requestError = new Error('Request failed');
+      // @ts-ignore - mimics an error of the http client
+      requestError.response = {
+        config: { data: '{"api_key":"tstmt_secrettoken123","title":"x"}' },
+      };
+
+      error('Error updating status, skipping...', requestError);
+
+      expect(calls[0][0]).to.not.include('tstmt_secrettoken123');
+      expect(calls[0][0]).to.include('tstmt_***');
+    });
+
+    it('hides the API token added as a structured field', () => {
+      errorWithFields({ request: { api_key: 'tstmt_secrettoken123' } }, 'Request failed');
+
+      expect(calls[0][0]).to.not.include('tstmt_secrettoken123');
+      expect(JSON.parse(calls[0][0]).request.api_key).to.equal('<hidden>');
+    });
+
     it('prints prefixed text when JSON output is disabled', () => {
       delete process.env.TESTOMATIO_LOG_JSON;
       errorWithFields({ status: 403 }, 'Request failed');
 
       expect(calls[0][0]).to.include('[TESTOMATIO]');
       expect(calls[0][1]).to.equal('Request failed');
+    });
+
+    it('hides the API token in text output as well', () => {
+      delete process.env.TESTOMATIO_LOG_JSON;
+      error('token: tstmt_secrettoken123');
+
+      expect(calls[0].join(' ')).to.not.include('tstmt_secrettoken123');
     });
   });
 

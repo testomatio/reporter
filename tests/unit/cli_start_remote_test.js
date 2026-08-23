@@ -113,6 +113,7 @@ describe('cli start / run --remote', () => {
       expect(failure.request.api_key).to.equal('<hidden>');
 
       expect(stderr).to.not.include('[TESTOMATIO] ');
+      expect(stderr).to.not.include('faketoken');
     });
 
     it('exits non-zero when the run is not created', async () => {
@@ -145,6 +146,15 @@ describe('cli start / run --remote', () => {
       expect(output.runId).to.equal('createdrun2');
       expect(output.runUrl).to.equal(`${TESTOMATIO_URL}/projects/demo/runs/createdrun2`);
       expect(output.runPublicUrl).to.equal(`${TESTOMATIO_URL}/p/createdrun2`);
+    });
+
+    it('exits non-zero when the run is not created', async () => {
+      server.on(replyRun('ignored', 400));
+
+      const { code, stdout } = await runCli(['run', '--format', 'json']);
+
+      expect(code).to.equal(1);
+      expect(stdout.trim()).to.equal('');
     });
   });
 

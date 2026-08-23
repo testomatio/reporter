@@ -8,6 +8,7 @@ import { marked } from 'marked';
 import fileUrl from 'file-url';
 import { fileSystem, isSameTest, ansiRegExp, formatStep, transformEnvVarToBoolean } from '../utils/utils.js';
 import { HTML_REPORT } from '../constants.js';
+import { log } from '../utils/log.js';
 import { fileURLToPath } from 'node:url';
 
 const debug = createDebugMessages('@testomatio/reporter:pipe:html');
@@ -144,14 +145,14 @@ class HtmlPipe {
     debug('HTML tests data:', tests);
 
     if (!outputPath) {
-      console.log(pc.yellow(`🚨 HTML export path is not set, ignoring...`));
+      log.warn(pc.yellow(`🚨 HTML export path is not set, ignoring...`));
       return;
     }
 
-    console.log(pc.yellow(`⏳ The test results will be added to the HTML report. It will take some time...`));
+    log.info(pc.yellow(`⏳ The test results will be added to the HTML report. It will take some time...`));
 
     if (msg) {
-      console.log(pc.blue(msg));
+      log.info(pc.blue(msg));
     }
 
     const aggregatedTests = aggregateTestRetries(tests);
@@ -295,9 +296,9 @@ class HtmlPipe {
 
       debug('HTML tests data:', fileUrlPath);
 
-      console.log(pc.green(`📊 The HTML report was successfully generated. Full filepath: ${fileUrlPath}`));
+      log.info(pc.green(`📊 The HTML report was successfully generated. Full filepath: ${fileUrlPath}`));
     } else {
-      console.log(pc.red(`🚨 Failed to generate the HTML report.`));
+      log.error(pc.red(`🚨 Failed to generate the HTML report.`));
     }
   }
 
@@ -309,7 +310,7 @@ class HtmlPipe {
    */
   #generateHTMLReport(data, templatePath = '') {
     if (!templatePath) {
-      console.log(pc.red(`🚨 HTML template not found. Report generation is impossible!`));
+      log.error(pc.red(`🚨 HTML template not found. Report generation is impossible!`));
       return;
     }
 
@@ -320,8 +321,8 @@ class HtmlPipe {
 
       return template(data);
     } catch (e) {
-      console.log(pc.red('❌ Oops! An unknown error occurred when generating an HTML report'));
-      console.log(pc.red(e));
+      log.error(pc.red('❌ Oops! An unknown error occurred when generating an HTML report'));
+      log.error(pc.red(e));
     }
   }
 

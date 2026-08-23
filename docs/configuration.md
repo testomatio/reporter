@@ -346,7 +346,7 @@ Print every `[TESTOMATIO]` message as a JSON object instead of prefixed text, on
 {"level":"error","message":"Error creating Testomat.io report ..."}
 ```
 
-Failed API requests add their data as fields (`status`, `method`, `url`, `error`, `response`, `request`) — the API token is hidden there as it is in the text output.
+Failed API requests add their data as fields (`status`, `method`, `url`, `error`, `response`, `request`). The API token is hidden in every message and field, in JSON as well as in text output.
 
 ```
 TESTOMATIO_LOG_JSON=1 npm test

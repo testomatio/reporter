@@ -1,7 +1,6 @@
 import { format as formatArgs, stripVTControlCharacters } from 'util';
 import { APP_PREFIX } from '../constants.js';
-
-const stripColors = stripVTControlCharacters || (str => str?.replace(/\x1b\[[0-9;]*m/g, '') || '');
+import { hideTestomatioToken } from './hide_token.js';
 
 /**
  * Log levels for the Testomat.io reporter.
@@ -56,8 +55,18 @@ export function isJsonOutput() {
  * @returns {string}
  */
 function jsonLine(level, args, fields = {}) {
-  const message = stripColors(formatArgs(...args)).trim();
-  return JSON.stringify({ ...fields, level, message });
+  const message = stripVTControlCharacters(formatArgs(...args)).trim();
+  return hideTestomatioToken(JSON.stringify({ ...fields, level, message }));
+}
+
+/**
+ * Render the arguments of a log function as text, with the API token hidden.
+ * Errors and other objects are formatted the way console does it.
+ * @param {any[]} args - Arguments as passed to the log function
+ * @returns {string}
+ */
+function textLine(args) {
+  return hideTestomatioToken(formatArgs(...args));
 }
 
 /**
@@ -75,7 +84,7 @@ export function info(...args) {
     fn(jsonLine('info', args));
     return;
   }
-  fn(APP_PREFIX, ...args);
+  fn(APP_PREFIX, textLine(args));
 }
 
 /**
@@ -90,7 +99,7 @@ export function warn(...args) {
     console.warn(jsonLine('warn', args));
     return;
   }
-  console.warn(APP_PREFIX, ...args);
+  console.warn(APP_PREFIX, textLine(args));
 }
 
 /**
@@ -105,7 +114,7 @@ export function error(...args) {
     console.error(jsonLine('error', args));
     return;
   }
-  console.error(APP_PREFIX, ...args);
+  console.error(APP_PREFIX, textLine(args));
 }
 
 /**
@@ -121,7 +130,7 @@ export function errorWithFields(fields, ...args) {
     console.error(jsonLine('error', args, fields));
     return;
   }
-  console.error(APP_PREFIX, ...args);
+  console.error(APP_PREFIX, textLine(args));
 }
 
 /**
