@@ -380,16 +380,15 @@ class TestomatioPipe {
       process.env.runId = this.runId;
       debug('Run created', this.runId);
     } catch (err) {
-      if (!this.apiKey) console.error('Testomat.io API key is not set');
+      if (!this.apiKey) log.error('Testomat.io API key is not set');
       const errorText = err.response?.data?.message || err.message;
       debug('Error creating run', err);
-      console.log(APP_PREFIX, errorText || err);
+      log.error(errorText || err);
       if (err.response?.status === 403) this.#disablePipe();
 
       this.#logFailedResponse(err);
 
-      console.error(
-        APP_PREFIX,
+      log.error(
         'Error creating Testomat.io report (see details above), please check if your API key is valid. Skipping report',
       );
       printCreateIssue();
@@ -409,7 +408,7 @@ class TestomatioPipe {
       this.reportingCanceledDueToReqFailures = true;
       let errorMessage = `⚠️ ${process.env.TESTOMATIO_MAX_REQUEST_FAILURES}`;
       errorMessage += ' requests were failed, reporting to Testomat aborted.';
-      console.warn(`${APP_PREFIX} ${pc.yellow(errorMessage)}`);
+      log.warn(pc.yellow(errorMessage));
     }
     return cancelReporting;
   }
@@ -557,7 +556,7 @@ class TestomatioPipe {
       const errorMessage = pc.red(
         `⚠️ Due to request failures, ${this.notReportedTestsCount} test(s) were not reported to Testomat.io`,
       );
-      console.warn(`${APP_PREFIX} ${errorMessage}`);
+      log.warn(errorMessage);
     }
 
     const { status } = params;
@@ -621,7 +620,7 @@ class TestomatioPipe {
         );
       }
     } catch (err) {
-      console.log(APP_PREFIX, 'Error updating status, skipping...', err);
+      log.error('Error updating status, skipping...', err);
       this.#logFailedResponse(err);
       printCreateIssue();
     }
@@ -665,18 +664,29 @@ class TestomatioPipe {
 
     message += `\t${pc.bold('response: ')}${pc.gray(responseBody)}\n`;
 
-    const requestBody = hideTestomatioToken(stringify(error.response?.config?.data));
+    let requestBody = hideTestomatioToken(stringify(error.response?.config?.data));
     if (process.env.DEBUG || process.env.TESTOMATIO_DEBUG || requestBody.length < 1000) {
       // full body
       message += `\t${pc.bold('request: ')}${pc.gray(requestBody)}\n`;
     } else {
       // cut body
-      const requestBodyCut = requestBody.slice(0, 1000);
-      message += `\t${pc.bold('request: ')}${pc.gray(`${requestBodyCut}...`)}\n`;
+      requestBody = `${requestBody.slice(0, 1000)}...`;
+      message += `\t${pc.bold('request: ')}${pc.gray(requestBody)}\n`;
       message += '\trequest body is cut, run with TESTOMATIO_DEBUG=1 to see full body\n';
     }
 
-    console.log(message);
+    // the JSON line is built from the same values as the text message, with the token already hidden
+    log.errorWithFields(
+      {
+        status: statusCode,
+        method,
+        url,
+        error: apiMessage || statusText || undefined,
+        response: parseIfJson(responseBody),
+        request: parseIfJson(requestBody),
+      },
+      message,
+    );
 
     if (error.response?.data?.message?.includes('could not be matched')) {
       this.hasUnmatchedTests = true;
@@ -693,8 +703,7 @@ function printCreateIssue() {
   if (registeredErrorHints) return;
   registeredErrorHints = true;
   process.on('exit', () => {
-    console.log(
-      APP_PREFIX,
+    log.error(
       'There was an error reporting to Testomat.io.\n',
       pc.yellow(
         'If you think this is a bug please create an issue: https://github.com/testomatio/reporter/issues/new.',
@@ -723,6 +732,20 @@ function hideTestomatioToken(data) {
  * @param {{ pretty: boolean }} opts
  * @returns {string}
  */
+/**
+ * Turn a JSON string back into an object for structured logs; keeps the string if it is not JSON.
+ *
+ * @param {string} data
+ * @returns {any}
+ */
+function parseIfJson(data) {
+  try {
+    return JSON.parse(data);
+  } catch {
+    return data;
+  }
+}
+
 function stringify(anything, opts = { pretty: false }) {
   return typeof anything === 'string' ? anything : JSON.stringify(anything, null, opts.pretty ? 2 : undefined);
 }

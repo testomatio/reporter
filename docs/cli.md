@@ -405,6 +405,24 @@ For more details about debug files, see the [Debug Pipe documentation](pipes/deb
 
 This is what makes `$( … )` capture and `|` piping reliable — without `--format`, the banner and `[TESTOMATIO]` logs are interleaved on `stdout`.
 
+**With `--format json` the logs are machine-readable too.** Every reporter message is printed to `stderr` as one JSON object per line instead of prefixed text, so a failing run can be diagnosed without scraping text:
+
+```bash
+npx @testomatio/reporter start --format json 2>errors.log
+```
+
+```json
+{"level":"error","message":"Error creating Testomat.io report (see details above), please check if your API key is valid. Skipping report"}
+```
+
+A failed request to Testomat.io adds its data as fields — `status`, `method`, `url`, `error`, `response` and `request` (with the API token hidden):
+
+```json
+{"status":403,"method":"POST","url":"https://app.testomat.io/api/reporter","error":"Project API Token is invalid","level":"error","message":"⚠️ Request to Testomat.io failed: ..."}
+```
+
+The same output is enabled outside the CLI with [`TESTOMATIO_LOG_JSON=1`](./configuration.md#testomatio_log_json), which the CLI also passes to the test runner it spawns.
+
 ### With `run --filter-list`
 
 Prints the IDs of the tests matching the filter **without running them**. The value selects the encoding:

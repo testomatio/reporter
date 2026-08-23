@@ -81,6 +81,40 @@ describe('cli start / run --remote', () => {
       expect(output.runPublicUrl).to.equal(`${TESTOMATIO_URL}/p/startrun456`);
     });
 
+    it('with --format json reports failures as JSON lines on stderr, keeping stdout empty', async () => {
+      server.on({
+        method: 'POST',
+        path: '/api/reporter',
+        reply: {
+          status: 403,
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ message: 'Project API Token is invalid' }),
+        },
+      });
+
+      const { code, stdout, stderr } = await runCli(['start', '--format', 'json']);
+
+      expect(code).to.equal(1);
+      expect(stdout.trim()).to.equal('');
+
+      // the failed request is reported with its data, not as a formatted text blob
+      const failure = stderr
+        .split('\n')
+        .filter(line => line.startsWith('{'))
+        .map(line => JSON.parse(line))
+        .find(entry => entry.status === 403);
+
+      expect(failure).to.exist;
+      expect(failure.level).to.equal('error');
+      expect(failure.method).to.equal('POST');
+      expect(failure.url).to.include('/api/reporter');
+      expect(failure.error).to.equal('Project API Token is invalid');
+      expect(failure.response).to.deep.equal({ message: 'Project API Token is invalid' });
+      expect(failure.request.api_key).to.equal('<hidden>');
+
+      expect(stderr).to.not.include('[TESTOMATIO] ');
+    });
+
     it('exits non-zero when the run is not created', async () => {
       server.on(replyRun('ignored', 500));
 

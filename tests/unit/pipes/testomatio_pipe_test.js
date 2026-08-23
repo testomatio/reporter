@@ -1297,6 +1297,8 @@ describe('TestomatioPipe', () => {
     let pipe;
     let consoleLogOutput;
     let originalRequest;
+    let originalLog;
+    let originalError;
 
     beforeEach(() => {
       process.env.TESTOMATIO_URL = TESTOMATIO_URL;
@@ -1311,21 +1313,23 @@ describe('TestomatioPipe', () => {
       pipe.runId = 'test-run-123';
 
       consoleLogOutput = [];
-      const originalLog = console.log;
+      originalLog = console.log;
+      originalError = console.error;
+      // errors are logged to stderr, so both streams are captured
       console.log = (...args) => {
+        consoleLogOutput.push(args.join(' '));
+      };
+      console.error = (...args) => {
         consoleLogOutput.push(args.join(' '));
       };
 
       // Store original request method to restore later
       originalRequest = pipe.client.request;
-
-      return () => {
-        console.log = originalLog;
-      };
     });
 
     afterEach(() => {
-      console.log = global.console.log;
+      console.log = originalLog;
+      console.error = originalError;
       delete process.env.TESTOMATIO_URL;
       // Restore original request method
       pipe.client.request = originalRequest;

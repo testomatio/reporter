@@ -43,6 +43,8 @@ program
     if (subOpts.filterList || subOpts.format) {
       process.env.TESTOMATIO_LOG_STDERR = '1';
       process.env.TESTOMATIO_LOG_LEVEL ||= 'WARN';
+      // with --format json the logs are machine-readable too: one JSON object per line on stderr
+      if (subOpts.format === 'json') process.env.TESTOMATIO_LOG_JSON = '1';
     } else {
       console.log(pc.cyan(pc.bold(` 🤩 Testomat.io Reporter v${version}`)));
     }

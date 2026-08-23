@@ -338,6 +338,22 @@ TESTOMATIO_LOG_LEVEL=ERROR npm test
 > 📖 See [Log Level Control](./log-level.md) for more details.
 > 🐛 For detailed debugging, use the `DEBUG` environment variable with the debug package specified.
 
+#### `TESTOMATIO_LOG_JSON`
+
+Print every `[TESTOMATIO]` message as a JSON object instead of prefixed text, one object per line:
+
+```json
+{"level":"error","message":"Error creating Testomat.io report ..."}
+```
+
+Failed API requests add their data as fields (`status`, `method`, `url`, `error`, `response`, `request`) — the API token is hidden there as it is in the text output.
+
+```
+TESTOMATIO_LOG_JSON=1 npm test
+```
+
+The CLI sets this automatically for [`--format json`](./cli.md#the---format-flag), so both the output and the logs of a run are machine-readable.
+
 #### `TESTOMATIO_UPDATE_CODE`
 
 Sends the `code` of your tests to Testomat.io on each run. (If not enabled (default) assumes the code is pushed using [check-tests](https://github.com/testomatio/check-tests#cli)).
