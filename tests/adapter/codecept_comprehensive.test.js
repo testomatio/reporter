@@ -329,6 +329,10 @@ describe('CodeceptJS Comprehensive Adapter Tests', function () {
       const testTitles = testEntries.map(entry => entry.testId.title);
       expect(testTitles).to.include.members(['Test that passes', 'Test that fails']);
 
+      const failedTest = testEntries.find(entry => entry.testId.title === 'Test that fails');
+      expect(failedTest.testId.stack).not.to.include('[object Object]');
+      expect(failedTest.testId.stack).to.include('I expect equal 4, 5');
+
       // Verify run events are properly captured
       const runStartEvents = debugData.filter(entry => entry.action === 'createRun');
       const runFinishEvents = debugData.filter(entry => entry.action === 'finishRun');

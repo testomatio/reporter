@@ -301,7 +301,7 @@ function CodeceptReporter(config) {
   });
 
   event.dispatcher.on(event.step.started, step => {
-    const stepText = `${repeat(output.stepShift)} ${step.toCliStyled ? step.toCliStyled() : step.toString()}`;
+    const stepText = `${repeat(output.stepShift)} ${formatStepLog(step)}`;
     dataStorage.putData('log', stepText);
   });
 
@@ -367,6 +367,18 @@ function stripTagsFromTitle(title) {
 
 function repeat(num) {
   return ''.padStart(num, ' ');
+}
+
+function formatStepLog(step) {
+  if (typeof step?.toCliStyled === 'function') return step.toCliStyled();
+
+  if (typeof step?.toString === 'function' && step.toString !== Object.prototype.toString) {
+    return step.toString();
+  }
+
+  const title = step?.title || '';
+  const args = Array.isArray(step?.args) ? step.args.join(', ') : '';
+  return `${title}${args ? ` ${args}` : ''}`.trim();
 }
 
 // Helper functions for cleaner event handling
