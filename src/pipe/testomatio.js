@@ -570,6 +570,7 @@ class TestomatioPipe {
     if (status === STATUS.FINISHED) status_event = 'finish';
     if (status === STATUS.PASSED) status_event = 'pass';
     if (status === STATUS.FAILED) status_event = 'fail';
+    if (this.sharedRun) status_event = 'finish';
 
     try {
       if (this.runId && !this.proceed) {

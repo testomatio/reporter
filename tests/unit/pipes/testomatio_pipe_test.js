@@ -1755,4 +1755,54 @@ describe('TestomatioPipe', () => {
       expect(pipe.finishRun({ status: 'passed' })).to.not.throw;
     });
   });
+
+  describe('finishRun shared run status', () => {
+    let pipe;
+    let capturedRequests;
+
+    beforeEach(() => {
+      process.env.TESTOMATIO_URL = TESTOMATIO_URL;
+      delete process.env.TESTOMATIO_SHARED_RUN;
+
+      capturedRequests = [];
+      pipe = new TestomatioPipe({
+        apiKey: TESTOMATIO,
+        testomatioUrl: TESTOMATIO_URL,
+        batchMode: 'disabled',
+      });
+      pipe.runId = 'shared-run-test';
+      pipe.client.request = async ({ data }) => {
+        capturedRequests.push(typeof data === 'string' ? JSON.parse(data) : data);
+        return { data: {} };
+      };
+    });
+
+    afterEach(() => {
+      delete process.env.TESTOMATIO_SHARED_RUN;
+    });
+
+    it('sends pass status_event when status is passed', async () => {
+      await pipe.finishRun({ status: 'passed' });
+      expect(capturedRequests[0].status_event).to.equal('pass');
+    });
+
+    it('sends fail status_event when status is failed', async () => {
+      await pipe.finishRun({ status: 'failed' });
+      expect(capturedRequests[0].status_event).to.equal('fail');
+    });
+
+    it('sends finish status_event when TESTOMATIO_SHARED_RUN=1 regardless of result', async () => {
+      process.env.TESTOMATIO_SHARED_RUN = '1';
+      pipe.sharedRun = true;
+      await pipe.finishRun({ status: 'failed' });
+      expect(capturedRequests[0].status_event).to.equal('finish');
+    });
+
+    it('sends actual status_event when TESTOMATIO_SHARED_RUN=0', async () => {
+      process.env.TESTOMATIO_SHARED_RUN = '0';
+      pipe.sharedRun = false;
+      await pipe.finishRun({ status: 'failed' });
+      expect(capturedRequests[0].status_event).to.equal('fail');
+    });
+  });
 });
