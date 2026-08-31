@@ -16,7 +16,7 @@ import { filesize as prettyBytes } from 'filesize';
 import dotenv from 'dotenv';
 import Replay from '../replay.js';
 import { log } from '../utils/log.js';
-import { formatFilterListIds } from '../utils/pipe_utils.js';
+import { formatFilterListIds, formatRunOutput } from '../utils/pipe_utils.js';
 import fs from 'fs';
 import path from 'path';
 
@@ -43,6 +43,8 @@ program
     if (subOpts.filterList || subOpts.format) {
       process.env.TESTOMATIO_LOG_STDERR = '1';
       process.env.TESTOMATIO_LOG_LEVEL ||= 'WARN';
+      // with --format json the logs are machine-readable too: one JSON object per line on stderr
+      if (subOpts.format === 'json') process.env.TESTOMATIO_LOG_JSON = '1';
     } else {
       console.log(pc.cyan(pc.bold(` 🤩 Testomat.io Reporter v${version}`)));
     }
@@ -53,7 +55,7 @@ program
   .description('Start a new run and return its ID')
   .option('--kind <type>', 'Specify run type: automated, manual, mixed, or detect')
   .option('--filter <filter>', 'Scope the prepared run to tests matching the filter (no execution)')
-  .option('--format <format>', 'Machine-readable output: print only the run id to stdout (e.g. --format id)')
+  .option('--format <format>', 'Machine-readable output: the run id (--format id) or run details (--format json)')
   .option('--warn', 'Exit 0 instead of 1 when the filter matches no tests (warn only)')
   .action(async opts => {
     cleanLatestRunId();
@@ -82,7 +84,7 @@ program
 
     await client.createRun(createRunParams);
 
-    const runId = client.pipeStore.runId || process.env.runId;
+    const runId = client.pipeStore.runId;
     if (!runId) {
       log.error(pc.red('Failed to create run on Testomat.io.'));
       process.exit(1);
@@ -93,8 +95,8 @@ program
     const plannedTests = (client.pipeStore.preparedTestIds || []).map(id => ({ test_id: id, title: id }));
     await client.updateRunStatus('pending', { tests: plannedTests });
 
-    // stdout carries ONLY the run id so it can be captured: RUN_ID=$(reporter start)
-    console.log(runId);
+    // stdout carries ONLY the run data so it can be captured: RUN_ID=$(reporter start)
+    console.log(formatRunOutput(client.pipeStore, opts.format));
     process.exit(0);
   });
 
@@ -129,7 +131,10 @@ program
   .argument('[command]', 'Test runner command')
   .option('--filter <filter>', 'Additional execution filter')
   .option('--filter-list <filter>', 'Get a list of all tests by filter before running')
-  .option('--format <format>', 'Machine-readable output format for --filter-list (grep, json, newline, ids)')
+  .option(
+    '--format <format>',
+    'Machine-readable output: test ids for --filter-list (grep, json, newline, ids), or the run created (id, json)',
+  )
   .option('--kind <type>', 'Specify run type: automated, manual, mixed, or detect')
   .option('--remote <profile>', 'Trigger run on the named Testomat.io CI profile instead of executing locally')
   .option(
@@ -230,6 +235,8 @@ program
 
       log.info(`🚀 CI build triggered on profile ${pc.cyan(opts.remote)}`);
       log.info(`📊 Report URL: ${pc.magenta(client.pipeStore.runUrl)}`);
+      const remoteOutput = formatRunOutput(client.pipeStore, opts.format);
+      if (opts.format && remoteOutput) console.log(remoteOutput);
       return process.exit(0);
     }
 
@@ -245,13 +252,20 @@ program
 
       if (apiKey) {
         await client.createRun(createRunParams);
-        const runId = process.env.TESTOMATIO_RUN || process.env.runId;
+
+        const runId = client.pipeStore.runId;
+        if (!runId) {
+          log.error(pc.red('Failed to create run on Testomat.io.'));
+          process.exit(1);
+        }
+
         if (client.pipeStore.runUrl) log.info( `📊 Report URL: ${pc.magenta(client.pipeStore.runUrl)}`);
 
         if (opts.kind !== 'manual') {
           log.info( `No command passed, so you need to run tests yourself:`);
           log.info( `TESTOMATIO_RUN=${runId} <command>`);
         }
+        if (opts.format) console.log(formatRunOutput(client.pipeStore, opts.format));
       } else {
         log.info( '⚠️  No API key provided. Cannot create run without TESTOMATIO key.');
         process.exit(1);
@@ -288,7 +302,11 @@ program
     }
 
     if (apiKey) {
-      await client.createRun(createRunParams).then(runTests);
+      await client.createRun(createRunParams);
+      // the runner inherits stdout, so the run data is printed first, on its own line
+      const createdOutput = formatRunOutput(client.pipeStore, opts.format);
+      if (opts.format && createdOutput) console.log(createdOutput);
+      await runTests();
     } else {
       await runTests();
     }

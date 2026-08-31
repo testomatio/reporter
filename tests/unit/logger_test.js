@@ -1,5 +1,6 @@
 import { expect } from 'chai';
-import { log, info, warn, error, LOG_LEVELS } from '../../src/utils/log.js';
+import pc from 'picocolors';
+import { log, info, warn, error, errorWithFields, LOG_LEVELS } from '../../src/utils/log.js';
 
 describe('Logger Utility', () => {
   let originalEnv;
@@ -227,6 +228,104 @@ describe('Logger Utility', () => {
       console.error = originalError;
 
       expect(calls.length).to.equal(1);
+    });
+  });
+
+  describe('JSON output (TESTOMATIO_LOG_JSON=1)', () => {
+    let calls;
+    let originalError;
+    let originalWarn;
+
+    beforeEach(() => {
+      process.env.TESTOMATIO_LOG_JSON = '1';
+      calls = [];
+      originalError = console.error;
+      originalWarn = console.warn;
+      console.error = (...args) => calls.push(args);
+      console.warn = (...args) => calls.push(args);
+    });
+
+    afterEach(() => {
+      console.error = originalError;
+      console.warn = originalWarn;
+      delete process.env.TESTOMATIO_LOG_JSON;
+    });
+
+    it('prints errors as a single JSON object with level and message', () => {
+      error('something went wrong');
+
+      expect(calls.length).to.equal(1);
+      expect(JSON.parse(calls[0][0])).to.deep.equal({ level: 'error', message: 'something went wrong' });
+    });
+
+    it('prints warnings as JSON and strips colors from the message', () => {
+      warn(pc.yellow('be careful'));
+
+      expect(JSON.parse(calls[0][0])).to.deep.equal({ level: 'warn', message: 'be careful' });
+    });
+
+    it('keeps the [TESTOMATIO] prefix out of the JSON output', () => {
+      error('plain message');
+
+      expect(calls[0][0]).to.not.include('[TESTOMATIO]');
+    });
+
+    it('formats multiple arguments into one message, as the text logger does', () => {
+      error('failed:', { status: 403 });
+
+      expect(JSON.parse(calls[0][0]).message).to.equal('failed: { status: 403 }');
+    });
+
+    it('adds structured fields of errorWithFields to the JSON object', () => {
+      errorWithFields({ status: 403, url: 'https://app.testomat.io/api/reporter' }, 'Request failed');
+
+      expect(JSON.parse(calls[0][0])).to.deep.equal({
+        status: 403,
+        url: 'https://app.testomat.io/api/reporter',
+        level: 'error',
+        message: 'Request failed',
+      });
+    });
+
+    it('never lets a field override the log level', () => {
+      errorWithFields({ level: 'info' }, 'still an error');
+
+      expect(JSON.parse(calls[0][0]).level).to.equal('error');
+    });
+
+    it('hides the API token of a raw error object', () => {
+      const requestError = new Error('Request failed');
+      // @ts-ignore - mimics an error of the http client
+      requestError.response = {
+        config: { data: '{"api_key":"tstmt_secrettoken123","title":"x"}' },
+      };
+
+      error('Error updating status, skipping...', requestError);
+
+      expect(calls[0][0]).to.not.include('tstmt_secrettoken123');
+      expect(calls[0][0]).to.include('tstmt_***');
+    });
+
+    it('hides the API token added as a structured field', () => {
+      errorWithFields({ request: { api_key: 'tstmt_secrettoken123' } }, 'Request failed');
+
+      expect(calls[0][0]).to.not.include('tstmt_secrettoken123');
+      expect(JSON.parse(calls[0][0]).request.api_key).to.equal('<hidden>');
+    });
+
+    it('prints prefixed text when JSON output is disabled', () => {
+      delete process.env.TESTOMATIO_LOG_JSON;
+      errorWithFields({ status: 403 }, 'Request failed');
+
+      expect(calls[0][0]).to.include('[TESTOMATIO]');
+      expect(calls[0][1]).to.equal('Request failed');
+    });
+
+    it('hides the API token in text output as well', () => {
+      delete process.env.TESTOMATIO_LOG_JSON;
+      error('token: tstmt_secrettoken123');
+
+      expect(calls[0].join(' ')).to.not.include('tstmt_secrettoken123');
     });
   });
 

@@ -1,4 +1,6 @@
+import { format as formatArgs, stripVTControlCharacters } from 'util';
 import { APP_PREFIX } from '../constants.js';
+import { hideTestomatioToken } from './hide_token.js';
 
 /**
  * Log levels for the Testomat.io reporter.
@@ -36,15 +38,53 @@ export function shouldLog(messageLevel) {
 }
 
 /**
+ * Check if logs should be printed as JSON lines instead of [TESTOMATIO] prefixed text.
+ * Enabled by the CLI for `--format json` so the whole output is machine-readable.
+ * @returns {boolean}
+ */
+export function isJsonOutput() {
+  return process.env.TESTOMATIO_LOG_JSON === '1';
+}
+
+/**
+ * Render a log message as a single JSON line, e.g. `{"level":"error","message":"..."}`.
+ * Colors are stripped, so the message stays readable after parsing.
+ * @param {string} level - Log level name
+ * @param {any[]} args - Arguments as passed to the log function
+ * @param {Object} [fields] - Extra fields to add to the JSON object
+ * @returns {string}
+ */
+function jsonLine(level, args, fields = {}) {
+  const message = stripVTControlCharacters(formatArgs(...args)).trim();
+  return hideTestomatioToken(JSON.stringify({ ...fields, level, message }));
+}
+
+/**
+ * Render the arguments of a log function as text, with the API token hidden.
+ * Errors and other objects are formatted the way console does it.
+ * @param {any[]} args - Arguments as passed to the log function
+ * @returns {string}
+ */
+function textLine(args) {
+  return hideTestomatioToken(formatArgs(...args));
+}
+
+/**
  * Log an info message with [TESTOMATIO] prefix.
  * Only logs when TESTOMATIO_LOG_LEVEL is INFO.
  * @param {...any} args - Arguments to log
  */
 export function info(...args) {
-  if (shouldLog(LOG_LEVELS.INFO)) {
-    const fn = process.env.TESTOMATIO_LOG_STDERR === '1' ? console.error : console.log;
-    fn(APP_PREFIX, ...args);
+  if (!shouldLog(LOG_LEVELS.INFO)) return;
+
+  let fn = console.log;
+  if (process.env.TESTOMATIO_LOG_STDERR === '1') fn = console.error;
+
+  if (isJsonOutput()) {
+    fn(jsonLine('info', args));
+    return;
   }
+  fn(APP_PREFIX, textLine(args));
 }
 
 /**
@@ -53,9 +93,13 @@ export function info(...args) {
  * @param {...any} args - Arguments to log
  */
 export function warn(...args) {
-  if (shouldLog(LOG_LEVELS.WARN)) {
-    console.warn(APP_PREFIX, ...args);
+  if (!shouldLog(LOG_LEVELS.WARN)) return;
+
+  if (isJsonOutput()) {
+    console.warn(jsonLine('warn', args));
+    return;
   }
+  console.warn(APP_PREFIX, textLine(args));
 }
 
 /**
@@ -64,9 +108,29 @@ export function warn(...args) {
  * @param {...any} args - Arguments to log
  */
 export function error(...args) {
-  if (shouldLog(LOG_LEVELS.ERROR)) {
-    console.error(APP_PREFIX, ...args);
+  if (!shouldLog(LOG_LEVELS.ERROR)) return;
+
+  if (isJsonOutput()) {
+    console.error(jsonLine('error', args));
+    return;
   }
+  console.error(APP_PREFIX, textLine(args));
+}
+
+/**
+ * Log an error which carries structured data, e.g. a failed API request.
+ * The fields are added to the JSON line; in text mode only the message is printed.
+ * @param {Object} fields - Extra fields to add to the JSON object
+ * @param {...any} args - Arguments to log as text
+ */
+export function errorWithFields(fields, ...args) {
+  if (!shouldLog(LOG_LEVELS.ERROR)) return;
+
+  if (isJsonOutput()) {
+    console.error(jsonLine('error', args, fields));
+    return;
+  }
+  console.error(APP_PREFIX, textLine(args));
 }
 
 /**
@@ -82,6 +146,8 @@ export const log = {
   info,
   warn,
   error,
+  errorWithFields,
+  isJsonOutput,
   getLogLevel,
   shouldLog,
   LOG_LEVELS,

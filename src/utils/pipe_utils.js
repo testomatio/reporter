@@ -304,6 +304,27 @@ function plannedTestsLabel(tests, testsCount) {
   return `**${knownTestsCount}** tests and **${suitesCount}** suites planned`;
 }
 
+/**
+ * Format the created run for machine-readable output of `start` and `run`.
+ * `json` prints an object with the run details, any other format prints the bare run id.
+ *
+ * @param {{runId?: string, runUrl?: string, runPublicUrl?: string}} store - Pipe store of the client.
+ * @param {string} [format] - Value of the CLI `--format` option.
+ * @returns {string} Empty string if there is no run id.
+ */
+function formatRunOutput(store, format) {
+  const runId = store?.runId;
+  if (!runId) return '';
+
+  if (format !== 'json') return runId;
+
+  const output = { runId };
+  if (store.runUrl) output.runUrl = store.runUrl;
+  if (store.runPublicUrl) output.runPublicUrl = store.runPublicUrl;
+
+  return JSON.stringify(output);
+}
+
 export {
   updateFilterType,
   parseFilterParams,
@@ -317,6 +338,7 @@ export {
   plannedTestsLabel,
   parsePipeOptions,
   formatFilterListIds,
+  formatRunOutput,
   getObjectSize,
   splitTestsIntoChunks,
 };

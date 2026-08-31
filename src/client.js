@@ -187,7 +187,7 @@ class Client {
       }
 
     } catch (err) {
-      console.error(APP_PREFIX, 'Error in uploadStepArtifacts for testRid', testRid, ':', err);
+      log.error('Error in uploadStepArtifacts for testRid', testRid, ':', err.message || err);
       throw err;
     }
   }
@@ -225,7 +225,7 @@ class Client {
     try {
       await this.uploadStepArtifacts(steps, rid);
     } catch (err) {
-      console.log(APP_PREFIX, 'Failed to upload step artifacts:', err);
+      log.error('Failed to upload step artifacts:', err.message || err);
     }
 
     const uploadedFiles = [];
@@ -423,7 +423,7 @@ class Client {
           const pathPadding = Math.max(...failedUploads.map(upload => upload.relativePath.length)) + 1;
 
           failedUploads.forEach(upload => {
-            console.log(
+            log.info(
               `  ${pc.gray('|')} 🔴 ${upload.relativePath.padEnd(pathPadding)} ${pc.gray(
                 `| ${upload.sizePretty.padStart(filesizeStrMaxLength)} |`,
               )}`,
@@ -439,7 +439,7 @@ class Client {
           }));
           const pathPadding = Math.max(...skippedUploads.map(upload => upload.relativePath.length)) + 1;
           skippedUploads.forEach(upload => {
-            console.log(
+            log.info(
               `  ${pc.gray('|')} 🟡 ${upload.relativePath.padEnd(pathPadding)} ${pc.gray(
                 `| ${upload.sizePretty.padStart(filesizeStrMaxLength)} |`,
               )}`,
