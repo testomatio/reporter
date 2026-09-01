@@ -392,6 +392,42 @@ The replay command uses the `Replay` class (located in `src/replay.js`) to:
 
 For more details about debug files, see the [Debug Pipe documentation](pipes/debug.md).
 
+### 7. fetch
+
+Fetches runs from a project via the API v2 `GET /api/v2/:project/runs` endpoint. Unlike the other commands, `fetch` does not create or modify anything — it only reads existing runs, so it works outside of any test execution.
+
+**Usage:**
+
+```bash
+npx @testomatio/reporter fetch [options]
+```
+
+**Environment Variables:**
+
+- `TESTOMATIO`: Your Testomat.io API key (required).
+- `TESTOMATIO_PROJECT`: Project slug, used when `--project` is not passed.
+- `TESTOMATIO_URL`: Testomat.io server URL (optional, defaults to `https://app.testomat.io`).
+
+**Options:**
+
+- `--project <slug>`: Project slug (or set `TESTOMATIO_PROJECT`). One of the two is required.
+- `--title <text>`: Filter by run title (partial match).
+- `--tql <query>`: Filter using Testomat Query Language.
+- `--rungroup <uid>`: Filter by rungroup id; nested rungroups are included.
+- `--limit <number>`: Max number of runs to return (default `30`, max `100`).
+- `--latest`: Only fetch the most recent run — shorthand for `--limit 1`. Combines with the other filters instead of replacing them.
+- `--format <format>`: Machine-readable output, see [The `--format` flag](#the---format-flag).
+
+**Examples:**
+
+```bash
+npx @testomatio/reporter fetch --project demo
+npx @testomatio/reporter fetch --project demo --title "Nightly"
+npx @testomatio/reporter fetch --project demo --tql "passed_count >= 3"
+npx @testomatio/reporter fetch --project demo --rungroup rg123 --limit 10
+npx @testomatio/reporter fetch --project demo --latest --format json
+```
+
 ## The `--format` flag
 
 `--format` switches a command into **machine-readable mode**: `stdout` carries only the requested data so it can be captured or piped, while the banner and progress logs are routed to `stderr`. It is supported by [`start`](#1-start) and [`run`](#3-run), and machine-readable mode behaves the same way for both.

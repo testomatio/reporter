@@ -330,7 +330,8 @@ function formatRunOutput(store, format) {
  * `json` prints an array of `{id, title, status}` per run; any other format
  * prints one run id per line.
  *
- * @param {{data?: Array<{id?: string, title?: string, status?: string}>}} body - Parsed response body from GET /api/v2/:project/runs.
+ * @param {{data?: Array<{id?: string, title?: string, status?: string}>}} body - Parsed response body
+ *   from GET /api/v2/:project/runs.
  * @param {string} [format] - Value of the CLI `--format` option.
  * @returns {string} JSON string for `format: 'json'`; newline-joined run ids otherwise (empty if none).
  */

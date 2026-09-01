@@ -134,9 +134,16 @@ program
   .option('--title <text>', 'Filter by run title')
   .option('--tql <query>', 'Filter using Testomat Query Language')
   .option('--rungroup <uid>', 'Filter by rungroup id')
-  .option('--limit <number>', `Max number of runs to return (max ${FETCH_RUNS_MAX_LIMIT})`, String(FETCH_RUNS_DEFAULT_LIMIT))
+  .option(
+    '--limit <number>',
+    `Max number of runs to return (max ${FETCH_RUNS_MAX_LIMIT})`,
+    String(FETCH_RUNS_DEFAULT_LIMIT),
+  )
   .option('--latest', 'Only fetch the most recent run (shorthand for --limit 1)')
-  .option('--format <format>', 'Machine-readable output: run ids, one per line (--format id) or run details (--format json)')
+  .option(
+    '--format <format>',
+    'Machine-readable output: run ids, one per line (--format id) or run details (--format json)',
+  )
   .action(async opts => {
     const apiKey = process.env['INPUT_TESTOMATIO-KEY'] || config.TESTOMATIO;
     if (!apiKey) {
