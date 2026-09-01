@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import {
   formatFilterListIds,
   formatRunOutput,
+  formatFetchRunsOutput,
   getObjectSize,
   splitTestsIntoChunks,
 } from '../../src/utils/pipe_utils.js';
@@ -131,6 +132,37 @@ describe('formatRunOutput', () => {
   it('omits urls the pipe did not provide', () => {
     const output = JSON.parse(formatRunOutput({ runId: 'run123' }, 'json'));
     expect(output).to.deep.equal({ runId: 'run123' });
+  });
+});
+
+describe('formatFetchRunsOutput', () => {
+  const runs = [
+    { id: 'run1', title: 'Nightly', status: 'passed', extraField: 'ignored' },
+    { id: 'run2', title: 'Smoke', status: 'failed', extraField: 'ignored' },
+  ];
+
+  it('returns empty string for missing or empty data', () => {
+    expect(formatFetchRunsOutput({}, 'id')).to.equal('');
+    expect(formatFetchRunsOutput(undefined, 'id')).to.equal('');
+    expect(formatFetchRunsOutput({ data: [] }, 'json')).to.equal('[]');
+  });
+
+  it('prints one run id per line for non-json formats', () => {
+    expect(formatFetchRunsOutput({ data: runs }, 'id')).to.equal('run1\nrun2');
+    expect(formatFetchRunsOutput({ data: runs }, undefined)).to.equal('run1\nrun2');
+  });
+
+  it('skips runs without an id in the id-list output', () => {
+    const withMissingId = [...runs, { title: 'No id', status: 'passed' }];
+    expect(formatFetchRunsOutput({ data: withMissingId }, 'id')).to.equal('run1\nrun2');
+  });
+
+  it('prints only id, title and status per run for the json format', () => {
+    const output = JSON.parse(formatFetchRunsOutput({ data: runs }, 'json'));
+    expect(output).to.deep.equal([
+      { id: 'run1', title: 'Nightly', status: 'passed' },
+      { id: 'run2', title: 'Smoke', status: 'failed' },
+    ]);
   });
 });
 

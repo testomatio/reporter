@@ -325,6 +325,23 @@ function formatRunOutput(store, format) {
   return JSON.stringify(output);
 }
 
+/**
+ * Format the runs fetched via the `fetch` command for machine-readable output.
+ * `json` prints an array of `{id, title, status}` per run; any other format
+ * prints one run id per line.
+ *
+ * @param {{data?: Array<{id?: string, title?: string, status?: string}>}} body - Parsed response body from GET /api/v2/:project/runs.
+ * @param {string} [format] - Value of the CLI `--format` option.
+ * @returns {string} JSON string for `format: 'json'`; newline-joined run ids otherwise (empty if none).
+ */
+function formatFetchRunsOutput(body, format) {
+  const runs = body?.data || [];
+
+  if (format === 'json') return JSON.stringify(runs.map(({ id, title, status }) => ({ id, title, status })));
+
+  return runs.map(run => run.id).filter(Boolean).join('\n');
+}
+
 export {
   updateFilterType,
   parseFilterParams,
@@ -339,6 +356,7 @@ export {
   parsePipeOptions,
   formatFilterListIds,
   formatRunOutput,
+  formatFetchRunsOutput,
   getObjectSize,
   splitTestsIntoChunks,
 };
