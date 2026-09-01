@@ -21,14 +21,22 @@ function createReporterWithMockedClient() {
   return { reporter, calls };
 }
 
-function createTest({ name, state, mode = 'run', fileName = 'tests/sample.spec.ts', suiteName = 'suite', startTime }) {
+function createTest({
+  name,
+  state,
+  mode = 'run',
+  fileName = 'tests/sample.spec.ts',
+  suiteName = 'suite',
+  startTime,
+  meta = {},
+}) {
   return {
     type: 'test',
     name,
     mode,
     file: { name: fileName },
     suite: { name: suiteName },
-    meta: {},
+    meta,
     result: state ? { state, duration: 5, startTime } : undefined,
   };
 }
@@ -205,6 +213,57 @@ describe('VitestReporter adapter', () => {
     expect(calls.addTestRun).to.have.length(1);
     expect(calls.updateRunStatus).to.have.length(1);
     expect(calls.updateRunStatus[0].status).to.equal('passed');
+  });
+
+  it('includes task meta in reported test data (Vitest <=3)', async () => {
+    const { reporter, calls } = createReporterWithMockedClient();
+    const test = createTest({
+      name: 'with meta',
+      state: 'pass',
+      meta: { build: '123', env: 'staging' },
+    });
+
+    await reporter.onFinished(
+      [
+        {
+          type: 'suite',
+          name: 'root',
+          tasks: [test],
+        },
+      ],
+      [],
+    );
+
+    expect(calls.addTestRun).to.have.length(1);
+    expect(calls.addTestRun[0].test.meta).to.deep.equal({ build: '123', env: 'staging' });
+  });
+
+  it('includes task meta from Vitest 4 test case shape', async () => {
+    const { reporter, calls } = createReporterWithMockedClient();
+    const testCase = {
+      name: 'v4 meta',
+      module: { relativeModuleId: 'tests/v4-meta.spec.ts' },
+      parent: { type: 'suite', name: 'meta suite' },
+      options: { mode: 'run' },
+      task: {
+        id: 'task-1',
+        type: 'test',
+        name: 'v4 meta',
+        meta: { build: '456', env: 'prod' },
+      },
+      result: () => ({ state: 'pass', errors: [] }),
+      diagnostic: () => ({ duration: 3, startTime: 1000 }),
+      meta: () => ({ reporter: 'vitest' }),
+    };
+
+    await reporter.onTestCaseResult(testCase);
+
+    expect(calls.addTestRun).to.have.length(1);
+    expect(calls.addTestRun[0].test.meta).to.deep.equal({
+      build: '456',
+      env: 'prod',
+      reporter: 'vitest',
+    });
   });
 
 });
