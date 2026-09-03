@@ -28,6 +28,11 @@ Data(['{ "input": 2, "expected": 4 }', '{ "input": 3, "expected": 6 }', '{ "inpu
   },
 );
 
+// Data-driven test with primitive rows
+Data([1, 2, 3]).Scenario('Test with ${current} data sets', ({ I, current }) => {
+  I.expectAbove(current, 0);
+}).tag('@parameterized');
+
 // Test with multiple steps
 Scenario('Test with multiple steps', ({ I, test }) => {
   console.log('Current test:', test.title);
