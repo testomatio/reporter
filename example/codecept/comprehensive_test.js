@@ -33,6 +33,25 @@ Data([1, 2, 3]).Scenario('Test with ${current} data sets', ({ I, current }) => {
   I.expectAbove(current, 0);
 }).tag('@parameterized');
 
+// Mirrors testomatio/testomatio#9902: named placeholder + custom toString().
+const templateTypes = [
+  'Code',
+  'Test',
+  'Suite',
+  'Defect',
+  'Meta',
+  'Notification-Slack',
+  'Notification-Telegram',
+  'Notification-MS Teams',
+].map(name => ({ name, option: name.toLowerCase(), toString: () => name }));
+
+Data(templateTypes)
+  .Scenario('Create a default ${name} template type in Classic Project @Tec864d90', ({ I, current }) => {
+    I.expectEqual(current.name, current.toString());
+  })
+  .tag('@smoke')
+  .tag('@serial');
+
 // Test with multiple steps
 Scenario('Test with multiple steps', ({ I, test }) => {
   console.log('Current test:', test.title);
