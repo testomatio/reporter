@@ -34,7 +34,8 @@ const HOOK_EXECUTION_ORDER = {
 // codeceptjs workers are self-contained
 dataStorage.isFileStorage = false;
 
-const DATA_REGEXP = /[|\s]+?(\{".*\}|\[.*\])/;
+// CodeceptJS appends the serialized data row of a data-driven test to its title
+const DATA_REGEXP = / \| (\{.*\}|\[.*\]|null|"(?:\\.|[^"\\])*")((?:\s+@[a-zA-Z0-9-_]+)*)$/;
 
 if (MAJOR_VERSION < 3) {
   console.log('🔴 This reporter works with CodeceptJS 3+, please update your tests');
@@ -349,15 +350,30 @@ function stripExampleFromTitle(title) {
   const res = title.match(DATA_REGEXP);
   if (!res) return { title, example: null };
 
+  let example = null;
+  let exampleParsed = false;
   try {
-    const example = JSON.parse(res[1]);
-    title = title.replace(DATA_REGEXP, '').trim();
-    return { title, example };
+    example = JSON.parse(res[1]);
+    exampleParsed = true;
   } catch (e) {
-    // If JSON parsing fails, return title without example
-    debug('Failed to parse example JSON:', res[1], e.message);
-    return { title: title.replace(DATA_REGEXP, '').trim(), example: null };
+    try {
+      example = JSON.parse(res[1].slice(1, -1));
+      exampleParsed = true;
+    } catch (e2) {
+      debug('Failed to parse example from title:', res[1]);
+    }
   }
+
+  let baseTitle = title.slice(0, res.index).trim();
+  if (exampleParsed && baseTitle.includes('${current}')) {
+    baseTitle = baseTitle.replaceAll('${current}', formatExample(example));
+  }
+  return { title: `${baseTitle}${res[2]}`, example };
+}
+
+function formatExample(example) {
+  if (example !== null && typeof example === 'object') return JSON.stringify(example);
+  return String(example);
 }
 
 function stripTagsFromTitle(title) {

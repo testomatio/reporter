@@ -56,9 +56,26 @@ describe('CodeceptJS Comprehensive Adapter Tests', function () {
       // Check if examples are captured (when available)
       dataTests.forEach(test => {
         if (test.testId.example) {
-          expect(test.testId.example).to.be.an('object');
+          // example is the parsed data row: an object, an array or a primitive
+          expect(['object', 'string', 'number', 'boolean']).to.include(typeof test.testId.example);
         }
       });
+
+      // The data row CodeceptJS appends to a title is stripped, reported as example,
+      // and resolves ${current}, so every example is reported under its own title:
+      // 'Test with ${current} data sets | {1}' -> 'Test with 1 data sets'
+      const resolvedTitles = [
+        'Test with 1 data sets @parameterized',
+        'Test with 2 data sets @parameterized',
+        'Test with 3 data sets @parameterized',
+      ];
+      resolvedTitles.forEach(expectedTitle => {
+        const entry = testEntries.find(test => test.testId.title === expectedTitle);
+        expect(entry, `title: ${expectedTitle}`).to.exist;
+        expect(entry.testId.status).to.equal('passed');
+      });
+      const resolvedTests = testEntries.filter(test => resolvedTitles.includes(test.testId.title));
+      expect(resolvedTests.map(test => test.testId.example).sort()).to.deep.equal([1, 2, 3]);
     });
 
     it('should capture test metadata and execution details', async () => {
