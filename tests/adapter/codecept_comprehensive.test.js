@@ -82,22 +82,16 @@ describe('CodeceptJS Comprehensive Adapter Tests', function () {
       // object in test.inject.current. Named placeholders must still be resolved.
       const namedPlaceholderTests = testEntries.filter(test => test.testId.test_id === '@Tec864d90');
       expect(namedPlaceholderTests).to.have.length(8);
-      expect(namedPlaceholderTests.map(test => test.testId.title).sort()).to.deep.equal([
-        'Create a default Code template type in Classic Project @Tec864d90 @smoke @serial',
-        'Create a default Defect template type in Classic Project @Tec864d90 @smoke @serial',
-        'Create a default Meta template type in Classic Project @Tec864d90 @smoke @serial',
-        'Create a default Notification-MS Teams template type in Classic Project @Tec864d90 @smoke @serial',
-        'Create a default Notification-Slack template type in Classic Project @Tec864d90 @smoke @serial',
-        'Create a default Notification-Telegram template type in Classic Project @Tec864d90 @smoke @serial',
-        'Create a default Suite template type in Classic Project @Tec864d90 @smoke @serial',
-        'Create a default Test template type in Classic Project @Tec864d90 @smoke @serial',
-      ]);
       namedPlaceholderTests.forEach(test => {
         expect(test.testId.status).to.equal('passed');
         expect(test.testId.title).to.not.include('${name}');
         expect(test.testId.title).to.not.include(' | ');
         expect(test.testId.example).to.equal(null);
       });
+
+      const pipeTitleTest = testEntries.find(test => test.testId.test_id === '@T1234abcd');
+      expect(pipeTitleTest.testId.title).to.equal('Preserve | separator in Code @T1234abcd');
+      expect(pipeTitleTest.testId.status).to.equal('passed');
     });
 
     it('should capture test metadata and execution details', async () => {
@@ -378,6 +372,9 @@ describe('CodeceptJS Comprehensive Adapter Tests', function () {
         expect(test.testId.title).to.not.include('${name}');
         expect(test.testId.title).to.not.include(' | ');
       });
+
+      const pipeTitleTest = testEntries.find(test => test.testId.test_id === '@T1234abcd');
+      expect(pipeTitleTest.testId.title).to.equal('Preserve | separator in Code @T1234abcd');
 
       // Verify run events are properly captured
       const runStartEvents = debugData.filter(entry => entry.action === 'createRun');

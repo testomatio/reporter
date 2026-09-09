@@ -52,6 +52,12 @@ Data(templateTypes)
   .tag('@smoke')
   .tag('@serial');
 
+const pipeExample = { name: 'Code', toString: () => 'Code' };
+
+Data([pipeExample]).Scenario('Preserve | separator in ${name} @T1234abcd', ({ I, current }) => {
+  I.expectEqual(current.name, current.toString());
+});
+
 // Test with multiple steps
 Scenario('Test with multiple steps', ({ I, test }) => {
   console.log('Current test:', test.title);

@@ -37,9 +37,8 @@ dataStorage.isFileStorage = false;
 // CodeceptJS appends the data row to a data-driven test title. Objects with a
 // custom toString() are appended as plain text, while other values use JSON or
 // CodeceptJS's primitive `{value}` wrapper.
-const DATA_REGEXP = / \| (.+?)((?:\s+@[a-zA-Z0-9-_]+)*)$/;
+const DATA_REGEXP = / \| (\{.*\}|\[.*\]|null|"(?:\\.|[^"\\])*"|[^|]+?)((?:\s+@[a-zA-Z0-9-_]+)*)$/;
 const PLACEHOLDER_REGEXP = /\$\{([\w_]+)\}/g;
-const NO_CURRENT_DATA = Symbol('no current data');
 
 if (MAJOR_VERSION < 3) {
   console.log('🔴 This reporter works with CodeceptJS 3+, please update your tests');
@@ -172,7 +171,7 @@ function CodeceptReporter(config) {
 
       reportedTestUids.add(test.uid);
       const reportTestPromise = client.addTestRun(STATUS.FAILED, {
-        ...stripExampleFromTest(test),
+        ...stripExampleFromTitle(test.title, test),
         rid: test.uid,
         test_id: getTestomatIdFromTestTitle(test.title),
         suite_title: stripTagsFromTitle(suite.title),
@@ -190,7 +189,7 @@ function CodeceptReporter(config) {
       for (const test of suite.tests) {
         reportedTestUids.add(test.uid);
         const reportTestPromise = client.addTestRun('failed', {
-          ...stripExampleFromTest(test),
+          ...stripExampleFromTitle(test.title, test),
           rid: test.uid,
           test_id: getTestomatIdFromTestTitle(test.title),
           suite_title: stripTagsFromTitle(suite.title),
@@ -252,7 +251,7 @@ function CodeceptReporter(config) {
     services.setContext(null);
 
     const reportTestPromise = client.addTestRun(STATUS.SKIPPED, {
-      ...stripExampleFromTest(test, title),
+      ...stripExampleFromTitle(title, test),
       rid: uid,
       test_id: getTestomatIdFromTestTitle(`${title} ${tags?.join(' ')}`),
       suite_title: test.parent && stripTagsFromTitle(stripExampleFromTitle(test.parent.title).title),
@@ -286,7 +285,7 @@ function CodeceptReporter(config) {
     services.setContext(null);
 
     const reportTestPromise = client.addTestRun(test.state, {
-      ...stripExampleFromTest(test, title),
+      ...stripExampleFromTitle(title, test),
       rid: uid,
       test_id: getTestomatIdFromTestTitle(`${title} ${tags?.join(' ')}`),
       suite_title: test.parent && stripTagsFromTitle(stripExampleFromTitle(test.parent.title).title),
@@ -350,63 +349,47 @@ function getTestAndMessage(title) {
   return testObj;
 }
 
-function stripExampleFromTitle(title, current = NO_CURRENT_DATA) {
+function stripExampleFromTitle(title, test) {
   const res = title.match(DATA_REGEXP);
   if (!res) return { title, example: null };
 
-  const baseTitle = title.slice(0, res.index).trim();
-  const serializedExample = res[1];
-  const tags = res[2];
-  const parsed = parseExample(serializedExample);
-  const placeholders = [...baseTitle.matchAll(PLACEHOLDER_REGEXP)];
-
-  if (!parsed.success && !placeholders.length && current === NO_CURRENT_DATA) {
-    return { title, example: null };
+  let example = null;
+  let exampleParsed = false;
+  try {
+    example = JSON.parse(res[1]);
+    exampleParsed = true;
+  } catch (e) {
+    try {
+      example = JSON.parse(res[1].slice(1, -1));
+      exampleParsed = true;
+    } catch (e2) {
+      debug('Failed to parse example from title:', res[1]);
+    }
   }
 
-  const source = current !== NO_CURRENT_DATA ? current : parsed.success ? parsed.value : serializedExample;
-  const uniquePlaceholderKeys = [...new Set(placeholders.map(match => match[1]))];
-  const resolvedTitle = baseTitle.replace(PLACEHOLDER_REGEXP, (placeholder, key) => {
-    if (key === 'current' && source !== NO_CURRENT_DATA) return formatExample(source);
+  let baseTitle = title.slice(0, res.index).trim();
+  const placeholderKeys = [...baseTitle.matchAll(PLACEHOLDER_REGEXP)].map(match => match[1]);
+  const hasCurrentData = test?.inject && Object.prototype.hasOwnProperty.call(test.inject, 'current');
+
+  if (!exampleParsed && !placeholderKeys.length && !hasCurrentData) return { title, example: null };
+
+  const source = hasCurrentData ? test.inject.current : exampleParsed ? example : res[1];
+  const uniquePlaceholderKeys = [...new Set(placeholderKeys)];
+  baseTitle = baseTitle.replace(PLACEHOLDER_REGEXP, (placeholder, key) => {
+    if (key === 'current') return formatExample(source);
 
     if (source !== null && typeof source === 'object' && Object.prototype.hasOwnProperty.call(source, key)) {
       return formatExample(source[key]);
     }
 
-    if (!parsed.success && uniquePlaceholderKeys.length === 1) return serializedExample;
-
-    if (parsed.success && uniquePlaceholderKeys.length === 1 && typeof source !== 'object') {
+    if (uniquePlaceholderKeys.length === 1 && (!exampleParsed || typeof source !== 'object')) {
       return formatExample(source);
     }
 
     return placeholder;
   });
 
-  return { title: `${resolvedTitle}${tags}`, example: parsed.success ? parsed.value : null };
-}
-
-function stripExampleFromTest(test, title = test?.title) {
-  const hasCurrentData = test?.inject && Object.prototype.hasOwnProperty.call(test.inject, 'current');
-  return stripExampleFromTitle(title, hasCurrentData ? test.inject.current : NO_CURRENT_DATA);
-}
-
-function parseExample(serializedExample) {
-  const isSerializedByCodecept = serializedExample === 'null' || ['{', '[', '"'].includes(serializedExample.charAt(0));
-  if (!isSerializedByCodecept) return { success: false, value: null };
-
-  try {
-    return { success: true, value: JSON.parse(serializedExample) };
-  } catch (e) {
-    if (serializedExample.startsWith('{') && serializedExample.endsWith('}')) {
-      try {
-        return { success: true, value: JSON.parse(serializedExample.slice(1, -1)) };
-      } catch (e2) {
-      }
-    }
-  }
-
-  debug('Failed to parse example from title:', serializedExample);
-  return { success: false, value: null };
+  return { title: `${baseTitle}${res[2]}`, example: exampleParsed ? example : null };
 }
 
 function formatExample(example) {
