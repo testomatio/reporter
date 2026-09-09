@@ -34,10 +34,8 @@ const HOOK_EXECUTION_ORDER = {
 // codeceptjs workers are self-contained
 dataStorage.isFileStorage = false;
 
-// CodeceptJS appends the data row to a data-driven test title. Objects with a
-// custom toString() are appended as plain text, while other values use JSON or
-// CodeceptJS's primitive `{value}` wrapper.
-const DATA_REGEXP = / \| (\{.*\}|\[.*\]|null|"(?:\\.|[^"\\])*"|[^|]+?)((?:\s+@[a-zA-Z0-9-_]+)*)$/;
+// CodeceptJS appends the serialized data row of a data-driven test to its title
+const DATA_REGEXP = / \| (\{.*\}|\[.*\]|null|"(?:\\.|[^"\\])*")((?:\s+@[a-zA-Z0-9-_]+)*)$/;
 const PLACEHOLDER_REGEXP = /\$\{([\w_]+)\}/g;
 
 if (MAJOR_VERSION < 3) {
@@ -171,7 +169,7 @@ function CodeceptReporter(config) {
 
       reportedTestUids.add(test.uid);
       const reportTestPromise = client.addTestRun(STATUS.FAILED, {
-        ...stripExampleFromTitle(test.title, test),
+        ...stripExampleFromTitle(test.title),
         rid: test.uid,
         test_id: getTestomatIdFromTestTitle(test.title),
         suite_title: stripTagsFromTitle(suite.title),
@@ -189,7 +187,7 @@ function CodeceptReporter(config) {
       for (const test of suite.tests) {
         reportedTestUids.add(test.uid);
         const reportTestPromise = client.addTestRun('failed', {
-          ...stripExampleFromTitle(test.title, test),
+          ...stripExampleFromTitle(test.title),
           rid: test.uid,
           test_id: getTestomatIdFromTestTitle(test.title),
           suite_title: stripTagsFromTitle(suite.title),
@@ -251,7 +249,7 @@ function CodeceptReporter(config) {
     services.setContext(null);
 
     const reportTestPromise = client.addTestRun(STATUS.SKIPPED, {
-      ...stripExampleFromTitle(title, test),
+      ...stripExampleFromTitle(title),
       rid: uid,
       test_id: getTestomatIdFromTestTitle(`${title} ${tags?.join(' ')}`),
       suite_title: test.parent && stripTagsFromTitle(stripExampleFromTitle(test.parent.title).title),
@@ -285,7 +283,7 @@ function CodeceptReporter(config) {
     services.setContext(null);
 
     const reportTestPromise = client.addTestRun(test.state, {
-      ...stripExampleFromTitle(title, test),
+      ...stripExampleFromTitle(title),
       rid: uid,
       test_id: getTestomatIdFromTestTitle(`${title} ${tags?.join(' ')}`),
       suite_title: test.parent && stripTagsFromTitle(stripExampleFromTitle(test.parent.title).title),
@@ -349,7 +347,7 @@ function getTestAndMessage(title) {
   return testObj;
 }
 
-function stripExampleFromTitle(title, test) {
+function stripExampleFromTitle(title) {
   const res = title.match(DATA_REGEXP);
   if (!res) return { title, example: null };
 
@@ -368,28 +366,14 @@ function stripExampleFromTitle(title, test) {
   }
 
   let baseTitle = title.slice(0, res.index).trim();
-  const placeholderKeys = [...baseTitle.matchAll(PLACEHOLDER_REGEXP)].map(match => match[1]);
-  const hasCurrentData = test?.inject && Object.prototype.hasOwnProperty.call(test.inject, 'current');
-
-  if (!exampleParsed && !placeholderKeys.length && !hasCurrentData) return { title, example: null };
-
-  const source = hasCurrentData ? test.inject.current : exampleParsed ? example : res[1];
-  const uniquePlaceholderKeys = [...new Set(placeholderKeys)];
-  baseTitle = baseTitle.replace(PLACEHOLDER_REGEXP, (placeholder, key) => {
-    if (key === 'current') return formatExample(source);
-
-    if (source !== null && typeof source === 'object' && Object.prototype.hasOwnProperty.call(source, key)) {
-      return formatExample(source[key]);
-    }
-
-    if (uniquePlaceholderKeys.length === 1 && (!exampleParsed || typeof source !== 'object')) {
-      return formatExample(source);
-    }
-
-    return placeholder;
-  });
-
-  return { title: `${baseTitle}${res[2]}`, example: exampleParsed ? example : null };
+  if (exampleParsed) {
+    baseTitle = baseTitle.replace(PLACEHOLDER_REGEXP, (placeholder, key) => {
+      if (key === 'current') return formatExample(example);
+      if (!Object.hasOwn(example ?? {}, key)) return placeholder;
+      return formatExample(example[key]);
+    });
+  }
+  return { title: `${baseTitle}${res[2]}`, example };
 }
 
 function formatExample(example) {

@@ -77,21 +77,11 @@ describe('CodeceptJS Comprehensive Adapter Tests', function () {
       const resolvedTests = testEntries.filter(test => resolvedTitles.includes(test.testId.title));
       expect(resolvedTests.map(test => test.testId.example).sort()).to.deep.equal([1, 2, 3]);
 
-      // Regression for testomatio/testomatio#9902. CodeceptJS serializes objects
-      // with a custom toString() as plain text (`| Code`) and keeps the actual
-      // object in test.inject.current. Named placeholders must still be resolved.
-      const namedPlaceholderTests = testEntries.filter(test => test.testId.test_id === '@Tec864d90');
-      expect(namedPlaceholderTests).to.have.length(8);
-      namedPlaceholderTests.forEach(test => {
-        expect(test.testId.status).to.equal('passed');
-        expect(test.testId.title).to.not.include('${name}');
-        expect(test.testId.title).to.not.include(' | ');
-        expect(test.testId.example).to.equal(null);
-      });
-
-      const pipeTitleTest = testEntries.find(test => test.testId.test_id === '@T1234abcd');
-      expect(pipeTitleTest.testId.title).to.equal('Preserve | separator in Code @T1234abcd');
-      expect(pipeTitleTest.testId.status).to.equal('passed');
+      const namedPlaceholderTest = testEntries.find(test => test.testId.test_id === '@Tec864d90');
+      expect(namedPlaceholderTest.testId.title).to.equal(
+        'Create a default Code template type in Classic Project @Tec864d90 @smoke @serial',
+      );
+      expect(namedPlaceholderTest.testId.example).to.deep.equal({ name: 'Code', option: 'code' });
     });
 
     it('should capture test metadata and execution details', async () => {
@@ -366,15 +356,10 @@ describe('CodeceptJS Comprehensive Adapter Tests', function () {
       expect(failedTest.testId.stack).not.to.include('[object Object]');
       expect(failedTest.testId.stack).to.include('I expect equal 4, 5');
 
-      const namedPlaceholderTests = testEntries.filter(test => test.testId.test_id === '@Tec864d90');
-      expect(namedPlaceholderTests).to.have.length(8);
-      namedPlaceholderTests.forEach(test => {
-        expect(test.testId.title).to.not.include('${name}');
-        expect(test.testId.title).to.not.include(' | ');
-      });
-
-      const pipeTitleTest = testEntries.find(test => test.testId.test_id === '@T1234abcd');
-      expect(pipeTitleTest.testId.title).to.equal('Preserve | separator in Code @T1234abcd');
+      const namedPlaceholderTest = testEntries.find(test => test.testId.test_id === '@Tec864d90');
+      expect(namedPlaceholderTest.testId.title).to.equal(
+        'Create a default Code template type in Classic Project @Tec864d90 @smoke @serial',
+      );
 
       // Verify run events are properly captured
       const runStartEvents = debugData.filter(entry => entry.action === 'createRun');

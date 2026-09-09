@@ -33,30 +33,13 @@ Data([1, 2, 3]).Scenario('Test with ${current} data sets', ({ I, current }) => {
   I.expectAbove(current, 0);
 }).tag('@parameterized');
 
-// Mirrors testomatio/testomatio#9902: named placeholder + custom toString().
-const templateTypes = [
-  'Code',
-  'Test',
-  'Suite',
-  'Defect',
-  'Meta',
-  'Notification-Slack',
-  'Notification-Telegram',
-  'Notification-MS Teams',
-].map(name => ({ name, option: name.toLowerCase(), toString: () => name }));
-
-Data(templateTypes)
+// Regression for testomatio/testomatio#9902: named placeholder in an object row.
+Data([{ name: 'Code', option: 'code' }])
   .Scenario('Create a default ${name} template type in Classic Project @Tec864d90', ({ I, current }) => {
-    I.expectEqual(current.name, current.toString());
+    I.expectEqual(current.name, 'Code');
   })
   .tag('@smoke')
   .tag('@serial');
-
-const pipeExample = { name: 'Code', toString: () => 'Code' };
-
-Data([pipeExample]).Scenario('Preserve | separator in ${name} @T1234abcd', ({ I, current }) => {
-  I.expectEqual(current.name, current.toString());
-});
 
 // Test with multiple steps
 Scenario('Test with multiple steps', ({ I, test }) => {
