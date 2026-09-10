@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+  <testsuite name="IntegrationTests.Features.CreateUser" hostname="ICTCARD038L" package="not available" id="0" tests="1" failures="0" errors="0" skipped="0" time="2.071" timestamp="2022-10-25T15:58:13">
+    <properties />
+    <testcase name="CreateAWebLead(&quot;1007&quot;,&quot;bob&quot;,null)" classname="IntegrationTests.Features.CreateUser" time="2.071" status="1">
+      <system-out>Lorem ipsum dolor sit amet consectetur adipiscing elit, urna consequat felis vehicula class ultricies mollis dictumst, aenean non a in donec nulla. Phasellus ante pellentesque erat cum risus consequat imperdiet aliquam, .</system-out>
+    </testcase>
+    <system-out>Lorem ipsum dolor sit amet consectetur adipiscing elit, urna consequat felis vehicula class ultricies mollis dictumst, aenean non a in donec nulla. Phasellus ante pellentesque erat cum risus consequat imperdiet aliquam, .</system-out>
+    <system-err />
+  </testsuite>
+  <testsuite name="IntegrationTests.Features.UpdateUser" hostname="ICTCARD038L" package="not available" id="1" tests="2" failures="2" errors="0" skipped="0" time="3.571" timestamp="2022-10-25T15:58:15">
+    <properties />
+    <testcase name="CreateAPrequalRequest(&quot;1005&quot;,&quot;john&quot;,&quot;100&quot;,&quot;1000&quot;,&quot;10000&quot;,&quot;666004444&quot;,&quot;5000&quot;,&quot;0&quot;,[&quot;prequal&quot;])" classname="IntegrationTests.Features.UpdateUser" time="1.490" status="0">
+      <failure message="System.NullReferenceException : Object reference not set to an instance of an object." type="not specified">   
+      Lorem ipsum dolor sit amet consectetur adipiscing elit, urna consequat felis vehicula class ultricies mollis dictumst, aenean non a in donec nulla. Phasellus ante pellentesque erat cum risus consequat imperdiet aliquam, 
+      </failure>
+      <system-out>
+      Lorem ipsum dolor sit amet consectetur adipiscing elit, urna consequat felis vehicula class ultricies mollis dictumst, aenean non a in donec nulla. Phasellus ante pellentesque erat cum risus consequat imperdiet aliquam, 
+      
+      </system-out>
+    </testcase>
+    <testcase name="CreateAPrequalRequest(&quot;1005&quot;,&quot;bob&quot;,&quot;100&quot;,&quot;1000&quot;,&quot;10000&quot;,&quot;666004444&quot;,&quot;5000&quot;,&quot;0&quot;,[&quot;prequal&quot;])" classname="IntegrationTests.Features.UpdateUser" time="2.081" status="0">
+      <failure message="Microsoft.Playwright.PlaywrightException : Request context disposed" type="not specified">
+Lorem ipsum dolor sit amet consectetur adipiscing elit, urna consequat felis vehicula class ultricies mollis dictumst, aenean non a in donec nulla. Phasellus ante pellentesque erat cum risus consequat imperdiet aliquam,       
+      <system-out>
+      Lorem ipsum dolor sit amet consectetur adipiscing elit, urna consequat felis vehicula class ultricies mollis dictumst, aenean non a in donec nulla. Phasellus ante pellentesque erat cum risus consequat imperdiet aliquam, 
+      </system-out>
+    </testcase>
+    <system-out>
+    Lorem ipsum dolor sit amet consectetur adipiscing elit, urna consequat felis vehicula class ultricies mollis dictumst, aenean non a in donec nulla. Phasellus ante pellentesque erat cum risus consequat imperdiet aliquam, 
+    </system-out>
+    <system-err />
+  </testsuite>
+  <testsuite name="IntegrationTests.Features.Manager" hostname="ICTCARD038L" package="not available" id="2" tests="2" failures="1" errors="0" skipped="1" time="4.837" timestamp="2022-10-25T15:58:15">
+    <properties />
+    <testcase name="CreateALeadAndPerformActionDispositionOnTheLead" classname="IntegrationTests.Features.Manager" time="2.712">
+      <skipped />
+      <system-out>
+      Lorem ipsum dolor sit amet consectetur adipiscing elit, urna consequat felis vehicula class ultricies mollis dictumst, aenean non a in donec nulla. Phasellus ante pellentesque erat cum risus consequat imperdiet aliquam, 
+      </system-out>
+    </testcase>
+    <testcase name="CreateAActionDispositionRequest" classname="IntegrationTests.Features.Manager" time="2.125" status="0">
+      <failure message="TechTalk.SpecFlow.BindingException : Parameter count mismatch! The binding method 'IntegrationTests:IntegrationTests.Steps.ApiSteps.ThenTheResultShouldBeOk(String)' should have 0 parameters" type="not specified">
+Lorem ipsum dolor sit amet consectetur adipiscing elit, urna consequat felis vehicula class ultricies mollis dictumst, aenean non a in donec nulla. Phasellus ante pellentesque erat cum risus consequat imperdiet aliquam, 
+      <system-out>
+Lorem ipsum dolor sit amet consectetur adipiscing elit, urna consequat felis vehicula class ultricies mollis dictumst, aenean non a in donec nulla. Phasellus ante pellentesque erat cum risus consequat imperdiet aliquam,       
+      
+      </system-out>
+    </testcase>
+    <system-out>
+    Lorem ipsum dolor sit amet consectetur adipiscing elit, urna consequat felis vehicula class ultricies mollis dictumst, aenean non a in donec nulla. Phasellus ante pellentesque erat cum risus consequat imperdiet aliquam, 
+    </system-out>
+    <system-err />
+  </testsuite>
+</testsuites>
