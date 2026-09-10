@@ -33,6 +33,14 @@ Data([1, 2, 3]).Scenario('Test with ${current} data sets', ({ I, current }) => {
   I.expectAbove(current, 0);
 }).tag('@parameterized');
 
+// Regression for testomatio/testomatio#9902: named placeholder in an object row.
+Data([{ name: 'Code', option: 'code' }])
+  .Scenario('Create a default ${name} template type in Classic Project @Tec864d90', ({ I, current }) => {
+    I.expectEqual(current.name, 'Code');
+  })
+  .tag('@smoke')
+  .tag('@serial');
+
 // Test with multiple steps
 Scenario('Test with multiple steps', ({ I, test }) => {
   console.log('Current test:', test.title);

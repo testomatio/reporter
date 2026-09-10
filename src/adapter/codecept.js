@@ -36,6 +36,7 @@ dataStorage.isFileStorage = false;
 
 // CodeceptJS appends the serialized data row of a data-driven test to its title
 const DATA_REGEXP = / \| (\{.*\}|\[.*\]|null|"(?:\\.|[^"\\])*")((?:\s+@[a-zA-Z0-9-_]+)*)$/;
+const PLACEHOLDER_REGEXP = /\$\{([\w_]+)\}/g;
 
 if (MAJOR_VERSION < 3) {
   console.log('🔴 This reporter works with CodeceptJS 3+, please update your tests');
@@ -365,8 +366,12 @@ function stripExampleFromTitle(title) {
   }
 
   let baseTitle = title.slice(0, res.index).trim();
-  if (exampleParsed && baseTitle.includes('${current}')) {
-    baseTitle = baseTitle.replaceAll('${current}', formatExample(example));
+  if (exampleParsed) {
+    baseTitle = baseTitle.replace(PLACEHOLDER_REGEXP, (placeholder, key) => {
+      if (key === 'current') return formatExample(example);
+      if (!Object.hasOwn(example ?? {}, key)) return placeholder;
+      return formatExample(example[key]);
+    });
   }
   return { title: `${baseTitle}${res[2]}`, example };
 }

@@ -76,6 +76,12 @@ describe('CodeceptJS Comprehensive Adapter Tests', function () {
       });
       const resolvedTests = testEntries.filter(test => resolvedTitles.includes(test.testId.title));
       expect(resolvedTests.map(test => test.testId.example).sort()).to.deep.equal([1, 2, 3]);
+
+      const namedPlaceholderTest = testEntries.find(test => test.testId.test_id === '@Tec864d90');
+      expect(namedPlaceholderTest.testId.title).to.equal(
+        'Create a default Code template type in Classic Project @Tec864d90 @smoke @serial',
+      );
+      expect(namedPlaceholderTest.testId.example).to.deep.equal({ name: 'Code', option: 'code' });
     });
 
     it('should capture test metadata and execution details', async () => {
@@ -349,6 +355,11 @@ describe('CodeceptJS Comprehensive Adapter Tests', function () {
       const failedTest = testEntries.find(entry => entry.testId.title === 'Test that fails');
       expect(failedTest.testId.stack).not.to.include('[object Object]');
       expect(failedTest.testId.stack).to.include('I expect equal 4, 5');
+
+      const namedPlaceholderTest = testEntries.find(test => test.testId.test_id === '@Tec864d90');
+      expect(namedPlaceholderTest.testId.title).to.equal(
+        'Create a default Code template type in Classic Project @Tec864d90 @smoke @serial',
+      );
 
       // Verify run events are properly captured
       const runStartEvents = debugData.filter(entry => entry.action === 'createRun');
