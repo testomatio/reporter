@@ -81,7 +81,18 @@ describe('CodeceptJS Comprehensive Adapter Tests', function () {
       expect(namedPlaceholderTest.testId.title).to.equal(
         'Create a default Code template type in Classic Project @Tec864d90 @smoke @serial',
       );
-      expect(namedPlaceholderTest.testId.example).to.deep.equal({ name: 'Code', option: 'code' });
+      expect(namedPlaceholderTest.testId.example).to.equal('Code');
+
+      // A placeholder matching a key of an object row resolves to that key's value only,
+      // so the title is resolved and the example reports just the used value:
+      // 'Number ${current} should be positive | {"current":1,"param2":"A"}'
+      //   -> 'Number 1 should be positive' with example 1
+      const keyedPlaceholderTests = testEntries.filter(test => test.testId.test_id === '@T61faa1d4');
+      expect(keyedPlaceholderTests.map(test => test.testId.title)).to.deep.equal([
+        'Number 1 should be positive @T61faa1d4 @parameterized',
+        'Number 2 should be positive @T61faa1d4 @parameterized',
+      ]);
+      expect(keyedPlaceholderTests.map(test => test.testId.example)).to.deep.equal([1, 2]);
     });
 
     it('should capture test metadata and execution details', async () => {
