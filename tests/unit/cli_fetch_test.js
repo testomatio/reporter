@@ -132,13 +132,13 @@ describe('cli fetch', () => {
     expect(stdout.trim()).to.equal('run1\nrun2');
   });
 
-  it('with --format json prints only id, title and status per run', async () => {
-    server.on(replyRuns([{ id: 'run1', title: 'Nightly', status: 'passed', extra: 'dropped' }]));
+  it('with --format json prints all run fields', async () => {
+    server.on(replyRuns([{ id: 'run1', title: 'Nightly', status: 'passed', extra: 'kept' }]));
 
     const { code, stdout } = await runCli(['fetch', '--project', PROJECT, '--format', 'json']);
 
     expect(code).to.equal(0);
-    expect(JSON.parse(stdout.trim())).to.deep.equal([{ id: 'run1', title: 'Nightly', status: 'passed' }]);
+    expect(JSON.parse(stdout.trim())).to.deep.equal([{ id: 'run1', title: 'Nightly', status: 'passed', extra: 'kept' }]);
   });
 
   it('exits non-zero and prints the server error when the request fails', async () => {

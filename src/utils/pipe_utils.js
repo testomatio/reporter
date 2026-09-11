@@ -327,20 +327,35 @@ function formatRunOutput(store, format) {
 
 /**
  * Format the runs fetched via the `fetch` command for machine-readable output.
- * `json` prints an array of `{id, title, status}` per run; any other format
- * prints one run id per line.
+ * `json` prints the full array of run objects; `id` prints one run id per line;
+ * any other format prints a human-readable multi-line summary per run.
  *
- * @param {{data?: Array<{id?: string, title?: string, status?: string}>}} body - Parsed response body
- *   from GET /api/v2/:project/runs.
+ * @param {{data?: Array}} body - Parsed response body from GET /api/v2/:project/runs.
  * @param {string} [format] - Value of the CLI `--format` option.
- * @returns {string} JSON string for `format: 'json'`; newline-joined run ids otherwise (empty if none).
+ * @returns {string}
  */
 function formatFetchRunsOutput(body, format) {
   const runs = body?.data || [];
 
-  if (format === 'json') return JSON.stringify(runs.map(({ id, title, status }) => ({ id, title, status })));
+  if (format === 'json') return JSON.stringify(runs, null, 2);
 
-  return runs.map(run => run.id).filter(Boolean).join('\n');
+  if (format === 'id') return runs.map(run => run.id).filter(Boolean).join('\n');
+
+  return runs
+    .map(run => {
+      const lines = [`* ID: ${run.id}`];
+      if (run.title) lines.push(`  title: ${run.title}`);
+      if (run.launched_at) lines.push(`  started at: ${run.launched_at}`);
+      if (run.finished_at) lines.push(`  finished at: ${run.finished_at}`);
+      if (run.passed_count != null) lines.push(`  passed: ${run.passed_count} tests`);
+      if (run.failed_count != null) lines.push(`  failed: ${run.failed_count} tests`);
+      if (run.skipped_count != null) lines.push(`  skipped: ${run.skipped_count} tests`);
+      if (run.tests_count != null) lines.push(`  tests_count: ${run.tests_count} tests`);
+      if (run.env) lines.push(`  env: ${run.env}`);
+      if (run.ci_build_url) lines.push(`  ci build url: ${run.ci_build_url}`);
+      return lines.join('\n');
+    })
+    .join('\n');
 }
 
 export {

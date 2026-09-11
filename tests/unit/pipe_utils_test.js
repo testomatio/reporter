@@ -147,9 +147,8 @@ describe('formatFetchRunsOutput', () => {
     expect(formatFetchRunsOutput({ data: [] }, 'json')).to.equal('[]');
   });
 
-  it('prints one run id per line for non-json formats', () => {
+  it('prints one run id per line for the id format', () => {
     expect(formatFetchRunsOutput({ data: runs }, 'id')).to.equal('run1\nrun2');
-    expect(formatFetchRunsOutput({ data: runs }, undefined)).to.equal('run1\nrun2');
   });
 
   it('skips runs without an id in the id-list output', () => {
@@ -157,12 +156,19 @@ describe('formatFetchRunsOutput', () => {
     expect(formatFetchRunsOutput({ data: withMissingId }, 'id')).to.equal('run1\nrun2');
   });
 
-  it('prints only id, title and status per run for the json format', () => {
+  it('prints multi-line summary per run for the default format', () => {
+    const output = formatFetchRunsOutput({ data: runs }, undefined);
+    expect(output).to.include('* ID: run1');
+    expect(output).to.include('title: Nightly');
+    expect(output).to.include('* ID: run2');
+    expect(output).to.include('title: Smoke');
+  });
+
+  it('returns all fields per run for the json format', () => {
     const output = JSON.parse(formatFetchRunsOutput({ data: runs }, 'json'));
-    expect(output).to.deep.equal([
-      { id: 'run1', title: 'Nightly', status: 'passed' },
-      { id: 'run2', title: 'Smoke', status: 'failed' },
-    ]);
+    expect(output).to.have.lengthOf(2);
+    expect(output[0]).to.include({ id: 'run1', title: 'Nightly', status: 'passed', extraField: 'ignored' });
+    expect(output[1]).to.include({ id: 'run2', title: 'Smoke', status: 'failed' });
   });
 });
 
