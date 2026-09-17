@@ -16,13 +16,16 @@ import { filesize as prettyBytes } from 'filesize';
 import dotenv from 'dotenv';
 import Replay from '../replay.js';
 import { log } from '../utils/log.js';
-import { formatFilterListIds, formatRunOutput } from '../utils/pipe_utils.js';
+import { formatFilterListIds, formatRunOutput, formatFetchRunsOutput } from '../utils/pipe_utils.js';
 import fs from 'fs';
 import path from 'path';
 
 const debug = createDebugMessages('@testomatio/reporter:cli');
 const version = getPackageVersion();
 const program = new Command();
+
+const FETCH_RUNS_DEFAULT_LIMIT = 30;
+const FETCH_RUNS_MAX_LIMIT = 100;
 
 program
   .version(version)
@@ -122,6 +125,56 @@ program
     client.updateRunStatus(STATUS.FINISHED, finishParams).then(() => {
       process.exit(0);
     });
+  });
+
+program
+  .command('fetch')
+  .description('Fetch runs from Testomat.io API v2')
+  .option('--project <slug>', 'Project slug (or set TESTOMATIO_PROJECT)')
+  .option('--title <text>', 'Filter by run title')
+  .option('--tql <query>', 'Filter using Testomat Query Language')
+  .option('--rungroup <uid>', 'Filter by rungroup id')
+  .option(
+    '--limit <number>',
+    `Max number of runs to return (max ${FETCH_RUNS_MAX_LIMIT})`,
+    String(FETCH_RUNS_DEFAULT_LIMIT),
+  )
+  .option('--latest', 'Only fetch the most recent run (shorthand for --limit 1)')
+  .option(
+    '--format <format>',
+    'Machine-readable output: run ids, one per line (--format id) or run details (--format json)',
+  )
+  .action(async opts => {
+    const apiKey = process.env['INPUT_TESTOMATIO-KEY'] || config.TESTOMATIO;
+    if (!apiKey) {
+      log.error(pc.red('⚠️  TESTOMATIO API key required'));
+      process.exit(1);
+    }
+
+    const project = opts.project || process.env.TESTOMATIO_PROJECT;
+    if (!project) {
+      log.error(pc.red('⚠️  --project (or TESTOMATIO_PROJECT) is required'));
+      process.exit(1);
+    }
+
+    const baseUrl = process.env.TESTOMATIO_URL || 'https://app.testomat.io';
+    const url = new URL(`/api/v2/${project}/runs`, baseUrl);
+    if (opts.title) url.searchParams.set('search', opts.title);
+    if (opts.tql) url.searchParams.set('tql', opts.tql);
+    if (opts.rungroup) url.searchParams.set('groupId', opts.rungroup);
+    const requestedLimit = opts.latest ? 1 : parseInt(opts.limit, 10) || FETCH_RUNS_DEFAULT_LIMIT;
+    const limit = Math.min(Math.max(requestedLimit, 1), FETCH_RUNS_MAX_LIMIT);
+    url.searchParams.set('per_page', String(limit));
+
+    const response = await fetch(url, { headers: { Authorization: `Bearer ${apiKey}` } });
+    const body = await response.json();
+
+    if (!response.ok) {
+      log.error(pc.red(`Failed to fetch runs: ${response.status} ${body.error || response.statusText}`));
+      process.exit(1);
+    }
+
+    console.log(formatFetchRunsOutput(body, opts.format));
   });
 
 program
