@@ -41,6 +41,16 @@ Data([{ name: 'Code', option: 'code' }])
   .tag('@smoke')
   .tag('@serial');
 
+// Object rows whose key is used as the title placeholder report only that key's value
+Data([
+  { current: 1, param2: 'A' },
+  { current: 2, param2: 'B' },
+])
+  .Scenario('Number ${current} should be positive @T61faa1d4', ({ I, current }) => {
+    I.expectAbove(current.current, 0);
+  })
+  .tag('@parameterized');
+
 // Test with multiple steps
 Scenario('Test with multiple steps', ({ I, test }) => {
   console.log('Current test:', test.title);

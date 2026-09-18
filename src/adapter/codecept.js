@@ -367,13 +367,28 @@ function stripExampleFromTitle(title) {
 
   let baseTitle = title.slice(0, res.index).trim();
   if (exampleParsed) {
+    const placeholderKeys = [...new Set([...baseTitle.matchAll(PLACEHOLDER_REGEXP)].map(match => match[1]))];
     baseTitle = baseTitle.replace(PLACEHOLDER_REGEXP, (placeholder, key) => {
+      // a placeholder matching a key of an object row resolves to that key's value
+      if (Object.hasOwn(example ?? {}, key)) return formatExample(example[key]);
       if (key === 'current') return formatExample(example);
-      if (!Object.hasOwn(example ?? {}, key)) return placeholder;
-      return formatExample(example[key]);
+      return placeholder;
     });
+    example = reduceExample(example, placeholderKeys);
   }
   return { title: `${baseTitle}${res[2]}`, example };
+}
+
+// When the title uses only some keys of an object row, report just those values,
+// the way Playwright shows only the parameters referenced in the title
+function reduceExample(example, placeholderKeys) {
+  if (example === null || typeof example !== 'object' || Array.isArray(example)) return example;
+
+  const usedKeys = placeholderKeys.filter(key => Object.hasOwn(example, key));
+  if (!usedKeys.length) return example;
+  if (usedKeys.length === 1) return example[usedKeys[0]];
+
+  return Object.fromEntries(usedKeys.map(key => [key, example[key]]));
 }
 
 function formatExample(example) {
