@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="cli" tests="89" assertions="881" errors="0" failures="10" skipped="2" useless="0" time="20.333714">
+
+    <testcase name="runCestWithTwoFailedTest" class="RunCest" file="tests/data/cli/RunCest.php" feature="run cest with two failed test" time="0.119537" assertions="4"/>
+    <testcase name="runHtml" class="RunCest" file="tests/data/cli/RunCest.php" feature="execute tests with html output" time="0.116880" assertions="1"/>
+    <testcase name="runTestWithArrayExamples" class="RunCest" file="tests/data/cli/RunCest.php" feature="run test with array examples" time="0.096469" assertions="4"/>
+    <testcase name="throwErrorIfBootstrapNotFound" class="RunCest" file="tests/data/cli/RunCest.php" feature="execute one test" time="0.078476" assertions="3"/>
+    <testcase name="runOneFile" class="RunCest" file="tests/data/cli/RunCest.php" feature="execute one test" time="0.082889" assertions="1"/>
+    <testcase name="runOneGroupByAttr" class="RunCest" file="tests/data/cli/RunCest.php" feature="run one group by attr" time="0.105880" assertions="2"/>
+    <testcase name="runOneGroupWithDataProviders" class="RunCest" file="tests/data/cli/RunCest.php" feature="run one group with data providers" time="0.107412" assertions="5"/>
+    <testcase name="filterCestsByDataProviderNumber" class="RunCest" file="tests/data/cli/RunCest.php" feature="filter cests by data provider number" time="0.087259" assertions="4"/>
+    <testcase name="runGherkinTest" class="RunCest" file="tests/data/cli/RunCest.php" feature="run gherkin test" time="0.107440" assertions="7"/>
+    <testcase name="runTestWithSubSteps" class="RunCest" file="tests/data/cli/RunCest.php" feature="run test with sub steps" time="0.000815" assertions="0">
+      <skipped/>
+    </testcase>
+    <testcase name="runWithDepends" class="RunCest" file="tests/data/cli/RunCest.php" feature="run with depends" time="0.083950" assertions="1"/>
+    <testcase name="runTestsByShards" class="RunCest" file="tests/data/cli/RunCest.php" feature="run tests by shards" time="0.273580" assertions="9"/>
+    <testcase name="runErrorTest" class="RunCest" file="tests/data/cli/RunCest.php" feature="run error test" time="0.098815" assertions="3"/>
+    <testcase name="runOneFileWithColors" class="RunCest" file="tests/data/cli/RunCest.php" feature="execute one test" time="0.084870" assertions="2"/>
+    <testcase name="runTestsDoesntFail" class="RunCest" file="tests/data/cli/RunCest.php" feature="run tests doesnt fail" time="0.089660" assertions="1"/>
+    <testcase name="filterCestsByExampleNumber" class="RunCest" file="tests/data/cli/RunCest.php" feature="filter cests by example number" time="0.099362" assertions="5"/>
+    <testcase name="runTestWithAnnotationExamples" class="RunCest" file="tests/data/cli/RunCest.php" feature="run test with annotation examples" time="0.082711" assertions="4"/>
+    <testcase name="runDependentCest" class="RunCest" file="tests/data/cli/RunCest.php" feature="run dependent cest" time="0.081131" assertions="1"/>
+    <testcase name="runTestWithAnnotationDataprovider" class="RunCest" file="tests/data/cli/RunCest.php" feature="run test with annotation dataprovider" time="0.160254" assertions="1"/>
+    <testcase name="runGherkinScenarioWithMultipleStepDefinitions" class="RunCest" file="tests/data/cli/RunCest.php" feature="run gherkin scenario with multiple step definitions" time="0.088234" assertions="4"/>
+    <testcase name="runOneGroup" class="RunCest" file="tests/data/cli/RunCest.php" feature="run one group" time="0.076610" assertions="3"/>
+    <testcase name="runTestsWithFilterDoesntFail" class="RunCest" file="tests/data/cli/RunCest.php" feature="run tests with filter doesnt fail" time="0.159520" assertions="2"/>
+    <testcase name="runTestWithJsonExamples" class="RunCest" file="tests/data/cli/RunCest.php" feature="run test with json examples" time="0.082773" assertions="4"/>
+    <testcase name="runWithBeforeAfter" class="RunCest" file="tests/data/cli/RunCest.php" feature="run with before after" time="0.078491" assertions="4"/>
+    <testcase name="skipGroupOfCest" class="RunCest" file="tests/data/cli/RunCest.php" feature="skip group of cest" time="0.170683" assertions="5"/>
+    <testcase name="testsWithConditionalFails" class="RunCest" file="tests/data/cli/RunCest.php" feature="tests with conditional fails" time="0.097338" assertions="4"/>
+    <testcase name="runWithUnitSkipped" class="RunCest" file="tests/data/cli/RunCest.php" feature="run with unit skipped" time="0.097461" assertions="1"/>
+    <testcase name="runHtmlCheckReport" class="RunCest" file="tests/data/cli/RunCest.php" feature="verify that all steps are rendered correctly in HTML report (' . $test . ') | &quot;CodeceptionIssue4413Cest:twoCommentStepsInARow&quot;" time="0.073369" assertions="2"/>
+    <testcase name="runHtmlCheckReport" class="RunCest" file="tests/data/cli/RunCest.php" feature="verify that all steps are rendered correctly in HTML report (' . $test . ') | &quot;CodeceptionIssue4413Cest:twoCommentStepsInARowViaPageObjectActor&quot;" time="0.072299" assertions="2"/>
+    <testcase name="runHtmlCheckReport" class="RunCest" file="tests/data/cli/RunCest.php" feature="verify that all steps are rendered correctly in HTML report (' . $test . ') | &quot;CodeceptionIssue4413Cest:twoCommentStepsWithOneSubStepInBetween&quot;" time="0.096977" assertions="2"/>
+    <testcase name="runHtmlCheckReport" class="RunCest" file="tests/data/cli/RunCest.php" feature="verify that all steps are rendered correctly in HTML report (' . $test . ') | &quot;CodeceptionIssue4413Cest:commentStepsWithDifferentSubStepsInBetweenAndAfter&quot;" time="0.076719" assertions="2"/>
+    <testcase name="runHtmlCheckReport" class="RunCest" file="tests/data/cli/RunCest.php" feature="verify that all steps are rendered correctly in HTML report (' . $test . ') | &quot;CodeceptionIssue4413Cest:differentSubSteps&quot;" time="0.075144" assertions="2"/>
+    <testcase name="runHtmlCheckReport" class="RunCest" file="tests/data/cli/RunCest.php" feature="verify that all steps are rendered correctly in HTML report (' . $test . ') | &quot;CodeceptionIssue4413Cest:commentStepsWithDifferentSubStepsOnceNestedInBetweenAndAfter&quot;" time="0.092805" assertions="2"/>
+    <testcase name="runHtmlCheckReport" class="RunCest" file="tests/data/cli/RunCest.php" feature="verify that all steps are rendered correctly in HTML report (' . $test . ') | &quot;CodeceptionIssue4413Cest:commentStepsWithDifferentSubStepsOnceNestedInBetweenAndAfter2&quot;" time="0.098153" assertions="2"/>
+    <testcase name="runHtmlCheckReport" class="RunCest" file="tests/data/cli/RunCest.php" feature="verify that all steps are rendered correctly in HTML report (' . $test . ') | &quot;CodeceptionIssue4413Cest:nestedSubStepFollowedByOtherSubStep&quot;" time="0.078239" assertions="2"/>
+    <testcase name="runHtmlCheckReport" class="RunCest" file="tests/data/cli/RunCest.php" feature="verify that all steps are rendered correctly in HTML report (' . $test . ') | &quot;CodeceptionIssue4413Cest:nestedSubStepFollowedByOtherSubStep2&quot;" time="0.095552" assertions="2"/>
+    <testcase name="runHtmlCheckReport" class="RunCest" file="tests/data/cli/RunCest.php" feature="verify that all steps are rendered correctly in HTML report (' . $test . ') | &quot;CodeceptionIssue4413Cest:twoIdentialSubStepsInARow&quot;" time="0.077251" assertions="2"/>
+    <testcase name="runHtmlCheckReport" class="RunCest" file="tests/data/cli/RunCest.php" feature="verify that all steps are rendered correctly in HTML report (' . $test . ') | &quot;CodeceptionIssue4413Cest:twoIdentialSubStepsInARowFollowedByAnotherSubStep&quot;" time="0.078100" assertions="2"/>
+    <testcase name="runHtmlCheckReport" class="RunCest" file="tests/data/cli/RunCest.php" feature="verify that all steps are rendered correctly in HTML report (' . $test . ') | &quot;CodeceptionIssue4413Cest:twoIdentialSubStepsWithAnotherSubStepInBetween&quot;" time="0.096649" assertions="2"/>
+    <testcase name="runHtmlCheckReport" class="RunCest" file="tests/data/cli/RunCest.php" feature="verify that all steps are rendered correctly in HTML report (' . $test . ') | &quot;CodeceptionIssue4413Cest:subStepFollowedByTwoIdentialSubSteps&quot;" time="0.097845" assertions="2"/>
+    <testcase name="runTestsWithSteps" class="RunCest" file="tests/data/cli/RunCest.php" feature="run tests with steps" time="0.097513" assertions="1"/>
+    <testcase name="runWithDataprovider" class="RunCest" file="tests/data/cli/RunCest.php" feature="run with dataprovider" time="0.101674" assertions="1"/>
+    <testcase name="runXmlReport" class="RunCest" file="tests/data/cli/RunCest.php" feature="check xml reports" time="0.100334" assertions="5"/>
+    <testcase name="runTestsWithGrep" class="RunCest" file="tests/data/cli/RunCest.php" feature="run tests with grep" time="0.177239" assertions="3"/>
+    <testcase name="runHtmlWithPhpBrowserCheckReport" class="RunCest" file="tests/data/cli/RunCest.php" feature="execute tests with PhpBrowser with html output and check html" time="0.282488" assertions="5"/>
+    <testcase name="skipRunOneGroup" class="RunCest" file="tests/data/cli/RunCest.php" feature="skip run one group" time="0.098319" assertions="3"/>
+    <testcase name="runTestsWithFilter" class="RunCest" file="tests/data/cli/RunCest.php" feature="run tests with filter" time="0.086682" assertions="2"/>
+    <testcase name="runGherkinScenarioOutline" class="RunCest" file="tests/data/cli/RunCest.php" feature="run gherkin scenario outline" time="0.103988" assertions="1"/>
+    <testcase name="runTestsWithDependencyInjections" class="RunCest" file="tests/data/cli/RunCest.php" feature="run tests with dependency injections" time="0.080304" assertions="7"/>
+    <testcase name="runWithExamples" class="RunCest" file="tests/data/cli/RunCest.php" feature="run with examples" time="0.100186" assertions="1"/>
+    <testcase name="runPhpUnitXmlReport" class="RunCest" file="tests/data/cli/RunCest.php" feature="check phpunit xml reports" time="0.101651" assertions="10"/>
+    <testcase name="runInvalidDataProvider" class="RunCest" file="tests/data/cli/RunCest.php" feature="run invalid data provider" time="0.111115" assertions="4"/>
+    <testcase name="runTestWithDataProviders" class="RunCest" file="tests/data/cli/RunCest.php" feature="run test with data providers" time="0.095058" assertions="5"/>
+    <testcase name="runFailingGherkinTest" class="RunCest" file="tests/data/cli/RunCest.php" feature="run failing gherkin test" time="0.076423" assertions="2"/>
+    <testcase name="showSameOrderOfFilesOnSeed" class="RunCest" file="tests/data/cli/RunCest.php" feature="show same order of files on seed" time="0.306368" assertions="3"/>
+    <testcase name="runWithUnitIncomplete" class="RunCest" file="tests/data/cli/RunCest.php" feature="run with unit incomplete" time="0.097535" assertions="1"/>
+    <testcase name="showSeedNumberOnShuffle" class="RunCest" file="tests/data/cli/RunCest.php" feature="show seed number on shuffle" time="0.223366" assertions="2"/>
+    <testcase name="filterTestsByDataProviderCaseNumber" class="RunCest" file="tests/data/cli/RunCest.php" feature="filter tests by data provider case number" time="0.100420" assertions="5"/>
+    <testcase name="runTwoSuites" class="RunCest" file="tests/data/cli/RunCest.php" feature="run two suites" time="0.098478" assertions="3"/>
+    <testcase name="runCustomBootstrap" class="RunCest" file="tests/data/cli/RunCest.php" feature="execute one test" time="0.095968" assertions="3"/>
+    <testcase name="runOneTestFromCest" class="RunCest" file="tests/data/cli/RunCest.php" feature="run one test from cest" time="0.073993" assertions="2"/>
+    <testcase name="runTestWithFailedScenario" class="RunCest" file="tests/data/cli/RunCest.php" feature="run test with failed scenario" time="0.000200" assertions="0">
+      <skipped/>
+    </testcase>
+    <testcase name="runPhpUnitXmlReportsInStrictMode" class="RunCest" file="tests/data/cli/RunCest.php" feature="check phpunit xml in strict mode" time="0.080945" assertions="10"/>
+    <testcase name="runBootstrapInGlobalConfig" class="RunCest" file="tests/data/cli/RunCest.php" feature="execute one test" time="0.099138" assertions="3"/>
+    <testcase name="reportersConfigurationSectionIsNotSupported" class="RunCest" file="tests/data/cli/RunCest.php" feature="reporters configuration section is not supported" time="0.200293" assertions="3"/>
+    <testcase name="runFailedTestAndCheckOutput" class="RunCest" file="tests/data/cli/RunCest.php" feature="run failed test and check output" time="0.092119" assertions="4"/>
+    <testcase name="runTestWithFailFastDefault" class="RunCest" file="tests/data/cli/RunCest.php" feature="run test with fail fast default" time="0.193308" assertions="4"/>
+    <testcase name="runTestWithComplexExample" class="RunCest" file="tests/data/cli/RunCest.php" feature="run test with complex example" time="0.084370" assertions="5"/>
+    <testcase name="runTestWithAnnotationExamplesFromGroupFileTest" class="RunCest" file="tests/data/cli/RunCest.php" feature="run test with annotation examples from group file test" time="0.091098" assertions="1"/>
+    <testcase name="filterTestsByDataProviderCaseNumberRange" class="RunCest" file="tests/data/cli/RunCest.php" feature="filter tests by data provider case number range" time="0.074344" assertions="5"/>
+    <testcase name="runSuiteWhenNameMatchesExistingDirectory" class="RunCest" file="tests/data/cli/RunCest.php" feature="run suite when name matches existing directory" time="0.069087" assertions="1"/>
+    <testcase name="runBootstrapInSuiteConfig" class="RunCest" file="tests/data/cli/RunCest.php" feature="execute one test" time="0.080465" assertions="3"/>
+    <testcase name="runOneTestFromUnit" class="RunCest" file="tests/data/cli/RunCest.php" feature="run one test from unit" time="0.083712" assertions="3"/>
+    <testcase name="reportsCorrectFailedStep" class="RunCest" file="tests/data/cli/RunCest.php" feature="reports correct failed step" time="0.083000" assertions="2"/>
+    <testcase name="overrideModuleOptions" class="RunCest" file="tests/data/cli/RunCest.php" feature="override module options" time="0.166803" assertions="2"/>
+    <testcase name="runTestWithException" class="RunCest" file="tests/data/cli/RunCest.php" feature="run test with exception" time="0.087845" assertions="4"/>
+    <testcase name="runWithCustomOutputPath" class="RunCest" file="tests/data/cli/RunCest.php" feature="run with custom output path" time="0.085757" assertions="7"/>
+    <testcase name="filterTestsByDataProviderCaseName" class="RunCest" file="tests/data/cli/RunCest.php" feature="filter tests by data provider case name" time="0.092092" assertions="5"/>
+    <testcase name="filterTestsWithoutSpecifyingSuite" class="RunCest" file="tests/data/cli/RunCest.php" feature="filter tests without specifying suite" time="0.075297" assertions="1"/>
+    <testcase name="runXmlReportsInStrictMode" class="RunCest" file="tests/data/cli/RunCest.php" feature="check xml in strict mode" time="0.084044" assertions="5"/>
+    <testcase name="runCustomReport" class="RunCest" file="tests/data/cli/RunCest.php" feature="run custom report" time="0.080532" assertions="2"/>
+    <testcase name="runDependentTest" class="RunCest" file="tests/data/cli/RunCest.php" feature="run dependent test" time="0.178287" assertions="2"/>
+    <testcase name="runTestWithFailFastCustom" class="RunCest" file="tests/data/cli/RunCest.php" feature="run test with fail fast custom" time="0.168278" assertions="2"/>
+    <testcase name="runTestWithCustomSetupMethod" class="RunCest" file="tests/data/cli/RunCest.php" feature="run test with custom setup method" time="0.083309" assertions="1"/>
+    <testcase name="runCompactReport" class="RunCest" file="tests/data/cli/RunCest.php" feature="run compact report" time="0.074003" assertions="1"/>
+    <testcase name="skipSuites" class="RunCest" file="tests/data/cli/RunCest.php" feature="skip suites" time="0.064021" assertions="4"/>
+    <testcase name="runAllSnapshotTests" class="SnapshotCest" file="tests/data/cli/SnapshotCest.php" feature="run all snapshot tests" time="0.058300" assertions="1">
+      <failure type="PHPUnit\Framework\AssertionFailedError">SnapshotCest: Run all snapshot tests
+Result code was 1.
+
+Codeception PHP Testing Framework v5.0.0-RC3 https://helpukrainewin.org
+Powered by PHPUnit 9.5.20 #StandWithUkraine
+
+tests/data/support/CliHelper.php:28
+tests/data/support/_generated/CliGuyActions.php:559
+tests/data/cli/SnapshotCest.php:18
+/home/davert/projects/Codeception/src/PHPUnit/Wrapper/PhpUnit9/Test.php:15
+/home/davert/projects/Codeception/src/PHPUnit/Wrapper/PhpUnit9/TestSuite.php:14
+/home/davert/projects/Codeception/app.php:45
+/home/davert/projects/Codeception/app.php:46
+/home/davert/projects/Codeception/codecept:7
+</failure>
+    </testcase>
+    <testcase name="runSnapshotRefreshFail" class="SnapshotCest" file="tests/data/cli/SnapshotCest.php" feature="run snapshot refresh fail" time="0.065523" assertions="1">
+      <failure type="PHPUnit\Framework\AssertionFailedError">SnapshotCest: Run snapshot refresh fail
+Result code was 1.
+
+Codeception PHP Testing Framework v5.0.0-RC3 https://helpukrainewin.org
+Powered by PHPUnit 9.5.20 #StandWithUkraine
+
+  [Connecting To Db] {"config":{"populate":false,"cleanup":false,"reconnect":false,"waitlock":0,"dump":null,"populator":null,"skip_cleanup_if_failed":false,"dsn":"sqlite:tests/_data/snapshot_test.db","user":"","password":""},"options":[]}
+  [Db] Disconnected from default
+
+tests/data/support/CliHelper.php:28
+tests/data/support/_generated/CliGuyActions.php:559
+tests/data/cli/SnapshotCest.php:38
+/home/davert/projects/Codeception/src/PHPUnit/Wrapper/PhpUnit9/Test.php:15
+/home/davert/projects/Codeception/src/PHPUnit/Wrapper/PhpUnit9/TestSuite.php:14
+/home/davert/projects/Codeception/app.php:45
+/home/davert/projects/Codeception/app.php:46
+/home/davert/projects/Codeception/codecept:7
+</failure>
+    </testcase>
+    <testcase name="runNonJsonContentSnapshotTests" class="SnapshotCest" file="tests/data/cli/SnapshotCest.php" feature="run non json content snapshot tests" time="0.067662" assertions="1">
+      <failure type="PHPUnit\Framework\AssertionFailedError">SnapshotCest: Run non json content snapshot tests
+Result code was 1.
+
+Codeception PHP Testing Framework v5.0.0-RC3 https://helpukrainewin.org
+Powered by PHPUnit 9.5.20 #StandWithUkraine
+
+tests/data/support/CliHelper.php:28
+tests/data/support/_generated/CliGuyActions.php:559
+tests/data/cli/SnapshotCest.php:92
+/home/davert/projects/Codeception/src/PHPUnit/Wrapper/PhpUnit9/Test.php:15
+/home/davert/projects/Codeception/src/PHPUnit/Wrapper/PhpUnit9/TestSuite.php:14
+/home/davert/projects/Codeception/app.php:45
+/home/davert/projects/Codeception/app.php:46
+/home/davert/projects/Codeception/codecept:7
+</failure>
+    </testcase>    
+  </testsuite>
+</testsuites>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="7" time="8.246" timestamp="2022-06-20T00:30:11.495354" hostname="davert-laptop-next"><testcase classname="tests.test_login.TestLogin" name="test_login_with_valid_credentials" time="2.528" /><testcase classname="tests.test_login.TestLogin" name="test_login_with_invalid_credentials" time="0.428" /><testcase classname="tests.test_login.TestLogin" name="test_login_without_username" time="0.548"><failure message="AssertionError: assert 'Epic sadface...e is required' == 'Epic sadface... not required'&#10;  - Epic sadface: Username is not required&#10;  ?                          ----&#10;  + Epic sadface: Username is required">self = &lt;test_login.TestLogin object at 0x7fdbf7c8fd30&gt;, login_page = &lt;page_objects.login_page.LoginPage object at 0x7fdbf7c8e1d0&gt;
+
+    def test_login_without_username(self, login_page):
+        login_page.open()
+        login_page.login('', 'bad_password')
+        expected_error = 'Epic sadface: Username is not required'
+&gt;       assert login_page.get_error_message() == expected_error
+E       AssertionError: assert 'Epic sadface...e is required' == 'Epic sadface... not required'
+E         - Epic sadface: Username is not required
+E         ?                          ----
+E         + Epic sadface: Username is required
+
+tests/test_login.py:18: AssertionError</failure></testcase><testcase classname="tests.test_login.TestLogin" name="test_login_without_password" time="0.699" /><testcase classname="tests.test_products.TestProducts" name="test_add_item_to_cart" time="1.684" /><testcase classname="tests.test_products.TestProducts" name="test_remove_button_appears_after_adding_item_to_cart" time="0.971" /><testcase classname="tests.test_products.TestProducts" name="test_remove_item_from_cart" time="1.302" /></testsuite></testsuites>

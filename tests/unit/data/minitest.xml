@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="SearchServiceTest" filepath="tests/data/src/services/search_service_test.rb" skipped="0" failures="0" errors="0" tests="10" assertions="35" time="12.69219041703036">
+    <testcase name="test_should_filter_tests_by_empty_state" lineno="53" classname="SearchServiceTest" assertions="1" time="1.2384451800026" file="tests/data/src/services/search_service_test.rb">
+    </testcase>
+    <testcase name="test_should_ignore_tags_in_description" lineno="75" classname="SearchServiceTest" assertions="4" time="0.9786869559902698" file="tests/data/src/services/search_service_test.rb">
+    </testcase>
+    <testcase name="test_should_search_tests_by_title" lineno="23" classname="SearchServiceTest" assertions="4" time="0.8955210090207402" file="tests/data/src/services/search_service_test.rb">
+    </testcase>
+    <testcase name="test_find_tests_in_suites_by_tag" lineno="86" classname="SearchServiceTest" assertions="5" time="1.299875194003107" file="tests/data/src/services/search_service_test.rb">
+    </testcase>
+    <testcase name="test_should_find_tests_on_a_branch" lineno="102" classname="SearchServiceTest" assertions="2" time="1.3175485290121287" file="tests/data/src/services/search_service_test.rb">
+    </testcase>
+    <testcase name="test_should_search_globally_by_title" lineno="121" classname="SearchServiceTest" assertions="5" time="1.2479866149951704" file="tests/data/src/services/search_service_test.rb">
+    </testcase>
+    <testcase name="test_should_take_description_into_account" lineno="61" classname="SearchServiceTest" assertions="4" time="1.611901652009692" file="tests/data/src/services/search_service_test.rb">
+    </testcase>
+    <testcase name="test_should_search_tests_by_title_and_state" lineno="40" classname="SearchServiceTest" assertions="4" time="1.3959267169993836" file="tests/data/src/services/search_service_test.rb">
+    </testcase>
+    <testcase name="test_should_filter_tests_by_state" lineno="48" classname="SearchServiceTest" assertions="1" time="1.3438418839941733" file="tests/data/src/services/search_service_test.rb">
+    </testcase>
+    <testcase name="test_should_search_tests_by_tag" lineno="31" classname="SearchServiceTest" assertions="5" time="1.3624566810030956" file="tests/data/src/services/search_service_test.rb">
+    </testcase>
+  </testsuite>
+</testsuites>

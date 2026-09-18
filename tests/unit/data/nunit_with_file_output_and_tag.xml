@@ -1,0 +1,28 @@
+<test-run id="2" duration="2983.8219674" testcasecount="1" total="1" passed="1" failed="0" inconclusive="0" skipped="0" result="Passed" start-time="2025-11-04T03:28:52Z" end-time="2025-11-04T03:43:13Z">
+  <test-suite type="Assembly" name="Tests.dll" fullname="/home/runner/work/tech-qa-automation/tech-qa-automation/Tests/bin/Debug/net8.0/Tests.dll" total="147" passed="145" failed="1" inconclusive="0" skipped="1" result="Failed" start-time="2025-11-04T03:29:18Z" end-time="2025-11-04T03:43:13Z" duration="2983.8219674">
+    <test-suite type="TestSuite" name="Tests" fullname="Tests" total="91" passed="89" failed="1" inconclusive="0" skipped="1" result="Failed" start-time="2025-11-04T03:29:18Z" end-time="2025-11-04T03:43:13Z" duration="2786.1328776">
+      <test-suite type="TestSuite" name="NUnit_Tests" fullname="Tests.NUnit_Tests" total="91" passed="89" failed="1" inconclusive="0" skipped="1" result="Failed" start-time="2025-11-04T03:29:18Z" end-time="2025-11-04T03:43:13Z" duration="2786.1328776">
+        <test-suite type="TestSuite" name="Billing" fullname="Tests.NUnit_Tests.Billing" total="91" passed="89" failed="1" inconclusive="0" skipped="1" result="Failed" start-time="2025-11-04T03:29:18Z" end-time="2025-11-04T03:43:13Z" duration="2786.1328776">
+          <test-suite type="TestSuite" name="Action_Log" fullname="Tests.NUnit_Tests.Billing.Action_Log" total="2" passed="2" failed="0" inconclusive="0" skipped="0" result="Passed" start-time="2025-11-04T03:29:18Z" end-time="2025-11-04T03:29:43Z" duration="46.483868">
+            <test-suite type="TestFixture" name="OpenServiceOrderActionLogScenarios" fullname="Tests.NUnit_Tests.Billing.Action_Log.OpenServiceOrderActionLogScenarios" classname="Tests.NUnit_Tests.Billing.Action_Log.OpenServiceOrderActionLogScenarios" total="1" passed="1" failed="0" inconclusive="0" skipped="0" result="Passed" start-time="2025-11-04T03:29:18Z" end-time="2025-11-04T03:29:43Z" duration="25.287785">
+              <test-case name="VerifyChangesInServiceOrderActionLog" fullname="Tests.NUnit_Tests.Billing.Action_Log.OpenServiceOrderActionLogScenarios.VerifyChangesInServiceOrderActionLog" methodname="VerifyChangesInServiceOrderActionLog" classname="OpenServiceOrderActionLogScenarios" result="Passed" start-time="2025-11-04T03:29:18Z" end-time="2025-11-04T03:29:43Z" duration="25.287785" asserts="0" seed="2084999763">
+                <properties>
+                  <property name="ID" value="Tdd2bac58" />
+                  <property name="Category" value="Billing" />
+                  <property name="Category" value="Action" />
+                </properties>
+                <output><![CDATA[[Test] OpenServiceOrderActionLogScenarios.VerifyChangesInServiceOrderActionLog
+                        [ID] tid://@Tdd2bac58
+                        file:///folder/new.txt
+                        [03:29:18 INF] TEST ID: 0-1817. [SetUp] for 'Tests.NUnit_Tests.Billing.Action_Log.OpenServiceOrderActionLogScenarios.VerifyChangesInServiceOrderActionLog' started.
+                        [03:29:43 INF] TEST ID: 0-1817. [TearDown] for 'Tests.NUnit_Tests.Billing.Action_Log.OpenServiceOrderActionLogScenarios.VerifyChangesInServiceOrderActionLog' started.
+                        ]]>
+                </output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

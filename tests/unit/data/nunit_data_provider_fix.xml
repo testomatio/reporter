@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" runstate="Runnable" testcasecount="6" result="Passed" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="6" engine-version="3.17.0.0" clr-version="4.0.30319.42000" start-time="2023-12-01 10:00:00Z" end-time="2023-12-01 10:00:02Z" duration="2.123456">
+  <test-suite type="Assembly" id="1001" name="NUnit_sample_test.dll" fullname="D:\Projects\NUnit_sample_test\bin\Debug\net8.0\NUnit_sample_test.dll" runstate="Runnable" testcasecount="6" result="Passed" start-time="2023-12-01 10:00:00Z" end-time="2023-12-01 10:00:02Z" duration="2.123456" total="6" passed="6" failed="0" warnings="0" inconclusive="0" skipped="0" asserts="6">
+    <test-suite type="TestSuite" id="1002" name="NUnit_sample_test" fullname="NUnit_sample_test" runstate="Runnable" testcasecount="6" result="Passed" start-time="2023-12-01 10:00:00Z" end-time="2023-12-01 10:00:02Z" duration="2.123456" total="6" passed="6" failed="0" warnings="0" inconclusive="0" skipped="0" asserts="6">
+      <test-suite type="TestSuite" id="1003" name="Tests" fullname="NUnit_sample_test.Tests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2023-12-01 10:00:00Z" end-time="2023-12-01 10:00:02Z" duration="2.123456" total="6" passed="6" failed="0" warnings="0" inconclusive="0" skipped="0" asserts="6">
+        <test-suite type="TestFixture" id="1004" name="SampleTests" fullname="NUnit_sample_test.Tests.SampleTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2023-12-01 10:00:00Z" end-time="2023-12-01 10:00:02Z" duration="2.123456" total="6" passed="6" failed="0" warnings="0" inconclusive="0" skipped="0" asserts="6" filepath="Tests/SampleTests.cs">
+          <test-suite type="ParameterizedMethod" id="1005" name="TestBooleanValue" fullname="NUnit_sample_test.Tests.SampleTests.TestBooleanValue" runstate="Runnable" testcasecount="2" result="Passed" start-time="2023-12-01 10:00:00Z" end-time="2023-12-01 10:00:01Z" duration="0.512345" total="2" passed="2" failed="0" warnings="0" inconclusive="0" skipped="0" asserts="2">
+            <test-case id="1006" name="TestBooleanValue(True)" fullname="NUnit_sample_test.Tests.SampleTests.TestBooleanValue(True)" methodname="TestBooleanValue" classname="NUnit_sample_test.Tests.SampleTests" runstate="Runnable" seed="12345" result="Passed" start-time="2023-12-01 10:00:00Z" end-time="2023-12-01 10:00:00Z" duration="0.256123" asserts="1">
+              <arguments>
+                <arg>True</arg>
+              </arguments>
+            </test-case>
+            <test-case id="1007" name="TestBooleanValue(False)" fullname="NUnit_sample_test.Tests.SampleTests.TestBooleanValue(False)" methodname="TestBooleanValue" classname="NUnit_sample_test.Tests.SampleTests" runstate="Runnable" seed="12346" result="Passed" start-time="2023-12-01 10:00:00Z" end-time="2023-12-01 10:00:01Z" duration="0.256222" asserts="1">
+              <arguments>
+                <arg>False</arg>
+              </arguments>
+            </test-case>
+          </test-suite>
+          <test-suite type="ParameterizedMethod" id="1008" name="TestAddition" fullname="NUnit_sample_test.Tests.SampleTests.TestAddition" runstate="Runnable" testcasecount="3" result="Passed" start-time="2023-12-01 10:00:01Z" end-time="2023-12-01 10:00:02Z" duration="0.768111" total="3" passed="3" failed="0" warnings="0" inconclusive="0" skipped="0" asserts="3">
+            <test-case id="1009" name="TestAddition(1,2,3)" fullname="NUnit_sample_test.Tests.SampleTests.TestAddition(1,2,3)" methodname="TestAddition" classname="NUnit_sample_test.Tests.SampleTests" runstate="Runnable" seed="12347" result="Passed" start-time="2023-12-01 10:00:01Z" end-time="2023-12-01 10:00:01Z" duration="0.256037" asserts="1">
+              <arguments>
+                <arg>1</arg>
+                <arg>2</arg>
+                <arg>3</arg>
+              </arguments>
+            </test-case>
+            <test-case id="1010" name="TestAddition(5,10,15)" fullname="NUnit_sample_test.Tests.SampleTests.TestAddition(5,10,15)" methodname="TestAddition" classname="NUnit_sample_test.Tests.SampleTests" runstate="Runnable" seed="12348" result="Passed" start-time="2023-12-01 10:00:01Z" end-time="2023-12-01 10:00:02Z" duration="0.256037" asserts="1">
+              <arguments>
+                <arg>5</arg>
+                <arg>10</arg>
+                <arg>15</arg>
+              </arguments>
+            </test-case>
+            <test-case id="1011" name="TestAddition(-1,-2,-3)" fullname="NUnit_sample_test.Tests.SampleTests.TestAddition(-1,-2,-3)" methodname="TestAddition" classname="NUnit_sample_test.Tests.SampleTests" runstate="Runnable" seed="12349" result="Passed" start-time="2023-12-01 10:00:02Z" end-time="2023-12-01 10:00:02Z" duration="0.256037" asserts="1">
+              <arguments>
+                <arg>-1</arg>
+                <arg>-2</arg>
+                <arg>-3</arg>
+              </arguments>
+            </test-case>
+          </test-suite>
+          <test-case id="1012" name="SamplePTest" fullname="NUnit_sample_test.Tests.SampleTests.SamplePTest" methodname="SamplePTest" classname="NUnit_sample_test.Tests.SampleTests" runstate="Runnable" seed="12350" result="Passed" start-time="2023-12-01 10:00:02Z" end-time="2023-12-01 10:00:02Z" duration="0.843000" asserts="0">
+            <output><![CDATA[some text]]></output>
+          </test-case>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

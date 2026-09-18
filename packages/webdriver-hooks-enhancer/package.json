@@ -1,0 +1,31 @@
+{
+  "name": "@testomatio/webdriver-hooks-enhancer",
+  "version": "0.1.0",
+  "description": "Enhanced WebdriverIO hook failure handling for Testomatio reporter",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "testomatio",
+    "webdriverio",
+    "wdio",
+    "hooks",
+    "beforeeach",
+    "testing"
+  ],
+  "author": "Testomatio",
+  "license": "MIT",
+  "dependencies": {
+    "@babel/parser": "^7.29.0",
+    "@babel/traverse": "^7.29.0",
+    "@testomatio/reporter": "^2.6.2"
+  },
+  "peerDependencies": {
+    "@wdio/reporter": "^7.0.0 || ^8.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
