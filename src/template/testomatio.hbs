@@ -786,6 +786,10 @@
             color: #8b5cf6;
         }
 
+        .test-group-stat.duration {
+            color: var(--gray-600);
+        }
+
         .test-group-expand {
             color: var(--gray-500);
             transition: var(--transition);
@@ -2826,6 +2830,24 @@
             }
         }
 
+        function formatCompactDuration(milliseconds) {
+            if (!milliseconds || milliseconds <= 0) return '0ms';
+
+            const totalSeconds = Math.floor(milliseconds / 1000);
+            if (totalSeconds < 1) return `${Math.round(milliseconds)}ms`;
+
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+
+            const parts = [];
+            if (hours > 0) parts.push(`${hours}h`);
+            if (hours > 0 || minutes > 0) parts.push(`${minutes}m`);
+            parts.push(`${seconds}s`);
+
+            return parts.join(' ');
+        }
+
         function hasMeaningfulMessage(message) {
             return typeof message === 'string' && message.trim().length > 0 && message !== 'No message available';
         }
@@ -3435,6 +3457,12 @@
 
             const groupIcon = group.type === 'suite' ? 'layer-group' : 'file-code';
 
+            const totalDuration = group.tests.reduce((sum, t) => {
+                const status = t.status.toLowerCase();
+                if (status === 'skipped' || status === 'todo') return sum;
+                return sum + (Number(t.run_time) || 0);
+            }, 0);
+
             const header = document.createElement('div');
             header.className = ['test-group-header', groupStateClass].filter(Boolean).join(' ');
             header.innerHTML = `
@@ -3444,6 +3472,7 @@
                     <div class='test-group-count'>${group.tests.length} tests</div>
                 </div>
                 <div class='test-group-stats'>
+                    ${totalDuration > 0 ? `<div class='test-group-stat duration' title='Total duration of tests in this ${group.type}'><i class='fas fa-stopwatch'></i> ${formatCompactDuration(totalDuration)}</div>` : ''}
                     ${passedCount > 0 ? `<div class='test-group-stat passed'><i class='fas fa-check-circle'></i> ${passedCount}</div>` : ''}
                     ${failedCount > 0 ? `<div class='test-group-stat failed'><i class='fas fa-times-circle'></i> ${failedCount}</div>` : ''}
                     ${skippedCount > 0 ? `<div class='test-group-stat skipped'><i class='fas fa-forward'></i> ${skippedCount}</div>` : ''}
