@@ -92,7 +92,7 @@ Always run linting and formatting before committing changes.
 
 ## Important Notes
 
-- Node.js version: >=18 (specified in package.json engines)
+- Node.js version: >=22 (specified in package.json engines)
 - The project uses ESM (`"type": "module"` in package.json)
 - Main entry: `lib/reporter.js` (CommonJS)
 - Module entry: `src/reporter.js` (ESM)

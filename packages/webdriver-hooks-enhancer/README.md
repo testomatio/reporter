@@ -71,7 +71,7 @@ describe('User Auth', () => {
 ## Requirements
 
 - WebdriverIO v7+ or v8+
-- Node.js 18+
+- Node.js 22+ (follows @testomatio/reporter requirement)
 
 ## License
 
