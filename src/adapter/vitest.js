@@ -396,7 +396,10 @@ function normalizeVitestTest(test) {
       file,
       suiteTitle,
       logs: '',
-      meta: typeof test.meta === 'function' ? test.meta() : {},
+      meta: {
+        ...(test.task?.meta || {}),
+        ...(typeof test.meta === 'function' ? test.meta() : test.meta || {}),
+      },
     };
   }
 
