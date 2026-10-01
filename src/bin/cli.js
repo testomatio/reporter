@@ -16,7 +16,7 @@ import { filesize as prettyBytes } from 'filesize';
 import dotenv from 'dotenv';
 import Replay from '../replay.js';
 import { log } from '../utils/log.js';
-import { formatFilterListIds, formatRunOutput, formatFetchRunsOutput } from '../utils/pipe_utils.js';
+import { formatFilterListIds, formatRunOutput, formatFetchRunsOutput, parseRunsUrl } from '../utils/pipe_utils.js';
 import fs from 'fs';
 import path from 'path';
 
@@ -130,7 +130,9 @@ program
 program
   .command('fetch')
   .description('Fetch runs from Testomat.io API v2')
+  .argument('[url]', 'URL of a run or of a (filtered) runs page in Testomat.io')
   .option('--project <slug>', 'Project slug (or set TESTOMATIO_PROJECT)')
+  .option('--run <id>', 'Fetch a single run by its id')
   .option('--title <text>', 'Filter by run title')
   .option('--tql <query>', 'Filter using Testomat Query Language')
   .option('--rungroup <uid>', 'Filter by rungroup id')
@@ -144,27 +146,44 @@ program
     '--format <format>',
     'Machine-readable output: run ids, one per line (--format id) or run details (--format json)',
   )
-  .action(async opts => {
+  .action(async (pageUrl, opts) => {
     const apiKey = process.env['INPUT_TESTOMATIO-KEY'] || config.TESTOMATIO;
     if (!apiKey) {
       log.error(pc.red('⚠️  TESTOMATIO API key required'));
       process.exit(1);
     }
 
-    const project = opts.project || process.env.TESTOMATIO_PROJECT;
+    let page = {};
+    if (pageUrl) {
+      page = parseRunsUrl(pageUrl);
+      if (!page) {
+        log.error(pc.red(`⚠️  Not a Testomat.io run or runs page URL: ${pageUrl}`));
+        process.exit(1);
+      }
+    }
+
+    const project = opts.project || page.project || process.env.TESTOMATIO_PROJECT;
     if (!project) {
       log.error(pc.red('⚠️  --project (or TESTOMATIO_PROJECT) is required'));
       process.exit(1);
     }
 
-    const baseUrl = process.env.TESTOMATIO_URL || 'https://app.testomat.io';
-    const url = new URL(`/api/v2/${project}/runs`, baseUrl);
-    if (opts.title) url.searchParams.set('search', opts.title);
-    if (opts.tql) url.searchParams.set('tql', opts.tql);
-    if (opts.rungroup) url.searchParams.set('groupId', opts.rungroup);
-    const requestedLimit = opts.latest ? 1 : parseInt(opts.limit, 10) || FETCH_RUNS_DEFAULT_LIMIT;
-    const limit = Math.min(Math.max(requestedLimit, 1), FETCH_RUNS_MAX_LIMIT);
-    url.searchParams.set('per_page', String(limit));
+    const baseUrl = page.baseUrl || process.env.TESTOMATIO_URL || 'https://app.testomat.io';
+    const runId = opts.run || page.runId;
+    let url;
+
+    if (runId) {
+      url = new URL(`/api/v2/${project}/runs/${runId}`, baseUrl);
+    } else {
+      url = new URL(`/api/v2/${project}/runs`, baseUrl);
+      for (const [key, value] of page.params || []) url.searchParams.append(key, value);
+      if (opts.title) url.searchParams.set('search', opts.title);
+      if (opts.tql) url.searchParams.set('tql', opts.tql);
+      if (opts.rungroup) url.searchParams.set('groupId', opts.rungroup);
+      const requestedLimit = opts.latest ? 1 : parseInt(opts.limit, 10) || FETCH_RUNS_DEFAULT_LIMIT;
+      const limit = Math.min(Math.max(requestedLimit, 1), FETCH_RUNS_MAX_LIMIT);
+      url.searchParams.set('per_page', String(limit));
+    }
 
     const response = await fetch(url, { headers: { Authorization: `Bearer ${apiKey}` } });
     const body = await response.json();

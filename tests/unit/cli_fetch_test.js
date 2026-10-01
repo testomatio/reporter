@@ -43,6 +43,18 @@ function replyRuns(runs, status = 200) {
   };
 }
 
+function replyRun(run) {
+  return {
+    method: 'GET',
+    path: `/api/v2/${PROJECT}/runs/${run.id}`,
+    reply: {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ data: run }),
+    },
+  };
+}
+
 describe('cli fetch', () => {
   const server = new ServerMock({ host, port });
 
@@ -139,6 +151,49 @@ describe('cli fetch', () => {
 
     expect(code).to.equal(0);
     expect(JSON.parse(stdout.trim())).to.deep.equal([{ id: 'run1', title: 'Nightly', status: 'passed', extra: 'kept' }]);
+  });
+
+  it('--run fetches a single run and prints it as an object with --format json', async () => {
+    server.on(replyRun({ id: 'run1', title: 'Nightly', rungroup_id: 'rg123' }));
+
+    const { code, stdout } = await runCli(['fetch', '--project', PROJECT, '--run', 'run1', '--format', 'json']);
+
+    expect(code).to.equal(0);
+    expect(JSON.parse(stdout.trim())).to.deep.equal({ id: 'run1', title: 'Nightly', rungroup_id: 'rg123' });
+  });
+
+  it('takes the project and the run id from a run URL', async () => {
+    server.on(replyRun({ id: 'run1', title: 'Nightly' }));
+
+    const pageUrl = `${TESTOMATIO_URL}/projects/${PROJECT}/runs/run1?filterParam=groups%3Dtrue`;
+    const { code, stdout } = await runCli(['fetch', pageUrl, '--format', 'id'], { TESTOMATIO_URL: '' });
+
+    expect(code).to.equal(0);
+    expect(stdout.trim()).to.equal('run1');
+  });
+
+  it('maps filters of a runs page URL to the API params', async () => {
+    server.on(replyRuns([]));
+
+    const filterParam = encodeURIComponent('kind=automated&user=2&status=failed&search=&groups=true');
+    const pageUrl = `${TESTOMATIO_URL}/projects/${PROJECT}/runs?filterParam=${filterParam}`;
+    const { code } = await runCli(['fetch', pageUrl], { TESTOMATIO_URL: '' });
+
+    expect(code).to.equal(0);
+    const [req] = server.requests({ method: 'GET', path: `/api/v2/${PROJECT}/runs` });
+    expect(req.query['filter[kind]']).to.equal('automated');
+    expect(req.query['filter[user]']).to.equal('2');
+    expect(req.query['filter[status]']).to.equal('failed');
+    expect(req.query).to.not.have.property('filter[groups]');
+    expect(req.query).to.not.have.property('search');
+    expect(req.query.per_page).to.equal('30');
+  });
+
+  it('exits non-zero when the URL is not a runs page', async () => {
+    const { code, stderr } = await runCli(['fetch', `${TESTOMATIO_URL}/projects/${PROJECT}/suites`]);
+
+    expect(code).to.equal(1);
+    expect(stderr).to.include('Not a Testomat.io run or runs page URL');
   });
 
   it('exits non-zero and prints the server error when the request fails', async () => {

@@ -327,17 +327,18 @@ function formatRunOutput(store, format) {
 
 /**
  * Format the runs fetched via the `fetch` command for machine-readable output.
- * `json` prints the full array of run objects; `id` prints one run id per line;
+ * `json` prints the full array of run objects (a single object for one run); `id` prints one run id per line;
  * any other format prints a human-readable multi-line summary per run.
  *
- * @param {{data?: Array}} body - Parsed response body from GET /api/v2/:project/runs.
+ * @param {{data?: Array|Object}} body - Parsed response body from GET /api/v2/:project/runs[/:id].
  * @param {string} [format] - Value of the CLI `--format` option.
  * @returns {string}
  */
 function formatFetchRunsOutput(body, format) {
-  const runs = body?.data || [];
+  const data = body?.data || [];
+  const runs = [data].flat();
 
-  if (format === 'json') return JSON.stringify(runs, null, 2);
+  if (format === 'json') return JSON.stringify(data, null, 2);
 
   if (format === 'id') return runs.map(run => run.id).filter(Boolean).join('\n');
 
@@ -345,6 +346,7 @@ function formatFetchRunsOutput(body, format) {
     .map(run => {
       const lines = [`* ID: ${run.id}`];
       if (run.title) lines.push(`  title: ${run.title}`);
+      if (run.rungroup_id) lines.push(`  rungroup: ${run.rungroup_id}`);
       if (run.launched_at) lines.push(`  started at: ${run.launched_at}`);
       if (run.finished_at) lines.push(`  finished at: ${run.finished_at}`);
       if (run.passed_count != null) lines.push(`  passed: ${run.passed_count} tests`);
@@ -356,6 +358,44 @@ function formatFetchRunsOutput(body, format) {
       return lines.join('\n');
     })
     .join('\n');
+}
+
+// filterParam keys of the runs page which are API params on their own; the rest go under filter[...]
+const RUNS_PAGE_PARAMS = ['search', 'tql', 'groupId'];
+
+/**
+ * Parse a Testomat.io app URL of a run (/projects/:project/runs/:id)
+ * or of a runs page (/projects/:project/runs?filterParam=...) into API v2 request parts.
+ *
+ * @param {string} pageUrl
+ * @returns {{baseUrl: string, project: string, runId?: string, params: string[][]}|null}
+ */
+function parseRunsUrl(pageUrl) {
+  let url;
+  try {
+    url = new URL(pageUrl);
+  } catch (e) {
+    return null;
+  }
+
+  const match = url.pathname.match(/\/projects\/([^/]+)\/runs(?:\/([^/]+))?\/?$/);
+  if (!match) return null;
+
+  const [, project, runId] = match;
+  const params = [];
+
+  for (const [key, value] of new URLSearchParams(url.searchParams.get('filterParam') || '')) {
+    // "groups" only switches the page to the grouped view
+    if (!value || key === 'groups') continue;
+    if (RUNS_PAGE_PARAMS.includes(key)) {
+      params.push([key, value]);
+      continue;
+    }
+    const [name, ...nested] = key.split('[');
+    params.push([`filter[${name}]${nested.map(part => `[${part}`).join('')}`, value]);
+  }
+
+  return { baseUrl: url.origin, project, runId, params };
 }
 
 export {
@@ -373,6 +413,7 @@ export {
   formatFilterListIds,
   formatRunOutput,
   formatFetchRunsOutput,
+  parseRunsUrl,
   getObjectSize,
   splitTestsIntoChunks,
 };
