@@ -1,6 +1,6 @@
 {
   "name": "testomatio-reporter-cli",
-  "version": "2.17.0",
+  "version": "2.18.0",
   "description": "Yarn Berry compatible standalone CLI for @testomatio/reporter",
   "type": "module",
   "bin": {
@@ -27,7 +27,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.279.0",
     "@aws-sdk/lib-storage": "^3.279.0",
-    "@cucumber/cucumber": "^10.9.0",
+    "@cucumber/cucumber": "^13.2.1",
     "@octokit/rest": "^21.1.1",
     "callsite-record": "^4.1.4",
     "commander": "^12",
@@ -54,7 +54,7 @@
     "pretty-ms": "^7.0.1",
     "promise-retry": "^2.0.1",
     "strip-ansi": "7.1.0",
-    "uuid": "^9.0.0"
+    "uuid": "^11.1.1"
   },
   "license": "MIT"
 }
