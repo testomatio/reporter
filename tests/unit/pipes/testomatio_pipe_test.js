@@ -1882,4 +1882,145 @@ describe('TestomatioPipe', () => {
       expect(capturedRequests[0].status_event).to.equal('fail');
     });
   });
+
+  describe('S3 credentials refresh', () => {
+    const ARTIFACTS = {
+      ACCESS_KEY_ID: 'akid',
+      SECRET_ACCESS_KEY: 'secret',
+      REGION: 'us-east-1',
+      BUCKET: 'testomat-bucket',
+      SESSION_TOKEN: 'initial-token',
+    };
+
+    function createRefreshPipe(clientRequestImpl) {
+      const refreshPipe = new TestomatioPipe({
+        apiKey: TESTOMATIO,
+        testomatioUrl: TESTOMATIO_URL,
+        batchMode: 'disabled',
+      });
+      refreshPipe.client.request = clientRequestImpl;
+      return refreshPipe;
+    }
+
+    // captures the interval callback so a refresh can be triggered without waiting 40 minutes
+    function captureIntervalCallback() {
+      const originalSetInterval = global.setInterval;
+      /** @type {any} */
+      const captured = { callback: null, intervalMs: null };
+      global.setInterval = (fn, ms, ...args) => {
+        captured.callback = fn;
+        captured.intervalMs = ms;
+        return originalSetInterval(fn, ms, ...args);
+      };
+      return {
+        captured,
+        restore() {
+          global.setInterval = originalSetInterval;
+        },
+      };
+    }
+
+    afterEach(() => {
+      delete process.env.TESTOMATIO_CI_PROFILE;
+      delete process.env.TESTOMATIO_PUBLISH;
+    });
+
+    it('starts the refresh timer when the server returns artifacts', async () => {
+      const intervalSpy = captureIntervalCallback();
+      const refreshPipe = createRefreshPipe(async () => ({
+        data: { uid: 's3-refresh-run-1', url: 'http://fake/run/1', public_url: 'http://fake/p/1', artifacts: ARTIFACTS },
+      }));
+
+      try {
+        await refreshPipe.createRun({ kind: 'automated' });
+
+        expect(refreshPipe.s3CredentialsRefreshTimer).to.not.be.null;
+        expect(intervalSpy.captured.intervalMs).to.equal(40 * 60 * 1000);
+      } finally {
+        intervalSpy.restore();
+        clearInterval(refreshPipe.s3CredentialsRefreshTimer);
+      }
+    });
+
+    it('does not start the refresh timer when no artifacts are returned', async () => {
+      const refreshPipe = createRefreshPipe(async () => ({
+        data: { uid: 's3-refresh-run-2', url: 'http://fake/run/2', public_url: 'http://fake/p/2' },
+      }));
+
+      await refreshPipe.createRun({ kind: 'automated' });
+
+      expect(refreshPipe.s3CredentialsRefreshTimer).to.be.null;
+    });
+
+    it('refreshes credentials via PUT without one-shot fields', async () => {
+      // both fields end up in runParams and must be stripped from the refresh request
+      process.env.TESTOMATIO_CI_PROFILE = 'github';
+      process.env.TESTOMATIO_PUBLISH = '1';
+
+      const intervalSpy = captureIntervalCallback();
+      const refreshRequests = [];
+      const refreshPipe = createRefreshPipe(async ({ method, url, data }) => {
+        if (method === 'POST') {
+          return { data: { uid: 's3-refresh-run-3', url: 'http://fake/run/3', public_url: 'http://fake/p/3', artifacts: ARTIFACTS } };
+        }
+        refreshRequests.push({ method, url, data });
+        return { data: { artifacts: { ...ARTIFACTS, SESSION_TOKEN: 'refreshed-token' } } };
+      });
+
+      try {
+        await refreshPipe.createRun({ kind: 'automated' });
+        expect(process.env.S3_SESSION_TOKEN).to.equal('initial-token');
+
+        await intervalSpy.captured.callback();
+
+        expect(refreshRequests).to.have.length(1);
+        expect(refreshRequests[0].method).to.equal('PUT');
+        expect(refreshRequests[0].url).to.equal('/api/reporter/s3-refresh-run-3');
+        expect(refreshRequests[0].data).to.not.have.property('ci');
+        expect(refreshRequests[0].data).to.not.have.property('access_event');
+        expect(refreshRequests[0].data).to.have.property('api_key', TESTOMATIO);
+        expect(process.env.S3_SESSION_TOKEN).to.equal('refreshed-token');
+      } finally {
+        intervalSpy.restore();
+        clearInterval(refreshPipe.s3CredentialsRefreshTimer);
+      }
+    });
+
+    it('keeps the pipe working when a refresh request fails', async () => {
+      const intervalSpy = captureIntervalCallback();
+      const refreshPipe = createRefreshPipe(async ({ method }) => {
+        if (method === 'POST') {
+          return { data: { uid: 's3-refresh-run-4', url: 'http://fake/run/4', public_url: 'http://fake/p/4', artifacts: ARTIFACTS } };
+        }
+        throw new Error('refresh failed');
+      });
+
+      try {
+        await refreshPipe.createRun({ kind: 'automated' });
+
+        // must not throw despite the failed request
+        await intervalSpy.captured.callback();
+
+        expect(refreshPipe.isEnabled).to.be.true;
+      } finally {
+        intervalSpy.restore();
+        clearInterval(refreshPipe.s3CredentialsRefreshTimer);
+      }
+    });
+
+    it('stops the refresh timer on finishRun', async () => {
+      const refreshPipe = createRefreshPipe(async ({ method }) => {
+        if (method === 'POST') {
+          return { data: { uid: 's3-refresh-run-5', url: 'http://fake/run/5', public_url: 'http://fake/p/5', artifacts: ARTIFACTS } };
+        }
+        return { data: {} };
+      });
+
+      await refreshPipe.createRun({ kind: 'automated' });
+      expect(refreshPipe.s3CredentialsRefreshTimer).to.not.be.null;
+
+      await refreshPipe.finishRun({ status: 'passed' });
+      expect(refreshPipe.s3CredentialsRefreshTimer).to.be.null;
+    });
+  });
 });

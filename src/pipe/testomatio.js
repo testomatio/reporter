@@ -9,6 +9,7 @@ import {
   REQUEST_TIMEOUT,
   getCreateRunRequestTimeout,
   REPORTER_REQUEST_RETRIES,
+  S3_CREDENTIALS_REFRESH_INTERVAL_MS,
 } from '../constants.js';
 import {
   isValidUrl,
@@ -72,6 +73,8 @@ class TestomatioPipe {
     this.retriesTimestamps = [];
     this.reportingCanceledDueToReqFailures = false;
     this.notReportedTestsCount = 0;
+    /** @type {NodeJS.Timeout | null} */
+    this.s3CredentialsRefreshTimer = null;
 
     this.isEnabled = false;
     this.url = params.testomatioUrl || process.env.TESTOMATIO_URL || 'https://app.testomat.io';
@@ -346,7 +349,10 @@ class TestomatioPipe {
         timeout: getCreateRunRequestTimeout(),
         responseType: 'json',
       });
-      if (resp.data.artifacts) setS3Credentials(resp.data.artifacts);
+      if (resp.data.artifacts) {
+        setS3Credentials(resp.data.artifacts);
+        this.#startS3CredentialsRefresh(runParams);
+      }
       if (resp.data.url) {
         const respUrl = new URL(resp.data.url);
         this.runUrl = `${this.url}${respUrl.pathname}`;
@@ -374,7 +380,10 @@ class TestomatioPipe {
       this.runUrl = `${this.url}/${resp.data.url.split('/').splice(3).join('/')}`;
       this.runPublicUrl = resp.data.public_url;
 
-      if (resp.data.artifacts) setS3Credentials(resp.data.artifacts);
+      if (resp.data.artifacts) {
+        setS3Credentials(resp.data.artifacts);
+        this.#startS3CredentialsRefresh(runParams);
+      }
 
       this.store.runUrl = this.runUrl;
       this.store.runPublicUrl = this.runPublicUrl;
@@ -399,6 +408,49 @@ class TestomatioPipe {
       printCreateIssue();
     }
     debug('"createRun" function finished');
+  }
+
+  /**
+   * Starts periodic refreshing of S3 credentials for long runs.
+   * Temporary S3 tokens (STS) expire after ~1 hour, so without refreshing,
+   * artifact uploads fail for every test reported later in the run.
+   * The same run params are re-sent on refresh (same as updating an existing run),
+   * and fresh credentials are taken from the response's `artifacts` field.
+   * @param {Record<string, any>} runParams
+   */
+  #startS3CredentialsRefresh(runParams) {
+    if (this.s3CredentialsRefreshTimer) return;
+    this.s3CredentialsRefreshTimer = setInterval(() => {
+      this.#refreshS3Credentials(runParams);
+    }, S3_CREDENTIALS_REFRESH_INTERVAL_MS);
+    this.s3CredentialsRefreshTimer.unref?.();
+    debug(`S3 credentials refresh started (every ${S3_CREDENTIALS_REFRESH_INTERVAL_MS / 60000} min)`);
+  }
+
+  #refreshS3Credentials = async runParams => {
+    if (!this.isEnabled || !this.runId) return;
+    const { ci, access_event, ...refreshParams } = runParams;
+    try {
+      const resp = await this.client.request({
+        method: 'PUT',
+        url: `/api/reporter/${this.runId}`,
+        data: { ...refreshParams, api_key: this.apiKey },
+        responseType: 'json',
+      });
+      if (resp.data?.artifacts) {
+        setS3Credentials(resp.data.artifacts);
+        debug('S3 credentials refreshed');
+      }
+    } catch (err) {
+      debug('Failed to refresh S3 credentials:', err.message || err);
+    }
+  };
+
+  #stopS3CredentialsRefresh() {
+    if (this.s3CredentialsRefreshTimer) {
+      clearInterval(this.s3CredentialsRefreshTimer);
+      this.s3CredentialsRefreshTimer = null;
+    }
   }
 
   /**
@@ -545,6 +597,7 @@ class TestomatioPipe {
   async finishRun(params) {
     if (!this.isEnabled) return;
 
+    this.#stopS3CredentialsRefresh();
     await this.#batchUpload();
     if (this.batch.intervalFunction) {
       clearInterval(this.batch.intervalFunction);
@@ -637,6 +690,7 @@ class TestomatioPipe {
     this.isEnabled = false;
     this.apiKey = null;
 
+    this.#stopS3CredentialsRefresh();
     // clear interval function, otherwise the proccess will continue indefinitely
     if (this.batch.intervalFunction) {
       clearInterval(this.batch.intervalFunction);
