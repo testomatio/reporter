@@ -60,6 +60,10 @@ const REPORTER_REQUEST_RETRIES = {
 
 const DEBUG_FILE = 'testomatio.debug';
 
+// temporary S3 tokens live ~1 hour; refresh credentials well before that so artifact
+// uploads keep working on long runs
+const S3_CREDENTIALS_REFRESH_INTERVAL_MS = 40 * 60 * 1000;
+
 function getCreateRunRequestTimeout() {
   return Math.max(REQUEST_TIMEOUT, 80 * 1000);
 }
@@ -78,4 +82,5 @@ export {
   REPORTER_REQUEST_RETRIES,
   SCREENSHOTS_ON_STEPS,
   DEBUG_FILE,
+  S3_CREDENTIALS_REFRESH_INTERVAL_MS,
 };
