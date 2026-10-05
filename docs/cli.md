@@ -399,7 +399,7 @@ Fetches runs from a project via the API v2 `GET /api/v2/:project/runs` endpoint.
 **Usage:**
 
 ```bash
-npx @testomatio/reporter fetch [options]
+npx @testomatio/reporter fetch [url] [options]
 ```
 
 **Environment Variables:**
@@ -410,7 +410,8 @@ npx @testomatio/reporter fetch [options]
 
 **Options:**
 
-- `--project <slug>`: Project slug (or set `TESTOMATIO_PROJECT`). One of the two is required.
+- `--project <slug>`: Project slug (or set `TESTOMATIO_PROJECT`). Required unless a URL is passed.
+- `--run <id>`: Fetch a single run by its id via `GET /api/v2/:project/runs/:id`. List filters are ignored.
 - `--title <text>`: Filter by run title (partial match).
 - `--tql <query>`: Filter using Testomat Query Language.
 - `--rungroup <uid>`: Filter by rungroup id; nested rungroups are included.
@@ -426,6 +427,25 @@ npx @testomatio/reporter fetch --project demo --title "Nightly"
 npx @testomatio/reporter fetch --project demo --tql "passed_count >= 3"
 npx @testomatio/reporter fetch --project demo --rungroup rg123 --limit 10
 npx @testomatio/reporter fetch --project demo --latest --format json
+npx @testomatio/reporter fetch --project demo --run a1b2c3d4 --format json
+```
+
+**Fetching by URL**
+
+Instead of options, pass a URL copied from the browser. The server and the project are taken from it:
+
+- a run URL returns that run;
+- a runs page URL returns the runs matching the filters selected on that page.
+
+```bash
+npx @testomatio/reporter fetch "https://app.testomat.io/projects/demo/runs/a1b2c3d4"
+npx @testomatio/reporter fetch "https://app.testomat.io/projects/demo/runs?filterParam=kind%3Dautomated%26status%3Dfailed"
+```
+
+A single run is printed as one object with `--format json` and includes `rungroup_id`, which is `null` when the run is not in a rungroup:
+
+```bash
+npx @testomatio/reporter fetch --project demo --run a1b2c3d4 --format json | jq -r .rungroup_id
 ```
 
 ## The `--format` flag
