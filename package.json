@@ -110,7 +110,7 @@
     "vitest": "^1.6.0"
   },
   "bin": {
-    "testomatio/reporter": "./src/bin/cli.js",
+    "testomatio-reporter": "./src/bin/cli.js",
     "report-xml": "./src/bin/reportXml.js",
     "start-test-run": "./src/bin/startTest.js",
     "upload-artifacts": "./src/bin/uploadArtifacts.js"
