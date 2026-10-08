@@ -274,19 +274,29 @@ function totalDuration(tests) {
 const SMALL_RUN_TESTS_LIMIT = 10;
 
 /**
- * List tests of one status as markdown bullets, with each test's run time.
+ * Sections listing the passed, skipped and not yet run tests of a small run; failures have their own
+ * section. Not yet run tests (no status, or `pending`) are listed without any status label.
  *
  * @param {Array<{status?: string, title?: string, suite_title?: string, run_time?: number}>} tests
- * @param {string} status - Status to list, e.g. `passed` or `skipped`.
- * @returns {string[]} One bullet per test; empty if no test has that status.
+ * @returns {Array<{title: string, list: string[]}>} Non-empty sections; none if the run is not small.
  */
-function testsOfStatusList(tests, status) {
-  return tests
-    .filter(t => t.status === status)
-    .map(t => {
-      const runTime = t.run_time ? ` (${humanizeDuration(t.run_time)})` : '';
-      return `* ${statusEmoji(status)} ${fullName(t)}${runTime}`;
-    });
+function smallRunSections(tests) {
+  if (tests.length >= SMALL_RUN_TESTS_LIMIT) return [];
+
+  const sections = ['passed', 'skipped'].map(status => {
+    const list = tests
+      .filter(t => t.status === status)
+      .map(t => {
+        const runTime = t.run_time ? ` (${humanizeDuration(t.run_time)})` : '';
+        return `* ${statusEmoji(status)} ${fullName(t)}${runTime}`;
+      });
+    return { title: `${statusEmoji(status)} ${capitalize(status)} (${list.length})`, list };
+  });
+
+  const notRun = tests.filter(t => !t.status || t.status === 'pending').map(t => `* ${fullName(t)}`);
+  sections.push({ title: `📋 Tests (${notRun.length})`, list: notRun });
+
+  return sections.filter(section => section.list.length);
 }
 
 /**
@@ -393,13 +403,11 @@ export {
   generateFilterRequestParams,
   setS3Credentials,
   statusEmoji,
-  capitalize,
   fullName,
   markdownTable,
   runSummary,
   totalDuration,
-  testsOfStatusList,
-  SMALL_RUN_TESTS_LIMIT,
+  smallRunSections,
   plannedTestsLabel,
   parsePipeOptions,
   formatFilterListIds,

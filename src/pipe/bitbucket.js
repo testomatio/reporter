@@ -2,14 +2,12 @@ import { APP_PREFIX, testomatLogoURL } from '../constants.js';
 import { ansiRegExp, isSameTest, truncate } from '../utils/utils.js';
 import {
   statusEmoji,
-  capitalize,
   fullName,
   plannedTestsLabel,
   markdownTable,
   runSummary,
   totalDuration,
-  testsOfStatusList,
-  SMALL_RUN_TESTS_LIMIT,
+  smallRunSections,
 } from '../utils/pipe_utils.js';
 import { Gaxios } from 'gaxios';
 import pc from 'picocolors';
@@ -188,12 +186,8 @@ export class BitbucketPipe {
       }
     }
 
-    if (this.tests.length < SMALL_RUN_TESTS_LIMIT) {
-      for (const status of ['passed', 'skipped']) {
-        const list = testsOfStatusList(this.tests, status);
-        if (!list.length) continue;
-        body += `\n\n**${statusEmoji(status)} ${capitalize(status)} (${list.length})**\n\n${list.join('\n')}`;
-      }
+    for (const { title, list } of smallRunSections(this.tests)) {
+      body += `\n\n**${title}**\n\n${list.join('\n')}`;
     }
 
     if (this.tests.length > 0 && !isPendingRun) {

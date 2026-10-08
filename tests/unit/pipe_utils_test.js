@@ -5,7 +5,7 @@ import {
   formatFetchRunsOutput,
   getObjectSize,
   splitTestsIntoChunks,
-  testsOfStatusList,
+  smallRunSections,
 } from '../../src/utils/pipe_utils.js';
 
 describe('formatFilterListIds', () => {
@@ -244,22 +244,26 @@ describe('splitTestsIntoChunks', () => {
   });
 });
 
-describe('testsOfStatusList', () => {
-  const tests = [
-    { status: 'passed', suite_title: 'Auth', title: 'logs in', run_time: 1500 },
-    { status: 'failed', title: 'logs out' },
-    { status: 'skipped', title: 'resets password' },
-  ];
-
-  it('lists only tests of the given status, with run time', () => {
-    expect(testsOfStatusList(tests, 'passed')).to.deep.equal(['* 🟢 Auth: **logs in** (1.5 seconds)']);
+describe('smallRunSections', () => {
+  it('lists passed and skipped tests with their status and run time', () => {
+    const tests = [
+      { status: 'passed', suite_title: 'Auth', title: 'logs in', run_time: 1500 },
+      { status: 'failed', title: 'logs out' },
+      { status: 'skipped', title: 'resets password' },
+    ];
+    expect(smallRunSections(tests)).to.deep.equal([
+      { title: '🟢 Passed (1)', list: ['* 🟢 Auth: **logs in** (1.5 seconds)'] },
+      { title: '🟡 Skipped (1)', list: ['* 🟡 **resets password**'] },
+    ]);
   });
 
-  it('omits run time when it is missing', () => {
-    expect(testsOfStatusList(tests, 'skipped')).to.deep.equal(['* 🟡 **resets password**']);
+  it('lists tests without status or pending ones without a status label', () => {
+    const tests = [{ title: 'T1' }, { status: 'pending', title: 'T2' }];
+    expect(smallRunSections(tests)).to.deep.equal([{ title: '📋 Tests (2)', list: ['* **T1**', '* **T2**'] }]);
   });
 
-  it('returns an empty list when no test matches', () => {
-    expect(testsOfStatusList([], 'passed')).to.deep.equal([]);
+  it('returns no sections for runs of 10 tests or more', () => {
+    const tests = Array.from({ length: 10 }, (_, i) => ({ status: 'passed', title: `t${i}` }));
+    expect(smallRunSections(tests)).to.deep.equal([]);
   });
 });

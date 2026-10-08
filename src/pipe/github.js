@@ -7,14 +7,12 @@ import { testomatLogoURL } from '../constants.js';
 import { ansiRegExp, isSameTest, truncate } from '../utils/utils.js';
 import {
   statusEmoji,
-  capitalize,
   fullName,
   plannedTestsLabel,
   markdownTable,
   runSummary,
   totalDuration,
-  testsOfStatusList,
-  SMALL_RUN_TESTS_LIMIT,
+  smallRunSections,
 } from '../utils/pipe_utils.js';
 import { log } from '../utils/log.js';
 
@@ -176,13 +174,8 @@ class GitHubPipe {
       body += '\n\n</details>';
     }
 
-    if (this.tests.length < SMALL_RUN_TESTS_LIMIT) {
-      for (const status of ['passed', 'skipped']) {
-        const list = testsOfStatusList(this.tests, status);
-        if (!list.length) continue;
-        const title = `${statusEmoji(status)} ${capitalize(status)} (${list.length})`;
-        body += `\n<details>\n<summary><h3>${title}</h3></summary>\n\n${list.join('\n')}\n</details>`;
-      }
+    for (const { title, list } of smallRunSections(this.tests)) {
+      body += `\n<details>\n<summary><h3>${title}</h3></summary>\n\n${list.join('\n')}\n</details>`;
     }
 
     if (this.tests.length > 0 && !isPendingRun) {
