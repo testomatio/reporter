@@ -2,6 +2,7 @@ import { APP_PREFIX, testomatLogoURL } from '../constants.js';
 import { ansiRegExp, isSameTest, truncate } from '../utils/utils.js';
 import {
   statusEmoji,
+  capitalize,
   fullName,
   plannedTestsLabel,
   markdownTable,
@@ -187,14 +188,11 @@ export class BitbucketPipe {
       }
     }
 
-    if (this.tests.length < SMALL_RUN_TESTS_LIMIT && !isPendingRun) {
-      for (const [status, title] of [
-        ['passed', 'Passed'],
-        ['skipped', 'Skipped'],
-      ]) {
+    if (this.tests.length < SMALL_RUN_TESTS_LIMIT) {
+      for (const status of ['passed', 'skipped']) {
         const list = testsOfStatusList(this.tests, status);
         if (!list.length) continue;
-        body += `\n\n**${statusEmoji(status)} ${title} (${list.length})**\n\n${list.join('\n')}`;
+        body += `\n\n**${statusEmoji(status)} ${capitalize(status)} (${list.length})**\n\n${list.join('\n')}`;
       }
     }
 

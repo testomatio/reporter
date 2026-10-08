@@ -123,6 +123,14 @@ function statusEmoji(status) {
 }
 
 /**
+ * @param {string} str
+ * @returns {string} The string with its first letter in upper case, e.g. `passed` → `Passed`.
+ */
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+/**
  * Generate a full name string based on the provided test object.
  * @param {object} t - The test object.
  * @returns {string} - A formatted full name string for the test object.
@@ -385,6 +393,7 @@ export {
   generateFilterRequestParams,
   setS3Credentials,
   statusEmoji,
+  capitalize,
   fullName,
   markdownTable,
   runSummary,

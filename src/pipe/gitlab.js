@@ -8,6 +8,7 @@ import { APP_PREFIX, testomatLogoURL } from '../constants.js';
 import { ansiRegExp, isSameTest, truncate } from '../utils/utils.js';
 import {
   statusEmoji,
+  capitalize,
   fullName,
   plannedTestsLabel,
   markdownTable,
@@ -162,15 +163,12 @@ class GitLabPipe {
       body += '\n\n</details>';
     }
 
-    if (this.tests.length < SMALL_RUN_TESTS_LIMIT && !isPendingRun) {
-      for (const [status, title] of [
-        ['passed', 'Passed'],
-        ['skipped', 'Skipped'],
-      ]) {
+    if (this.tests.length < SMALL_RUN_TESTS_LIMIT) {
+      for (const status of ['passed', 'skipped']) {
         const list = testsOfStatusList(this.tests, status);
         if (!list.length) continue;
-        body += `\n<details>\n<summary><h3>${statusEmoji(status)} ${title} (${list.length})</h3></summary>\n\n`;
-        body += `${list.join('\n')}\n</details>`;
+        const title = `${statusEmoji(status)} ${capitalize(status)} (${list.length})`;
+        body += `\n<details>\n<summary><h3>${title}</h3></summary>\n\n${list.join('\n')}\n</details>`;
       }
     }
 
