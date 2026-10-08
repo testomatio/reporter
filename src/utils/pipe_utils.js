@@ -261,6 +261,27 @@ function totalDuration(tests) {
 }
 
 /**
+ * Runs with fewer tests than this list every test in the report, not only the failed ones.
+ */
+const SMALL_RUN_TESTS_LIMIT = 10;
+
+/**
+ * List tests of one status as markdown bullets, with each test's run time.
+ *
+ * @param {Array<{status?: string, title?: string, suite_title?: string, run_time?: number}>} tests
+ * @param {string} status - Status to list, e.g. `passed` or `skipped`.
+ * @returns {string[]} One bullet per test; empty if no test has that status.
+ */
+function testsOfStatusList(tests, status) {
+  return tests
+    .filter(t => t.status === status)
+    .map(t => {
+      const runTime = t.run_time ? ` (${humanizeDuration(t.run_time)})` : '';
+      return `* ${statusEmoji(status)} ${fullName(t)}${runTime}`;
+    });
+}
+
+/**
  * Render a two-column markdown table. Rows with an empty value are skipped, so optional rows
  * need no surrounding `if`.
  *
@@ -368,6 +389,8 @@ export {
   markdownTable,
   runSummary,
   totalDuration,
+  testsOfStatusList,
+  SMALL_RUN_TESTS_LIMIT,
   plannedTestsLabel,
   parsePipeOptions,
   formatFilterListIds,

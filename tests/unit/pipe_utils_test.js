@@ -5,6 +5,7 @@ import {
   formatFetchRunsOutput,
   getObjectSize,
   splitTestsIntoChunks,
+  testsOfStatusList,
 } from '../../src/utils/pipe_utils.js';
 
 describe('formatFilterListIds', () => {
@@ -240,5 +241,25 @@ describe('splitTestsIntoChunks', () => {
     expect(single).to.have.length(1);
     expect(many.length).to.be.greaterThan(1);
     expect(many.flat()).to.have.length(20);
+  });
+});
+
+describe('testsOfStatusList', () => {
+  const tests = [
+    { status: 'passed', suite_title: 'Auth', title: 'logs in', run_time: 1500 },
+    { status: 'failed', title: 'logs out' },
+    { status: 'skipped', title: 'resets password' },
+  ];
+
+  it('lists only tests of the given status, with run time', () => {
+    expect(testsOfStatusList(tests, 'passed')).to.deep.equal(['* 🟢 Auth: **logs in** (1.5 seconds)']);
+  });
+
+  it('omits run time when it is missing', () => {
+    expect(testsOfStatusList(tests, 'skipped')).to.deep.equal(['* 🟡 **resets password**']);
+  });
+
+  it('returns an empty list when no test matches', () => {
+    expect(testsOfStatusList([], 'passed')).to.deep.equal([]);
   });
 });

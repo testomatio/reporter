@@ -12,6 +12,8 @@ import {
   markdownTable,
   runSummary,
   totalDuration,
+  testsOfStatusList,
+  SMALL_RUN_TESTS_LIMIT,
 } from '../utils/pipe_utils.js';
 import { log } from '../utils/log.js';
 
@@ -147,7 +149,8 @@ class GitHubPipe {
 
     let body = summary;
     if (this.description) {
-      body += `\n\n> ${truncate(this.description, 1024).replace(/\r?\n/g, '\n> ')}`;
+      body += '\n\n<details>\n<summary><h3>📝 Description</h3></summary>\n\n';
+      body += `${truncate(this.description, 1024)}\n\n</details>`;
     }
     const coverageConfiguration = this.store?.coverageConfiguration;
     const isManualRun = this.store?.runKind === 'manual';
@@ -170,6 +173,18 @@ class GitHubPipe {
         body += '\n> Notice\n> Only first 20 failures shown*';
       }
       body += '\n\n</details>';
+    }
+
+    if (this.tests.length < SMALL_RUN_TESTS_LIMIT && !isPendingRun) {
+      for (const [status, title] of [
+        ['passed', 'Passed'],
+        ['skipped', 'Skipped'],
+      ]) {
+        const list = testsOfStatusList(this.tests, status);
+        if (!list.length) continue;
+        body += `\n<details>\n<summary><h3>${statusEmoji(status)} ${title} (${list.length})</h3></summary>\n\n`;
+        body += `${list.join('\n')}\n</details>`;
+      }
     }
 
     if (this.tests.length > 0 && !isPendingRun) {

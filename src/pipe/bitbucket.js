@@ -7,6 +7,8 @@ import {
   markdownTable,
   runSummary,
   totalDuration,
+  testsOfStatusList,
+  SMALL_RUN_TESTS_LIMIT,
 } from '../utils/pipe_utils.js';
 import { Gaxios } from 'gaxios';
 import pc from 'picocolors';
@@ -174,13 +176,25 @@ export class BitbucketPipe {
     let body = summary;
 
     if (this.description) {
-      body += `\n\n> ${truncate(this.description, 1024).replace(/\r?\n/g, '\n> ')}`;
+      // Bitbucket strips HTML, so no <details> here
+      body += `\n\n**📝 Description**\n\n${truncate(this.description, 1024)}\n`;
     }
 
     if (failures.length) {
       body += `\n🟥 **Failures (${failures.length})**\n\n* ${failures.join('\n* ')}\n`;
       if (failures.length > 10) {
         body += `\n> Notice: Only the first 10 failures are shown.`;
+      }
+    }
+
+    if (this.tests.length < SMALL_RUN_TESTS_LIMIT && !isPendingRun) {
+      for (const [status, title] of [
+        ['passed', 'Passed'],
+        ['skipped', 'Skipped'],
+      ]) {
+        const list = testsOfStatusList(this.tests, status);
+        if (!list.length) continue;
+        body += `\n\n**${statusEmoji(status)} ${title} (${list.length})**\n\n${list.join('\n')}`;
       }
     }
 
