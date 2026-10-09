@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+  <testsuite name="SampleProject.Tests.UserServiceTests" hostname="DESKTOP-ABC123" package="not available" id="0" tests="2" failures="1" errors="0" skipped="0" time="1.542" timestamp="2023-10-15T10:25:43">
+    <properties />
+    <testcase name="CreateUser_WithValidData_ShouldReturnSuccess" classname="SampleProject.Tests.UserServiceTests" time="0.854" status="1">
+      <system-out>
+        User creation started at 10:25:43
+        Validating user data...
+        [ID] tid://@T12345678
+        User data validated successfully
+        User created with ID: 12345
+        User creation completed at 10:25:44
+      </system-out>
+    </testcase>
+    <testcase name="UpdateUserProfile_WithInvalidId_ShouldThrowException" classname="SampleProject.Tests.UserServiceTests" time="0.688" status="0">
+      <failure message="System.ArgumentException : Invalid user ID provided." type="not specified">
+        at SampleProject.Services.UserService.UpdateUserProfile(Int32 userId, UserProfile profile) in C:\Projects\SampleProject\Services\UserService.cs:line 56
+        at SampleProject.Tests.UserServiceTests.UpdateUserProfile_WithInvalidId_ShouldThrowException() in C:\Projects\SampleProject\Tests\UserServiceTests.cs:line 78
+      </failure>
+      <system-out>
+        tid://@Ta0b1c2d3
+        Update profile operation started at 10:25:44
+        Attempting to locate user with ID: -1
+        Exception thrown: System.ArgumentException: Invalid user ID provided.
+        Test completed at 10:25:45
+      </system-out>
+    </testcase>
+    <system-out>
+      SampleProject.Tests.UserServiceTests test run started
+      Running 2 tests
+      Test run completed
+    </system-out>
+    <system-err />
+  </testsuite>
+</testsuites>

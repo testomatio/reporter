@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<testsuites>
+
+<testsuite name="tests.api.permissions.apiKeys.ApiKeysApiTests" tests="4" skipped="0" failures="0" errors="0" timestamp="2023-08-10T10:34:46" hostname="Macintosh.local" time="52.873">
+  
+  <testcase name="can create API Key @St1234567" classname="tests.api.permissions.apiKeys.ApiKeysApiTests" time="11.675"/>
+  
+  
+</testsuite>
+  
+  
+
+</testsuites>

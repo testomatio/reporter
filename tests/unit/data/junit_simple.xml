@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="tests.LoginTest" tests="1" skipped="0" failures="1" errors="0">
+  <testcase name="login()" classname="tests.LoginTest" time="39.722">
+    <failure>Error</failure>
+    <system-out>
+    tid://@T8acca9eb
+</system-out>
+  </testcase>
+</testsuite>

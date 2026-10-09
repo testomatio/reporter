@@ -1,0 +1,414 @@
+# Configuration
+
+You can configure Testomat.io reporter with **environment variables**.
+
+Environment variables can be either passed inline, or from `.env` file or from secrets, when running on CI.
+
+> ℹ️ Specifying **any value** for truthy variables activates the setting, e.g. `TESTOMAT_ENABLE_SMTH=true`, `TESTOMAT_ENABLE_SMTH=1`, and even `TESTOMAT_ENABLE_SMTH=false`, `TESTOMAT_ENABLE_SMTH=0` etc do the same - **enable** the setting.
+
+## Variables List
+
+> 📋 For XML import specific configuration, see [XML Imports Configuration](xml-imports.md)
+
+#### `TESTOMATIO`
+
+Alternatively, `TESTOMATIO_TOKEN` or `TESTOMATIO_API_KEY`
+
+Your Project API key for reporting to Testomat.io.
+
+#### `TESTOMATIO_CREATE`
+
+Create test which are not yet exist in a project
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_CREATE=1 <actual run command>
+```
+
+#### `TESTOMATIO_WORKDIR`
+
+Specify a custom working directory for relative file paths in test reports. When tests are created with `TESTOMATIO_CREATE=1`, file paths will be relative to this directory instead of the current working directory.
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_CREATE=1 TESTOMATIO_WORKDIR=/path/to/project <actual run command>
+```
+
+#### `TESTOMATIO_SUITE`
+
+Place newly created tests into a specific folder. Can be used on XML import or combined with `TESTOMATIO_CREATE=1`. Folder should be specified by its ID:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_CREATE=1 TESTOMATIO_SUITE=@S1235678 <actual run command>
+
+TESTOMATIO={API_KEY} TESTOMATIO_SUITE=@S1235678 npx @testomatio/reporter xml <xml files>
+```
+
+#### `TESTOMATIO_DISABLE_BATCH_UPLOAD`
+
+Disables batch uploading (multiple test results in one request) and uploads each test result one by one.
+
+Example:
+
+```
+TESTOMATIO_DISABLE_BATCH_UPLOAD=true <actual run command>
+```
+
+#### `TESTOMATIO_ENV`
+
+Specify environments to run the tests.
+
+Example:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_ENV="Windows, Chrome" <actual run command>
+```
+
+#### `TESTOMATIO_EXCLUDE_FILES_FROM_REPORT_GLOB_PATTERN`
+
+Exclude tests from the report using [glob patterns](https://www.npmjs.com/package/glob).
+
+Example:
+
+```
+TESTOMATIO_EXCLUDE_FILES_FROM_REPORT_GLOB_PATTERN="**/*.setup.ts" <actual run command>
+```
+
+For multiple patterns:
+
+```
+TESTOMATIO_EXCLUDE_FILES_FROM_REPORT_GLOB_PATTERN="**/*.setup.ts;tests/*.auth.js" <actual run command>
+```
+
+#### `TESTOMATIO_EXCLUDE_SKIPPED`
+
+Exclude skipped tests from the report.
+
+Example:
+
+```
+TESTOMATIO_EXCLUDE_SKIPPED=1 <actual run command>
+```
+
+#### `TESTOMATIO_NO_TIMESTAMP`
+
+Disable automatic timestamp generation for test results. By default, the reporter automatically adds timestamps to test data. Use this option if you run tests in parallel on different machines where time is not synchronized.
+
+Example:
+
+```
+TESTOMATIO_NO_TIMESTAMP=1 <actual run command>
+```
+
+#### `TESTOMATIO_INTERCEPT_CONSOLE_LOGS`
+
+Intercept console logs and add them to your report.
+
+Example:
+
+```
+TESTOMATIO_INTERCEPT_CONSOLE_LOGS=true <actual run command>
+```
+
+#### `TESTOMATIO_MARK_DETACHED`
+
+If some tests from a project were not reported in this run, you can mark them as detached.
+
+**This works only for XML reports**
+
+Example:
+
+```
+TESTOMATIO_MARK_DETACHED=true npx @testomatio/reporter xml "tests/**/*.xml"
+```
+
+If you pass a tag, only absent tests with this tag will be marked as detached:
+
+```
+TESTOMATIO_MARK_DETACHED=@core npx @testomatio/reporter xml "tests/**/*.xml"
+```
+
+#### `TESTOMATIO_MAX_REQUEST_FAILURES`
+
+Maximum number of failed requests. If more requests fail, reporting will stop.
+
+Example:
+
+```
+TESTOMATIO_MAX_REQUEST_FAILURES=5 <actual run command>
+```
+
+#### `TESTOMATIO_REQUEST_TIMEOUT`
+
+Max request timeout in **milli**seconds. Default is 20 sec.
+
+#### `TESTOMATIO_CI_PROFILE`
+
+Trigger a remote CI build instead of (or in addition to) creating a run locally. When set, the reporter asks Testomat.io to dispatch the named CI profile (configured under **Settings → CI** on the project — for example `github`, `gitlab`, `jenkins`, `bitbucket`). The CLI sets this automatically when you pass [`--remote <profile>`](./cli.md#3-run), so you only need this env var when you don't go through the CLI.
+
+If a filter is also resolved (via `--filter` or [`TESTOMATIO_CI_PARAMS`](#testomatio_ci_params)), the matched test IDs are joined with `|` and forwarded to the CI workflow as the grep pattern.
+
+Example:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_CI_PROFILE=github <actual run command>
+```
+
+See: [Trigger a Remote CI Run](./pipes/testomatio.md#trigger-a-remote-ci-run).
+
+#### `TESTOMATIO_CI_PARAMS`
+
+Comma-separated `key=value` pairs forwarded to the CI profile config at launch time. Use it to override profile defaults per run (e.g. `branch`, `ref`, environment variables exposed to the CI workflow). Entries without `=` are ignored. Only takes effect when [`TESTOMATIO_CI_PROFILE`](#testomatio_ci_profile) is set.
+
+Example:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_CI_PROFILE=github TESTOMATIO_CI_PARAMS="branch=develop,REGION=eu" <actual run command>
+```
+
+The CLI sets this automatically when you pass `--remote-param key=value` (repeatable) — see [CLI docs](./cli.md#3-run).
+
+#### `TESTOMATIO_PROCEED`
+
+Do not finalize the run.
+
+Example:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_PROCEED=1 <actual run command>
+```
+
+#### `TESTOMATIO_PUBLISH`
+
+Publish run after reporting and provide a public URL:
+
+```
+TESTOMATIO_PUBLISH=1 TESTOMATIO={API_KEY} <actual run command>
+```
+
+#### `TESTOMATIO_RUN`
+
+Add a report to the run by ID.
+
+#### `TESTOMATIO_RUNGROUP_TITLE`
+
+Add a report to a RunGroup.
+
+Example:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_RUNGROUP_TITLE="Build ${BUILD_ID}" <actual run command>
+```
+
+Use `/` separator to create a nested rungroup:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_RUNGROUP_TITLE="Builds/${BUILD_ID}" <actual run command>
+```
+
+#### `TESTOMATIO_SHARED_RUN`
+
+Report parallel execution to the same run matching it by title. **If the run was created more than 20 minutes ago, a new run will be created instead.** To change the timeout use `TESTOMATIO_SHARED_RUN_TIMEOUT` variable.
+
+Example:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_TITLE="report for commit ${GIT_COMMIT}" TESTOMATIO_SHARED_RUN=1 <actual run command>
+```
+
+#### `TESTOMATIO_SHARED_RUN_TIMEOUT`
+
+Changes timeout of a shared run. After timeout, shared run won't accept other runs with same name, and new runs will be created instead. Timeout is set in minutes, default is 20 minutes.
+
+Example:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_TITLE="Today's Build"  TESTOMATIO_SHARED_RUN=1 TESTOMATIO_SHARED_RUN_TIMEOUT=120 <actual run command>
+```
+
+In this case all tests will be added to the same run if it was created less than 120 minutes ago.
+
+#### `TESTOMATIO_SHARDS`
+
+Sets the total number of shards for a shared run. When specified, the shared run will automatically finish once all N shards have reported their results. Also automatically enables `TESTOMATIO_SHARED_RUN`. Maximum value is 50.
+
+Example:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_TITLE="Today's Build" TESTOMATIO_SHARDS=3 <actual run command>
+```
+
+In this case the run will finish automatically when all 3 shards complete, without needing a separate `finish` command.
+
+#### `TESTOMATIO_STACK_ARTIFACTS`
+
+Save large stack traces and steps as artifacts when they exceed API size limits. When enabled, stack traces larger than 5000 characters and steps data larger than 10000 characters will be saved as artifact files with timestamp-based names (`stack_{timestamp}.log` and `steps_{timestamp}.json`) instead of being included in the API request payload.
+
+Example:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_STACK_ARTIFACTS=1 <actual run command>
+```
+
+#### `TESTOMATIO_STACK_FILTER`
+
+Stack trace filter configuration.
+
+#### `TESTOMATIO_STACK_PASSED`
+
+Enable stack traces and logs for passed tests (disabled by default).
+
+Example:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_STACK_PASSED=1 <actual run command>
+```
+
+#### `TESTOMATIO_STEPS_PASSED`
+
+Enable detailed steps for passed tests (disabled by default). When disabled, only failed and skipped tests will include step details to reduce noise.
+
+Example:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_STEPS_PASSED=1 <actual run command>
+```
+
+#### `TESTOMATIO_NO_STEPS`
+
+Disable reporting of all steps completely. When enabled, no steps will be included in the test report regardless of test status.
+
+Example:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_NO_STEPS=1 <actual run command>
+```
+
+#### `TESTOMATIO_SCREENSHOTS_ON_STEPS`
+
+Enable or disable uploading screenshots for steps. By default, screenshots on steps are uploaded to S3 and attached to the step as artifacts. Set to `false` to disable.
+
+Screenshots are uploaded only if the framework provides screenshot information for steps (e.g., Playwright captures screenshots during step execution, or CodeceptJS includes screenshot artifacts).
+
+Example:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_SCREENSHOTS_ON_STEPS=false <actual run command>
+```
+
+#### `TESTOMATIO_TITLE`
+
+Set the report title.
+
+Example:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_TITLE="title for the report" <actual run command>
+```
+
+#### `TESTOMATIO_DESCRIPTION`
+
+Add a description to the test run. It is shown on Testomat.io, in the HTML and Markdown reports, and added — truncated to 1024 characters — to GitHub / GitLab / Bitbucket pull request comments. Use it to pass any extra data about the run: CI context, build number, deployed version.
+
+A generated description (currently the change-aware coverage scope) does not override it — it is added after it, separated by an empty line.
+
+Example:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_DESCRIPTION="Nightly regression on staging" <actual run command>
+```
+
+#### `TESTOMATIO_LOG_LEVEL`
+
+Control the verbosity of `[TESTOMATIO]` prefixed messages in the test output.
+
+Available levels (from most quiet to most verbose):
+
+| Level   | Logs Shown                           |
+| ------- | ------------------------------------ |
+| `ERROR` | Only errors                          |
+| `WARN`  | Warnings and errors                  |
+| `INFO`  | Info, warnings, and errors (default) |
+
+Example:
+
+```
+# Show only errors (minimal output)
+TESTOMATIO_LOG_LEVEL=ERROR npm test
+
+# Show warnings and errors
+TESTOMATIO_LOG_LEVEL=WARN npm test
+
+# Show all info messages (default)
+TESTOMATIO_LOG_LEVEL=INFO npm test
+```
+
+This is useful when you want to suppress the `[TESTOMATIO]` messages in your CI logs while still seeing errors:
+
+```
+TESTOMATIO_LOG_LEVEL=ERROR npm test
+```
+
+> 📖 See [Log Level Control](./log-level.md) for more details.
+> 🐛 For detailed debugging, use the `DEBUG` environment variable with the debug package specified.
+
+#### `TESTOMATIO_LOG_JSON`
+
+Print every `[TESTOMATIO]` message as a JSON object instead of prefixed text, one object per line:
+
+```json
+{"level":"error","message":"Error creating Testomat.io report ..."}
+```
+
+Failed API requests add their data as fields (`status`, `method`, `url`, `error`, `response`, `request`). The API token is hidden in every message and field, in JSON as well as in text output.
+
+```
+TESTOMATIO_LOG_JSON=1 npm test
+```
+
+The CLI sets this automatically for [`--format json`](./cli.md#the---format-flag), so both the output and the logs of a run are machine-readable.
+
+#### `TESTOMATIO_UPDATE_CODE`
+
+Sends the `code` of your tests to Testomat.io on each run. (If not enabled (default) assumes the code is pushed using [check-tests](https://github.com/testomatio/check-tests#cli)).
+
+### Artifacts
+
+Configuration for artifacts storage. Those variables can be obtained from Testomat.io if "Share credentials" in Project Settings > Artifacts is enabled.
+
+- `S3_ACCESS_KEY_ID`: Your S3 access key ID.
+- `S3_BUCKET`: Your S3 bucket name.
+- `S3_ENDPOINT`: Your S3 endpoint URL.
+- `S3_REGION`: Your S3 region.
+- `S3_SECRET_ACCESS_KEY`: Your S3 secret access key.
+- `TESTOMATIO_PRIVATE_ARTIFACTS`: Store artifacts in a bucket privately.
+
+These variables are used to define how artifacts are uploaded:
+
+- `TESTOMATIO_DISABLE_ARTIFACTS`: disable all artifacts uploading. All artifacts can be uploaded later with `npx @testomatio/reporter upload-artifacts` command.
+- `TESTOMATIO_ARTIFACT_MAX_SIZE_MB`: disable uploading artifacts larger than X size in Mb. Other artifacts can be uploaded later with `npx @testomatio/reporter upload-artifacts` command.
+
+### Pipes
+
+Configuration for CI/CD pipelines.
+
+- `GH_PAT`: Your GitHub personal access token (to enable GitHub Pipe)
+- `GITLAB_PAT`: Your GitLab personal access token (to enable Gitlab Pipe).
+
+## Loading configuration from `.env` file
+
+You can use `.env` file to store your environment variables. To read environment variables from `.env` file, use [dotenv](https://www.npmjs.com/package/dotenv) package:
+
+```javascript
+require('dotenv').config({ path: '.env' }); // or any other path
+```
+
+or
+
+```javascript
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env' }); // or any other path
+```
+
+It is recommended to read `.env` file as early as possible in your application, preferably on test runner initialization.
+E.g. in CodeceptJS you can do it in `codecept.conf.js` file. In Playwright: `playwright.config.js`. Jest: `jest.config.js`. Cypress: `cypress.config.js`. And so on.
+
+It is recommended to add `.env` file to `.gitignore` to avoid committing sensitive data to the repository.
