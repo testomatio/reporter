@@ -123,6 +123,14 @@ function statusEmoji(status) {
 }
 
 /**
+ * @param {string} str
+ * @returns {string} The string with its first letter in upper case, e.g. `passed` → `Passed`.
+ */
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+/**
  * Generate a full name string based on the provided test object.
  * @param {object} t - The test object.
  * @returns {string} - A formatted full name string for the test object.
@@ -261,6 +269,37 @@ function totalDuration(tests) {
 }
 
 /**
+ * Runs with fewer tests than this list every test in the report, not only the failed ones.
+ */
+const SMALL_RUN_TESTS_LIMIT = 10;
+
+/**
+ * Sections listing the passed, skipped and not yet run tests of a small run; failures have their own
+ * section. Not yet run tests (no status, or `pending`) are listed without any status label.
+ *
+ * @param {Array<{status?: string, title?: string, suite_title?: string, run_time?: number}>} tests
+ * @returns {Array<{title: string, list: string[]}>} Non-empty sections; none if the run is not small.
+ */
+function smallRunSections(tests) {
+  if (tests.length >= SMALL_RUN_TESTS_LIMIT) return [];
+
+  const sections = ['passed', 'skipped'].map(status => {
+    const list = tests
+      .filter(t => t.status === status)
+      .map(t => {
+        const runTime = t.run_time ? ` (${humanizeDuration(t.run_time)})` : '';
+        return `* ${statusEmoji(status)} ${fullName(t)}${runTime}`;
+      });
+    return { title: `${statusEmoji(status)} ${capitalize(status)} (${list.length})`, list };
+  });
+
+  const notRun = tests.filter(t => !t.status || t.status === 'pending').map(t => `* ${fullName(t)}`);
+  sections.push({ title: `📋 Tests (${notRun.length})`, list: notRun });
+
+  return sections.filter(section => section.list.length);
+}
+
+/**
  * Render a two-column markdown table. Rows with an empty value are skipped, so optional rows
  * need no surrounding `if`.
  *
@@ -368,6 +407,7 @@ export {
   markdownTable,
   runSummary,
   totalDuration,
+  smallRunSections,
   plannedTestsLabel,
   parsePipeOptions,
   formatFilterListIds,

@@ -13,6 +13,7 @@ import {
   markdownTable,
   runSummary,
   totalDuration,
+  smallRunSections,
 } from '../utils/pipe_utils.js';
 import { log } from '../utils/log.js';
 
@@ -148,7 +149,8 @@ class GitLabPipe {
     let body = summary;
 
     if (this.description) {
-      body += `\n\n> ${truncate(this.description, 1024).replace(/\r?\n/g, '\n> ')}`;
+      body += '\n\n<details>\n<summary><h3>📝 Description</h3></summary>\n\n';
+      body += `${truncate(this.description, 1024)}\n\n</details>`;
     }
 
     if (failures.length) {
@@ -157,6 +159,10 @@ class GitLabPipe {
         body += '\n> Notice\n> Only first 20 failures shown*';
       }
       body += '\n\n</details>';
+    }
+
+    for (const { title, list } of smallRunSections(this.tests)) {
+      body += `\n<details>\n<summary><h3>${title}</h3></summary>\n\n${list.join('\n')}\n</details>`;
     }
 
     if (this.tests.length > 0 && !isPendingRun) {

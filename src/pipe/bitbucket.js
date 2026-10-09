@@ -7,6 +7,7 @@ import {
   markdownTable,
   runSummary,
   totalDuration,
+  smallRunSections,
 } from '../utils/pipe_utils.js';
 import { Gaxios } from 'gaxios';
 import pc from 'picocolors';
@@ -174,7 +175,8 @@ export class BitbucketPipe {
     let body = summary;
 
     if (this.description) {
-      body += `\n\n> ${truncate(this.description, 1024).replace(/\r?\n/g, '\n> ')}`;
+      // Bitbucket strips HTML, so no <details> here
+      body += `\n\n**📝 Description**\n\n${truncate(this.description, 1024)}\n`;
     }
 
     if (failures.length) {
@@ -182,6 +184,10 @@ export class BitbucketPipe {
       if (failures.length > 10) {
         body += `\n> Notice: Only the first 10 failures are shown.`;
       }
+    }
+
+    for (const { title, list } of smallRunSections(this.tests)) {
+      body += `\n\n**${title}**\n\n${list.join('\n')}`;
     }
 
     if (this.tests.length > 0 && !isPendingRun) {
