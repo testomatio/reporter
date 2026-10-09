@@ -304,6 +304,16 @@ Example:
 TESTOMATIO={API_KEY} TESTOMATIO_TITLE="title for the report" <actual run command>
 ```
 
+#### `TESTOMATIO_WARN`
+
+Exit `0` instead of `1` when a filter (`start --filter`, `run --filter`, `run --filter-list`) matches no tests. The warning is still printed and no run is created. Same as passing `--warn`.
+
+Example:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_WARN=1 npx @testomatio/reporter start --filter "coverage:file=coverage.yml"
+```
+
 #### `TESTOMATIO_DESCRIPTION`
 
 Add a description to the test run. It is shown on Testomat.io, in the HTML and Markdown reports, and added — truncated to 1024 characters — to GitHub / GitLab / Bitbucket pull request comments. Use it to pass any extra data about the run: CI context, build number, deployed version.
