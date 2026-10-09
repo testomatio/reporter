@@ -59,9 +59,10 @@ program
   .option('--kind <type>', 'Specify run type: automated, manual, mixed, or detect')
   .option('--filter <filter>', 'Scope the prepared run to tests matching the filter (no execution)')
   .option('--format <format>', 'Machine-readable output: the run id (--format id) or run details (--format json)')
-  .option('--warn', 'Exit 0 instead of 1 when the filter matches no tests (warn only)')
+  .option('--warn', 'Exit 0 instead of 1 when the filter matches no tests (warn only); env: TESTOMATIO_WARN')
   .action(async opts => {
     cleanLatestRunId();
+    opts.warn ||= transformEnvVarToBoolean(process.env.TESTOMATIO_WARN);
 
     log.info('Starting a new Run on Testomat.io...');
     const apiKey = process.env['INPUT_TESTOMATIO-KEY'] || config.TESTOMATIO;
@@ -196,8 +197,9 @@ program
     (value, prev) => prev.concat([value]),
     [],
   )
-  .option('--warn', 'Exit 0 instead of 1 when the filter matches no tests (warn only)')
+  .option('--warn', 'Exit 0 instead of 1 when the filter matches no tests (warn only); env: TESTOMATIO_WARN')
   .action(async (command, opts) => {
+    opts.warn ||= transformEnvVarToBoolean(process.env.TESTOMATIO_WARN);
     if (opts.remote) {
       if (opts.filterList) {
         log.warn(pc.red('⚠️  --filter-list cannot be combined with --remote'));
