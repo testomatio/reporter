@@ -190,9 +190,10 @@ class DataStorage {
 }
 
 function stringToMD5Hash(str) {
-  const md5 = crypto.createHash('md5');
-  md5.update(str);
-  const hash = md5.digest('hex');
+  // sha256 instead of md5 for FIPS-enabled hosts compatibility
+  const sha256 = crypto.createHash('sha256');
+  sha256.update(str);
+  const hash = sha256.digest('hex');
   return `${process.env.runId || 'run'}_${hash}`;
 }
 
