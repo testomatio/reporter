@@ -245,7 +245,9 @@ class Client {
       overwrite,
       tags,
     } = testData;
-    let { files = [], manuallyAttachedArtifacts, message = '', meta = {} } = testData;
+    let { files = [], manuallyAttachedArtifacts, message = '' } = testData;
+    /** @type {Record<string, any>} */
+    let meta = testData.meta || {};
 
     if (stepArtifactPaths.size) {
       const isStepArtifact = item => stepArtifactPaths.has(typeof item === 'object' ? item?.path : item);
