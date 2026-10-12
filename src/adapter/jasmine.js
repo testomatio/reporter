@@ -5,7 +5,7 @@ import { STATUS } from '../constants.js';
 class JasmineReporter {
   constructor(options) {
     this.testTimeMap = {};
-    this.client = new TestomatClient({ apiKey: options?.apiKey });
+    this.client = new TestomatClient({ apiKey: options?.apiKey, adapter: 'jasmine' });
     this.client.createRun();
   }
 

@@ -27,7 +27,7 @@ function MochaReporter(runner, opts) {
 
   const apiKey = opts?.reporterOptions?.apiKey || config.TESTOMATIO;
 
-  const client = new TestomatClient({ apiKey });
+  const client = new TestomatClient({ apiKey, adapter: 'mocha' });
 
   // Track hook failures
   const hookFailures = new Map();

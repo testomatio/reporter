@@ -9,7 +9,7 @@ class WebdriverReporter extends WDIOReporter {
   constructor(options) {
     super(options);
 
-    this.client = new TestomatClient({ apiKey: options?.apiKey });
+    this.client = new TestomatClient({ apiKey: options?.apiKey, adapter: 'webdriverio' });
     options = Object.assign(options, { stdout: true });
 
     this._addTestPromises = [];

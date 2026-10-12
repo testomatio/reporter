@@ -16,7 +16,7 @@ import { log } from '../utils/log.js';
 
 class PlaywrightReporter {
   constructor(config = {}) {
-    this.client = new TestomatioClient({ apiKey: config?.apiKey });
+    this.client = new TestomatioClient({ apiKey: config?.apiKey, adapter: 'playwright' });
 
     this.uploads = [];
     this.reportTestPromises = [];

@@ -36,6 +36,7 @@ class Client {
     this.pipeStore = {};
     this.runId = '';
     this.queue = Promise.resolve();
+    this.adapterName = params.adapter;
 
     // @ts-ignore this line will be removed in compiled code, because __dirname is defined in commonjs
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -260,6 +261,10 @@ class Client {
         if (key) acc[key] = value;
         return acc;
       }, {});
+
+    // meta must always include reporter version and adapter used
+    if (this.version) meta.reporterVersion = this.version;
+    if (this.adapterName) meta.adapter = this.adapterName;
 
     const testContext = suite_title ? `${suite_title} ${title}` : title;
 

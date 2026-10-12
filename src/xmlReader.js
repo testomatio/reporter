@@ -499,6 +499,9 @@ class XmlReader {
       this.adapter.formatTest(t);
 
       t.title = humanize(t.title);
+
+      // meta must always include reporter version and adapter used
+      t.meta = { ...t.meta, reporterVersion: this.version, adapter: 'xml' };
     });
   }
 

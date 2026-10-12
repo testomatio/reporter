@@ -703,6 +703,7 @@ function buildCodeceptClientConfig(config = {}) {
     ...config,
     apiKey: config.apiKey,
     framework: 'codeceptjs',
+    adapter: 'codeceptjs',
     outputDir,
     reportDir,
     html: config.html,

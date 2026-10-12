@@ -8,7 +8,7 @@ const testomatioReporter = on => {
     console.log('TESTOMATIO key is empty, ignoring reports');
     return;
   }
-  const client = new TestomatClient({ apiKey: config.TESTOMATIO });
+  const client = new TestomatClient({ apiKey: config.TESTOMATIO, adapter: 'cypress' });
 
   on('before:run', async () => {
     // TODO: looks like client.env does not exist

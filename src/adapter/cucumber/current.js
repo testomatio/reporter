@@ -30,7 +30,7 @@ class CucumberReporter extends Formatter {
     this.failures = [];
     this.cases = [];
 
-    this.client = new TestomatClient({ apiKey: options.apiKey || config.TESTOMATIO });
+    this.client = new TestomatClient({ apiKey: options.apiKey || config.TESTOMATIO, adapter: 'cucumber' });
     this.client.createRun();
     this.status = STATUS.PASSED;
   }

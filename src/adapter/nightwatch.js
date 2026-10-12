@@ -4,7 +4,7 @@ import { STATUS } from '../constants.js';
 import { getTestomatIdFromTestTitle } from '../utils/utils.js';
 
 const apiKey = config.TESTOMATIO;
-const client = new TestomatClient({ apiKey });
+const client = new TestomatClient({ apiKey, adapter: 'nightwatch' });
 
 export default {
   write: async (results, options, done) => {
