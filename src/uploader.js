@@ -23,6 +23,7 @@ export class S3Uploader {
      */
     this.skippedUploads = [];
     this.failedUploads = [];
+    this.warnedDisabledUpload = false;
     /**
      * @type {{path: string, size: number, link: string}[]}
      */
@@ -88,6 +89,26 @@ export class S3Uploader {
 
   disableLogStorage() {
     this.storeEnabled = false;
+  }
+
+  /**
+   * Warns once when artifact uploading is disabled not intentionally by the user,
+   * e.g. S3 credentials were not obtained from Testomat.io and no custom S3 storage is configured.
+   * Without this warning artifacts are skipped silently.
+   */
+  #warnDisabledUpload() {
+    if (this.warnedDisabledUpload) return;
+
+    const { S3_BUCKET, TESTOMATIO_DISABLE_ARTIFACTS } = this.getConfig();
+    // uploading was intentionally disabled by the user or a custom S3 storage is used, nothing to warn about
+    if (TESTOMATIO_DISABLE_ARTIFACTS || S3_BUCKET) return;
+
+    this.warnedDisabledUpload = true;
+    log.warn(
+      `🗄️ ${pc.yellow('Artifacts uploading is disabled: S3 credentials were not obtained from Testomat.io')}`,
+      pc.yellow('(and no custom S3 storage is configured).'),
+      'Artifacts will not be uploaded.',
+    );
   }
 
   /**
@@ -231,6 +252,7 @@ export class S3Uploader {
     }
 
     if (!this.isEnabled) {
+      this.#warnDisabledUpload();
       this.storeUploadedFile(filePath, runId, rid, false);
       this.skippedUploads.push({ path: filePath, size: fileSize });
       return;
@@ -281,7 +303,10 @@ export class S3Uploader {
     probably, the reason is that run is NOT created in adapter (but via cli) */
 
     this.isEnabled = this.isEnabled ?? this.checkEnabled();
-    if (!this.isEnabled) return;
+    if (!this.isEnabled) {
+      this.#warnDisabledUpload();
+      return;
+    }
 
     let Key = pathInS3.filter(p => !!p).join('/');
     const ext = this.#getFileExtBase64(buffer.toString('base64'));

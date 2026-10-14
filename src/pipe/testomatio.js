@@ -352,6 +352,8 @@ class TestomatioPipe {
       if (resp.data.artifacts) {
         setS3Credentials(resp.data.artifacts);
         this.#startS3CredentialsRefresh(runParams);
+      } else {
+        this.#warnNoS3Credentials();
       }
       if (resp.data.url) {
         const respUrl = new URL(resp.data.url);
@@ -383,6 +385,8 @@ class TestomatioPipe {
       if (resp.data.artifacts) {
         setS3Credentials(resp.data.artifacts);
         this.#startS3CredentialsRefresh(runParams);
+      } else {
+        this.#warnNoS3Credentials();
       }
 
       this.store.runUrl = this.runUrl;
@@ -442,9 +446,27 @@ class TestomatioPipe {
         debug('S3 credentials refreshed');
       }
     } catch (err) {
-      debug('Failed to refresh S3 credentials:', err.message || err);
+      log.warn(
+        '⚠️ Failed to refresh S3 credentials:',
+        err.message || err,
+        '\nArtifact uploads may fail once the current credentials expire.',
+      );
     }
   };
+
+  /**
+   * Warns the user when Testomat.io did not return S3 credentials for artifacts upload.
+   * Skipped when artifacts uploading was intentionally disabled or a custom S3 storage is configured via env.
+   */
+  #warnNoS3Credentials() {
+    if (process.env.TESTOMATIO_DISABLE_ARTIFACTS || process.env.S3_BUCKET) return;
+
+    log.warn(
+      `⚠️ ${pc.yellow('Testomat.io did not return S3 credentials for artifacts upload.')}`,
+      'Artifacts will not be uploaded.',
+      'Please check the artifact sharing settings of your project.',
+    );
+  }
 
   #stopS3CredentialsRefresh() {
     if (this.s3CredentialsRefreshTimer) {

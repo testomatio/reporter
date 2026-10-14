@@ -389,8 +389,8 @@ class Client {
     this.queue = this.queue
       .then(() => Promise.all(this.pipes.map(p => p.finishRun(runParams))))
       .then(() => {
-        if (!this.uploader.isEnabled) return;
-
+        // no early return when uploading is disabled:
+        // skipped artifacts (e.g. no S3 credentials obtained) must still be reported to the user
         const filesizeStrMaxLength = 7;
 
         if (this.uploader.successfulUploads.length) {
