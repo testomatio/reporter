@@ -94,6 +94,27 @@ jobs:
       # Run Vitest adapter tests
       - run: npm run test:vitest
 
+  e2e-tests:
+    runs-on: ubuntu-latest
+    name: e2e (tester-army) Adapter Tests
+    needs: linter-and-tests-on-latest-node
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+      - run: node -v
+      - run: npm ci
+      - run: npm run build
+
+      - name: Install e2e example dependencies
+        run: cd example/e2e && npm install
+      - name: Install Chromium
+        run: cd example/e2e && npx playwright-core install chromium
+
+      - run: npm run test:e2e
+
   tests:
     runs-on: ubuntu-latest
     needs: linter-and-tests-on-latest-node
