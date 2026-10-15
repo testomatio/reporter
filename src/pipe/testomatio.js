@@ -461,10 +461,14 @@ class TestomatioPipe {
   #warnNoS3Credentials() {
     if (process.env.TESTOMATIO_DISABLE_ARTIFACTS || process.env.S3_BUCKET) return;
 
+    const command = `TESTOMATIO=<your_api_key> TESTOMATIO_RUN=${
+      this.runId || '<run_id>'
+    } npx @testomatio/reporter upload-artifacts`;
     log.warn(
       `⚠️ ${pc.yellow('Testomat.io did not return S3 credentials for artifacts upload.')}`,
       'Artifacts will not be uploaded.',
       'Please check the artifact sharing settings of your project.',
+      `\nRun "${pc.magenta(command)}" later with valid S3 credentials to re-upload artifacts to this run.`,
     );
   }
 

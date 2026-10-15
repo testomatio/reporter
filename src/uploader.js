@@ -96,7 +96,7 @@ export class S3Uploader {
    * e.g. S3 credentials were not obtained from Testomat.io and no custom S3 storage is configured.
    * Without this warning artifacts are skipped silently.
    */
-  #warnDisabledUpload() {
+  #warnDisabledUpload(runId) {
     if (this.warnedDisabledUpload) return;
 
     const { S3_BUCKET, TESTOMATIO_DISABLE_ARTIFACTS } = this.getConfig();
@@ -104,10 +104,14 @@ export class S3Uploader {
     if (TESTOMATIO_DISABLE_ARTIFACTS || S3_BUCKET) return;
 
     this.warnedDisabledUpload = true;
+    const command = `TESTOMATIO=<your_api_key> TESTOMATIO_RUN=${
+      runId || '<run_id>'
+    } npx @testomatio/reporter upload-artifacts`;
     log.warn(
       `🗄️ ${pc.yellow('Artifacts uploading is disabled: S3 credentials were not obtained from Testomat.io')}`,
       pc.yellow('(and no custom S3 storage is configured).'),
       'Artifacts will not be uploaded.',
+      `\nRun "${pc.magenta(command)}" later with valid S3 credentials to re-upload artifacts to this run.`,
     );
   }
 
@@ -252,7 +256,7 @@ export class S3Uploader {
     }
 
     if (!this.isEnabled) {
-      this.#warnDisabledUpload();
+      this.#warnDisabledUpload(runId);
       this.storeUploadedFile(filePath, runId, rid, false);
       this.skippedUploads.push({ path: filePath, size: fileSize });
       return;
@@ -304,7 +308,7 @@ export class S3Uploader {
 
     this.isEnabled = this.isEnabled ?? this.checkEnabled();
     if (!this.isEnabled) {
-      this.#warnDisabledUpload();
+      this.#warnDisabledUpload(pathInS3[0]);
       return;
     }
 
