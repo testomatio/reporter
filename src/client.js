@@ -36,7 +36,8 @@ class Client {
     this.pipeStore = {};
     this.runId = '';
     this.queue = Promise.resolve();
-    this.adapterName = params.adapter;
+    // adapter name is set by the adapter module itself on load (global.TESTOMATIO_ADAPTER)
+    this.adapterName = params.adapter || global.TESTOMATIO_ADAPTER;
 
     // @ts-ignore this line will be removed in compiled code, because __dirname is defined in commonjs
     const __dirname = path.dirname(fileURLToPath(import.meta.url));

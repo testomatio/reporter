@@ -8,12 +8,14 @@ import createDebugMessages from 'debug';
 
 const debug = createDebugMessages('@testomatio/reporter:adapter-jest');
 
+global.TESTOMATIO_ADAPTER = 'jest';
+
 export class JestReporter {
   constructor(globalConfig, options) {
     this._globalConfig = globalConfig;
     this._options = options;
 
-    this.client = new TestomatClient({ apiKey: options?.apiKey, adapter: 'jest' });
+    this.client = new TestomatClient({ apiKey: options?.apiKey });
     this.client.createRun();
   }
 

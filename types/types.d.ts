@@ -374,6 +374,7 @@ declare global {
       testomatioDataStore?: any;
       TESTOMATIO_LOGGER_CONSOLE_INTERCEPTED?: boolean;
       testomatioTestTitle?: string;
+      TESTOMATIO_ADAPTER?: string;
     }
   }
 }

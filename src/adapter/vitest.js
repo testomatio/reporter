@@ -6,6 +6,8 @@ import createDebugMessages from 'debug';
 
 const debug = createDebugMessages('@testomatio/reporter:adapter-jest');
 
+global.TESTOMATIO_ADAPTER = 'vitest';
+
 /**
  * @typedef {import('../../types/types.js').VitestTest} VitestTest
  * @typedef {import('../../types/types.js').VitestTestFile} VitestTestFile
@@ -18,7 +20,7 @@ const debug = createDebugMessages('@testomatio/reporter:adapter-jest');
 
 class VitestReporter {
   constructor(config = {}) {
-    this.client = new TestomatioClient({ apiKey: config?.apiKey, adapter: 'vitest' });
+    this.client = new TestomatioClient({ apiKey: config?.apiKey });
     /** @type {(TestData & {status: string, _reportKey?: string | null})[]} tests */
     this.tests = [];
     this._finalized = false;

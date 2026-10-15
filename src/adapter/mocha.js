@@ -6,6 +6,8 @@ import { config } from '../config.js';
 import { services } from '../services/index.js';
 import pc from 'picocolors';
 
+global.TESTOMATIO_ADAPTER = 'mocha';
+
 const {
   EVENT_RUN_BEGIN,
   EVENT_RUN_END,
@@ -27,7 +29,7 @@ function MochaReporter(runner, opts) {
 
   const apiKey = opts?.reporterOptions?.apiKey || config.TESTOMATIO;
 
-  const client = new TestomatClient({ apiKey, adapter: 'mocha' });
+  const client = new TestomatClient({ apiKey });
 
   // Track hook failures
   const hookFailures = new Map();

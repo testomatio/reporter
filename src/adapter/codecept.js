@@ -11,6 +11,8 @@ import codeceptjs from 'codeceptjs';
 import { log } from '../utils/log.js';
 
 const debug = createDebugMessages('@testomatio/reporter:adapter:codeceptjs');
+
+global.TESTOMATIO_ADAPTER = 'codeceptjs';
 // @ts-ignore
 if (!global.codeceptjs) {
   // @ts-ignore
@@ -703,7 +705,6 @@ function buildCodeceptClientConfig(config = {}) {
     ...config,
     apiKey: config.apiKey,
     framework: 'codeceptjs',
-    adapter: 'codeceptjs',
     outputDir,
     reportDir,
     html: config.html,

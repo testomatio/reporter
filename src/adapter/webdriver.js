@@ -5,11 +5,13 @@ import { services } from '../services/index.js';
 import { TESTOMAT_TMP_STORAGE_DIR } from '../constants.js';
 import { stringToMD5Hash } from '../data-storage.js';
 
+global.TESTOMATIO_ADAPTER = 'webdriverio';
+
 class WebdriverReporter extends WDIOReporter {
   constructor(options) {
     super(options);
 
-    this.client = new TestomatClient({ apiKey: options?.apiKey, adapter: 'webdriverio' });
+    this.client = new TestomatClient({ apiKey: options?.apiKey });
     options = Object.assign(options, { stdout: true });
 
     this._addTestPromises = [];

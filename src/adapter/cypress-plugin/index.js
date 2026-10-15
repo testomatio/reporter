@@ -3,12 +3,14 @@ import { getTestomatIdFromTestTitle, parseSuite } from '../../utils/utils.js';
 import TestomatClient from '../../client.js';
 import { config } from '../../config.js';
 
+global.TESTOMATIO_ADAPTER = 'cypress';
+
 const testomatioReporter = on => {
   if (!config.TESTOMATIO) {
     console.log('TESTOMATIO key is empty, ignoring reports');
     return;
   }
-  const client = new TestomatClient({ apiKey: config.TESTOMATIO, adapter: 'cypress' });
+  const client = new TestomatClient({ apiKey: config.TESTOMATIO });
 
   on('before:run', async () => {
     // TODO: looks like client.env does not exist

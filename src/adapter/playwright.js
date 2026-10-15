@@ -14,9 +14,11 @@ import { fetchLinksFromLogs } from './utils/playwright.js';
 import { formatStep, addStatusToStep, addArtifactsToStep } from './utils/step-formatter.js';
 import { log } from '../utils/log.js';
 
+global.TESTOMATIO_ADAPTER = 'playwright';
+
 class PlaywrightReporter {
   constructor(config = {}) {
-    this.client = new TestomatioClient({ apiKey: config?.apiKey, adapter: 'playwright' });
+    this.client = new TestomatioClient({ apiKey: config?.apiKey });
 
     this.uploads = [];
     this.reportTestPromises = [];

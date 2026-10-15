@@ -8,6 +8,8 @@ import { getTestomatIdFromTestTitle, fileSystem } from '../../utils/utils.js';
 import { config } from '../../config.js';
 import { services } from '../../services/index.js';
 
+global.TESTOMATIO_ADAPTER = 'cucumber';
+
 const { GherkinDocumentParser, PickleParser } = formatterHelpers;
 const { getGherkinScenarioLocationMap, getGherkinStepMap } = GherkinDocumentParser;
 const { getPickleStepMap } = PickleParser;
@@ -30,7 +32,7 @@ class CucumberReporter extends Formatter {
     this.failures = [];
     this.cases = [];
 
-    this.client = new TestomatClient({ apiKey: options.apiKey || config.TESTOMATIO, adapter: 'cucumber' });
+    this.client = new TestomatClient({ apiKey: options.apiKey || config.TESTOMATIO });
     this.client.createRun();
     this.status = STATUS.PASSED;
   }
