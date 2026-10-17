@@ -521,6 +521,11 @@ function normalizeArtifact(raw) {
     return { name: path.basename(abs), href, isImage: looksLikeImage(abs) };
   }
 
+  // already resolved link, e.g. a downloaded artifact relative to the report
+  if (typeof raw.href === 'string' && raw.href) {
+    return { name: raw.name || path.basename(raw.href), href: raw.href, isImage: looksLikeImage(raw.href) };
+  }
+
   const rawPath = raw.path || raw.link || raw.url;
   if (!rawPath || typeof rawPath !== 'string') return null;
 
@@ -749,5 +754,7 @@ function aggregateTestRetries(tests) {
 
   return aggregated;
 }
+
+export { renderTests };
 
 export default MarkdownPipe;
