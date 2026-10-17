@@ -3,6 +3,8 @@ import { getTestomatIdFromTestTitle, parseSuite } from '../../utils/utils.js';
 import TestomatClient from '../../client.js';
 import { config } from '../../config.js';
 
+global.TESTOMATIO_ADAPTER = 'cypress';
+
 const testomatioReporter = on => {
   if (!config.TESTOMATIO) {
     console.log('TESTOMATIO key is empty, ignoring reports');

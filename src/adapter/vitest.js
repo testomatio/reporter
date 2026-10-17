@@ -6,6 +6,8 @@ import createDebugMessages from 'debug';
 
 const debug = createDebugMessages('@testomatio/reporter:adapter-jest');
 
+global.TESTOMATIO_ADAPTER = 'vitest';
+
 /**
  * @typedef {import('../../types/types.js').VitestTest} VitestTest
  * @typedef {import('../../types/types.js').VitestTestFile} VitestTestFile

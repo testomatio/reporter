@@ -5,6 +5,8 @@ import { services } from '../services/index.js';
 import { TESTOMAT_TMP_STORAGE_DIR } from '../constants.js';
 import { stringToMD5Hash } from '../data-storage.js';
 
+global.TESTOMATIO_ADAPTER = 'webdriverio';
+
 class WebdriverReporter extends WDIOReporter {
   constructor(options) {
     super(options);

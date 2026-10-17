@@ -36,6 +36,8 @@ class Client {
     this.pipeStore = {};
     this.runId = '';
     this.queue = Promise.resolve();
+    // adapter name is set by the adapter module itself on load (global.TESTOMATIO_ADAPTER)
+    this.adapterName = params.adapter || global.TESTOMATIO_ADAPTER;
 
     // @ts-ignore this line will be removed in compiled code, because __dirname is defined in commonjs
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -244,7 +246,9 @@ class Client {
       overwrite,
       tags,
     } = testData;
-    let { files = [], manuallyAttachedArtifacts, message = '', meta = {} } = testData;
+    let { files = [], manuallyAttachedArtifacts, message = '' } = testData;
+    /** @type {Record<string, any>} */
+    let meta = testData.meta || {};
 
     if (stepArtifactPaths.size) {
       const isStepArtifact = item => stepArtifactPaths.has(typeof item === 'object' ? item?.path : item);
@@ -260,6 +264,10 @@ class Client {
         if (key) acc[key] = value;
         return acc;
       }, {});
+
+    // meta must always include reporter version and adapter used
+    if (this.version) meta.reporterVersion = this.version;
+    if (this.adapterName) meta.adapter = this.adapterName;
 
     const testContext = suite_title ? `${suite_title} ${title}` : title;
 

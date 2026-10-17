@@ -8,6 +8,8 @@ import { getTestomatIdFromTestTitle, fileSystem } from '../../utils/utils.js';
 import { config } from '../../config.js';
 import { services } from '../../services/index.js';
 
+global.TESTOMATIO_ADAPTER = 'cucumber';
+
 const { GherkinDocumentParser, PickleParser } = formatterHelpers;
 const { getGherkinScenarioLocationMap, getGherkinStepMap } = GherkinDocumentParser;
 const { getPickleStepMap } = PickleParser;

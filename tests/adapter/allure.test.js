@@ -1000,7 +1000,7 @@ class CalorieTrackerTest {
       expect(converted.run_time).to.equal(10);
       expect(converted.steps).to.have.lengthOf(1);
       expect(converted.steps[0].title).to.equal('Open page');
-      expect(converted.meta).to.deep.equal({ language: 'java' });
+      expect(converted.meta).to.deep.equal({ language: 'java', reporterVersion: reader.version, adapter: 'allure' });
       expect(converted.rid).to.equal('test-uuid-123');
     });
 

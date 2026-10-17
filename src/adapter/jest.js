@@ -8,6 +8,8 @@ import createDebugMessages from 'debug';
 
 const debug = createDebugMessages('@testomatio/reporter:adapter-jest');
 
+global.TESTOMATIO_ADAPTER = 'jest';
+
 export class JestReporter {
   constructor(globalConfig, options) {
     this._globalConfig = globalConfig;

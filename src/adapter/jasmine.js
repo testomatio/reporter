@@ -2,6 +2,8 @@ import TestomatClient from '../client.js';
 import { getTestomatIdFromTestTitle, ansiRegExp } from '../utils/utils.js';
 import { STATUS } from '../constants.js';
 
+global.TESTOMATIO_ADAPTER = 'jasmine';
+
 class JasmineReporter {
   constructor(options) {
     this.testTimeMap = {};

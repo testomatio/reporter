@@ -6,6 +6,8 @@ import { config } from '../config.js';
 import { services } from '../services/index.js';
 import pc from 'picocolors';
 
+global.TESTOMATIO_ADAPTER = 'mocha';
+
 const {
   EVENT_RUN_BEGIN,
   EVENT_RUN_END,

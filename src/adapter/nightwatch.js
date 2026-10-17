@@ -3,6 +3,8 @@ import { config } from '../config.js';
 import { STATUS } from '../constants.js';
 import { getTestomatIdFromTestTitle } from '../utils/utils.js';
 
+global.TESTOMATIO_ADAPTER = 'nightwatch';
+
 const apiKey = config.TESTOMATIO;
 const client = new TestomatClient({ apiKey });
 

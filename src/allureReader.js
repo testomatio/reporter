@@ -186,7 +186,8 @@ class AllureReader {
       steps: this.convertSteps(result.steps || [], resultsDir),
       message: result.statusDetails?.message || '',
       stack: result.statusDetails?.trace || '',
-      meta: this.extractMeta(result),
+      // meta must always include reporter version and adapter used
+      meta: { ...this.extractMeta(result), reporterVersion: this.version, adapter: 'allure' },
       links: this.extractLinks(result),
       artifacts: [],
       create: true,
