@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" duration="5.031224" testcasecount="9" total="9" passed="7" failed="2" inconclusive="0" skipped="0" result="Failed" start-time="2022-11-10T 18:30:08Z" end-time="2022-11-10T 18:30:12Z">
+  <test-suite type="Assembly" name="Tests.dll" fullname="/Tests/bin/Debug/net6.0/Tests.dll" total="9" passed="7" failed="2" inconclusive="0" skipped="0" result="Failed" start-time="2022-11-10T 18:30:08Z" end-time="2022-11-10T 18:30:12Z" duration="5.031224">
+    <test-suite type="TestSuite" name="Tests" fullname="Tests" total="9" passed="7" failed="2" inconclusive="0" skipped="0" result="Failed" start-time="2022-11-10T 18:30:08Z" end-time="2022-11-10T 18:30:12Z" duration="5.031224">
+      <test-suite type="TestSuite" name="NUnit_Tests" fullname="Tests.NUnit_Tests" total="9" passed="7" failed="2" inconclusive="0" skipped="0" result="Failed" start-time="2022-11-10T 18:30:08Z" end-time="2022-11-10T 18:30:12Z" duration="5.031224">
+        <test-suite type="TestSuite" name="Billing" fullname="Tests.NUnit_Tests.Billing" total="9" passed="7" failed="2" inconclusive="0" skipped="0" result="Failed" start-time="2022-11-10T 18:30:08Z" end-time="2022-11-10T 18:30:12Z" duration="5.031224">
+          <test-suite type="TestSuite" name="Action_Log" fullname="Tests.NUnit_Tests.Billing.Action_Log" total="2" passed="1" failed="1" inconclusive="0" skipped="0" result="Failed" start-time="2022-11-10T 18:30:08Z" end-time="2022-11-10T 18:30:10Z" duration="2.031224">
+            <test-suite type="TestFixture" name="ActionLogScenarios" fullname="Tests.NUnit_Tests.Billing.Action_Log.ActionLogScenarios" classname="Tests.NUnit_Tests.Billing.Action_Log.ActionLogScenarios" total="2" passed="1" failed="1" inconclusive="0" skipped="0" result="Failed" start-time="2022-11-10T 18:30:08Z" end-time="2022-11-10T 18:30:10Z" duration="2.031224" filepath="Tests/NUnit_Tests/Billing/Action_Log/ActionLogScenarios.cs">
+              <test-case name="TestMethod1" fullname="Tests.NUnit_Tests.Billing.Action_Log.ActionLogScenarios.TestMethod1" methodname="TestMethod1" classname="Tests.NUnit_Tests.Billing.Action_Log.ActionLogScenarios" result="Passed" start-time="2022-11-10T 18:30:08Z" end-time="2022-11-10T 18:30:09Z" duration="1.000000" asserts="0">
+                <properties>
+                  <property name="ID" value="T12345678"/>
+                </properties>
+                <output><![CDATA[Test passed successfully]]></output>
+              </test-case>
+              <test-case name="TestMethod2" fullname="Tests.NUnit_Tests.Billing.Action_Log.ActionLogScenarios.TestMethod2" methodname="TestMethod2" classname="Tests.NUnit_Tests.Billing.Action_Log.ActionLogScenarios" result="Failed" start-time="2022-11-10T 18:30:09Z" end-time="2022-11-10T 18:30:10Z" duration="1.031224" asserts="1">
+                <properties>
+                  <property name="ID" value="T87654321"/>
+                </properties>
+                <failure>
+                  <message>Test failed with assertion error</message>
+                  <stack-trace>   at Tests.NUnit_Tests.Billing.Action_Log.ActionLogScenarios.TestMethod2() in /Tests/NUnit_Tests/Billing/Action_Log/ActionLogScenarios.cs:line 25</stack-trace>
+                </failure>
+                <output><![CDATA[Test failed with assertion error]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+          <test-suite type="TestSuite" name="Calculator" fullname="Tests.NUnit_Tests.Billing.Calculator" total="7" passed="6" failed="1" inconclusive="0" skipped="0" result="Failed" start-time="2022-11-10T 18:30:10Z" end-time="2022-11-10T 18:30:12Z" duration="3.000000">
+            <test-suite type="TestFixture" name="CalculatorTests" fullname="Tests.NUnit_Tests.Billing.Calculator.CalculatorTests" classname="Tests.NUnit_Tests.Billing.Calculator.CalculatorTests" total="7" passed="6" failed="1" inconclusive="0" skipped="0" result="Failed" start-time="2022-11-10T 18:30:10Z" end-time="2022-11-10T 18:30:12Z" duration="3.000000" filepath="Tests/NUnit_Tests/Billing/Calculator/CalculatorTests.cs">
+              <!-- Parameterized test with 3 variations -->
+              <test-case name="Add(2,3,5)" fullname="Tests.NUnit_Tests.Billing.Calculator.CalculatorTests.Add(2,3,5)" methodname="Add" classname="Tests.NUnit_Tests.Billing.Calculator.CalculatorTests" result="Passed" start-time="2022-11-10T 18:30:10Z" end-time="2022-11-10T 18:30:10Z" duration="0.100000" asserts="0">
+                <properties>
+                  <property name="ID" value="T11111111"/>
+                </properties>
+                <arguments><arg>2</arg><arg>3</arg><arg>5</arg></arguments>
+                <output><![CDATA[Test passed: 2 + 3 = 5]]></output>
+              </test-case>
+              <test-case name="Add(10,20,30)" fullname="Tests.NUnit_Tests.Billing.Calculator.CalculatorTests.Add(10,20,30)" methodname="Add" classname="Tests.NUnit_Tests.Billing.Calculator.CalculatorTests" result="Passed" start-time="2022-11-10T 18:30:10Z" end-time="2022-11-10T 18:30:10Z" duration="0.150000" asserts="0">
+                <properties>
+                  <property name="ID" value="T11111111"/>
+                </properties>
+                <arguments><arg>10</arg><arg>20</arg><arg>30</arg></arguments>
+                <output><![CDATA[Test passed: 10 + 20 = 30]]></output>
+              </test-case>
+              <test-case name="Add(-1,1,0)" fullname="Tests.NUnit_Tests.Billing.Calculator.CalculatorTests.Add(-1,1,0)" methodname="Add" classname="Tests.NUnit_Tests.Billing.Calculator.CalculatorTests" result="Failed" start-time="2022-11-10T 18:30:10Z" end-time="2022-11-10T 18:30:11Z" duration="0.200000" asserts="1">
+                <properties>
+                  <property name="ID" value="T11111111"/>
+                </properties>
+                <arguments><arg>-1</arg><arg>1</arg><arg>0</arg></arguments>
+                <failure>
+                  <message>Expected 0 but got 1</message>
+                  <stack-trace>   at Tests.NUnit_Tests.Billing.Calculator.CalculatorTests.Add(Int32 a, Int32 b, Int32 expected) in /Tests/NUnit_Tests/Billing/Calculator/CalculatorTests.cs:line 15</stack-trace>
+                </failure>
+                <output><![CDATA[Test failed: -1 + 1 != 0]]></output>
+              </test-case>
+              
+              <!-- Another parameterized test with 2 variations -->
+              <test-case name="Multiply(2,3,6)" fullname="Tests.NUnit_Tests.Billing.Calculator.CalculatorTests.Multiply(2,3,6)" methodname="Multiply" classname="Tests.NUnit_Tests.Billing.Calculator.CalculatorTests" result="Passed" start-time="2022-11-10T 18:30:11Z" end-time="2022-11-10T 18:30:11Z" duration="0.100000" asserts="0">
+                <properties>
+                  <property name="ID" value="T22222222"/>
+                </properties>
+                <arguments><arg>2</arg><arg>3</arg><arg>6</arg></arguments>
+                <output><![CDATA[Test passed: 2 * 3 = 6]]></output>
+              </test-case>
+              <test-case name="Multiply(4,5,20)" fullname="Tests.NUnit_Tests.Billing.Calculator.CalculatorTests.Multiply(4,5,20)" methodname="Multiply" classname="Tests.NUnit_Tests.Billing.Calculator.CalculatorTests" result="Passed" start-time="2022-11-10T 18:30:11Z" end-time="2022-11-10T 18:30:11Z" duration="0.150000" asserts="0">
+                <properties>
+                  <property name="ID" value="T22222222"/>
+                </properties>
+                <arguments><arg>4</arg><arg>5</arg><arg>20</arg></arguments>
+                <output><![CDATA[Test passed: 4 * 5 = 20]]></output>
+              </test-case>
+              
+              <!-- Regular non-parameterized test -->
+              <test-case name="Subtract" fullname="Tests.NUnit_Tests.Billing.Calculator.CalculatorTests.Subtract" methodname="Subtract" classname="Tests.NUnit_Tests.Billing.Calculator.CalculatorTests" result="Passed" start-time="2022-11-10T 18:30:11Z" end-time="2022-11-10T 18:30:11Z" duration="0.100000" asserts="0">
+                <properties>
+                  <property name="ID" value="T33333333"/>
+                </properties>
+                <output><![CDATA[Test passed: 10 - 5 = 5]]></output>
+              </test-case>
+              
+              <!-- Another parameterized test with complex parameters -->
+              <test-case name="Divide(&quot;10.5&quot;,&quot;2.5&quot;,4.2)" fullname="Tests.NUnit_Tests.Billing.Calculator.CalculatorTests.Divide(&quot;10.5&quot;,&quot;2.5&quot;,4.2)" methodname="Divide" classname="Tests.NUnit_Tests.Billing.Calculator.CalculatorTests" result="Passed" start-time="2022-11-10T 18:30:11Z" end-time="2022-11-10T 18:30:12Z" duration="0.200000" asserts="0">
+                <properties>
+                  <property name="ID" value="T44444444"/>
+                </properties>
+                <arguments><arg>"10.5"</arg><arg>"2.5"</arg><arg>4.2</arg></arguments>
+                <output><![CDATA[Test passed: 10.5 / 2.5 = 4.2]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

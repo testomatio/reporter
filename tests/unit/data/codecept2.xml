@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="cli" tests="2" assertions="881" errors="0" failures="10" skipped="2" useless="0" time="20.333714">
+
+    <testcase name="runCompactReport" class="RunCest" file="/home/davert/projects/Codeception/tests/cli/RunCest.php" feature="run compact report" time="0.074003" assertions="1"/>
+    <testcase name="runAllSnapshotTests" class="SnapshotCest" file="tests/data/cli/SnapshotCest.php" feature="run all snapshot tests" time="0.058300" assertions="1">
+      <failure type="PHPUnit\Framework\AssertionFailedError">SnapshotCest: Run all snapshot tests
+Result code was 1.
+
+Codeception PHP Testing Framework v5.0.0-RC3 https://helpukrainewin.org
+Powered by PHPUnit 9.5.20 #StandWithUkraine
+
+tests/data/support/CliHelper.php:28
+tests/data/support/_generated/CliGuyActions.php:559
+tests/data/cli/SnapshotCest.php:18
+/home/davert/projects/Codeception/src/PHPUnit/Wrapper/PhpUnit9/Test.php:15
+/home/davert/projects/Codeception/src/PHPUnit/Wrapper/PhpUnit9/TestSuite.php:14
+/home/davert/projects/Codeception/app.php:45
+/home/davert/projects/Codeception/app.php:46
+/home/davert/projects/Codeception/codecept:7
+</failure>
+    </testcase>
+
+  </testsuite>
+</testsuites>
