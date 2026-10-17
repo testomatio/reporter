@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Todos</title>
+  </head>
+  <body>
+    <h1>Todos</h1>
+    <form id="form">
+      <label for="todo">New todo</label>
+      <input id="todo" />
+      <button type="submit">Add</button>
+    </form>
+    <ul id="list"></ul>
+    <p role="status" id="counter">0 items</p>
+    <script>
+      const list = document.getElementById('list');
+      const counter = document.getElementById('counter');
+      document.getElementById('form').addEventListener('submit', event => {
+        event.preventDefault();
+        const input = document.getElementById('todo');
+        const item = document.createElement('li');
+        item.textContent = input.value;
+        list.appendChild(item);
+        input.value = '';
+        const count = list.children.length;
+        counter.textContent = count === 1 ? '1 item' : `${count} items`;
+      });
+    </script>
+  </body>
+</html>

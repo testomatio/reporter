@@ -5,6 +5,7 @@
 - [Cucumber Java](#cucumber-java)
 - [Cypress](#cypress)
 - [Detox](#detox)
+- [e2e (TesterArmy)](#e2e-testerarmy)
 - [Java Frameworks](#java-frameworks)
 - [Jest](#jest)
 - [JUnit](#junit)
@@ -287,6 +288,55 @@ Vitest reporter has some limitations:
 
 - it does not support [testomatio functions](./functions.md) (but supports adding console.logs and [vitest metadata](https://vitest.dev/advanced/metadata) to report)
 - tests can't be uploaded "on the fly", they sent to Testomat.io only after the run is finished (but vitest is supposed to be used as unit test framework, so your run should not take much time)
+
+### e2e (TesterArmy)
+
+Reporter for [e2e](https://github.com/tester-army/e2e), the agentic end-to-end testing framework. Requires Node.js 22.22.3+ or 24.8+ (an e2e requirement).
+
+When used with [Testomat.io](https://app.testomat.io) it is recommended to import automated tests first via [check-tests](https://github.com/testomatio/check-tests#cli). To create items on the fly set `TESTOMATIO_CREATE=1` env variable.
+
+1. Install Testomatio reporter:
+
+```bash
+npm install @testomatio/reporter --save-dev
+```
+
+2. Add Testomatio reporter to `reporters` in `e2e.config.ts`:
+
+```typescript
+import type { E2EConfig } from 'e2e';
+import { web } from '@e2e-dev/web';
+import testomatio from '@testomatio/reporter/e2e';
+
+export default {
+  targets: [{ engine: web(), app: { url: 'http://localhost:3000' } }],
+  // keep 'list' for terminal output
+  reporters: ['list', testomatio()],
+} satisfies E2EConfig;
+```
+
+> You may also pass your API key
+
+```typescript
+testomatio({ apiKey: process.env.TESTOMATIO });
+```
+
+3. Run tests:
+
+```bash
+TESTOMATIO={API_KEY} npx e2e run
+```
+
+The run is created when e2e starts and results are sent once it finishes. Each test is reported with:
+
+- `describe` titles as the suite, or the file name for top-level tests
+- tags, and a Testomat.io ID from the title (`@T12345678`)
+- steps: `app.*`, `locator.*`, `expect.*`, and `agent.*` calls; agent reasoning goes into the step log
+- the error with expected and observed values, and failure screenshots and other attempt artifacts
+- the final attempt only; a test that passes on retry is reported as passed with `retryCount` in meta
+- target, platform, and browser in meta
+
+e2e gives reporters one minute to finish. For very large runs with many artifacts, you can instead write JUnit XML with `npx e2e run --reporter list,junit` and upload `.e2e/junit.xml` with [`npx report-xml`](./junit.md).
 
 ### WebdriverIO
 
