@@ -18,157 +18,160 @@ const {
   EVENT_TEST_END,
 } = Mocha.Runner.constants;
 
-function MochaReporter(runner, opts) {
-  Mocha.reporters.Base.call(this, runner);
-  let passes = 0;
-  let failures = 0;
-  let skipped = 0;
-  // let artifactStore;
+// ES class so it works with mocha 12, where Base is a class and utils.inherits is gone
+class MochaReporter extends Mocha.reporters.Base {
+  constructor(runner, opts) {
+    super(runner, opts);
+    let passes = 0;
+    let failures = 0;
+    let skipped = 0;
+    // let artifactStore;
 
-  const apiKey = opts?.reporterOptions?.apiKey || config.TESTOMATIO;
+    const apiKey = opts?.reporterOptions?.apiKey || config.TESTOMATIO;
 
-  const client = new TestomatClient({ apiKey });
+    const client = new TestomatClient({ apiKey });
 
-  // Track hook failures
-  const hookFailures = new Map();
+    // Track hook failures
+    const hookFailures = new Map();
 
-  runner.on(EVENT_RUN_BEGIN, () => {
-    client.createRun();
+    runner.on(EVENT_RUN_BEGIN, () => {
+      client.createRun();
 
-    // clear dir with artifacts/logs
-    fileSystem.clearDir(TESTOMAT_TMP_STORAGE_DIR);
-  });
+      // clear dir with artifacts/logs
+      fileSystem.clearDir(TESTOMAT_TMP_STORAGE_DIR);
+    });
 
-  runner.on(EVENT_SUITE_BEGIN, async suite => {
-    services.setContext(suite.fullTitle());
-  });
+    runner.on(EVENT_SUITE_BEGIN, async suite => {
+      services.setContext(suite.fullTitle());
+    });
 
-  runner.on(EVENT_SUITE_END, async suite => {
-    if (hookFailures.has(suite.fullTitle())) {
-      const { error, suiteTitle } = hookFailures.get(suite.fullTitle());
+    runner.on(EVENT_SUITE_END, async suite => {
+      if (hookFailures.has(suite.fullTitle())) {
+        const { error, suiteTitle } = hookFailures.get(suite.fullTitle());
 
-      for (const test of suite.tests) {
-        if (test.state === 'pending' || !test.state) {
-          const testId = getTestomatIdFromTestTitle(test.title);
-          const artifacts = services.artifacts.get(test.fullTitle());
-          const keyValues = services.keyValues.get(test.fullTitle());
-          const links = services.links.get(test.fullTitle());
+        for (const test of suite.tests) {
+          if (test.state === 'pending' || !test.state) {
+            const testId = getTestomatIdFromTestTitle(test.title);
+            const artifacts = services.artifacts.get(test.fullTitle());
+            const keyValues = services.keyValues.get(test.fullTitle());
+            const links = services.links.get(test.fullTitle());
 
-          client.addTestRun(STATUS.FAILED, {
-            error,
-            suite_title: suiteTitle || suite.title,
-            file: suite.file,
-            test_id: testId,
-            title: test.title,
-            code: process.env.TESTOMATIO_UPDATE_CODE ? test.body.toString() : '',
-            time: 0,
-            manuallyAttachedArtifacts: artifacts,
-            meta: keyValues,
-            links,
-          });
+            client.addTestRun(STATUS.FAILED, {
+              error,
+              suite_title: suiteTitle || suite.title,
+              file: suite.file,
+              test_id: testId,
+              title: test.title,
+              code: process.env.TESTOMATIO_UPDATE_CODE ? test.body.toString() : '',
+              time: 0,
+              manuallyAttachedArtifacts: artifacts,
+              meta: keyValues,
+              links,
+            });
+          }
         }
       }
-    }
 
-    services.setContext(null);
-  });
-
-  runner.on(EVENT_TEST_BEGIN, async test => {
-    services.setContext(test.fullTitle());
-  });
-
-  runner.on(EVENT_TEST_END, async () => {
-    services.setContext(null);
-  });
-
-  runner.on(EVENT_TEST_PASS, async test => {
-    passes += 1;
-
-    console.log(pc.bold(pc.green('✔')), test.fullTitle());
-    const testId = getTestomatIdFromTestTitle(test.title);
-
-    const logs = getTestLogs(test);
-    const artifacts = services.artifacts.get(test.fullTitle());
-    const keyValues = services.keyValues.get(test.fullTitle());
-    const links = services.links.get(test.fullTitle());
-
-    client.addTestRun(STATUS.PASSED, {
-      test_id: testId,
-      suite_title: getSuiteTitle(test),
-      title: getTestName(test),
-      code: process.env.TESTOMATIO_UPDATE_CODE ? test.body.toString() : '',
-      file: getFile(test),
-      time: test.duration,
-      logs,
-      manuallyAttachedArtifacts: artifacts,
-      meta: keyValues,
-      links,
+      services.setContext(null);
     });
-  });
 
-  runner.on(EVENT_TEST_PENDING, test => {
-    skipped += 1;
-    console.log('skip: %s', test.fullTitle());
-    const testId = getTestomatIdFromTestTitle(test.title);
-    const artifacts = services.artifacts.get(test.fullTitle());
-    const keyValues = services.keyValues.get(test.fullTitle());
-    const links = services.links.get(test.fullTitle());
-
-    client.addTestRun(STATUS.SKIPPED, {
-      title: getTestName(test),
-      suite_title: getSuiteTitle(test),
-      code: process.env.TESTOMATIO_UPDATE_CODE ? test.body.toString() : '',
-      file: getFile(test),
-      test_id: testId,
-      time: test.duration,
-      manuallyAttachedArtifacts: artifacts,
-      meta: keyValues,
-      links,
+    runner.on(EVENT_TEST_BEGIN, async test => {
+      services.setContext(test.fullTitle());
     });
-  });
 
-  runner.on(EVENT_TEST_FAIL, async (test, err) => {
-    failures += 1;
-    console.log(pc.bold(pc.red('✖')), test.fullTitle(), pc.gray(err.message));
+    runner.on(EVENT_TEST_END, async () => {
+      services.setContext(null);
+    });
 
-    const isHookFailure = test.title.includes('before each') || test.title.includes('after each');
+    runner.on(EVENT_TEST_PASS, async test => {
+      passes += 1;
 
-    if (isHookFailure && test.parent) {
-      hookFailures.set(test.parent.fullTitle(), {
-        error: err,
-        suiteTitle: getSuiteTitle(test),
+      console.log(pc.bold(pc.green('✔')), test.fullTitle());
+      const testId = getTestomatIdFromTestTitle(test.title);
+
+      const logs = getTestLogs(test);
+      const artifacts = services.artifacts.get(test.fullTitle());
+      const keyValues = services.keyValues.get(test.fullTitle());
+      const links = services.links.get(test.fullTitle());
+
+      client.addTestRun(STATUS.PASSED, {
+        test_id: testId,
+        suite_title: getSuiteTitle(test),
+        title: getTestName(test),
+        code: process.env.TESTOMATIO_UPDATE_CODE ? test.body.toString() : '',
+        file: getFile(test),
+        time: test.duration,
+        logs,
+        manuallyAttachedArtifacts: artifacts,
+        meta: keyValues,
+        links,
       });
-      return;
-    }
-
-    const testId = getTestomatIdFromTestTitle(test.title);
-
-    const logs = getTestLogs(test);
-    const artifacts = services.artifacts.get(test.fullTitle());
-    const keyValues = services.keyValues.get(test.fullTitle());
-    const links = services.links.get(test.fullTitle());
-
-    client.addTestRun(STATUS.FAILED, {
-      error: err,
-      suite_title: getSuiteTitle(test),
-      file: getFile(test),
-      test_id: testId,
-      title: getTestName(test),
-      code: process.env.TESTOMATIO_UPDATE_CODE ? test.body.toString() : '',
-      time: test.duration,
-      logs,
-      manuallyAttachedArtifacts: artifacts,
-      meta: keyValues,
-      links,
     });
-  });
 
-  runner.on(EVENT_RUN_END, () => {
-    const status = failures === 0 ? STATUS.PASSED : STATUS.FAILED;
-    console.log(pc.bold(status), `${passes} passed, ${failures} failed, ${skipped} skipped`);
-    // @ts-ignore
-    client.updateRunStatus(status);
-  });
+    runner.on(EVENT_TEST_PENDING, test => {
+      skipped += 1;
+      console.log('skip: %s', test.fullTitle());
+      const testId = getTestomatIdFromTestTitle(test.title);
+      const artifacts = services.artifacts.get(test.fullTitle());
+      const keyValues = services.keyValues.get(test.fullTitle());
+      const links = services.links.get(test.fullTitle());
+
+      client.addTestRun(STATUS.SKIPPED, {
+        title: getTestName(test),
+        suite_title: getSuiteTitle(test),
+        code: process.env.TESTOMATIO_UPDATE_CODE ? test.body.toString() : '',
+        file: getFile(test),
+        test_id: testId,
+        time: test.duration,
+        manuallyAttachedArtifacts: artifacts,
+        meta: keyValues,
+        links,
+      });
+    });
+
+    runner.on(EVENT_TEST_FAIL, async (test, err) => {
+      failures += 1;
+      console.log(pc.bold(pc.red('✖')), test.fullTitle(), pc.gray(err.message));
+
+      const isHookFailure = test.title.includes('before each') || test.title.includes('after each');
+
+      if (isHookFailure && test.parent) {
+        hookFailures.set(test.parent.fullTitle(), {
+          error: err,
+          suiteTitle: getSuiteTitle(test),
+        });
+        return;
+      }
+
+      const testId = getTestomatIdFromTestTitle(test.title);
+
+      const logs = getTestLogs(test);
+      const artifacts = services.artifacts.get(test.fullTitle());
+      const keyValues = services.keyValues.get(test.fullTitle());
+      const links = services.links.get(test.fullTitle());
+
+      client.addTestRun(STATUS.FAILED, {
+        error: err,
+        suite_title: getSuiteTitle(test),
+        file: getFile(test),
+        test_id: testId,
+        title: getTestName(test),
+        code: process.env.TESTOMATIO_UPDATE_CODE ? test.body.toString() : '',
+        time: test.duration,
+        logs,
+        manuallyAttachedArtifacts: artifacts,
+        meta: keyValues,
+        links,
+      });
+    });
+
+    runner.on(EVENT_RUN_END, () => {
+      const status = failures === 0 ? STATUS.PASSED : STATUS.FAILED;
+      console.log(pc.bold(status), `${passes} passed, ${failures} failed, ${skipped} skipped`);
+      // @ts-ignore
+      client.updateRunStatus(status);
+    });
+  }
 }
 
 function getTestLogs(test) {
@@ -203,9 +206,5 @@ function getTestName(test) {
   if (process.env.TESTOMATIO_CREATE === 'fulltitle') return test.fullTitle();
   return test.title;
 }
-
-// To have this reporter "extend" a built-in reporter uncomment the following line:
-// @ts-ignore
-Mocha.utils.inherits(MochaReporter, Mocha.reporters.Spec);
 
 export default MochaReporter;
