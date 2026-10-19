@@ -43,6 +43,17 @@ describe('CodeceptJS Comprehensive Adapter Tests', function () {
       expect(failTest.testId.message).to.include('expected 4 to equal 5');
     });
 
+    it('should add the page url of a failed test to meta', async () => {
+      const override = JSON.stringify({ helpers: { Url: { require: './url_helper.js' } } });
+      const { testEntries } = await runTests(`comprehensive_test.js --override '${override}'`);
+
+      const failTest = testEntries.find(t => t.testId.title.includes('Test that fails'));
+      expect(failTest.testId.meta.failedUrl).to.equal('http://localhost:8000/failed-page');
+
+      const passTest = testEntries.find(t => t.testId.title.includes('Test that passes'));
+      expect(passTest.testId.meta?.failedUrl).to.be.undefined;
+    });
+
     it('should handle data-driven tests correctly', async () => {
       const { testEntries } = await runTests('comprehensive_test.js');
 

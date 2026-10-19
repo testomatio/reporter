@@ -4,6 +4,9 @@ import { getTestomatIdFromTestTitle, fileSystem } from '../utils/utils.js';
 import { services } from '../services/index.js';
 import { TESTOMAT_TMP_STORAGE_DIR } from '../constants.js';
 import { stringToMD5Hash } from '../data-storage.js';
+import createDebugMessages from 'debug';
+
+const debug = createDebugMessages('@testomatio/reporter:adapter:webdriver');
 
 class WebdriverReporter extends WDIOReporter {
   constructor(options) {
@@ -120,7 +123,8 @@ class WebdriverReporter extends WDIOReporter {
   async addTest(test) {
     if (!this.client) return;
 
-    const { title, _duration: duration, state, error, output, links, artifacts, meta, logs } = test;
+    const { title, _duration: duration, state, error, output, links, artifacts, logs } = test;
+    let { meta } = test;
 
     const testId = getTestomatIdFromTestTitle(title);
 
@@ -130,6 +134,11 @@ class WebdriverReporter extends WDIOReporter {
       .map(el => Buffer.from(el.result.value, 'base64'));
 
     const rid = stringToMD5Hash(test.fullTitle);
+
+    if (state === 'failed') {
+      const failedUrl = (await grabCurrentUrl()) || lastNavigatedUrl(output);
+      if (failedUrl) meta = { ...meta, failedUrl };
+    }
 
     await this.client.addTestRun(state, {
       rid,
@@ -148,7 +157,7 @@ class WebdriverReporter extends WDIOReporter {
   /**
    * @param {import('../../types/types.js').WebdriverIOScenario} scenario
    */
-  addBddScenario(scenario) {
+  async addBddScenario(scenario) {
     if (!this.client) return;
 
     const { title, _duration: duration } = scenario;
@@ -167,6 +176,12 @@ class WebdriverReporter extends WDIOReporter {
 
     const tags = scenario.tags.map(tag => tag.name);
 
+    let meta;
+    if (scenarioState === 'failed') {
+      const failedUrl = await grabCurrentUrl();
+      if (failedUrl) meta = { failedUrl };
+    }
+
     return this.client.addTestRun(scenarioState, {
       error: error ? Error(error) : null,
       title,
@@ -174,9 +189,36 @@ class WebdriverReporter extends WDIOReporter {
       time: duration,
       tags,
       file: scenario.file,
+      meta,
       // filesBuffers: screenshotsBuffers,
     });
   }
+}
+
+/**
+ * Current url of the browser in this worker; reporters run in the worker process.
+ * @returns {Promise<string|undefined>}
+ */
+async function grabCurrentUrl() {
+  // @ts-ignore
+  const browser = globalThis.browser;
+  if (typeof browser?.getUrl !== 'function') return;
+  try {
+    const url = await browser.getUrl();
+    // multiremote returns a url per browser
+    if (typeof url === 'string') return url;
+  } catch (err) {
+    debug('Failed to grab url of failed test', err?.message || err);
+  }
+}
+
+/**
+ * Last url opened by the test, taken from its command log.
+ * @returns {string|undefined}
+ */
+function lastNavigatedUrl(output = []) {
+  const navigations = output.filter(el => el.endpoint === '/session/:sessionId/url' && el.body?.url);
+  return navigations.at(-1)?.body.url;
 }
 
 /**

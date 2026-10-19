@@ -94,6 +94,8 @@ export function toTestData(result, groups, artifactsRoot) {
   if (result.repeat) meta.repeat = result.repeat;
   if (attempts.length > 1) meta.retryCount = attempts.length - 1;
   if (result.status === 'flaky') meta.isFlaky = true;
+  const status = testStatus(result.status);
+  if (status === STATUS.FAILED && final?.failure?.url) meta.failedUrl = final.failure.url;
 
   const filesById = new Map();
   for (const artifact of final?.artifacts || []) {
@@ -128,7 +130,7 @@ export function toTestData(result, groups, artifactsRoot) {
     meta,
   };
 
-  return { status: testStatus(result.status), data };
+  return { status, data };
 }
 
 /** Attempts of a result; a serial member keeps its part of the group's attempts. */
@@ -140,6 +142,7 @@ function attemptsOf(result, groups) {
     return {
       status: member?.status || attempt.status,
       error: member?.error || attempt.error,
+      failure: member?.failure || attempt.failure,
       steps: member?.steps || [],
       appLog: member?.appLog || [],
       skip: member?.skip,
