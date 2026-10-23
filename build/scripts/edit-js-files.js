@@ -70,8 +70,10 @@ async function addNonDefaultExportxToTheEndOfFile(filePath) {
   const data = await fs.readFile(filePath, 'utf8');
   // process lines
   const lines = data.split('\n');
-  // pattern: exports.<module_name> = <module_name>;
-  const linesWithExports = lines.filter(line => line.match(/exports\.[a-zA-Z0-9_]+ = [a-zA-Z0-9_]+;/));
+  // pattern: exports.<module_name> = <module_name>; (anchored at line start so the
+  // "module.exports.<name> = <name>;" lines we append below are NOT matched again on
+  // a re-run, which would double them on every build until the file blows up)
+  const linesWithExports = lines.filter(line => line.match(/^exports\.[a-zA-Z0-9_]+ = [a-zA-Z0-9_]+;/));
   const moduleNamesToExport = linesWithExports.map(line => line.split('=')[0].split('.')[1].trim());
 
   // add module.exports to the end of the file
