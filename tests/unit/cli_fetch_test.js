@@ -433,6 +433,29 @@ describe('cli fetch status|count|report', () => {
     expect(stdout).to.not.include('**Stack Trace**');
   });
 
+  it('fetch report --artifacts skips a malformed artifact URL instead of crashing', async () => {
+    const artifactUrl = `${TESTOMATIO_URL}/files/run1/screenshot.png`;
+    mockRunWithTestruns(server, {
+      testruns: [TESTRUNS[0]],
+      details: { 11: { artifacts: ['not a url', artifactUrl] } },
+    });
+    server.on({ method: 'PUT', path: '/api/reporter/run1', reply: json({ uid: 'run1' }) });
+    server.on({ method: 'GET', path: '/files/run1/screenshot.png', reply: { status: 200, body: 'png-bytes' } });
+    const cwd = fs.mkdtempSync(path.join(os.tmpdir(), 'fetch-report-'));
+
+    const { code, stdout, stderr } = await runCli(
+      ['fetch', 'report', 'run1', '--project', PROJECT, '--artifacts', '--out', 'evidence'],
+      { S3_BUCKET: 'artifacts' },
+      cwd,
+    );
+
+    expect(code).to.equal(0);
+    expect(stdout).to.include('![screenshot.png](./evidence/11/screenshot.png)');
+    expect(stdout).to.include('not a url');
+    expect(stdout).to.include('(not downloaded)');
+    expect(stderr).to.include('Failed to download not a url');
+  });
+
   it('fetch report exits non-zero when the run does not exist', async () => {
     server.on({ method: 'GET', path: `/api/v2/${PROJECT}/runs/missing`, reply: json({ error: 'Not found' }, 404) });
 

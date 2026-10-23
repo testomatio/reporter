@@ -225,23 +225,26 @@ async function downloadArtifacts(testruns, outDir, onError) {
   const uploader = new S3Uploader();
   const jobs = [];
 
+  // the file name is parsed inside mapWithLimit, so a malformed artifact URL only skips that artifact
   for (const testrun of testruns) {
     const usedNames = new Set();
     for (const url of testrun.artifacts || []) {
-      let name = decodeURIComponent(path.basename(new URL(url).pathname)) || 'artifact';
-      if (usedNames.has(name)) name = `${usedNames.size}-${name}`;
-      usedNames.add(name);
-      jobs.push({ testrun, url, name, filePath: path.join(outDir, String(testrun.id), name) });
+      jobs.push({ testrun, url, outDir, usedNames });
     }
   }
 
   const downloaded = await mapWithLimit(jobs, PARALLEL_REQUESTS, async job => {
+    let name = 'artifact';
     try {
-      await uploader.downloadFile(job.url, job.filePath);
-      return { ...job, href: `./${path.relative(process.cwd(), job.filePath).split(path.sep).join('/')}` };
+      name = decodeURIComponent(path.basename(new URL(job.url).pathname)) || 'artifact';
+      if (job.usedNames.has(name)) name = `${job.usedNames.size}-${name}`;
+      job.usedNames.add(name);
+      const filePath = path.join(job.outDir, String(job.testrun.id), name);
+      await uploader.downloadFile(job.url, filePath);
+      return { testrun: job.testrun, href: `./${path.relative(process.cwd(), filePath).split(path.sep).join('/')}`, name };
     } catch (err) {
       onError(job.url, err);
-      return { ...job, href: job.url, name: `${job.name} (not downloaded)` };
+      return { testrun: job.testrun, href: job.url, name: `${name} (not downloaded)` };
     }
   });
 
