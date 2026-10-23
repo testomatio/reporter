@@ -9,6 +9,7 @@ import XmlReader from '../xmlReader.js';
 import AllureReader from '../allureReader.js';
 import { APP_PREFIX, STATUS, DEBUG_FILE, BATCH_MODE } from '../constants.js';
 import { cleanLatestRunId, getPackageVersion, applyFilter, transformEnvVarToBoolean } from '../utils/utils.js';
+import { isPlaceholderCommand, runnerHint, buildFilterWarning } from '../utils/detectRunner.js';
 import { config } from '../config.js';
 import { readLatestRunId } from '../utils/utils.js';
 import pc from 'picocolors';
@@ -232,6 +233,8 @@ program
     const title = process.env.TESTOMATIO_TITLE;
     const client = new TestomatClient({ apiKey, title });
 
+    let filterApplied = false;
+
     if (opts.filter || opts.filterList) {
       log.info('Filtering tests...');
       // Example of use: npx @testomatio/reporter run "npx jest" --filter "testomatio:tag-name=frontend"
@@ -269,6 +272,7 @@ program
 
         if (command && command.split && !opts.remote) {
           command = applyFilter(command, tests);
+          filterApplied = true;
         }
       }
       catch (err) {
@@ -345,6 +349,14 @@ program
       return process.exit(0);
     }
 
+    if (isPlaceholderCommand(command)) {
+      log.error(pc.red(`⚠️  The command "${command}" looks like a placeholder.`));
+      log.error('The example command from Testomat.io must be edited:');
+      log.error('replace the placeholder with your actual test runner command.');
+      log.error(runnerHint());
+      process.exit(1);
+    }
+
     log.info( `🚀 Running`, pc.green(command));
 
     const runTests = async () => {
@@ -354,9 +366,28 @@ program
         env: { ...process.env, TESTOMATIO_PROCEED: 'true', runId: client.runId, TESTOMATIO_RUN: client.runId },
       });
 
+      let errored = false;
+
+      cmd.on('error', err => {
+        errored = true;
+        const spawnError = /** @type {NodeJS.ErrnoException} */ (err);
+        if (spawnError.code === 'ENOENT') {
+          log.error(pc.red(`🔴 Command not found: ${pc.bold(testCmds[0])}`));
+          log.error(runnerHint());
+        } else {
+          log.error(pc.red(`🔴 Failed to start command: ${spawnError.message}`));
+        }
+        const finish = apiKey ? client.updateRunStatus('failed').catch(() => {}) : Promise.resolve();
+        finish.then(() => process.exit(1));
+      });
+
       cmd.on('close', async code => {
+        if (errored) return;
         const emoji = code === 0 ? '🟢' : '🔴';
         log.info( emoji, `Runner exited with ${pc.bold(code)}`);
+        if (code !== 0 && filterApplied) {
+          buildFilterWarning(command).forEach(line => log.warn(line));
+        }
         if (apiKey) {
           const status = code === 0 ? 'passed' : 'failed';
           await client.updateRunStatus(status);
