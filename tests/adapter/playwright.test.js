@@ -183,6 +183,21 @@ describe('Playwright Adapter Tests', function () {
       });
     });
 
+    it('should add the last navigated url of a failed test to meta', async () => {
+      const { testEntries } = await runPlaywrightTest('navigation.spec.js');
+
+      const failedTest = testEntries.find(entry => entry.testId.title === 'should fail after navigation');
+      // Playwright 1.53+ keeps only the path of the url in step titles
+      expect(failedTest.testId.meta.failedUrl).to.match(/\/checkout\?step=2$/);
+    });
+
+    it('should not add a failed url to passed tests', async () => {
+      const { testEntries } = await runPlaywrightTest();
+
+      const passedTest = testEntries.find(entry => entry.testId.title === 'should always pass');
+      expect(passedTest.testId.meta.failedUrl).to.be.undefined;
+    });
+
     it('should capture different test statuses (passed, failed)', async () => {
       const { testEntries } = await runPlaywrightTest();
 

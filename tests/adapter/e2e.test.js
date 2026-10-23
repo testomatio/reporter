@@ -142,6 +142,12 @@ describe('e2e (tester-army) Adapter Tests', function () {
     expect(fs.existsSync(screenshot.path)).to.be.true;
   });
 
+  it('adds the page url of a failed test to meta', () => {
+    expect(findTest('shows a wrong counter').meta.failedUrl).to.match(/^http:\/\/.+\//);
+    expect(findTest('passes on retry').meta.failedUrl).to.be.undefined;
+    expect(findTest('opens the app').meta.failedUrl).to.be.undefined;
+  });
+
   it('reports skip reasons', () => {
     expect(findTest('is skipped at runtime').stack).to.include('feature flag is off');
     expect(findTest('is skipped by declaration').stack).to.include('not implemented yet');

@@ -110,7 +110,11 @@ class PlaywrightReporter {
       if (result.status === 'passed') status = 'failed';
     }
 
-    const reportTestPromise = this.client.addTestRun(checkStatus(status), {
+    const testStatus = checkStatus(status);
+    let failedUrl;
+    if (testStatus === Status.FAILED) failedUrl = lastNavigatedUrl(result.steps, test.parent.project().use.baseURL);
+
+    const reportTestPromise = this.client.addTestRun(testStatus, {
       rid: `${rid}-${project.name}`,
       error,
       test_id: getTestomatIdFromTestTitle(`${title} ${tags.join(' ')}`),
@@ -128,6 +132,7 @@ class PlaywrightReporter {
         isMobile: project.isMobile,
         project: project.name,
         projectDependencies: project.dependencies?.length ? project.dependencies : null,
+        failedUrl,
         ...testMeta,
         ...meta,
         ...project.metadata, // metadata has any type (in playwright), but we will stringify it in client.js
@@ -242,6 +247,31 @@ function processArtifactsForUpload(attachments) {
 
 function isScreenshotArtifact(attachment) {
   return attachment?.contentType === 'image/png' && attachment?.name === 'screenshot';
+}
+
+/**
+ * Last url the test navigated to; the reporter has no access to the page itself.
+ * @returns {string|undefined}
+ */
+function lastNavigatedUrl(steps, baseURL) {
+  const url = findLastNavigation(steps);
+  if (!url) return;
+  try {
+    return new URL(url, baseURL).href;
+  } catch {
+    return url;
+  }
+}
+
+function findLastNavigation(steps = []) {
+  let url;
+  for (const step of steps) {
+    // 'Navigate to "url"' since Playwright 1.53, 'page.goto(url)' before
+    const match = step.title.match(/^Navigate to "(.+)"$/) || step.title.match(/^page\.goto\((.+)\)$/);
+    if (step.category === 'pw:api' && match) url = match[1];
+    url = findLastNavigation(step.steps) || url;
+  }
+  return url;
 }
 
 function appendStep(step, shift = 0) {

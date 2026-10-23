@@ -20,7 +20,7 @@ if (!global.codeceptjs) {
 }
 
 // @ts-ignore
-const { event, recorder, codecept, output } = global.codeceptjs;
+const { event, recorder, codecept, output, container } = global.codeceptjs;
 
 const [, MAJOR_VERSION, MINOR_VERSION] = codecept
   .version()
@@ -59,6 +59,7 @@ function CodeceptReporter(config) {
   let isRunFinalized = false;
 
   const testTimeMap = {};
+  const failedUrls = new Map();
   const clientConfig = buildCodeceptClientConfig(config);
   const client = new TestomatClient(clientConfig);
 
@@ -243,6 +244,22 @@ function CodeceptReporter(config) {
     }, true);
   });
 
+  event.dispatcher.on(event.test.failed, (test, _err, hookName) => {
+    // no browser in suite hooks
+    if (hookName === 'BeforeSuite' || hookName === 'AfterSuite') return;
+    const helper = Object.values(container.helpers()).find(h => typeof h.grabCurrentUrl === 'function');
+    if (!helper) return;
+
+    recorder.add('url of failed test', async () => {
+      try {
+        const url = await helper.grabCurrentUrl();
+        if (url) failedUrls.set(test.uid, url);
+      } catch (err) {
+        debug('Failed to grab url of failed test', err?.message || err);
+      }
+    }, true);
+  });
+
   event.dispatcher.on(event.test.skipped, test => {
     const { uid, tags, title } = test.simplify();
 
@@ -274,6 +291,9 @@ function CodeceptReporter(config) {
     const keyValues = services.keyValues.get(test.fullTitle());
     const links = services.links.get(test.fullTitle());
     const screenshotOnFailPath = artifacts.screenshot || null;
+    const meta = { ...keyValues, ...test.meta };
+    if (test.state === STATUS.FAILED && failedUrls.has(uid)) meta.failedUrl = failedUrls.get(uid);
+    failedUrls.delete(uid);
 
     // Build step hierarchy with screenshot from screenshotOnFail
     const stepHierarchy = buildUnifiedStepHierarchy(
@@ -297,7 +317,7 @@ function CodeceptReporter(config) {
       logs,
       links,
       manuallyAttachedArtifacts,
-      meta: { ...keyValues, ...test.meta },
+      meta,
     });
     reportTestPromises.push(reportTestPromise);
 

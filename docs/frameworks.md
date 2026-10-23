@@ -334,7 +334,7 @@ The run is created when e2e starts and results are sent once it finishes. Each t
 - steps: `app.*`, `locator.*`, `expect.*`, and `agent.*` calls; agent reasoning goes into the step log
 - the error with expected and observed values, and failure screenshots and other attempt artifacts
 - the final attempt only; a test that passes on retry is reported as passed with `retryCount` in meta
-- target, platform, and browser in meta
+- target, platform, and browser in meta, plus `failedUrl` (the page url at failure) for failed tests
 
 e2e gives reporters one minute to finish. For very large runs with many artifacts, you can instead write JUnit XML with `npx e2e run --reporter list,junit` and upload `.e2e/junit.xml` with [`npx report-xml`](./junit.md).
 
