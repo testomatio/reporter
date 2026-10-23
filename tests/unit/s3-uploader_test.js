@@ -1,4 +1,4 @@
-import { S3Uploader } from '../../src/uploader.js';
+import { S3Uploader, getS3KeyFromUrl } from '../../src/uploader.js';
 import { expect } from 'chai';
 import fs from 'fs';
 import os from 'os';
@@ -246,5 +246,23 @@ describe('checkArtifactExistsInFileSystem', () => {
     const uploader = new S3Uploader();
     const exists = await uploader.checkArtifactExistsInFileSystem('non-existing-file.txt', 1, 1);
     expect(exists).to.be.false;
+  });
+});
+
+describe('getS3KeyFromUrl', () => {
+  it('takes the key of a virtual-hosted style link', () => {
+    const link = 'https://artifacts.abc123.r2.cloudflarestorage.com/run1/rid/screenshot%20one.png';
+    expect(getS3KeyFromUrl(link, 'artifacts')).to.equal('run1/rid/screenshot one.png');
+  });
+
+  it('takes the key of a path style link', () => {
+    expect(getS3KeyFromUrl('https://minio.local:9000/artifacts/run1/rid/notes.txt', 'artifacts')).to.equal(
+      'run1/rid/notes.txt',
+    );
+  });
+
+  it('returns null for a link to another bucket or without a bucket', () => {
+    expect(getS3KeyFromUrl('https://other.s3.amazonaws.com/run1/notes.txt', 'artifacts')).to.equal(null);
+    expect(getS3KeyFromUrl('https://artifacts.s3.amazonaws.com/run1/notes.txt', undefined)).to.equal(null);
   });
 });

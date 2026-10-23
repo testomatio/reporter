@@ -347,6 +347,33 @@ export class S3Uploader {
     );
   }
 
+  /**
+   * Download an artifact by its link: from the configured bucket through S3, otherwise over plain HTTP.
+   *
+   * @param {string} link
+   * @param {string} filePath
+   */
+  async downloadFile(link, filePath) {
+    const { S3_BUCKET } = this.getConfig();
+    const Key = getS3KeyFromUrl(link, S3_BUCKET);
+    let body;
+
+    if (Key) {
+      debug('Downloading from S3:', Key);
+      const s3 = new S3(this.#getS3Config());
+      const object = await s3.getObject({ Bucket: S3_BUCKET, Key });
+      body = Buffer.from(await object.Body.transformToByteArray());
+    } else {
+      debug('Downloading over HTTP:', link);
+      const response = await fetch(link);
+      if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+      body = Buffer.from(await response.arrayBuffer());
+    }
+
+    fs.mkdirSync(path.dirname(filePath), { recursive: true });
+    fs.writeFileSync(filePath, body);
+  }
+
   async getS3LocationLink(out) {
     const response = await out.done();
 
@@ -408,4 +435,28 @@ export class S3Uploader {
 
     return cfg;
   }
+}
+
+/**
+ * Object key of an artifact link in the given bucket, for both virtual-hosted (bucket.host/key)
+ * and path style (host/bucket/key) links; null when the link points to another bucket.
+ *
+ * @param {string} link
+ * @param {string} [bucket]
+ * @returns {string|null}
+ */
+export function getS3KeyFromUrl(link, bucket) {
+  if (!bucket) return null;
+
+  let url;
+  try {
+    url = new URL(link);
+  } catch (e) {
+    return null;
+  }
+
+  const objectPath = decodeURIComponent(url.pathname.slice(1));
+  if (url.hostname.startsWith(`${bucket}.`)) return objectPath || null;
+  if (objectPath.startsWith(`${bucket}/`)) return objectPath.slice(bucket.length + 1) || null;
+  return null;
 }

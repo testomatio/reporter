@@ -394,7 +394,7 @@ For more details about debug files, see the [Debug Pipe documentation](pipes/deb
 
 ### 7. fetch
 
-Fetches runs from a project via the API v2 `GET /api/v2/:project/runs` endpoint. Unlike the other commands, `fetch` does not create or modify anything — it only reads existing runs, so it works outside of any test execution.
+Fetches runs from a project via the API v2 `GET /api/v2/:project/runs` endpoint. Unlike the other commands, `fetch` does not create or modify anything — it only reads existing runs, so it works outside of any test execution. Its subcommands [`fetch status`, `fetch count` and `fetch report`](#fetching-testruns-of-a-run) read the testruns of a single run.
 
 **Usage:**
 
@@ -447,6 +447,52 @@ A single run is printed as one object with `--format json` and includes `rungrou
 ```bash
 npx @testomatio/reporter fetch --project demo --run a1b2c3d4 --format json | jq -r .rungroup_id
 ```
+
+#### Fetching testruns of a run
+
+Three subcommands read the testruns of one run, for example to analyze failures locally or hand them to an AI agent. Each takes a run id (with `--project` or `TESTOMATIO_PROJECT`) or a run URL:
+
+```bash
+npx @testomatio/reporter fetch status a1b2c3d4 --project demo
+npx @testomatio/reporter fetch count "https://app.testomat.io/projects/demo/runs/a1b2c3d4" --only-failed
+npx @testomatio/reporter fetch report a1b2c3d4 --project demo --only-failed --stack --artifacts > nightly_report.md
+```
+
+**`fetch status <run>`** prints the run with the number of its testruns by status. `--format json` prints the same as one object:
+
+```
+run: Nightly regression
+status: failed
+url: https://app.testomat.io/projects/demo/runs/a1b2c3d4
+total: 237
+passed: 219
+failed: 12
+skipped: 6
+pending: 0
+```
+
+**`fetch count <run>`** prints only the number of testruns that `fetch report` with the same filters would get, so a script or an agent can pick `--limit` and filters first.
+
+**`fetch report <run>`** prints a Markdown report of the run and its testruns, failed first, in the format of the [Markdown pipe](pipes/markdown.md). Only the report goes to stdout; progress and warnings go to stderr, so the output can be redirected to a file.
+
+Options of `count` and `report`:
+
+- `--only <statuses>`: Only testruns with these statuses, comma-separated: `passed`, `failed`, `skipped`, `pending`.
+- `--only-failed`: Shorthand for `--only failed`.
+
+Options of `report`:
+
+- `--limit <number>`: Max number of testruns (default `50`, max `100`). When the run has more matching testruns, a warning says how many were left out.
+- `--stack`: Include stack traces. Each testrun is fetched separately for it, up to 5 at a time.
+- `--artifacts`: Download the artifacts of each testrun to `<out>/<testrun id>/` and link the local files from the report.
+- `--out <dir>`: Directory for artifacts (default `./<run-title>-<run-id>`).
+
+`--artifacts` downloads from the S3 bucket, so private buckets work too. Credentials are taken in this order:
+
+1. S3 credentials shared by the project in Testomat.io. They are obtained with an empty update of the run (`PUT /api/reporter/:run_id`), which changes nothing in it. Scheduled and mixed runs are not updated, since an update would launch them or mark their automated tests as started.
+2. The local [S3 config](artifacts.md): `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_REGION`, `S3_ENDPOINT`.
+
+Without either, `fetch report --artifacts` exits with an error before fetching anything. An artifact that fails to download is linked by its URL and marked `(not downloaded)`.
 
 ## The `--format` flag
 
