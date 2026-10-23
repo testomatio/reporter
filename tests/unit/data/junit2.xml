@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<testsuites>
+
+<testsuite name="tests.api.permissions.apiKeys.ApiKeysApiTests" tests="4" skipped="0" failures="0" errors="0" timestamp="2023-08-10T10:34:46" hostname="Macintosh.local" time="52.873">
+  
+  <properties/>
+  
+  <testcase name="can create API Key : [Master]" classname="tests.api.permissions.apiKeys.ApiKeysApiTests" time="11.675"/>
+  
+  <testcase name="can create API Key : [Operations]" classname="tests.api.permissions.apiKeys.ApiKeysApiTests" time="8.714"/>
+  
+  <testcase name="can create API Key : [Admin+API]" classname="tests.api.permissions.apiKeys.ApiKeysApiTests" time="17.018"/>
+  
+  <testcase name="can create API Key : [Advanced Admin]" classname="tests.api.permissions.apiKeys.ApiKeysApiTests" time="15.462"/>
+  
+  <system-out><![CDATA[Request method:	POST
+Request URI:	https://someurl/api/graphiql
+Proxy:			<none>
+Request params:	<none>
+Query params:	<none>
+Form params:	<none>
+}]]></system-out>
+  
+  <system-err/>
+  
+</testsuite>
+  
+  
+
+</testsuites>

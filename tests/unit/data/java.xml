@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="unit.tests.CalculatorTest" time="0.094" tests="6" errors="0" skipped="0" failures="2">
+  <properties>
+    <property name="java.version" value="11.0.15"/>
+    <property name="sun.desktop" value="gnome"/>
+    <property name="java.class.version" value="55.0"/>
+  </properties>
+  <testcase name="sumTest" classname="unit.tests.CalculatorTest" time="0.018"/>
+  <testcase name="divisionTest" classname="unit.tests.CalculatorTest" time="0.006">
+    <failure type="org.opentest4j.AssertionFailedError"><![CDATA[org.opentest4j.AssertionFailedError: expected: <5.0> but was: <5.5>
+  at unit.tests.CalculatorTest.divisionTest(CalculatorTest.java:43)
+]]></failure>
+  </testcase>
+  <testcase name="multiplicationTest" classname="unit.tests.CalculatorTest" time="0.002"/>
+  <testcase name="divisionTestBoyZer" classname="unit.tests.CalculatorTest" time="0.003"/>
+  <testcase name="subtractTest" classname="unit.tests.CalculatorTest" time="0.002"/>
+  <testcase name="sumTestHamcrest" classname="unit.tests.CalculatorTest" time="0.005">
+    <failure type="java.lang.AssertionError"><![CDATA[java.lang.AssertionError:
+
+Expected: <4.0>
+     but: was <6.0>
+  at unit.tests.CalculatorTest.sumTestHamcrest(CalculatorTest.java:26)
+]]></failure>
+  </testcase>
+</testsuite>
