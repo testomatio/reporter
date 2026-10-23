@@ -241,7 +241,8 @@ async function downloadArtifacts(testruns, outDir, onError) {
       job.usedNames.add(name);
       const filePath = path.join(job.outDir, String(job.testrun.id), name);
       await uploader.downloadFile(job.url, filePath);
-      return { testrun: job.testrun, href: `./${path.relative(process.cwd(), filePath).split(path.sep).join('/')}`, name };
+      const href = `./${path.relative(process.cwd(), filePath).split(path.sep).join('/')}`;
+      return { testrun: job.testrun, href, name };
     } catch (err) {
       onError(job.url, err);
       return { testrun: job.testrun, href: job.url, name: `${name} (not downloaded)` };
