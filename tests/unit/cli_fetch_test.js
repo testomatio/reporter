@@ -233,8 +233,32 @@ const TESTRUNS = [
  */
 function mockRunWithTestruns(
   server,
-  { run = RUN, testruns = TESTRUNS, total = testruns.length, details = {}, artifacts } = {},
+  {
+    run = RUN,
+    testruns = TESTRUNS,
+    total = testruns.length,
+    details = {},
+    artifacts,
+    runDefects = [],
+    testDefects = {},
+  } = {},
 ) {
+  server.on({
+    method: 'GET',
+    path: `/api/v2/${PROJECT}/defects`,
+    filter: req => req.query.run_id === run.id,
+    reply: json({ data: runDefects, meta: { total: runDefects.length } }),
+  });
+  server.on({
+    method: 'GET',
+    path: `/api/v2/${PROJECT}/defects`,
+    filter: req => Boolean(req.query.test_id),
+    reply: {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+      body: req => JSON.stringify({ data: testDefects[req.query.test_id] || [] }),
+    },
+  });
   server.on({
     method: 'PUT',
     path: `/api/reporter/${run.id}`,
@@ -428,6 +452,65 @@ describe('cli fetch status|count|report', () => {
       expect(stdout).to.include('Test 150');
       expect(stdout).to.not.include('Test 151');
       expect(stderr).to.include('Showing 150 of 250 testruns');
+    });
+  });
+
+  describe('defects', () => {
+    const JIRA_DEFECT = {
+      id: 'd1',
+      title: 'Expired cards are accepted',
+      sourceType: 'jira',
+      sourceKey: 'PAY-12',
+      status: 'opened',
+      severity: 'high',
+      url: 'https://acme.atlassian.net/browse/PAY-12',
+    };
+    const LINK_DEFECT = {
+      id: 'd2',
+      title: 'Login is slow',
+      sourceType: 'link',
+      sourceKey: 'login-slow',
+      status: 'opened',
+    };
+    const testruns = [
+      { ...TESTRUNS[0], testId: 'tpay', defects: [JIRA_DEFECT] },
+      { ...TESTRUNS[1], testId: 'tlogin', defects: [] },
+    ];
+
+    it('fetch report links defects of the run, of each testrun and of its test case', async () => {
+      mockRunWithTestruns(server, {
+        testruns,
+        runDefects: [JIRA_DEFECT],
+        testDefects: { tpay: [JIRA_DEFECT], tlogin: [LINK_DEFECT] },
+      });
+
+      const { code, stdout } = await runCli(['fetch', 'report', 'run1']);
+
+      expect(code).to.equal(0);
+      expect(stdout).to.include('## Defects');
+      expect(stdout).to.include(
+        '| [PAY-12](https://acme.atlassian.net/browse/PAY-12) | Expired cards are accepted | opened | high |',
+      );
+      expect(stdout).to.include(
+        '- [PAY-12](https://acme.atlassian.net/browse/PAY-12) Expired cards are accepted (opened, high)',
+      );
+      expect(stdout.match(/- \[PAY-12\]/g)).to.have.length(1);
+      expect(stdout).to.include('- login-slow Login is slow (opened)');
+
+      const testRequests = server
+        .requests({ method: 'GET', path: `/api/v2/${PROJECT}/defects` })
+        .filter(req => req.query.test_id);
+      expect(testRequests.map(req => req.query.test_id).sort()).to.deep.equal(['tlogin', 'tpay']);
+    });
+
+    it('fetch report --no-defects requests no defects', async () => {
+      mockRunWithTestruns(server, { testruns, runDefects: [JIRA_DEFECT] });
+
+      const { code, stdout } = await runCli(['fetch', 'report', 'run1', '--no-defects']);
+
+      expect(code).to.equal(0);
+      expect(stdout).to.not.include('Defects');
+      expect(server.requests({ method: 'GET', path: `/api/v2/${PROJECT}/defects` })).to.have.length(0);
     });
   });
 

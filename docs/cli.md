@@ -487,6 +487,7 @@ Options of `report`:
 - `--stack`: Include stack traces. Each testrun is fetched separately for it, up to 5 at a time.
 - `--artifacts`: Download the artifacts of each testrun to `<out>/<testrun id>/` and link the local files from the report.
 - `--out <dir>`: Directory for artifacts (default `./<run-title>-<run-id>`).
+- `--no-defects`: Skip defects. By default the report lists the defects of the run (`GET /api/v2/:project/defects?run_id=`, up to 100) in a `## Defects` table, and each test lists the defects linked to its testrun or to its test case (`GET /api/v2/:project/defects?test_id=`, one request per test, up to 5 at a time). Each defect links to its issue in Jira, GitHub or another tracker.
 
 `--artifacts` downloads from the S3 bucket, so private buckets work too. Credentials are taken in this order:
 

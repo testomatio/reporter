@@ -224,6 +224,49 @@ class RunFetcher {
   }
 
   /**
+   * Defects linked to the testruns of the run; one page of TESTRUNS_PAGE_SIZE.
+   *
+   * @returns {Promise<{defects: object[], total: number}>}
+   */
+  async listRunDefects() {
+    const body = await this.get('/defects', [
+      ['run_id', this.runId],
+      ['per_page', String(TESTRUNS_PAGE_SIZE)],
+    ]);
+    return { defects: body.data || [], total: body.meta?.total || 0 };
+  }
+
+  /**
+   * Add the defects linked to the test case of each testrun to the testrun's own defects.
+   * A test that fails to load keeps only the testrun defects.
+   *
+   * @param {object[]} testruns
+   * @param {(testId: string, err: Error) => void} onError
+   */
+  async addTestDefects(testruns, onError) {
+    const testIds = [...new Set(testruns.map(testrun => testrun.testId).filter(Boolean))];
+    const testDefects = await mapWithLimit(testIds, PARALLEL_REQUESTS, async testId => {
+      try {
+        const body = await this.get('/defects', [
+          ['test_id', testId],
+          ['per_page', String(TESTRUNS_PAGE_SIZE)],
+        ]);
+        return body.data || [];
+      } catch (err) {
+        onError(testId, err);
+        return [];
+      }
+    });
+    const defectsByTest = new Map(testIds.map((testId, index) => [testId, testDefects[index]]));
+
+    return testruns.map(testrun => {
+      const defects = [...(testrun.defects || []), ...(defectsByTest.get(testrun.testId) || [])];
+      const unique = [...new Map(defects.map(defect => [defect.id, defect])).values()];
+      return { ...testrun, defects: unique };
+    });
+  }
+
+  /**
    * Shared S3 credentials of the project, returned by an empty update of the run.
    * Unless the run was already updated to resolve its project, skipped for scheduled runs (the update launches them)
    * and unfinished mixed runs (it marks automated tests as started).

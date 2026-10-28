@@ -317,6 +317,7 @@ fetchCommand
   .option('--out <dir>', 'Directory for downloaded artifacts (default: ./<run-title>-<run-id>)')
   .option('--limit <number>', `Max number of testruns, failed first (default ${TESTRUNS_DEFAULT_LIMIT})`)
   .option('--all', 'All matching testruns, fetched in chunks of 100 (overrides --limit)')
+  .option('--no-defects', 'Skip defects of the run and of its tests')
   .action(async (runArg, _opts, command) => {
     const opts = command.optsWithGlobals();
     const fetcher = createRunFetcher(runArg);
@@ -333,9 +334,18 @@ fetchCommand
       }
     }
 
-    const [summary, list] = await Promise.all([
+    let runDefectsRequest;
+    if (opts.defects) {
+      runDefectsRequest = fetcher.listRunDefects().catch(err => {
+        log.warn(pc.yellow(`⚠️  Failed to fetch defects of the run: ${err.message}`));
+        return null;
+      });
+    }
+
+    const [summary, list, runDefects] = await Promise.all([
       fetcher.countTestrunsByStatus(),
       fetcher.listTestruns({ statuses, limit }),
+      runDefectsRequest,
     ]).catch(exitOnFetchError);
 
     let { testruns } = list;
@@ -354,6 +364,14 @@ fetchCommand
       if (!opts.stack) testruns = testruns.map(({ stack, ...testrun }) => testrun);
     }
 
+    if (opts.defects) {
+      testruns = await fetcher.addTestDefects(testruns, (testId, err) => {
+        log.warn(pc.yellow(`⚠️  Failed to fetch defects of test ${testId}: ${err.message}`));
+      });
+    } else {
+      testruns = testruns.map(({ defects, ...testrun }) => testrun);
+    }
+
     if (opts.artifacts) {
       const outDir = opts.out || defaultArtifactsDir(run, fetcher.runId);
       const artifactsCount = testruns.reduce((sum, testrun) => sum + (testrun.artifacts?.length || 0), 0);
@@ -366,7 +384,7 @@ fetchCommand
     }
 
     process.stdout.write(
-      renderRunReport({ run, runUrl: fetcher.runUrl, summary, testruns, matched: list.total, statuses }),
+      renderRunReport({ run, runUrl: fetcher.runUrl, summary, testruns, matched: list.total, statuses, runDefects }),
     );
   });
 
