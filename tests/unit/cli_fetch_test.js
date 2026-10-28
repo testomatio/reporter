@@ -157,10 +157,11 @@ describe('cli fetch', () => {
     expect(JSON.parse(stdout.trim())).to.deep.equal([{ id: 'run1', title: 'Nightly', status: 'passed', extra: 'kept' }]);
   });
 
-  it('--run fetches a single run and prints it as an object with --format json', async () => {
+  it('--run fetches a single run without --project and prints it as an object with --format json', async () => {
     server.on(replyRun({ id: 'run1', title: 'Nightly', rungroup_id: 'rg123' }));
+    server.on({ method: 'PUT', path: '/api/reporter/run1', reply: { status: 200, body: '{"project":{"id":"demo"}}' } });
 
-    const { code, stdout } = await runCli(['fetch', '--project', PROJECT, '--run', 'run1', '--format', 'json']);
+    const { code, stdout } = await runCli(['fetch', '--run', 'run1', '--format', 'json']);
 
     expect(code).to.equal(0);
     expect(JSON.parse(stdout.trim())).to.deep.equal({ id: 'run1', title: 'Nightly', rungroup_id: 'rg123' });
@@ -230,7 +231,15 @@ const TESTRUNS = [
 /**
  * Mock a run with its testruns: the run, the count calls, the list and the testrun details.
  */
-function mockRunWithTestruns(server, { run = RUN, testruns = TESTRUNS, total = testruns.length, details = {} } = {}) {
+function mockRunWithTestruns(
+  server,
+  { run = RUN, testruns = TESTRUNS, total = testruns.length, details = {}, artifacts } = {},
+) {
+  server.on({
+    method: 'PUT',
+    path: `/api/reporter/${run.id}`,
+    reply: json({ uid: run.id, project: { id: PROJECT, title: 'Demo' }, artifacts }),
+  });
   server.on({ method: 'GET', path: `/api/v2/${PROJECT}/runs/${run.id}`, reply: json({ data: run }) });
   server.on({
     method: 'GET',
@@ -266,10 +275,30 @@ describe('cli fetch status|count|report', () => {
   after(done => server.stop(done));
   afterEach(() => server.reset());
 
+  it('resolves the project of a run id with one empty run update', async () => {
+    mockRunWithTestruns(server);
+
+    const { code } = await runCli(['fetch', 'status', 'run1'], { TESTOMATIO_PROJECT: 'other' });
+
+    expect(code).to.equal(0);
+    const updates = server.requests({ method: 'PUT', path: '/api/reporter/run1' });
+    expect(updates).to.have.length(1);
+    expect(updates[0].body).to.deep.equal({ api_key: 'faketoken' });
+  });
+
+  it('fetch report --artifacts reuses the shared credentials of the update that resolved the project', async () => {
+    mockRunWithTestruns(server, { testruns: [TESTRUNS[0]], artifacts: { ACCESS_KEY_ID: 'key', BUCKET: 'bucket' } });
+
+    const { code } = await runCli(['fetch', 'report', 'run1', '--artifacts']);
+
+    expect(code).to.equal(0);
+    expect(server.requests({ method: 'PUT', path: '/api/reporter/run1' })).to.have.length(1);
+  });
+
   it('fetch status prints the run with testrun counts by status', async () => {
     mockRunWithTestruns(server, { total: 237 });
 
-    const { code, stdout } = await runCli(['fetch', 'status', 'run1', '--project', PROJECT]);
+    const { code, stdout } = await runCli(['fetch', 'status', 'run1']);
 
     expect(code).to.equal(0);
     expect(stdout).to.include('run: Nightly regression');
@@ -302,7 +331,7 @@ describe('cli fetch status|count|report', () => {
   it('fetch count prints only the number of matching testruns', async () => {
     mockRunWithTestruns(server, { total: 12 });
 
-    const { code, stdout } = await runCli(['fetch', 'count', 'run1', '--project', PROJECT, '--only-failed']);
+    const { code, stdout } = await runCli(['fetch', 'count', 'run1', '--only-failed']);
 
     expect(code).to.equal(0);
     expect(stdout.trim()).to.equal('12');
@@ -315,11 +344,11 @@ describe('cli fetch status|count|report', () => {
   it('fetch count combines --only statuses and rejects unknown ones', async () => {
     mockRunWithTestruns(server);
 
-    await runCli(['fetch', 'count', 'run1', '--project', PROJECT, '--only', 'failed,skipped']);
+    await runCli(['fetch', 'count', 'run1', '--only', 'failed,skipped']);
     const [req] = server.requests({ method: 'GET', path: `/api/v2/${PROJECT}/testruns` });
     expect(req.query['filter[status][]']).to.deep.equal(['failed', 'skipped']);
 
-    const { code, stderr } = await runCli(['fetch', 'count', 'run1', '--project', PROJECT, '--only', 'broken']);
+    const { code, stderr } = await runCli(['fetch', 'count', 'run1', '--only', 'broken']);
     expect(code).to.equal(1);
     expect(stderr).to.include('Unknown status: broken');
   });
@@ -327,7 +356,7 @@ describe('cli fetch status|count|report', () => {
   it('fetch report prints only Markdown on stdout, failures first, 50 testruns by default', async () => {
     mockRunWithTestruns(server, { total: 237 });
 
-    const { code, stdout, stderr } = await runCli(['fetch', 'report', 'run1', '--project', PROJECT]);
+    const { code, stdout, stderr } = await runCli(['fetch', 'report', 'run1']);
 
     expect(code).to.equal(0);
     expect(stdout.startsWith('# Nightly regression — FAILED')).to.equal(true);
@@ -348,16 +377,58 @@ describe('cli fetch status|count|report', () => {
     expect(server.requests({ method: 'GET', path: `/api/v2/${PROJECT}/testruns/11` })).to.have.length(0);
   });
 
-  it('fetch report caps --limit at 100', async () => {
-    mockRunWithTestruns(server);
+  describe('reading testruns in chunks of 100', () => {
+    const total = 250;
 
-    const { stderr } = await runCli(['fetch', 'report', 'run1', '--project', PROJECT, '--limit', '500']);
+    beforeEach(() => {
+      mockRunWithTestruns(server, { testruns: [], total });
+      server.on({
+        method: 'GET',
+        path: `/api/v2/${PROJECT}/testruns`,
+        filter: req => req.query.count !== 'true',
+        reply: {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+          body: req => {
+            const page = Number(req.query.page);
+            const perPage = Number(req.query.per_page);
+            const count = Math.max(Math.min(perPage, total - (page - 1) * perPage), 0);
+            const testruns = Array.from({ length: count }, (_, index) => {
+              const id = (page - 1) * perPage + index + 1;
+              return { id, test_title: `Test ${id}`, status: 'failed' };
+            });
+            return JSON.stringify({ data: testruns, meta: { total } });
+          },
+        },
+      });
+    });
 
-    const list = server
-      .requests({ method: 'GET', path: `/api/v2/${PROJECT}/testruns` })
-      .find(req => req.query.count !== 'true');
-    expect(list.query.per_page).to.equal('100');
-    expect(stderr).to.include('capped at 100');
+    const listRequests = () =>
+      server
+        .requests({ method: 'GET', path: `/api/v2/${PROJECT}/testruns` })
+        .filter(req => req.query.count !== 'true');
+
+    it('fetch report --all reads every page', async () => {
+      const { code, stdout, stderr } = await runCli(['fetch', 'report', 'run1', '--all']);
+
+      expect(code).to.equal(0);
+      const requests = listRequests();
+      expect(requests.map(req => req.query.page).sort()).to.deep.equal(['1', '2', '3']);
+      expect(requests.every(req => req.query.per_page === '100')).to.equal(true);
+      expect(stdout).to.include('Test 1\n');
+      expect(stdout).to.include('Test 250');
+      expect(stderr).to.not.include('Showing');
+    });
+
+    it('fetch report --limit above 100 reads only the pages it needs', async () => {
+      const { code, stdout, stderr } = await runCli(['fetch', 'report', 'run1', '--limit', '150']);
+
+      expect(code).to.equal(0);
+      expect(listRequests().map(req => req.query.page).sort()).to.deep.equal(['1', '2']);
+      expect(stdout).to.include('Test 150');
+      expect(stdout).to.not.include('Test 151');
+      expect(stderr).to.include('Showing 150 of 250 testruns');
+    });
   });
 
   it('fetch report --stack adds ANSI-free stack traces from testrun details', async () => {
@@ -369,8 +440,6 @@ describe('cli fetch status|count|report', () => {
       'fetch',
       'report',
       'run1',
-      '--project',
-      PROJECT,
       '--stack',
       '--only-failed',
     ]);
@@ -384,9 +453,8 @@ describe('cli fetch status|count|report', () => {
 
   it('fetch report --artifacts fails early without S3 access', async () => {
     mockRunWithTestruns(server);
-    server.on({ method: 'PUT', path: '/api/reporter/run1', reply: json({ uid: 'run1' }) });
 
-    const { code, stderr } = await runCli(['fetch', 'report', 'run1', '--project', PROJECT, '--artifacts']);
+    const { code, stderr } = await runCli(['fetch', 'report', 'run1', '--artifacts']);
 
     expect(code).to.equal(1);
     expect(stderr).to.include('--artifacts needs S3 access');
@@ -395,19 +463,20 @@ describe('cli fetch status|count|report', () => {
 
   it('fetch report --artifacts gets shared credentials with an empty run update', async () => {
     mockRunWithTestruns(server, { testruns: [TESTRUNS[0]] });
-    server.on({ method: 'PUT', path: '/api/reporter/run1', reply: json({ uid: 'run1' }) });
 
-    await runCli(['fetch', 'report', 'run1', '--project', PROJECT, '--artifacts'], { S3_BUCKET: 'artifacts' });
+    await runCli(['fetch', 'report', 'run1', '--artifacts'], { S3_BUCKET: 'artifacts' });
 
     const [req] = server.requests({ method: 'PUT', path: '/api/reporter/run1' });
     expect(req.body).to.deep.equal({ api_key: 'faketoken' });
   });
 
-  it('fetch report --artifacts does not update a mixed run', async () => {
+  it('fetch report --artifacts does not update a mixed run when the project comes from a run URL', async () => {
     mockRunWithTestruns(server, { run: { ...RUN, kind: 'mixed' } });
 
-    const { code } = await runCli(['fetch', 'report', 'run1', '--project', PROJECT, '--artifacts'], {
+    const runUrl = `${TESTOMATIO_URL}/projects/${PROJECT}/runs/run1`;
+    const { code } = await runCli(['fetch', 'report', runUrl, '--artifacts'], {
       S3_BUCKET: 'artifacts',
+      TESTOMATIO_URL: '',
     });
 
     expect(code).to.equal(0);
@@ -417,12 +486,11 @@ describe('cli fetch status|count|report', () => {
   it('fetch report --artifacts downloads artifacts and links the local files', async () => {
     const artifactUrl = `${TESTOMATIO_URL}/files/run1/screenshot.png`;
     mockRunWithTestruns(server, { testruns: [TESTRUNS[0]], details: { 11: { artifacts: [artifactUrl] } } });
-    server.on({ method: 'PUT', path: '/api/reporter/run1', reply: json({ uid: 'run1' }) });
     server.on({ method: 'GET', path: '/files/run1/screenshot.png', reply: { status: 200, body: 'png-bytes' } });
     const cwd = fs.mkdtempSync(path.join(os.tmpdir(), 'fetch-report-'));
 
     const { code, stdout } = await runCli(
-      ['fetch', 'report', 'run1', '--project', PROJECT, '--artifacts', '--out', 'evidence'],
+      ['fetch', 'report', 'run1', '--artifacts', '--out', 'evidence'],
       { S3_BUCKET: 'artifacts' },
       cwd,
     );
@@ -439,12 +507,11 @@ describe('cli fetch status|count|report', () => {
       testruns: [TESTRUNS[0]],
       details: { 11: { artifacts: ['not a url', artifactUrl] } },
     });
-    server.on({ method: 'PUT', path: '/api/reporter/run1', reply: json({ uid: 'run1' }) });
     server.on({ method: 'GET', path: '/files/run1/screenshot.png', reply: { status: 200, body: 'png-bytes' } });
     const cwd = fs.mkdtempSync(path.join(os.tmpdir(), 'fetch-report-'));
 
     const { code, stdout, stderr } = await runCli(
-      ['fetch', 'report', 'run1', '--project', PROJECT, '--artifacts', '--out', 'evidence'],
+      ['fetch', 'report', 'run1', '--artifacts', '--out', 'evidence'],
       { S3_BUCKET: 'artifacts' },
       cwd,
     );
@@ -459,9 +526,9 @@ describe('cli fetch status|count|report', () => {
   it('fetch report exits non-zero when the run does not exist', async () => {
     server.on({ method: 'GET', path: `/api/v2/${PROJECT}/runs/missing`, reply: json({ error: 'Not found' }, 404) });
 
-    const { code, stderr } = await runCli(['fetch', 'report', 'missing', '--project', PROJECT]);
+    const { code, stderr } = await runCli(['fetch', 'report', 'missing']);
 
     expect(code).to.equal(1);
-    expect(stderr).to.include('Run missing not found in project demo');
+    expect(stderr).to.include('Run missing not found');
   });
 });

@@ -6,29 +6,25 @@ import { S3Uploader } from '../uploader.js';
 const debug = createDebugMessages('@testomatio/reporter:fetch');
 
 const TESTRUNS_DEFAULT_LIMIT = 50;
-const TESTRUNS_MAX_LIMIT = 100;
+const TESTRUNS_PAGE_SIZE = 100;
 const TESTRUN_STATUSES = ['passed', 'failed', 'skipped', 'pending'];
 const PARALLEL_REQUESTS = 5;
 
 /**
  * Resolve the run argument of `fetch status|count|report`: a run id or a run URL.
- * A URL also sets the server and the project.
+ * A URL also sets the server and the project; for a run id the project is resolved from the run by RunFetcher.
  *
  * @param {string} runArg
- * @param {{project?: string}} opts
- * @returns {{baseUrl: string, project: string, runId: string}}
+ * @returns {{baseUrl: string, project?: string, runId: string}}
  */
-function resolveRunTarget(runArg, opts) {
+function resolveRunTarget(runArg) {
   if (/^https?:\/\//i.test(runArg)) {
     const page = parseRunsUrl(runArg);
     if (!page?.runId) throw new Error(`Not a Testomat.io run URL: ${runArg}`);
-    return { baseUrl: page.baseUrl, project: opts.project || page.project, runId: page.runId };
+    return { baseUrl: page.baseUrl, project: page.project, runId: page.runId };
   }
 
-  const project = opts.project || process.env.TESTOMATIO_PROJECT;
-  if (!project) throw new Error('--project (or TESTOMATIO_PROJECT) is required');
-
-  return { baseUrl: process.env.TESTOMATIO_URL || 'https://app.testomat.io', project, runId: runArg };
+  return { baseUrl: process.env.TESTOMATIO_URL || 'https://app.testomat.io', runId: runArg };
 }
 
 /**
@@ -53,12 +49,12 @@ function parseStatuses(opts) {
 }
 
 /**
- * @param {string} [value] - Value of the CLI --limit option.
- * @returns {{limit: number, capped: boolean}}
+ * @param {{limit?: string, all?: boolean}} opts - Values of the CLI --limit and --all options.
+ * @returns {number} Infinity for --all
  */
-function parseTestrunsLimit(value) {
-  const requested = Math.max(parseInt(value, 10) || TESTRUNS_DEFAULT_LIMIT, 1);
-  return { limit: Math.min(requested, TESTRUNS_MAX_LIMIT), capped: requested > TESTRUNS_MAX_LIMIT };
+function parseTestrunsLimit(opts) {
+  if (opts.all) return Infinity;
+  return Math.max(parseInt(opts.limit, 10) || TESTRUNS_DEFAULT_LIMIT, 1);
 }
 
 /**
@@ -88,13 +84,45 @@ async function mapWithLimit(items, limit, fn) {
  */
 class RunFetcher {
   /**
-   * @param {{baseUrl: string, project: string, runId: string, apiKey: string}} params
+   * @param {{baseUrl: string, project?: string, runId: string, apiKey: string}} params
    */
   constructor({ baseUrl, project, runId, apiKey }) {
     this.baseUrl = baseUrl;
     this.project = project;
     this.runId = runId;
     this.apiKey = apiKey;
+    /** @type {Promise<any>|null} */
+    this.reporterRun = null;
+  }
+
+  /**
+   * Empty update of the run in the reporter API: it returns the project of the token and shared S3 credentials.
+   *
+   * @returns {Promise<{project?: {id: string}, artifacts?: object}>}
+   */
+  updateReporterRun() {
+    this.reporterRun ||= (async () => {
+      const url = new URL(`/api/reporter/${this.runId}`, this.baseUrl);
+      debug('PUT', url.toString());
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ api_key: this.apiKey }),
+      });
+      const body = await response.json().catch(() => ({}));
+      if (response.status === 404) throw new Error(`Run ${this.runId} not found`);
+      if (!response.ok) throw new Error(`${response.status} ${body.message || body.error || response.statusText}`);
+      return body;
+    })();
+    return this.reporterRun;
+  }
+
+  async resolveProject() {
+    if (this.project) return this.project;
+    const body = await this.updateReporterRun();
+    if (!body.project?.id) throw new Error(`Project of run ${this.runId} is unknown`);
+    this.project = body.project.id;
+    return this.project;
   }
 
   get runUrl() {
@@ -102,6 +130,7 @@ class RunFetcher {
   }
 
   async get(apiPath, params = []) {
+    await this.resolveProject();
     const url = new URL(`/api/v2/${this.project}${apiPath}`, this.baseUrl);
     for (const [key, value] of params) url.searchParams.append(key, value);
     debug('GET', url.toString());
@@ -148,19 +177,31 @@ class RunFetcher {
   }
 
   /**
-   * Testruns with failures first; the list has no stack and no artifacts.
+   * Testruns with failures first, read in pages of TESTRUNS_PAGE_SIZE; the list has no stack and no artifacts.
    *
-   * @param {{statuses?: string[], limit: number}} params
+   * @param {{statuses?: string[], limit: number}} params - limit is Infinity to read all testruns
    * @returns {Promise<{testruns: object[], total: number}>}
    */
   async listTestruns({ statuses = [], limit }) {
-    const body = await this.get('/testruns', [
-      ...this.testrunParams(statuses),
-      ['sort', 'failure'],
-      ['order', 'desc'],
-      ['per_page', String(limit)],
-    ]);
-    return { testruns: body.data || [], total: body.meta?.total || 0 };
+    const perPage = Math.min(limit, TESTRUNS_PAGE_SIZE);
+    const getPage = async page => {
+      const body = await this.get('/testruns', [
+        ...this.testrunParams(statuses),
+        ['sort', 'failure'],
+        ['order', 'desc'],
+        ['per_page', String(perPage)],
+        ['page', String(page)],
+      ]);
+      return { testruns: body.data || [], total: body.meta?.total || 0 };
+    };
+
+    const first = await getPage(1);
+    const pagesCount = Math.ceil(Math.min(limit, first.total) / perPage);
+    const nextPages = Array.from({ length: Math.max(pagesCount - 1, 0) }, (_, index) => index + 2);
+    const rest = await mapWithLimit(nextPages, PARALLEL_REQUESTS, getPage);
+
+    const testruns = [first, ...rest].flatMap(page => page.testruns).slice(0, limit);
+    return { testruns, total: first.total };
   }
 
   /**
@@ -183,29 +224,24 @@ class RunFetcher {
 
   /**
    * Shared S3 credentials of the project, returned by an empty update of the run.
-   * Skipped for scheduled runs (the update launches them) and mixed runs (it marks automated tests as started).
+   * Unless the run was already updated to resolve its project, skipped for scheduled runs (the update launches them)
+   * and mixed runs (it marks automated tests as started).
    *
    * @param {{status?: string, kind?: string}} run
    * @returns {Promise<boolean>} whether credentials were applied
    */
   async applySharedS3Credentials(run) {
-    if (run.status === 'scheduled' || run.kind === 'mixed') {
+    if (!this.reporterRun && (run.status === 'scheduled' || run.kind === 'mixed')) {
       debug(`Shared S3 credentials are not requested for a ${run.status} ${run.kind} run`);
       return false;
     }
 
-    const url = new URL(`/api/reporter/${this.runId}`, this.baseUrl);
-    const response = await fetch(url, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ api_key: this.apiKey }),
+    const body = await this.updateReporterRun().catch(err => {
+      debug('Failed to get shared S3 credentials:', err.message);
+      return { artifacts: null };
     });
-    if (!response.ok) {
-      debug('Failed to get shared S3 credentials:', response.status);
-      return false;
-    }
 
-    const { artifacts } = await response.json();
+    const { artifacts } = body;
     if (!artifacts || !Object.keys(artifacts).length) return false;
     setS3Credentials(artifacts);
     return true;
@@ -271,7 +307,7 @@ function defaultArtifactsDir(run, runId) {
 
 export {
   TESTRUNS_DEFAULT_LIMIT,
-  TESTRUNS_MAX_LIMIT,
+  TESTRUNS_PAGE_SIZE,
   TESTRUN_STATUSES,
   RunFetcher,
   resolveRunTarget,
