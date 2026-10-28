@@ -9,6 +9,7 @@ const TESTRUNS_DEFAULT_LIMIT = 50;
 const TESTRUNS_PAGE_SIZE = 100;
 const TESTRUN_STATUSES = ['passed', 'failed', 'skipped', 'pending'];
 const PARALLEL_REQUESTS = 5;
+const FINISHED_RUN_STATUSES = ['passed', 'failed', 'terminated', 'finished'];
 
 /**
  * Resolve the run argument of `fetch status|count|report`: a run id or a run URL.
@@ -225,13 +226,14 @@ class RunFetcher {
   /**
    * Shared S3 credentials of the project, returned by an empty update of the run.
    * Unless the run was already updated to resolve its project, skipped for scheduled runs (the update launches them)
-   * and mixed runs (it marks automated tests as started).
+   * and unfinished mixed runs (it marks automated tests as started).
    *
    * @param {{status?: string, kind?: string}} run
    * @returns {Promise<boolean>} whether credentials were applied
    */
   async applySharedS3Credentials(run) {
-    if (!this.reporterRun && (run.status === 'scheduled' || run.kind === 'mixed')) {
+    const isUnfinishedMixed = run.kind === 'mixed' && !FINISHED_RUN_STATUSES.includes(run.status);
+    if (!this.reporterRun && (run.status === 'scheduled' || isUnfinishedMixed)) {
       debug(`Shared S3 credentials are not requested for a ${run.status} ${run.kind} run`);
       return false;
     }

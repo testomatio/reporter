@@ -470,8 +470,17 @@ describe('cli fetch status|count|report', () => {
     expect(req.body).to.deep.equal({ api_key: 'faketoken' });
   });
 
-  it('fetch report --artifacts does not update a mixed run when the project comes from a run URL', async () => {
+  it('fetch report --artifacts gets shared credentials of a finished mixed run', async () => {
     mockRunWithTestruns(server, { run: { ...RUN, kind: 'mixed' } });
+
+    const runUrl = `${TESTOMATIO_URL}/projects/${PROJECT}/runs/run1`;
+    await runCli(['fetch', 'report', runUrl, '--artifacts'], { S3_BUCKET: 'artifacts', TESTOMATIO_URL: '' });
+
+    expect(server.requests({ method: 'PUT', path: '/api/reporter/run1' })).to.have.length(1);
+  });
+
+  it('fetch report --artifacts does not update a running mixed run when the project comes from a run URL', async () => {
+    mockRunWithTestruns(server, { run: { ...RUN, kind: 'mixed', status: 'running' } });
 
     const runUrl = `${TESTOMATIO_URL}/projects/${PROJECT}/runs/run1`;
     const { code } = await runCli(['fetch', 'report', runUrl, '--artifacts'], {

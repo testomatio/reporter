@@ -490,7 +490,7 @@ Options of `report`:
 
 `--artifacts` downloads from the S3 bucket, so private buckets work too. Credentials are taken in this order:
 
-1. S3 credentials shared by the project in Testomat.io. They are obtained with an empty update of the run (`PUT /api/reporter/:run_id`), which changes nothing in it. When the project comes from a run URL, scheduled and mixed runs are not updated, since an update would launch them or mark their automated tests as started. For a run id the update is made anyway to resolve the project.
+1. S3 credentials shared by the project in Testomat.io. They are obtained with an empty update of the run (`PUT /api/reporter/:run_id`), which changes nothing in it. When the project comes from a run URL, scheduled runs and unfinished mixed runs are not updated, since an update would launch them or mark their automated tests as started. For a run id the update is made anyway to resolve the project.
 2. The local [S3 config](artifacts.md): `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_REGION`, `S3_ENDPOINT`.
 
 Without either, `fetch report --artifacts` exits with an error before fetching anything. An artifact that fails to download is linked by its URL and marked `(not downloaded)`.
