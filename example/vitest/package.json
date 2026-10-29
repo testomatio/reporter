@@ -1,0 +1,24 @@
+{
+  "name": "testomatio-vitest-example",
+  "version": "1.0.0",
+  "description": "Example Vitest project with Testomat.io reporter",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage"
+  },
+  "keywords": [
+    "vitest",
+    "testing",
+    "testomat.io",
+    "reporter"
+  ],
+  "author": "Testomat.io",
+  "license": "MIT",
+  "devDependencies": {
+    "vite": "^7.3.2",
+    "vitest": "^4.0.8"
+  }
+}
