@@ -1,4 +1,4 @@
-import { renderTests } from '../pipe/markdown.js';
+import { renderTests, defectLink } from '../pipe/markdown.js';
 
 const TITLE_SEPARATOR = ' ⇒ ';
 
@@ -28,7 +28,25 @@ function toReportTest(testrun) {
     message: testrun.message,
     stack: testrun.stack,
     artifacts: testrun.artifacts,
+    defects: testrun.defects,
   };
+}
+
+/**
+ * @param {{defects: object[], total: number}} runDefects - Defects of GET /api/v2/:project/defects?run_id=
+ * @returns {string}
+ */
+function renderRunDefects({ defects, total }) {
+  const lines = ['## Defects', ''];
+  if (total > defects.length) lines.push(`${defects.length} of ${total} shown`, '');
+  lines.push('| Defect | Title | Status | Severity |', '| ------ | ----- | ------ | -------- |');
+  for (const defect of defects) {
+    const cells = [defectLink(defect), defect.title, defect.status, defect.severity].map(cell =>
+      String(cell || '').replace(/\|/g, '\\|'),
+    );
+    lines.push(`| ${cells.join(' | ')} |`);
+  }
+  return lines.join('\n');
 }
 
 /**
@@ -41,9 +59,10 @@ function toReportTest(testrun) {
  * @param {object[]} params.testruns
  * @param {number} params.matched - Number of testruns matching the filter
  * @param {string[]} params.statuses - Status filter, empty for all testruns
+ * @param {{defects: object[], total: number} | null} [params.runDefects] - Defects of the run
  * @returns {string}
  */
-function renderRunReport({ run, runUrl, summary, testruns, matched, statuses }) {
+function renderRunReport({ run, runUrl, summary, testruns, matched, statuses, runDefects }) {
   const status = String(run.status || 'unknown');
   const sections = [`# ${run.title || run.id} — ${status.toUpperCase()}`];
 
@@ -77,6 +96,8 @@ function renderRunReport({ run, runUrl, summary, testruns, matched, statuses }) 
       `| total | ${summary.total} |`,
     ].join('\n'),
   );
+
+  if (runDefects?.defects.length) sections.push(renderRunDefects(runDefects));
 
   sections.push(renderTests(testruns.map(toReportTest)));
 
