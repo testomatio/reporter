@@ -28,7 +28,6 @@ import {
   downloadArtifacts,
   defaultArtifactsDir,
   TESTRUNS_DEFAULT_LIMIT,
-  TESTRUNS_MAX_LIMIT,
   TESTRUN_STATUSES,
 } from '../fetch/testruns.js';
 import { renderRunReport } from '../fetch/report.js';
@@ -149,7 +148,7 @@ const fetchCommand = program
   .command('fetch')
   .description('Fetch runs from Testomat.io API v2')
   .argument('[url]', 'URL of a run or of a (filtered) runs page in Testomat.io')
-  .option('--project <slug>', 'Project slug (or set TESTOMATIO_PROJECT)')
+  .option('--project <slug>', 'Project slug for listing runs (or set TESTOMATIO_PROJECT)')
   .option('--run <id>', 'Fetch a single run by its id')
   .option('--title <text>', 'Filter by run title')
   .option('--tql <query>', 'Filter using Testomat Query Language')
@@ -180,28 +179,32 @@ const fetchCommand = program
       }
     }
 
+    const baseUrl = page.baseUrl || process.env.TESTOMATIO_URL || 'https://app.testomat.io';
+    const runId = opts.run || page.runId;
+
+    if (runId) {
+      const fetcher = new RunFetcher({ baseUrl, project: page.project, runId, apiKey });
+      const run = await fetcher.fetchRun().catch(exitOnFetchError);
+      console.log(formatFetchRunsOutput({ data: run }, opts.format));
+      return;
+    }
+
     const project = opts.project || page.project || process.env.TESTOMATIO_PROJECT;
     if (!project) {
-      log.error(pc.red('⚠️  --project (or TESTOMATIO_PROJECT) is required'));
+      log.error(
+        pc.red('⚠️  --project (or TESTOMATIO_PROJECT) is required to list runs, unless --run or a URL is passed'),
+      );
       process.exit(1);
     }
 
-    const baseUrl = page.baseUrl || process.env.TESTOMATIO_URL || 'https://app.testomat.io';
-    const runId = opts.run || page.runId;
-    let url;
-
-    if (runId) {
-      url = new URL(`/api/v2/${project}/runs/${runId}`, baseUrl);
-    } else {
-      url = new URL(`/api/v2/${project}/runs`, baseUrl);
-      for (const [key, value] of page.params || []) url.searchParams.append(key, value);
-      if (opts.title) url.searchParams.set('search', opts.title);
-      if (opts.tql) url.searchParams.set('tql', opts.tql);
-      if (opts.rungroup) url.searchParams.set('groupId', opts.rungroup);
-      const requestedLimit = opts.latest ? 1 : parseInt(opts.limit, 10) || FETCH_RUNS_DEFAULT_LIMIT;
-      const limit = Math.min(Math.max(requestedLimit, 1), FETCH_RUNS_MAX_LIMIT);
-      url.searchParams.set('per_page', String(limit));
-    }
+    const url = new URL(`/api/v2/${project}/runs`, baseUrl);
+    for (const [key, value] of page.params || []) url.searchParams.append(key, value);
+    if (opts.title) url.searchParams.set('search', opts.title);
+    if (opts.tql) url.searchParams.set('tql', opts.tql);
+    if (opts.rungroup) url.searchParams.set('groupId', opts.rungroup);
+    const requestedLimit = opts.latest ? 1 : parseInt(opts.limit, 10) || FETCH_RUNS_DEFAULT_LIMIT;
+    const limit = Math.min(Math.max(requestedLimit, 1), FETCH_RUNS_MAX_LIMIT);
+    url.searchParams.set('per_page', String(limit));
 
     const response = await fetch(url, { headers: { Authorization: `Bearer ${apiKey}` } });
     const body = await response.json();
@@ -214,17 +217,16 @@ const fetchCommand = program
     console.log(formatFetchRunsOutput(body, opts.format));
   });
 
-// fetch parses the options it shares with its subcommands (--project, --format, --limit) wherever they are placed,
+// fetch parses the options it shares with its subcommands (--format, --limit) wherever they are placed,
 // so subcommands declare them only for help and read them with optsWithGlobals()
 
 /**
  * Build a RunFetcher for the run argument of fetch status|count|report, or exit with an error.
  *
  * @param {string} runArg
- * @param {{project?: string}} opts
  * @returns {RunFetcher}
  */
-function createRunFetcher(runArg, opts) {
+function createRunFetcher(runArg) {
   const apiKey = process.env['INPUT_TESTOMATIO-KEY'] || config.TESTOMATIO;
   if (!apiKey) {
     log.error(pc.red('⚠️  TESTOMATIO API key required'));
@@ -232,7 +234,7 @@ function createRunFetcher(runArg, opts) {
   }
 
   try {
-    return new RunFetcher({ ...resolveRunTarget(runArg, opts), apiKey });
+    return new RunFetcher({ ...resolveRunTarget(runArg), apiKey });
   } catch (err) {
     log.error(pc.red(`⚠️  ${err.message}`));
     process.exit(1);
@@ -268,11 +270,10 @@ fetchCommand
   .command('status')
   .description('Show a run with the number of its testruns by status')
   .argument('<run>', RUN_ARGUMENT_DESCRIPTION)
-  .option('--project <slug>', 'Project slug (or set TESTOMATIO_PROJECT)')
   .option('--format <format>', 'Machine-readable output: run status and counts as JSON (--format json)')
   .action(async (runArg, _opts, command) => {
     const opts = command.optsWithGlobals();
-    const fetcher = createRunFetcher(runArg, opts);
+    const fetcher = createRunFetcher(runArg);
 
     const [run, summary] = await Promise.all([fetcher.fetchRun(), fetcher.countTestrunsByStatus()]).catch(
       exitOnFetchError,
@@ -294,12 +295,11 @@ fetchCommand
   .command('count')
   .description('Print the number of testruns of a run, to pick --limit and filters for fetch report')
   .argument('<run>', RUN_ARGUMENT_DESCRIPTION)
-  .option('--project <slug>', 'Project slug (or set TESTOMATIO_PROJECT)')
   .option('--only <statuses>', STATUS_FILTER_DESCRIPTION)
   .option('--only-failed', 'Only failed testruns (shorthand for --only failed)')
   .action(async (runArg, _opts, command) => {
     const opts = command.optsWithGlobals();
-    const fetcher = createRunFetcher(runArg, opts);
+    const fetcher = createRunFetcher(runArg);
     const statuses = getStatusFilter(opts);
 
     const total = await fetcher.countTestruns(statuses).catch(exitOnFetchError);
@@ -310,22 +310,19 @@ fetchCommand
   .command('report')
   .description('Print a run with its testruns as a Markdown report')
   .argument('<run>', RUN_ARGUMENT_DESCRIPTION)
-  .option('--project <slug>', 'Project slug (or set TESTOMATIO_PROJECT)')
   .option('--only <statuses>', STATUS_FILTER_DESCRIPTION)
   .option('--only-failed', 'Only failed testruns (shorthand for --only failed)')
   .option('--stack', 'Include stack traces')
   .option('--artifacts', 'Download artifacts to --out and link them from the report')
   .option('--out <dir>', 'Directory for downloaded artifacts (default: ./<run-title>-<run-id>)')
-  .option(
-    '--limit <number>',
-    `Max number of testruns, failed first (default ${TESTRUNS_DEFAULT_LIMIT}, max ${TESTRUNS_MAX_LIMIT})`,
-  )
+  .option('--limit <number>', `Max number of testruns, failed first (default ${TESTRUNS_DEFAULT_LIMIT})`)
+  .option('--all', 'All matching testruns, fetched in chunks of 100 (overrides --limit)')
+  .option('--no-defects', 'Skip defects of the run and of its tests')
   .action(async (runArg, _opts, command) => {
     const opts = command.optsWithGlobals();
-    const fetcher = createRunFetcher(runArg, opts);
+    const fetcher = createRunFetcher(runArg);
     const statuses = getStatusFilter(opts);
-    const { limit, capped } = parseTestrunsLimit(opts.limit);
-    if (capped) log.warn(pc.yellow(`⚠️  --limit is capped at ${TESTRUNS_MAX_LIMIT}`));
+    const limit = parseTestrunsLimit(opts);
 
     const run = await fetcher.fetchRun().catch(exitOnFetchError);
 
@@ -337,16 +334,25 @@ fetchCommand
       }
     }
 
-    const [summary, list] = await Promise.all([
+    let runDefectsRequest;
+    if (opts.defects) {
+      runDefectsRequest = fetcher.listRunDefects().catch(err => {
+        log.warn(pc.yellow(`⚠️  Failed to fetch defects of the run: ${err.message}`));
+        return null;
+      });
+    }
+
+    const [summary, list, runDefects] = await Promise.all([
       fetcher.countTestrunsByStatus(),
       fetcher.listTestruns({ statuses, limit }),
+      runDefectsRequest,
     ]).catch(exitOnFetchError);
 
     let { testruns } = list;
     if (list.total > testruns.length) {
       log.warn(
         pc.yellow(
-          `⚠️  Showing ${testruns.length} of ${list.total} testruns. Use --limit or --only-failed to narrow it.`,
+          `⚠️  Showing ${testruns.length} of ${list.total} testruns. Use --all, --limit or --only-failed.`,
         ),
       );
     }
@@ -356,6 +362,14 @@ fetchCommand
         log.warn(pc.yellow(`⚠️  Failed to fetch details of testrun ${testrun.id}: ${err.message}`));
       });
       if (!opts.stack) testruns = testruns.map(({ stack, ...testrun }) => testrun);
+    }
+
+    if (opts.defects) {
+      testruns = await fetcher.addTestDefects(testruns, (testId, err) => {
+        log.warn(pc.yellow(`⚠️  Failed to fetch defects of test ${testId}: ${err.message}`));
+      });
+    } else {
+      testruns = testruns.map(({ defects, ...testrun }) => testrun);
     }
 
     if (opts.artifacts) {
@@ -370,7 +384,7 @@ fetchCommand
     }
 
     process.stdout.write(
-      renderRunReport({ run, runUrl: fetcher.runUrl, summary, testruns, matched: list.total, statuses }),
+      renderRunReport({ run, runUrl: fetcher.runUrl, summary, testruns, matched: list.total, statuses, runDefects }),
     );
   });
 

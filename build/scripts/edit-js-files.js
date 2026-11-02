@@ -20,7 +20,7 @@ async function replaceTextInFile(filePath) {
     const data = await fs.readFile(filePath, 'utf8');
 
     // Replace 'exports.default' with 'module.exports'
-    const result = data.replace(/exports\.default/g, 'module.exports');
+    const result = data.replace(/exports\.default\b/g, 'module.exports');
 
     // Write the modified content back to the file
     await fs.writeFile(filePath, result, 'utf8');

@@ -332,6 +332,9 @@ function renderTest(test) {
   const logsBlock = renderLogs(test);
   if (logsBlock) lines.push(logsBlock);
 
+  const defectsBlock = renderDefects(test);
+  if (defectsBlock) lines.push(defectsBlock);
+
   const artifactsBlock = renderArtifacts(test);
   if (artifactsBlock) lines.push(artifactsBlock);
 
@@ -495,6 +498,26 @@ function renderArtifacts(test) {
   lines.push('');
   lines.push('</details>');
   return lines.join('\n');
+}
+
+function renderDefects(test) {
+  if (!Array.isArray(test.defects) || !test.defects.length) return '';
+
+  const lines = ['**Defects**', ''];
+  for (const defect of test.defects) {
+    let line = `- ${defectLink(defect)}`;
+    if (defect.sourceKey && defect.title) line += ` ${mdInline(defect.title)}`;
+    const details = [defect.status, defect.severity].filter(Boolean);
+    if (details.length) line += ` (${details.join(', ')})`;
+    lines.push(line);
+  }
+  return lines.join('\n');
+}
+
+function defectLink(defect) {
+  const key = mdInline(defect.sourceKey || defect.title || 'defect');
+  if (!defect.url) return key;
+  return `[${key}](${defect.url})`;
 }
 
 function normalizeArtifact(raw) {
@@ -755,6 +778,6 @@ function aggregateTestRetries(tests) {
   return aggregated;
 }
 
-export { renderTests };
+export { renderTests, defectLink };
 
 export default MarkdownPipe;

@@ -405,13 +405,13 @@ npx @testomatio/reporter fetch [url] [options]
 **Environment Variables:**
 
 - `TESTOMATIO`: Your Testomat.io API key (required).
-- `TESTOMATIO_PROJECT`: Project slug, used when `--project` is not passed.
+- `TESTOMATIO_PROJECT`: Project slug for listing runs, used when `--project` is not passed.
 - `TESTOMATIO_URL`: Testomat.io server URL (optional, defaults to `https://app.testomat.io`).
 
 **Options:**
 
-- `--project <slug>`: Project slug (or set `TESTOMATIO_PROJECT`). Required unless a URL is passed.
-- `--run <id>`: Fetch a single run by its id via `GET /api/v2/:project/runs/:id`. List filters are ignored.
+- `--project <slug>`: Project slug (or set `TESTOMATIO_PROJECT`). Required to list runs, unless a URL is passed.
+- `--run <id>`: Fetch a single run by its id via `GET /api/v2/:project/runs/:id`. List filters are ignored. The project is resolved from the run, see [below](#fetching-testruns-of-a-run).
 - `--title <text>`: Filter by run title (partial match).
 - `--tql <query>`: Filter using Testomat Query Language.
 - `--rungroup <uid>`: Filter by rungroup id; nested rungroups are included.
@@ -427,7 +427,7 @@ npx @testomatio/reporter fetch --project demo --title "Nightly"
 npx @testomatio/reporter fetch --project demo --tql "passed_count >= 3"
 npx @testomatio/reporter fetch --project demo --rungroup rg123 --limit 10
 npx @testomatio/reporter fetch --project demo --latest --format json
-npx @testomatio/reporter fetch --project demo --run a1b2c3d4 --format json
+npx @testomatio/reporter fetch --run a1b2c3d4 --format json
 ```
 
 **Fetching by URL**
@@ -445,17 +445,17 @@ npx @testomatio/reporter fetch "https://app.testomat.io/projects/demo/runs?filte
 A single run is printed as one object with `--format json` and includes `rungroup_id`, which is `null` when the run is not in a rungroup:
 
 ```bash
-npx @testomatio/reporter fetch --project demo --run a1b2c3d4 --format json | jq -r .rungroup_id
+npx @testomatio/reporter fetch --run a1b2c3d4 --format json | jq -r .rungroup_id
 ```
 
 #### Fetching testruns of a run
 
-Three subcommands read the testruns of one run, for example to analyze failures locally or hand them to an AI agent. Each takes a run id (with `--project` or `TESTOMATIO_PROJECT`) or a run URL:
+Three subcommands read the testruns of one run, for example to analyze failures locally or hand them to an AI agent. Each takes a run id or a run URL. For a run id, the project is taken from the API key: an empty update of the run (`PUT /api/reporter/:run_id`) returns it.
 
 ```bash
-npx @testomatio/reporter fetch status a1b2c3d4 --project demo
+npx @testomatio/reporter fetch status a1b2c3d4
 npx @testomatio/reporter fetch count "https://app.testomat.io/projects/demo/runs/a1b2c3d4" --only-failed
-npx @testomatio/reporter fetch report a1b2c3d4 --project demo --only-failed --stack --artifacts > nightly_report.md
+npx @testomatio/reporter fetch report a1b2c3d4 --only-failed --stack --artifacts > nightly_report.md
 ```
 
 **`fetch status <run>`** prints the run with the number of its testruns by status. `--format json` prints the same as one object:
@@ -482,14 +482,16 @@ Options of `count` and `report`:
 
 Options of `report`:
 
-- `--limit <number>`: Max number of testruns (default `50`, max `100`). When the run has more matching testruns, a warning says how many were left out.
+- `--limit <number>`: Max number of testruns (default `50`). Testruns are fetched in chunks of 100, so any number works. When the run has more matching testruns, a warning says how many were left out.
+- `--all`: All matching testruns, fetched in chunks of 100. Overrides `--limit`.
 - `--stack`: Include stack traces. Each testrun is fetched separately for it, up to 5 at a time.
 - `--artifacts`: Download the artifacts of each testrun to `<out>/<testrun id>/` and link the local files from the report.
 - `--out <dir>`: Directory for artifacts (default `./<run-title>-<run-id>`).
+- `--no-defects`: Skip defects. By default the report lists the defects of the run (`GET /api/v2/:project/defects?run_id=`, up to 100) in a `## Defects` table, and each test lists the defects linked to its testrun or to its test case (`GET /api/v2/:project/defects?test_id=`, one request per test, up to 5 at a time). Each defect links to its issue in Jira, GitHub or another tracker.
 
 `--artifacts` downloads from the S3 bucket, so private buckets work too. Credentials are taken in this order:
 
-1. S3 credentials shared by the project in Testomat.io. They are obtained with an empty update of the run (`PUT /api/reporter/:run_id`), which changes nothing in it. Scheduled and mixed runs are not updated, since an update would launch them or mark their automated tests as started.
+1. S3 credentials shared by the project in Testomat.io. They are obtained with an empty update of the run (`PUT /api/reporter/:run_id`), which changes nothing in it. When the project comes from a run URL, scheduled runs and unfinished mixed runs are not updated, since an update would launch them or mark their automated tests as started. For a run id the update is made anyway to resolve the project.
 2. The local [S3 config](artifacts.md): `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_REGION`, `S3_ENDPOINT`.
 
 Without either, `fetch report --artifacts` exits with an error before fetching anything. An artifact that fails to download is linked by its URL and marked `(not downloaded)`.
