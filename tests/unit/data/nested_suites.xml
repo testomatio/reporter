@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="12" failures="0" skipped="0" time="5.0">
+  <testsuite name="SearchTests" time="4.0" tests="9" failures="0" skipped="0">
+    <testsuite name="SearchSnapshotTests" time="4.0" tests="9" failures="0" skipped="0">
+      <testcase name="resultsLoadingFailed()" classname="SearchSnapshotTests" time="1.0"/>
+      <testcase name="emptySearchWithoutRecentSearches()" classname="SearchSnapshotTests" time="1.0"/>
+      <testcase name="emptySearchWithRecentSearches()" classname="SearchSnapshotTests" time="0.0"/>
+      <testcase name="tagsSuggestions()" classname="SearchSnapshotTests" time="0.0"/>
+      <testcase name="resultsLoading()" classname="SearchSnapshotTests" time="0.0"/>
+      <testcase name="resultsLoaded()" classname="SearchSnapshotTests" time="1.0"/>
+      <testcase name="resultsLoadedAgain()" classname="SearchSnapshotTests" time="0.0"/>
+      <testcase name="resultsLoadedWithItems()" classname="SearchSnapshotTests" time="1.0"/>
+      <testcase name="resultsLoadedEmpty()" classname="SearchSnapshotTests" time="0.0"/>
+    </testsuite>
+    <properties>
+      <property name="Configuration" value="Configuration 1"/>
+      <property name="device" value="iPhone 16 (18.2)"/>
+    </properties>
+  </testsuite>
+  <testsuite name="HomeTests" time="1.0" tests="2" failures="0" skipped="0">
+    <testsuite name="HomeSnapshotTests" time="1.0" tests="2" failures="0" skipped="0">
+      <testcase name="screenLoaded_@T0f90d3c4" classname="HomeSnapshotTests" time="1.0"/>
+      <testcase name="charactersEmpty()" classname="HomeSnapshotTests" time="0.0"/>
+    </testsuite>
+    <properties>
+      <property name="Configuration" value="Configuration 1"/>
+      <property name="device" value="iPhone 16 (18.2)"/>
+    </properties>
+  </testsuite>
+  <testsuite name="AppTests" time="0.0" tests="1" failures="0" skipped="0">
+    <testsuite name="AppTests" time="0.0" tests="1" failures="0" skipped="0">
+      <testcase name="example()" classname="AppTests" time="0.0"/>
+    </testsuite>
+    <properties>
+      <property name="Configuration" value="Configuration 1"/>
+      <property name="device" value="iPhone 16 (18.2)"/>
+    </properties>
+  </testsuite>
+</testsuites>
