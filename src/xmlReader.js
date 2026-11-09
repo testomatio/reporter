@@ -18,7 +18,6 @@ import {
   transformEnvVarToBoolean,
 } from './utils/utils.js';
 import { pipesFactory } from './pipe/index.js';
-import TestomatioPipe from './pipe/testomatio.js';
 import { splitTestsIntoChunks } from './utils/pipe_utils.js';
 import adapterFactory from './junit-adapter/index.js';
 import { config } from './config.js';
@@ -611,7 +610,7 @@ class XmlReader {
       debug(`Uploaded ${uploadedTests}/${totalTests} tests`);
     }
 
-    const testomatioPipe = this.pipes.find(p => p instanceof TestomatioPipe);
+    const testomatioPipe = this.pipes.find(p => p.constructor.name === 'TestomatioPipe');
     if (testomatioPipe && !testomatioPipe.isEnabled) {
       log.warn(`⚠️ Tests were not uploaded to Testomat.io, skipping report`);
     } else if (totalChunks > 1) {

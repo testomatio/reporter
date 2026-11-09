@@ -9,7 +9,6 @@ import { fileURLToPath } from 'url';
 import { config } from './config.js';
 import { S3Uploader } from './uploader.js';
 import { pipesFactory } from './pipe/index.js';
-import TestomatioPipe from './pipe/testomatio.js';
 import { splitTestsIntoChunks } from './utils/pipe_utils.js';
 import {
   fetchSourceCode,
@@ -987,7 +986,7 @@ class AllureReader {
       debug(`Uploaded ${uploadedTests}/${totalTests} tests`);
     }
 
-    const testomatioPipe = this.pipes.find(p => p instanceof TestomatioPipe);
+    const testomatioPipe = this.pipes.find(p => p.constructor.name === 'TestomatioPipe');
     if (testomatioPipe && !testomatioPipe.isEnabled) {
       console.warn(APP_PREFIX, `⚠️ Tests were not uploaded to Testomat.io, skipping report`);
     } else if (totalChunks > 1) {
