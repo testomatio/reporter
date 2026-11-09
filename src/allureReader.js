@@ -986,7 +986,10 @@ class AllureReader {
       debug(`Uploaded ${uploadedTests}/${totalTests} tests`);
     }
 
-    if (totalChunks > 1) {
+    const testomatioPipe = this.pipes.find(p => p.constructor.name === 'TestomatioPipe');
+    if (testomatioPipe && !testomatioPipe.isEnabled) {
+      console.warn(APP_PREFIX, `⚠️ Tests were not uploaded to Testomat.io, skipping report`);
+    } else if (totalChunks > 1) {
       console.log(APP_PREFIX, `✅ Successfully uploaded ${uploadedTests} tests in ${totalChunks} chunks`);
     } else {
       console.log(APP_PREFIX, `✅ Successfully uploaded ${uploadedTests} tests`);
