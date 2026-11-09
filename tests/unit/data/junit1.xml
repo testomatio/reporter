@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="13" failures="2" errors="0" time="1.773">
+  <testsuite name="Goat Latin" errors="0" failures="0" skipped="0" timestamp="2022-04-26T12:21:54" time="1.276" tests="1">
+    <testcase classname="Goat Latin It should return Goat Latin value" name="Goat Latin It should return Goat Latin value" time="0.004">
+    </testcase>
+  </testsuite>
+  <testsuite name="FizzBuzz" errors="0" failures="0" skipped="0" timestamp="2022-04-26T12:21:54" time="1.291" tests="1">
+    <testcase classname="FizzBuzz It should return FizBuzz array" name="FizzBuzz It should return FizBuzz array" time="0.006">
+    </testcase>
+  </testsuite>
+  <testsuite name="Group People" errors="0" failures="0" skipped="0" timestamp="2022-04-26T12:21:54" time="1.292" tests="1">
+    <testcase classname="Group People Should return correct group people" name="Group People Should return correct group people" time="0.005">
+    </testcase>
+  </testsuite>
+  <testsuite name="Should find duplicate" errors="0" failures="1" skipped="0" timestamp="2022-04-26T12:21:54" time="1.307" tests="1">
+    <testcase classname="Should find duplicate Should return duplicate array from an array" name="Should find duplicate Should return duplicate array from an array" time="0.003">
+      <failure>Error: Fail
+    at Object.&lt;anonymous&gt; (/home/davert/projects/testomatio/examples/jest/Algorithms/find-all-duplicates/findDuplicate.test.js:5:36)
+    at Object.asyncJestTest (/home/davert/projects/testomatio/examples/jest/node_modules/jest-jasmine2/build/jasmineAsyncInstall.js:102:37)
+    at /home/davert/projects/testomatio/examples/jest/node_modules/jest-jasmine2/build/queueRunner.js:43:12
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/home/davert/projects/testomatio/examples/jest/node_modules/jest-jasmine2/build/queueRunner.js:26:19)
+    at /home/davert/projects/testomatio/examples/jest/node_modules/jest-jasmine2/build/queueRunner.js:73:41
+    at processTicksAndRejections (internal/process/task_queues.js:95:5)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="Convert Excel title" errors="0" failures="0" skipped="0" timestamp="2022-04-26T12:21:54" time="1.318" tests="1">
+    <testcase classname="Convert Excel title Should convert number to excel title" name="Convert Excel title Should convert number to excel title" time="0.006">
+    </testcase>
+  </testsuite>
+  <testsuite name="It should find the container with most water" errors="0" failures="0" skipped="0" timestamp="2022-04-26T12:21:54" time="1.309" tests="1">
+    <testcase classname="It should find the container with most water It should return container with most water" name="It should find the container with most water It should return container with most water" time="0.005">
+    </testcase>
+  </testsuite>
+  <testsuite name="Flight booking" errors="0" failures="0" skipped="0" timestamp="2022-04-26T12:21:54" time="1.325" tests="1">
+    <testcase classname="Flight booking It should book the flight" name="Flight booking It should book the flight" time="0.004">
+    </testcase>
+  </testsuite>
+  <testsuite name="Hello" errors="0" failures="0" skipped="0" timestamp="2022-04-26T12:21:54" time="1.291" tests="1">
+    <testcase classname="Hello Should say hello with passed parameter" name="Hello Should say hello with passed parameter" time="0.005">
+    </testcase>
+  </testsuite>
+  <testsuite name="Find the Duplicate Number" errors="0" failures="1" skipped="0" timestamp="2022-04-26T12:21:54" time="1.323" tests="1">
+    <testcase classname="Find the Duplicate Number It should return duplicate number from an array" name="Find the Duplicate Number It should return duplicate number from an array" time="0.007">
+      <failure>Error: expect(received).toStrictEqual(expected) // deep equality
+
+Expected: 1000
+Received: 2
+    at Object.&lt;anonymous&gt; (/home/davert/projects/testomatio/examples/jest/Algorithms/find-duplicate/findDuplicate.test.js:5:44)
+    at Object.asyncJestTest (/home/davert/projects/testomatio/examples/jest/node_modules/jest-jasmine2/build/jasmineAsyncInstall.js:102:37)
+    at /home/davert/projects/testomatio/examples/jest/node_modules/jest-jasmine2/build/queueRunner.js:43:12
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/home/davert/projects/testomatio/examples/jest/node_modules/jest-jasmine2/build/queueRunner.js:26:19)
+    at /home/davert/projects/testomatio/examples/jest/node_modules/jest-jasmine2/build/queueRunner.js:73:41
+    at processTicksAndRejections (internal/process/task_queues.js:95:5)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="animalSort" errors="0" failures="0" skipped="0" timestamp="2022-04-26T12:21:54" time="1.332" tests="3">
+    <testcase classname="animalSort should return empty array if empty animal array is passed in" name="animalSort should return empty array if empty animal array is passed in" time="0.004">
+    </testcase>
+    <testcase classname="animalSort should return a sorted array of animal objects by their number of legs" name="animalSort should return a sorted array of animal objects by their number of legs" time="0.001">
+    </testcase>
+    <testcase classname="animalSort should also return sorted names of animals with same number of legs" name="animalSort should also return sorted names of animals with same number of legs" time="0">
+    </testcase>
+  </testsuite>
+  <testsuite name="Can place flowers" errors="0" failures="0" skipped="0" timestamp="2022-04-26T12:21:54" time="1.347" tests="1">
+    <testcase classname="Can place flowers Should return whether the flowers can be placed" name="Can place flowers Should return whether the flowers can be placed" time="0.004">
+    </testcase>
+  </testsuite>
+</testsuites>

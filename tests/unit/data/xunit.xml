@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<assemblies>
+  <assembly name="Sample.Tests.Assembly1">
+    <collection name="Collection1">
+      <test name="Test1" type="Sample.Tests.TestClass1" method="TestMethod1" time="0.234" result="Pass" />
+      <test name="Test2" type="Sample.Tests.TestClass1" method="TestMethod2" time="0.123" result="Fail">
+        <failure exception-type="System.Exception" message="Test failed" stack-trace="Stack trace goes here." />
+      </test>
+      <test name="Test3" type="Sample.Tests.TestClass1" method="TestMethod3" time="0.456" result="Skip">
+        <reason>
+          <message>Test skipped for a reason</message>
+        </reason>
+      </test>
+    </collection>
+  </assembly>
+  
+  <assembly name="Sample.Tests.Assembly2">
+    <collection name="Collection2">
+      <test name="Test4" type="Sample.Tests.TestClass2" method="TestMethod4" time="0.789" result="Pass" />
+      <test name="Test5" type="Sample.Tests.TestClass2" method="TestMethod5" time="0.321" result="Pass" />
+      <test name="Test6" type="Sample.Tests.TestClass2" method="TestMethod6" time="0.987" result="Skip">
+        <reason>
+          <message>Test skipped for another reason</message>
+        </reason>
+      </test>
+    </collection>
+  </assembly>
+</assemblies>

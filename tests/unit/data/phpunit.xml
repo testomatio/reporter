@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="" tests="22" assertions="59" errors="0" warnings="0" failures="2" skipped="1" time="0.017157">
+    <testsuite name="Specify" tests="22" assertions="59" errors="0" warnings="0" failures="2" skipped="1" time="0.017157">
+      <testsuite name="ObjectPropertyTest" file="/home/davert/projects/specify/tests/ObjectPropertyTest.php" tests="2" assertions="7" errors="0" warnings="0" failures="1" skipped="0" time="0.002431">
+        <testcase name="testConstruction" class="ObjectPropertyTest" classname="ObjectPropertyTest" file="/home/davert/projects/specify/tests/ObjectPropertyTest.php" line="13" assertions="6" time="0.001759"/>
+        <testcase name="testRestore" class="ObjectPropertyTest" classname="ObjectPropertyTest" file="/home/davert/projects/specify/tests/ObjectPropertyTest.php" line="35" assertions="1" time="0.000672">
+          <failure type="PHPUnit\Framework\ExpectationFailedException">ObjectPropertyTest::testRestore
+Failed asserting that two strings are equal.
+--- Expected
++++ Actual
+@@ @@
+-'another 1value'
++'another value'
+
+/home/davert/projects/specify/tests/ObjectPropertyTest.php:42</failure>
+        </testcase>
+      </testsuite>
+      <testsuite name="SpecifyTest" file="/home/davert/projects/specify/tests/SpecifyTest.php" tests="20" assertions="52" errors="0" warnings="0" failures="1" skipped="1" time="0.014726">
+        <testcase name="testUserCanChangeName" class="SpecifyTest" classname="SpecifyTest" file="/home/davert/projects/specify/tests/SpecifyTest.php" line="29" assertions="3" time="0.001495">
+          <skipped/>
+          <system-out>[33;1mI[0m</system-out>
+        </testcase>
+        <testcase name="testBeforeCallback" class="SpecifyTest" classname="SpecifyTest" file="/home/davert/projects/specify/tests/SpecifyTest.php" line="51" assertions="1" time="0.000252">
+          <failure type="PHPUnit\Framework\ExpectationFailedException">testBeforeCallback | user should be davert
+Failed asserting that two strings are equal.
+--- Expected
++++ Actual
+@@ @@
+-'davert1'
++'davert'
+
+/home/davert/projects/specify/tests/SpecifyTest.php:57
+/home/davert/projects/specify/src/Codeception/Specify/SpecifyTest.php:71
+/home/davert/projects/specify/src/Codeception/Specify/SpecifyHooks.php:76
+/home/davert/projects/specify/src/Codeception/Specify.php:23
+/home/davert/projects/specify/tests/SpecifyTest.php:58</failure>
+          <system-out>[41;37mF[0m</system-out>
+        </testcase>
+        <testcase name="testMultiBeforeCallback" class="SpecifyTest" classname="SpecifyTest" file="/home/davert/projects/specify/tests/SpecifyTest.php" line="61" assertions="1" time="0.000036"/>
+        <testcase name="testAfterCallback" class="SpecifyTest" classname="SpecifyTest" file="/home/davert/projects/specify/tests/SpecifyTest.php" line="74" assertions="1" time="0.000031"/>
+        <testcase name="testMultiAfterCallback" class="SpecifyTest" classname="SpecifyTest" file="/home/davert/projects/specify/tests/SpecifyTest.php" line="85" assertions="1" time="0.000032"/>
+        <testcase name="testCleanSpecifyCallbacks" class="SpecifyTest" classname="SpecifyTest" file="/home/davert/projects/specify/tests/SpecifyTest.php" line="99" assertions="1" time="0.000195"/>
+        <testcase name="testExamples" class="SpecifyTest" classname="SpecifyTest" file="/home/davert/projects/specify/tests/SpecifyTest.php" line="111" assertions="2" time="0.000048"/>
+        <testcase name="testOnlySpecifications" class="SpecifyTest" classname="SpecifyTest" file="/home/davert/projects/specify/tests/SpecifyTest.php" line="121" assertions="1" time="0.000011"/>
+        <testcase name="testDeepCopy" class="SpecifyTest" classname="SpecifyTest" file="/home/davert/projects/specify/tests/SpecifyTest.php" line="127" assertions="3" time="0.000046"/>
+        <testcase name="testDeepRevert" class="SpecifyTest" classname="SpecifyTest" file="/home/davert/projects/specify/tests/SpecifyTest.php" line="141" assertions="1" time="0.000066"/>
+        <testcase name="testCloneOnlySpecified" class="SpecifyTest" classname="SpecifyTest" file="/home/davert/projects/specify/tests/SpecifyTest.php" line="162" assertions="2" time="0.000031"/>
+        <testcase name="testPropertyRestore" class="SpecifyTest" classname="SpecifyTest" file="/home/davert/projects/specify/tests/SpecifyTest.php" line="209" assertions="8" time="0.000413"/>
+        <testcase name="testExamplesIndexInName" class="SpecifyTest" classname="SpecifyTest" file="/home/davert/projects/specify/tests/SpecifyTest.php" line="236" assertions="8" time="0.000119"/>
+        <testcase name="testNestedSpecify" class="SpecifyTest" classname="SpecifyTest" file="/home/davert/projects/specify/tests/SpecifyTest.php" line="267" assertions="1" time="0.000042"/>
+        <testcase name="testBDDStyle" class="SpecifyTest" classname="SpecifyTest" file="/home/davert/projects/specify/tests/SpecifyTest.php" line="281" assertions="2" time="0.000057"/>
+        <testcase name="testMockObjectsIsolation" class="SpecifyTest" classname="SpecifyTest" file="/home/davert/projects/specify/tests/SpecifyTest.php" line="298" assertions="2" time="0.010922"/>
+        <testsuite name="SpecifyTest::testSpecifyAndDataProvider" tests="2" assertions="2" errors="0" warnings="0" failures="0" skipped="0" time="0.000275">
+          <testcase name="testSpecifyAndDataProvider with data set #0" class="SpecifyTest" classname="SpecifyTest" file="/home/davert/projects/specify/tests/SpecifyTest.php" line="314" assertions="1" time="0.000206"/>
+          <testcase name="testSpecifyAndDataProvider with data set #1" class="SpecifyTest" classname="SpecifyTest" file="/home/davert/projects/specify/tests/SpecifyTest.php" line="314" assertions="1" time="0.000069"/>
+        </testsuite>
+        <testsuite name="SpecifyTest::testExamplesAndDataProvider" tests="2" assertions="12" errors="0" warnings="0" failures="0" skipped="0" time="0.000656">
+          <testcase name="testExamplesAndDataProvider with data set #0" class="SpecifyTest" classname="SpecifyTest" file="/home/davert/projects/specify/tests/SpecifyTest.php" line="324" assertions="6" time="0.000573"/>
+          <testcase name="testExamplesAndDataProvider with data set #1" class="SpecifyTest" classname="SpecifyTest" file="/home/davert/projects/specify/tests/SpecifyTest.php" line="324" assertions="6" time="0.000083"/>
+        </testsuite>
+      </testsuite>
+    </testsuite>
+  </testsuite>
+</testsuites>

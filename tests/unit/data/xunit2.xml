@@ -1,0 +1,12 @@
+<assemblies timestamp="08/10/2023 12:04:46">
+  <assembly name="C:\Users\iandriievskyi\source\repos\ConsoleApp2\ConsoleApp2\bin\Debug\net6.0\ConsoleApp2.dll" run-date="2023-08-10" run-time="12:04:46" total="1" passed="1" failed="0" skipped="0" time="1.035" errors="0">
+    <errors />
+    <collection total="1" passed="1" failed="0" skipped="0" name="Test collection for ConsoleApp2.Class1" time="0.005">
+      <test name="ConsoleApp2.Class1.Test" type="ConsoleApp2.Class1" method="Test" time="0.0046386" result="Pass">
+        <traits>
+          <trait name="Category" value="TestCategory" />
+        </traits>
+      </test>
+    </collection>
+  </assembly>
+</assemblies>

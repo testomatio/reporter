@@ -1,0 +1,32 @@
+<test-run id="2" duration="5.031224" testcasecount="2" total="2" passed="1" failed="1" inconclusive="0" skipped="0" result="Failed" start-time="2022-11-10T 18:30:08Z" end-time="2022-11-10T 18:30:12Z">
+  <test-suite type="Assembly" name="Tests.dll" fullname="/Tests/bin/Debug/net6.0/Tests.dll" total="2" passed="1" failed="1" inconclusive="0" skipped="0" result="Failed" start-time="2022-11-10T 18:30:08Z" end-time="2022-11-10T 18:30:12Z" duration="5.031224">
+    <test-suite type="TestSuite" name="Tests" fullname="Tests" total="2" passed="1" failed="1" inconclusive="0" skipped="0" result="Failed" start-time="2022-11-10T 18:30:08Z" end-time="2022-11-10T 18:30:12Z" duration="5.031224">
+      <test-suite type="TestSuite" name="NUnit_Tests" fullname="Tests.NUnit_Tests" total="2" passed="1" failed="1" inconclusive="0" skipped="0" result="Failed" start-time="2022-11-10T 18:30:08Z" end-time="2022-11-10T 18:30:12Z" duration="5.031224">
+        <test-suite type="TestSuite" name="Billing" fullname="Tests.NUnit_Tests.Billing" total="2" passed="1" failed="1" inconclusive="0" skipped="0" result="Failed" start-time="2022-11-10T 18:30:08Z" end-time="2022-11-10T 18:30:12Z" duration="5.031224">
+          <test-suite type="TestSuite" name="Cashier" fullname="Tests.NUnit_Tests.Billing.Cashier" total="2" passed="1" failed="1" inconclusive="0" skipped="0" result="Failed" start-time="2022-11-10T 18:30:08Z" end-time="2022-11-10T 18:30:12Z" duration="5.031224">
+            <test-suite type="TestFixture" name="CashierShiftScenariosNew" fullname="Tests.NUnit_Tests.Billing.Cashier.CashierShiftScenariosNew" classname="Tests.NUnit_Tests.Billing.Cashier.CashierShiftScenariosNew" total="2" passed="1" failed="1" inconclusive="0" skipped="0" result="Failed" start-time="2022-11-10T 18:30:08Z" end-time="2022-11-10T 18:30:12Z" duration="5.031224" filepath="Tests/NUnit_Tests/Billing/Cashier/CashierShiftScenariosNew.cs">
+              <test-case name="PostCashTransactionOnCashierPageNew(True)" fullname="Tests.NUnit_Tests.Billing.Cashier.CashierShiftScenariosNew.PostCashTransactionOnCashierPageNew" methodname="PostCashTransactionOnCashierPageNew" classname="Tests.NUnit_Tests.Billing.Cashier.CashierShiftScenariosNew" result="Passed" start-time="2022-11-10T 18:30:08Z" end-time="2022-11-10T 18:30:10Z" duration="1.432391" asserts="0" seed="1560538371">
+                <properties>
+                  <property name="ID" value="T566a9209"/>
+                </properties>
+                <arguments><arg>True</arg></arguments>
+                <output><![CDATA[Test passed successfully]]></output>
+              </test-case>
+              <test-case name="PostCashTransactionOnCashierPageNew(False)" fullname="Tests.NUnit_Tests.Billing.Cashier.CashierShiftScenariosNew.PostCashTransactionOnCashierPageNew" methodname="PostCashTransactionOnCashierPageNew" classname="Tests.NUnit_Tests.Billing.Cashier.CashierShiftScenariosNew" result="Failed" start-time="2022-11-10T 18:30:10Z" end-time="2022-11-10T 18:30:12Z" duration="1.598833" asserts="1" seed="1629942581">
+                <properties>
+                  <property name="ID" value="T566a9209"/>
+                </properties>
+                <arguments><arg>False</arg></arguments>
+                <failure>
+                  <message>Test failed with False parameter</message>
+                  <stack-trace>   at Tests.NUnit_Tests.Billing.Cashier.CashierShiftScenariosNew.PostCashTransactionOnCashierPageNew(Boolean isReceived) in /Tests/NUnit_Tests/Billing/Cashier/CashierShiftScenariosNew.cs:line 42</stack-trace>
+                </failure>
+                <output><![CDATA[Test failed with False parameter]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>
