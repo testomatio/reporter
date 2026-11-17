@@ -30,8 +30,6 @@ jobs:
       - run: npm run test:storage
 
   playwright-tests:
-    # not ubuntu-latest: the root lockfile pins playwright 1.60.0, which has no
-    # chromium builds for ubuntu 26.04 (the current ubuntu-latest image)
     runs-on: ubuntu-24.04
     name: Playwright Adapter Tests
     needs: linter-and-tests-on-latest-node
