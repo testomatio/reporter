@@ -84,6 +84,10 @@ class CoveragePipe { // or Changes for the future???
             httpMethodsToRetry: ['GET','PUT','HEAD','OPTIONS','DELETE','POST'],
             shouldRetry: (error) => {
                 if (!error.response) return false;
+                // a custom shouldRetry replaces the built-in check, which is the only place
+                // where the retry limit is enforced, so the limit must be checked here as well
+                const { currentRetryAttempt = 0, retry } = error.config.retryConfig;
+                if (currentRetryAttempt >= retry) return false;
                 switch (error.response?.status) {
                 case 400: // Bad request (probably wrong API key)
                 case 404: // Test not matched
