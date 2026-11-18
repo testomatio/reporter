@@ -37,7 +37,7 @@
     "lodash.memoize": "^4.1.2",
     "lodash.merge": "^4.6.2",
     "marked": "^14.1.4",
-    "minimatch": "^10.2.4",
+    "minimatch": "^11.0.1",
     "picocolors": "^1.0.1",
     "pretty-ms": "^7.0.1",
     "promise-retry": "^2.0.1",
