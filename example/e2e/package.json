@@ -1,0 +1,14 @@
+{
+  "name": "testomatio-e2e-example",
+  "version": "1.0.0",
+  "description": "Example e2e (tester-army) project with Testomat.io reporter",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "e2e run"
+  },
+  "devDependencies": {
+    "@e2e-dev/web": "^0.15.0",
+    "e2e": "^0.21.0"
+  }
+}
