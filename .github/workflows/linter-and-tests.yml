@@ -30,7 +30,7 @@ jobs:
       - run: npm run test:storage
 
   playwright-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     name: Playwright Adapter Tests
     needs: linter-and-tests-on-latest-node
     # Backstop: a stalled `playwright install` once burned the full 6h limit.
