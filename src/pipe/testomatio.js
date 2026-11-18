@@ -139,6 +139,10 @@ class TestomatioPipe {
         httpMethodsToRetry: ['GET', 'PUT', 'HEAD', 'OPTIONS', 'DELETE', 'POST'],
         shouldRetry: error => {
           if (!error.response) return false;
+          // a custom shouldRetry replaces the built-in check, which is the only place
+          // where the retry limit is enforced, so the limit must be checked here as well
+          const { currentRetryAttempt = 0, retry } = error.config.retryConfig;
+          if (currentRetryAttempt >= retry) return false;
           // no need to retry on 4xx errors, because they caused by user mistake, thus retrying will not help
           // 500 could also be related to both user or server mistake, but decided not to retry for now
           // this code code be changed to retry 500 too if needed
