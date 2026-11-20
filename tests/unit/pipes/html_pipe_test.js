@@ -860,6 +860,49 @@ describe('HTML report tests', () => {
     expect(startedAtLabel.nextElementSibling.textContent.trim()).to.equal('(02/01/2024 03:04:05)');
   });
 
+  // https://github.com/testomatio/reporter/issues/994
+  it('shows the run duration, not the sum of test durations, for parallel runs', async () => {
+    process.env.TESTOMATIO_HTML_REPORT_SAVE = '1';
+    const template = path.resolve(dirname, '../../..', 'src', 'template', 'testomatio.hbs');
+    const out = path.resolve(testOutputDir, 'duration-994.html');
+    const pipe = new HtmlPipe({}, {});
+    await pipe.createRun();
+    // 4 tests, 10s each, running in parallel: the run takes ~11s, the sum is 40s
+    pipe.startedAt = new Date(Date.now() - 11_000);
+
+    pipe.buildReport({
+      runParams: { status: 'passed', isParallel: true },
+      tests: [
+        { title: 'test 1', suite_title: 'Suite 1', status: 'passed', run_time: 10_000 },
+        { title: 'test 2', suite_title: 'Suite 2', status: 'passed', run_time: 10_000 },
+        { title: 'test 3', suite_title: 'Suite 3', status: 'passed', run_time: 10_000 },
+        { title: 'test 4', suite_title: 'Suite 4', status: 'passed', run_time: 10_000 },
+      ],
+      outputPath: out,
+      templatePath: template,
+      warningMsg: '',
+    });
+
+    const html = fs.readFileSync(out, 'utf-8');
+    const document = new JSDOM(html).window.document;
+    const durationLabel = Array.from(document.querySelectorAll('.stat-label')).find(element =>
+      element.textContent.includes('Duration'),
+    );
+    expect(durationLabel, 'Duration stat should exist').to.exist;
+    const duration = durationLabel.nextElementSibling.textContent.trim();
+    // wall-clock ~11s, not the 40s sum
+    expect(duration).to.match(/^0h 0m 1[01]s \d+ms$/);
+  });
+
+  it('falls back to the sum of test durations when the run start time is unknown', () => {
+    const pipe = new HtmlPipe({}, {});
+    const sum = pipe.getExecutionTime([
+      { run_time: 1500 },
+      { run_time: 2500 },
+    ]);
+    expect(sum).to.equal('0h 0m 4s 0ms');
+  });
+
   it('omits the Configuration section when no configuration is present', () => {
     const htmlContent = fs.readFileSync(filepath, 'utf-8');
     const dom = new JSDOM(htmlContent);
