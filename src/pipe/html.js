@@ -120,13 +120,31 @@ class HtmlPipe {
   async finishRun(runParams) {
     if (!this.isEnabled) return;
 
-    if (this.isHtml) {
+    if (!this.isHtml) return;
+
+    const runs = groupTestsByRunFolder(this.tests);
+    if (runs.length === 1 && !runs[0].outputDir) {
       // GENERATE HTML reports based on the results data
       this.buildReport({
         runParams,
         // TODO: this.tests=[] in case of Mocha, need retest by Vitalii
         tests: this.tests,
         outputPath: this.htmlOutputPath,
+        templatePath: this.templateHtmlPath,
+        warningMsg: this.filenameMsg,
+      });
+      return;
+    }
+
+    for (const { outputDir, tests } of runs) {
+      const reportDir = outputDir
+        ? path.join(outputDir, path.basename(this.htmlReportDir) || HTML_REPORT.FOLDER)
+        : this.htmlReportDir;
+      fileSystem.createDir(reportDir);
+      this.buildReport({
+        runParams,
+        tests,
+        outputPath: path.join(reportDir, this.htmlReportName),
         templatePath: this.templateHtmlPath,
         warningMsg: this.filenameMsg,
       });
@@ -707,6 +725,17 @@ function normalizeRetries(test) {
   const metaFlaky = test.meta?.flaky === true || test.meta?.isFlaky === true;
 
   test.flaky = Boolean(metaFlaky || passedAfterRetries);
+}
+
+function groupTestsByRunFolder(tests) {
+  const groups = new Map();
+  for (const test of tests) {
+    const key = test.outputDir || null;
+    if (!groups.has(key)) groups.set(key, []);
+    const { outputDir, ...testData } = test;
+    groups.get(key).push(testData);
+  }
+  return [...groups.entries()].map(([outputDir, groupTests]) => ({ outputDir, tests: groupTests }));
 }
 
 /**

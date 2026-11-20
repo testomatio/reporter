@@ -178,6 +178,7 @@ function CodeceptReporter(config) {
         suite_title: stripTagsFromTitle(suite.title),
         error,
         time: hook?.runnable?.duration,
+        outputDir: hook.outputDir || test.outputDir,
       });
       reportTestPromises.push(reportTestPromise);
     }
@@ -196,6 +197,7 @@ function CodeceptReporter(config) {
           suite_title: stripTagsFromTitle(suite.title),
           error,
           time: hook?.runnable?.duration,
+          outputDir: hook.outputDir || test.outputDir,
         });
         reportTestPromises.push(reportTestPromise);
       }
@@ -215,6 +217,7 @@ function CodeceptReporter(config) {
         message: error?.message || 'AfterSuite hook failed',
         steps: stepHierarchy,
         time: hook?.runnable?.duration,
+        outputDir: hook.outputDir,
       });
       reportTestPromises.push(reportTestPromise);
     }
@@ -274,6 +277,7 @@ function CodeceptReporter(config) {
       suite_title: test.parent && stripTagsFromTitle(stripExampleFromTitle(test.parent.title).title),
       time: test.duration,
       meta: test.meta,
+      outputDir: test.outputDir,
     });
     reportTestPromises.push(reportTestPromise);
     reportedTestUids.add(uid);
@@ -318,6 +322,7 @@ function CodeceptReporter(config) {
       links,
       manuallyAttachedArtifacts,
       meta,
+      outputDir: test.outputDir,
     });
     reportTestPromises.push(reportTestPromise);
 

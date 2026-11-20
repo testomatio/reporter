@@ -873,6 +873,44 @@ describe('HTML report tests', () => {
     expect(pipe.isEnabled).to.equal(true);
     expect(pipe.htmlReportDir).to.equal(path.join('output', 'report'));
   });
+
+  // https://github.com/testomatio/reporter/issues/992
+  it('writes one report per run output folder when tests carry outputDir', async () => {
+    const chromiumDir = path.resolve(testOutputDir, 'runs', 'dev_chromium_1');
+    const webkitDir = path.resolve(testOutputDir, 'runs', 'dev_webkit_1');
+    const pipe = new HtmlPipe({ html: true, reportDir: path.join(testOutputDir, 'report') }, {});
+    await pipe.createRun();
+
+    pipe.addTest({ title: 'test 1', suite_title: 'Suite 1', status: 'passed', run_time: 1, rid: 'c1', outputDir: chromiumDir });
+    pipe.addTest({ title: 'test 2', suite_title: 'Suite 2', status: 'failed', run_time: 2, rid: 'c2', outputDir: chromiumDir });
+    pipe.addTest({ title: 'test 1', suite_title: 'Suite 1', status: 'passed', run_time: 1, rid: 'w1', outputDir: webkitDir });
+    await pipe.finishRun({ status: 'passed' });
+
+    const chromiumReport = path.join(chromiumDir, 'report', 'testomatio-report.html');
+    const webkitReport = path.join(webkitDir, 'report', 'testomatio-report.html');
+    expect(fs.existsSync(chromiumReport)).to.be.true;
+    expect(fs.existsSync(webkitReport)).to.be.true;
+    expect(fs.existsSync(path.resolve(testOutputDir, 'report', 'testomatio-report.html'))).to.be.false;
+
+    const testsOf = report => {
+      const html = fs.readFileSync(report, 'utf-8');
+      const match = html.match(/let allTests = (\{.*?\}).totalTests;/s);
+      return JSON.parse(match[1]).totalTests;
+    };
+    expect(testsOf(chromiumReport).map(t => t.rid)).to.deep.equal(['c1', 'c2']);
+    expect(testsOf(webkitReport).map(t => t.rid)).to.deep.equal(['w1']);
+  });
+
+  it('writes a single report when no test carries outputDir', async () => {
+    const pipe = new HtmlPipe({ html: true, reportDir: path.join(testOutputDir, 'single-report') }, {});
+    await pipe.createRun();
+
+    pipe.addTest({ title: 'test 1', suite_title: 'Suite 1', status: 'passed', run_time: 1, rid: 's1' });
+    pipe.addTest({ title: 'test 2', suite_title: 'Suite 2', status: 'passed', run_time: 1, rid: 's2' });
+    await pipe.finishRun({ status: 'passed' });
+
+    expect(fs.existsSync(path.join(testOutputDir, 'single-report', 'testomatio-report.html'))).to.be.true;
+  });
 });
 
 function getCurrentDate() {
