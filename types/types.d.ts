@@ -211,6 +211,9 @@ export interface TestData {
 
   /** Whether to overwrite status of this test to avoid saving as retry (defaults to false) */
   overwrite?: boolean;
+
+  /** Output folder of the run this test belongs to (e.g. set by CodeceptJS run-workers per browser) */
+  outputDir?: string;
 }
 
 /**
