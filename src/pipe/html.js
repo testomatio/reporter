@@ -150,6 +150,14 @@ class HtmlPipe {
       });
     }
   }
+
+  getExecutionTime(tests) {
+    if (this.startedAt) {
+      const durationMs = Date.now() - this.startedAt.getTime();
+      if (durationMs >= 0) return formatDuration(durationMs);
+    }
+    return testExecutionSumTime(tests);
+  }
   /**
    * Generates an HTML report based on provided test data and a template.
    * @param {object} opts - Test options used to generate the HTML report:
@@ -287,7 +295,7 @@ class HtmlPipe {
       status: runParams.status || 'No status info',
       parallel: runParams.isParallel || 'No parallel info',
       runUrl: this.store.runUrl || '',
-      executionTime: testExecutionSumTime(aggregatedTests),
+      executionTime: this.getExecutionTime(aggregatedTests),
       executionDate: getDateTimeFormatted(this.startedAt || new Date()),
       description:
         [this.description, runParams.description || this.store.coverageDescription || this.store.description]
