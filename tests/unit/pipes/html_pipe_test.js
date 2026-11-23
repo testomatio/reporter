@@ -860,6 +860,49 @@ describe('HTML report tests', () => {
     expect(startedAtLabel.nextElementSibling.textContent.trim()).to.equal('(02/01/2024 03:04:05)');
   });
 
+  // https://github.com/testomatio/reporter/issues/994
+  it('shows the run duration, not the sum of test durations, for parallel runs', async () => {
+    process.env.TESTOMATIO_HTML_REPORT_SAVE = '1';
+    const template = path.resolve(dirname, '../../..', 'src', 'template', 'testomatio.hbs');
+    const out = path.resolve(testOutputDir, 'duration-994.html');
+    const pipe = new HtmlPipe({}, {});
+    await pipe.createRun();
+    // 4 tests, 10s each, running in parallel: the run takes ~11s, the sum is 40s
+    pipe.startedAt = new Date(Date.now() - 11_000);
+
+    pipe.buildReport({
+      runParams: { status: 'passed', isParallel: true },
+      tests: [
+        { title: 'test 1', suite_title: 'Suite 1', status: 'passed', run_time: 10_000 },
+        { title: 'test 2', suite_title: 'Suite 2', status: 'passed', run_time: 10_000 },
+        { title: 'test 3', suite_title: 'Suite 3', status: 'passed', run_time: 10_000 },
+        { title: 'test 4', suite_title: 'Suite 4', status: 'passed', run_time: 10_000 },
+      ],
+      outputPath: out,
+      templatePath: template,
+      warningMsg: '',
+    });
+
+    const html = fs.readFileSync(out, 'utf-8');
+    const document = new JSDOM(html).window.document;
+    const durationLabel = Array.from(document.querySelectorAll('.stat-label')).find(element =>
+      element.textContent.includes('Duration'),
+    );
+    expect(durationLabel, 'Duration stat should exist').to.exist;
+    const duration = durationLabel.nextElementSibling.textContent.trim();
+    // wall-clock ~11s, not the 40s sum
+    expect(duration).to.match(/^0h 0m 1[01]s \d+ms$/);
+  });
+
+  it('falls back to the sum of test durations when the run start time is unknown', () => {
+    const pipe = new HtmlPipe({}, {});
+    const sum = pipe.getExecutionTime([
+      { run_time: 1500 },
+      { run_time: 2500 },
+    ]);
+    expect(sum).to.equal('0h 0m 4s 0ms');
+  });
+
   it('omits the Configuration section when no configuration is present', () => {
     const htmlContent = fs.readFileSync(filepath, 'utf-8');
     const dom = new JSDOM(htmlContent);
@@ -940,6 +983,44 @@ describe('HTML report tests', () => {
       const expected = metaTests.find(t => t.title === rendered.title && t.suite_title === rendered.suite);
       expect(rendered.browser).to.equal(expected.meta.browser);
     }
+  });
+
+  // https://github.com/testomatio/reporter/issues/992
+  it('writes one report per run output folder when tests carry outputDir', async () => {
+    const chromiumDir = path.resolve(testOutputDir, 'runs', 'dev_chromium_1');
+    const webkitDir = path.resolve(testOutputDir, 'runs', 'dev_webkit_1');
+    const pipe = new HtmlPipe({ html: true, reportDir: path.join(testOutputDir, 'report') }, {});
+    await pipe.createRun();
+
+    pipe.addTest({ title: 'test 1', suite_title: 'Suite 1', status: 'passed', run_time: 1, rid: 'c1', outputDir: chromiumDir });
+    pipe.addTest({ title: 'test 2', suite_title: 'Suite 2', status: 'failed', run_time: 2, rid: 'c2', outputDir: chromiumDir });
+    pipe.addTest({ title: 'test 1', suite_title: 'Suite 1', status: 'passed', run_time: 1, rid: 'w1', outputDir: webkitDir });
+    await pipe.finishRun({ status: 'passed' });
+
+    const chromiumReport = path.join(chromiumDir, 'report', 'testomatio-report.html');
+    const webkitReport = path.join(webkitDir, 'report', 'testomatio-report.html');
+    expect(fs.existsSync(chromiumReport)).to.be.true;
+    expect(fs.existsSync(webkitReport)).to.be.true;
+    expect(fs.existsSync(path.resolve(testOutputDir, 'report', 'testomatio-report.html'))).to.be.false;
+
+    const testsOf = report => {
+      const html = fs.readFileSync(report, 'utf-8');
+      const match = html.match(/let allTests = (\{.*?\}).totalTests;/s);
+      return JSON.parse(match[1]).totalTests;
+    };
+    expect(testsOf(chromiumReport).map(t => t.rid)).to.deep.equal(['c1', 'c2']);
+    expect(testsOf(webkitReport).map(t => t.rid)).to.deep.equal(['w1']);
+  });
+
+  it('writes a single report when no test carries outputDir', async () => {
+    const pipe = new HtmlPipe({ html: true, reportDir: path.join(testOutputDir, 'single-report') }, {});
+    await pipe.createRun();
+
+    pipe.addTest({ title: 'test 1', suite_title: 'Suite 1', status: 'passed', run_time: 1, rid: 's1' });
+    pipe.addTest({ title: 'test 2', suite_title: 'Suite 2', status: 'passed', run_time: 1, rid: 's2' });
+    await pipe.finishRun({ status: 'passed' });
+
+    expect(fs.existsSync(path.join(testOutputDir, 'single-report', 'testomatio-report.html'))).to.be.true;
   });
 });
 

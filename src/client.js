@@ -216,7 +216,7 @@ class Client {
     /**
      * @type {TestData}
      */
-    const { rid, error = null, steps: originalSteps, title, suite_title } = testData;
+    const { rid, error = null, steps: originalSteps, title, suite_title, outputDir } = testData;
     let steps = originalSteps;
 
     // Capture step artifact paths BEFORE uploadStepArtifacts mutates them to URLs,
@@ -353,6 +353,7 @@ class Client {
       links,
       overwrite,
       tags,
+      ...(outputDir && { outputDir }),
       ...(rootSuiteId && { root_suite_id: rootSuiteId }),
     };
 

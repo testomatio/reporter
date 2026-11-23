@@ -120,7 +120,10 @@ class HtmlPipe {
   async finishRun(runParams) {
     if (!this.isEnabled) return;
 
-    if (this.isHtml) {
+    if (!this.isHtml) return;
+
+    const runs = groupTestsByRunFolder(this.tests);
+    if (runs.length === 1 && !runs[0].outputDir) {
       // GENERATE HTML reports based on the results data
       this.buildReport({
         runParams,
@@ -130,7 +133,30 @@ class HtmlPipe {
         templatePath: this.templateHtmlPath,
         warningMsg: this.filenameMsg,
       });
+      return;
     }
+
+    for (const { outputDir, tests } of runs) {
+      const reportDir = outputDir
+        ? path.join(outputDir, path.basename(this.htmlReportDir) || HTML_REPORT.FOLDER)
+        : this.htmlReportDir;
+      fileSystem.createDir(reportDir);
+      this.buildReport({
+        runParams,
+        tests,
+        outputPath: path.join(reportDir, this.htmlReportName),
+        templatePath: this.templateHtmlPath,
+        warningMsg: this.filenameMsg,
+      });
+    }
+  }
+
+  getExecutionTime(tests) {
+    if (this.startedAt) {
+      const durationMs = Date.now() - this.startedAt.getTime();
+      if (durationMs >= 0) return formatDuration(durationMs);
+    }
+    return testExecutionSumTime(tests);
   }
   /**
    * Generates an HTML report based on provided test data and a template.
@@ -269,7 +295,7 @@ class HtmlPipe {
       status: runParams.status || 'No status info',
       parallel: runParams.isParallel || 'No parallel info',
       runUrl: this.store.runUrl || '',
-      executionTime: testExecutionSumTime(aggregatedTests),
+      executionTime: this.getExecutionTime(aggregatedTests),
       executionDate: getDateTimeFormatted(this.startedAt || new Date()),
       description:
         [this.description, runParams.description || this.store.coverageDescription || this.store.description]
@@ -707,6 +733,17 @@ function normalizeRetries(test) {
   const metaFlaky = test.meta?.flaky === true || test.meta?.isFlaky === true;
 
   test.flaky = Boolean(metaFlaky || passedAfterRetries);
+}
+
+function groupTestsByRunFolder(tests) {
+  const groups = new Map();
+  for (const test of tests) {
+    const key = test.outputDir || null;
+    if (!groups.has(key)) groups.set(key, []);
+    const { outputDir, ...testData } = test;
+    groups.get(key).push(testData);
+  }
+  return [...groups.entries()].map(([outputDir, groupTests]) => ({ outputDir, tests: groupTests }));
 }
 
 /**
