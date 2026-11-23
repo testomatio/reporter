@@ -2527,13 +2527,22 @@
         google.charts.load('current', {'packages':['corechart']});
         google.charts.setOnLoadCallback(drawTestChart);
 
+        function escapeHtml(text) {
+            return String(text)
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#39;');
+        }
+
         function createMetadataItems(metadata) {
             if (!metadata || Object.keys(metadata).length === 0) return '';
 
             return Object.entries(metadata).map(([key, value]) => `
-                <div class='metadata-item meta-item' data-meta-key='${key}'>
-                    <div class='metadata-key'>${key}</div>
-                    <div class='metadata-value'>${typeof value === 'object' ? JSON.stringify(value, null, 2) : value}</div>
+                <div class='metadata-item meta-item' data-meta-key='${escapeHtml(key)}'>
+                    <div class='metadata-key'>${escapeHtml(key)}</div>
+                    <div class='metadata-value'>${typeof value === 'object' ? escapeHtml(JSON.stringify(value, null, 2)) : escapeHtml(value)}</div>
                 </div>
             `).join('');
         }
@@ -2791,7 +2800,7 @@
                         </div>
                     </div>` : ''}
                     ${Object.keys(test.meta || {}).length > 0 ? `<div class='test-tab-content' data-tab='metadata'>
-                        <div class='metadata-grid' data-test-meta></div>
+                        <div class='metadata-grid' data-test-meta>${createMetadataItems(test.meta)}</div>
                     </div>` : ''}
                     ${hasTraces ? `<div class='test-tab-content' data-tab='traces'>
                         <div class='trace-viewer-container'></div>
@@ -3378,35 +3387,11 @@
             setTimeout(populateMetadataFields, 50);
         }
 
+        // Metadata is rendered inline by createTestItem (which has the test object in hand),
+        // so after each re-render we only need to reapply the visibility settings.
+        // Looking the test up in allTests by data-test-index is incorrect here:
+        // the index is local to the group/filtered list, not the position in allTests (#993).
         function populateMetadataFields() {
-            const metaGrids = document.querySelectorAll('[data-test-meta]');
-            metaGrids.forEach(grid => {
-                const testItem = grid.closest('.test-item');
-                if (!testItem) return;
-
-                const testIndex = parseInt(testItem.getAttribute('data-test-index'));
-                const test = allTests[testIndex];
-                if (!test || !test.meta) return;
-
-                Object.entries(test.meta).forEach(([key, value]) => {
-                    const metaItem = document.createElement('div');
-                    metaItem.className = 'metadata-item meta-item';
-                    metaItem.setAttribute('data-meta-key', key);
-
-                    const keyDiv = document.createElement('div');
-                    keyDiv.className = 'metadata-key';
-                    keyDiv.textContent = key;
-
-                    const valueDiv = document.createElement('div');
-                    valueDiv.className = 'metadata-value';
-                    valueDiv.textContent = typeof value === 'object' ? JSON.stringify(value, null, 2) : value;
-
-                    metaItem.appendChild(keyDiv);
-                    metaItem.appendChild(valueDiv);
-                    grid.appendChild(metaItem);
-                });
-            });
-
             setTimeout(applyMetaVisibility, 10);
         }
 

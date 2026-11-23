@@ -917,6 +917,74 @@ describe('HTML report tests', () => {
     expect(pipe.htmlReportDir).to.equal(path.join('output', 'report'));
   });
 
+  it('shows each test its own metadata when grouped by suite or filtered by search', () => {
+    const metaTests = [
+      { title: 'test 1', suite_title: 'Suite A', status: 'passed', run_time: 1, rid: 'A1', meta: { browser: 'A1' } },
+      { title: 'test 1', suite_title: 'Suite B', status: 'passed', run_time: 1, rid: 'B1', meta: { browser: 'B1' } },
+      { title: 'test 2', suite_title: 'Suite A', status: 'passed', run_time: 1, rid: 'A2', meta: { browser: 'A2' } },
+      { title: 'test 2', suite_title: 'Suite B', status: 'passed', run_time: 1, rid: 'B2', meta: { browser: 'B2' } },
+    ];
+    const metaReportPath = path.resolve(testOutputDir, 'metadata-993.html');
+    const htmlPipe = new HtmlPipe({}, {});
+    htmlPipe.buildReport({
+      runParams: { status: 'passed' },
+      tests: metaTests,
+      outputPath: metaReportPath,
+      templatePath: path.resolve(dirname, '../../..', 'src', 'template', 'testomatio.hbs'),
+      warningMsg: '',
+    });
+
+    const htmlContent = fs.readFileSync(metaReportPath, 'utf-8');
+    const dom = new JSDOM(htmlContent, { runScripts: 'outside-only', url: 'https://localhost/' });
+    const { window } = dom;
+    window.google = { charts: { load() {}, setOnLoadCallback() {} } };
+
+    const scriptElements = window.document.querySelectorAll('script');
+    let pageScript = '';
+    for (const script of scriptElements) {
+      if (script.textContent && script.textContent.includes('function createTestItem')) {
+        pageScript = script.textContent;
+        break;
+      }
+    }
+    expect(pageScript).to.not.equal('');
+
+    // run the page script and both views (grouped by suite, then filtered by search)
+    // in the same eval scope: top-level `let` bindings (groupingMode, searchTerm) are
+    // not reachable from a separate eval call
+    window.eval(`
+      ${pageScript}
+      window.__readRenderedMeta = () => Array.from(document.querySelectorAll('.test-item')).map(item => ({
+        title: item.querySelector('.test-title').textContent.trim(),
+        suite: item.querySelector('.test-suite').textContent.trim(),
+        browser: item.querySelector('[data-meta-key="browser"] .metadata-value').textContent,
+      }));
+      groupingMode = 'suite';
+      renderTests();
+      window.__groupedMeta = window.__readRenderedMeta();
+      groupingMode = 'all';
+      searchTerm = 'suite b';
+      renderTests();
+      window.__filteredMeta = window.__readRenderedMeta();
+    `);
+
+    // grouped by suite: same order as allTests, but per-group indices used to break the lookup
+    expect(window.__groupedMeta).to.have.lengthOf(4);
+    for (const rendered of window.__groupedMeta) {
+      const expected = metaTests.find(t => t.title === rendered.title && t.suite_title === rendered.suite);
+      expect(expected, `unknown rendered test ${rendered.title} / ${rendered.suite}`).to.exist;
+      expect(rendered.browser).to.equal(expected.meta.browser);
+    }
+
+    // search filter: only Suite B tests are rendered, each with its own browser
+    expect(window.__filteredMeta).to.have.lengthOf(2);
+    for (const rendered of window.__filteredMeta) {
+      expect(rendered.suite).to.equal('Suite B');
+      const expected = metaTests.find(t => t.title === rendered.title && t.suite_title === rendered.suite);
+      expect(rendered.browser).to.equal(expected.meta.browser);
+    }
+  });
+
   // https://github.com/testomatio/reporter/issues/992
   it('writes one report per run output folder when tests carry outputDir', async () => {
     const chromiumDir = path.resolve(testOutputDir, 'runs', 'dev_chromium_1');
