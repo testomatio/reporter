@@ -57,6 +57,7 @@ function CodeceptReporter(config) {
   let traces = [];
   const reportTestPromises = [];
   let isRunFinalized = false;
+  let isWorkersMode = false;
 
   const testTimeMap = {};
   const failedUrls = new Map();
@@ -107,6 +108,7 @@ function CodeceptReporter(config) {
   };
 
   event.dispatcher.on(event.workers.before, () => {
+    isWorkersMode = true;
     recorder.add('Creating new run', async () => {
       await client.createRun();
       process.env.TESTOMATIO_RUN = client.runId;
@@ -286,7 +288,7 @@ function CodeceptReporter(config) {
     failedTests.push(uid || title);
     const testObj = getTestAndMessage(title);
     const files = buildArtifactFiles(artifacts);
-    const logs = getTestLogs(test);
+    const logs = getTestLogs(test, isWorkersMode);
     const manuallyAttachedArtifacts = services.artifacts.get(test.fullTitle());
     const keyValues = services.keyValues.get(test.fullTitle());
     const links = services.links.get(test.fullTitle());
@@ -325,6 +327,7 @@ function CodeceptReporter(config) {
   });
 
   event.dispatcher.on(event.step.started, step => {
+    if (isWorkersMode) return;
     const stepText = `${repeat(output.stepShift)} ${formatStepLog(step)}`;
     dataStorage.putData('log', stepText);
   });
@@ -494,19 +497,23 @@ function captureHookStep(step, currentHook, hookSteps) {
 }
 
 // TODO: think about moving to some common utils
-function getTestLogs(test) {
+function getTestLogs(test, isWorkersMode = false) {
   // Contexts for each log section
   const suiteTitle = test.parent.fullTitle();
   const testTitle = test.fullTitle();
   const beforeSuiteLogsArr = services.logger.getLogs(`BeforeSuite ${suiteTitle}`);
   const beforeLogsArr = services.logger.getLogs(`Before ${testTitle}`);
-  const testLogsArr = services.logger.getLogs(testTitle);
+  const testLogsArr = isWorkersMode ? null : services.logger.getLogs(testTitle);
   const afterLogsArr = services.logger.getLogs(`After ${testTitle}`);
   const afterSuiteLogsArr = services.logger.getLogs(`AfterSuite ${suiteTitle}`);
 
   const beforeSuiteLogs = beforeSuiteLogsArr ? beforeSuiteLogsArr.join('\n').trim() : '';
   const beforeLogs = beforeLogsArr ? beforeLogsArr.join('\n').trim() : '';
-  const testLogs = testLogsArr ? testLogsArr.join('\n').trim() : '';
+  const testLogs = isWorkersMode
+    ? (test.steps || []).map(step => formatStepLog(step)).join('\n').trim()
+    : testLogsArr
+      ? testLogsArr.join('\n').trim()
+      : '';
   const afterLogs = afterLogsArr ? afterLogsArr.join('\n').trim() : '';
   const afterSuiteLogs = afterSuiteLogsArr ? afterSuiteLogsArr.join('\n').trim() : '';
 
