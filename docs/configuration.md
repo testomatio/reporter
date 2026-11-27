@@ -238,6 +238,20 @@ TESTOMATIO={API_KEY} TESTOMATIO_TITLE="Today's Build" TESTOMATIO_SHARDS=3 <actua
 
 In this case the run will finish automatically when all 3 shards complete, without needing a separate `finish` command.
 
+#### `TESTOMATIO_TERMINATION_PROTECTION_TIMEOUT`
+
+Protects the run from being automatically terminated by timeout. The value is sent to Testomat.io as `termination_protection_timeout` when the run is created. Timeout is set in minutes, maximum value is 600 minutes.
+
+When used with a shared run (matched by `TESTOMATIO_TITLE`), every report sent to that run overwrites the protection TTL with the passed value. So the run stays protected as long as new reports keep coming.
+
+Example:
+
+```
+TESTOMATIO={API_KEY} TESTOMATIO_TITLE="Today's Build" TESTOMATIO_SHARED_RUN=1 TESTOMATIO_TERMINATION_PROTECTION_TIMEOUT=60 <actual run command>
+```
+
+In this case each report extends the run protection for the next 60 minutes.
+
 #### `TESTOMATIO_STACK_ARTIFACTS`
 
 Save large stack traces and steps as artifacts when they exceed API size limits. When enabled, stack traces larger than 5000 characters and steps data larger than 10000 characters will be saved as artifact files with timestamp-based names (`stack_{timestamp}.log` and `steps_{timestamp}.json`) instead of being included in the API request payload.

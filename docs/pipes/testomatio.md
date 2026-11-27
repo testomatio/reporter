@@ -84,6 +84,12 @@ By default you can report to the same run if a run was created no more than 20 m
 TESTOMATIO={API_KEY} TESTOMATIO_TITLE="report for commit ${GIT_COMMIT}" TESTOMATIO_SHARED_RUN=1 TESTOMATIO_SHARED_RUN_TIMEOUT=120 <actual run command>
 ```
 
+To protect a run from being automatically terminated by timeout, use `TESTOMATIO_TERMINATION_PROTECTION_TIMEOUT` (value in minutes, maximum 600). For a shared run, every report sent to it overwrites the protection TTL with the passed value, so the run stays protected while parallel jobs keep reporting:
+
+```bash
+TESTOMATIO={API_KEY} TESTOMATIO_TITLE="report for commit ${GIT_COMMIT}" TESTOMATIO_SHARED_RUN=1 TESTOMATIO_TERMINATION_PROTECTION_TIMEOUT=60 <actual run command>
+```
+
 ### Adding Report to RunGroup
 
 Create/Add run to group by providing `TESTOMATIO_RUNGROUP_TITLE`:

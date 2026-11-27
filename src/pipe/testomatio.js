@@ -97,6 +97,9 @@ class TestomatioPipe {
     this.sharedRunTimeout = process.env.TESTOMATIO_SHARED_RUN_TIMEOUT
       ? parseInt(process.env.TESTOMATIO_SHARED_RUN_TIMEOUT, 10)
       : undefined;
+    this.terminationProtectionTimeout = process.env.TESTOMATIO_TERMINATION_PROTECTION_TIMEOUT
+      ? parseInt(process.env.TESTOMATIO_TERMINATION_PROTECTION_TIMEOUT, 10) || undefined
+      : undefined;
 
     if ((this.sharedRunTimeout || this.sharedRunShards) && !this.sharedRun) {
       debug('Auto-enabling sharedRun because sharedRunTimeout or sharedRunShards is set');
@@ -334,6 +337,7 @@ class TestomatioPipe {
         shared_run: this.sharedRun,
         shared_run_timeout: this.sharedRunTimeout,
         shared_run_shards: this.sharedRunShards,
+        termination_protection_timeout: this.terminationProtectionTimeout,
         kind: params.kind,
         status: params.status,
         configuration,
