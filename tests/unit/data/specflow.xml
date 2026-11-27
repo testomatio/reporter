@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<test-run id="0" runstate="Runnable" testcasecount="7" result="Passed" total="7" passed="7" failed="0" warnings="0" inconclusive="0" skipped="0" asserts="21" engine-version="3.16.3.0" clr-version="4.0.30319.42000" start-time="2024-05-15 14:57:12Z" end-time="2024-05-15 14:59:42Z" duration="150.751943">
+  <command-line><![CDATA["C:\vagrant\nunit3-console.exe" C:\vagrant\ApiFeatures.dll]]></command-line>
+  <test-suite type="Assembly" id="1-1010" name="ApiFeatures.dll" fullname="C:\vagrant\ApiFeatures.dll" runstate="Runnable" testcasecount="7" result="Passed" start-time="2024-05-15T14:57:13.8487190Z" end-time="2024-05-15T14:59:42.8076469Z" duration="148.957996" total="7" passed="7" failed="0" warnings="0" inconclusive="0" skipped="0" asserts="21">
+    <environment framework-version="3.13.3.0" clr-version="4.0.30319.42000" os-version="Microsoft Windows NT 10.0.20348.0" platform="Win32NT" cwd="C:\Vagrant" machine-name="VM257981" user="Administrator" user-domain="VM257981" culture="en-US" uiculture="en-US" os-architecture="x64" />
+    <settings>
+      <setting name="DisposeRunners" value="True" />
+      <setting name="WorkDirectory" value="C:\Vagrant" />
+      <setting name="ImageRuntimeVersion" value="4.0.30319" />
+      <setting name="ImageTargetFrameworkName" value=".NETFramework,Version=v4.8" />
+      <setting name="ImageRequiresX86" value="False" />
+      <setting name="ImageRequiresDefaultAppDomainAssemblyResolver" value="False" />
+      <setting name="TargetRuntimeFramework" value="net-4.8" />
+      <setting name="NumberOfTestWorkers" value="4" />
+    </settings>
+    <properties>
+      <property name="_PID" value="5668" />
+      <property name="_APPDOMAIN" value="domain-" />
+    </properties>
+    <test-suite type="SetUpFixture" id="1-1000" name="[default namespace]" fullname="ApiFeatures_NUnitAssemblyHooks" classname="ApiFeatures_NUnitAssemblyHooks" runstate="Runnable" testcasecount="7" result="Passed" start-time="2024-05-15T14:57:13.8717164Z" end-time="2024-05-15T14:59:42.8076469Z" duration="148.935979" total="7" passed="7" failed="0" warnings="0" inconclusive="0" skipped="0" asserts="21">
+      <output><![CDATA[-> Loading plugin C:\Vagrant\LivingDoc.SpecFlowPlugin.dll
+-> Loading plugin C:\Vagrant\TechTalk.SpecFlow.NUnit.SpecFlowPlugin.dll
+-> Loading plugin C:\vagrant\ApiFeatures.dll
+-> Using specflow.json
+Profile dir in open browser: C:\driverProfiles\15-05_04-57-21_DriverProfile
+FillTestDictionary() started
+FillTestDictionary() ended with 1302 entries
+FindAllJsLogs() started
+FindAllJsLogs() ended with 4646 lines of JavaScript
+Resolving: |[C211256|] Allow mobile print behavior
+looking for test defined as [C211256] Allow mobile print behavior
+test found in FeatureFiles\Api.testdef
+Report file path: Report.html
+-> LivingDocPlugin: Output generated in: C:\vagrant\TestExecution.json
+]]></output>
+      <test-suite type="TestSuite" id="1-1011" name="ApiFeatures" fullname="ApiFeatures" runstate="Runnable" testcasecount="7" result="Passed" start-time="2024-05-15T14:57:42.4465344Z" end-time="2024-05-15T14:59:35.5194166Z" duration="113.072812" total="7" passed="7" failed="0" warnings="0" inconclusive="0" skipped="0" asserts="20">
+        <test-suite type="TestFixture" id="1-1001" name="ApiFeature" fullname="ApiFeatures.ApiFeature" classname="ApiFeatures.ApiFeature" runstate="Runnable" testcasecount="7" result="Passed" start-time="2024-05-15T14:57:42.4475349Z" end-time="2024-05-15T14:59:35.5194166Z" duration="113.072537" total="7" passed="7" failed="0" warnings="0" inconclusive="0" skipped="0" asserts="20">
+          <properties>
+            <property name="Description" value="Api" />
+            <property name="Category" value="S33892420" />
+          </properties>
+          <test-case id="1-1004" name="C211256AllowMobilePrintBehavior" fullname="ApiFeatures.ApiFeature.C211256AllowMobilePrintBehavior" methodname="C211256AllowMobilePrintBehavior" classname="ApiFeatures.ApiFeature" runstate="Runnable" seed="644003257" result="Passed" start-time="2024-05-15T14:57:42.4615353Z" end-time="2024-05-15T14:57:58.7210985Z" duration="16.259804" asserts="3">
+            <properties>
+              <property name="Description" value="[C211256] Allow mobile print behavior" />
+              <property name="Category" value="retry" />
+              <property name="Category" value="T21daf5b8" />
+            </properties>
+            <output><![CDATA[##teamcity[testStarted name='|[C211256|] Allow mobile print behavior' captureStandardOutput='true']
+tid://@T21daf5b8
+Given I login with username "*admin" and password "1234"
+-> done: LoginContext.ILoginWithUsernameAndPassword("*admin", "1234") (1.4s)
+Given I navigate to settings page "Credit"
+##teamcity[testFinished name='|[C211256|] Allow mobile print behavior' duration='16222']
+]]></output>
+          </test-case>
+          <test-case id="1-1003" name="C211257MyQDesktopClientTabPresence" fullname="ApiFeatures.ApiFeature.C211257MyQDesktopClientTabPresence" methodname="C211257MyQDesktopClientTabPresence" classname="ApiFeatures.ApiFeature" runstate="Runnable" seed="654205708" result="Passed" start-time="2024-05-15T14:57:58.7250976Z" end-time="2024-05-15T14:58:13.3806321Z" duration="14.655466" asserts="3">
+            <properties>
+              <property name="Description" value="[C211257] API Client tab presence" />
+              <property name="Category" value="retry" />
+              <property name="Category" value="Taefeb487" />
+            </properties>
+            <output><![CDATA[##teamcity[testStarted name='|[C211257|] API Client tab presence' captureStandardOutput='true']
+tid://@Taefeb487
+Given I login with username "*admin" and password "1234"
+-> done: LoginContext.ILoginWithUsernameAndPassword("*admin", "1234") (2.2s)
+When I select Api "Email"
+-> done: ApisContext.ISelectApi("Email") (0.3s)
+And I click on dropdown list "ref:Apis.actions" to command "Edit"
+##teamcity[testFinished name='|[C211257|] API Client tab presence' duration='14645']
+]]></output>
+          </test-case>
+          <test-case id="1-1002" name="C30918EditApi" fullname="ApiFeatures.ApiFeature.C30918EditApi" methodname="C30918EditApi" classname="ApiFeatures.ApiFeature" runstate="Runnable" seed="1779481705" result="Passed" start-time="2024-05-15T14:58:13.3806321Z" end-time="2024-05-15T14:58:40.0739132Z" duration="26.693274" asserts="4">
+            <properties>
+              <property name="Description" value="[C30918] Edit Api" />
+              <property name="Category" value="retry" />
+              <property name="Category" value="T9e84effa" />
+            </properties>
+            <output><![CDATA[##teamcity[testStarted name='|[C30918|] Edit Api' captureStandardOutput='true']
+tid://@T9e84effa
+Given I login with username "*admin" and password "1234"
+-> done: LoginContext.ILoginWithUsernameAndPassword("*admin", "1234") (3.6s)
+Given I navigate to main menu page "Apis"
+##teamcity[testFinished name='|[C30918|] Edit Api' duration='26678']
+]]></output>
+          </test-case>
+          <test-suite type="ParameterizedMethod" id="1-1009" name="CheckValuesOfCurrentUsersList" fullname="ApiFeatures.ApiFeature.CheckValuesOfCurrentUsersList" classname="ApiFeatures.ApiFeature" runstate="Runnable" testcasecount="3" result="Passed" start-time="2024-05-15T14:58:40.0739132Z" end-time="2024-05-15T14:59:20.8187750Z" duration="40.744571" total="3" passed="3" failed="0" warnings="0" inconclusive="0" skipped="0" asserts="6">
+            <properties>
+              <property name="Description" value="Check values of Current Users List" />
+              <property name="Category" value="retry" />
+              <property name="Category" value="T2dd8ba9f" />
+            </properties>
+            <test-case id="1-1006" name="CheckValuesOfCurrentUsersList(&quot;All users&quot;,null)" fullname="ApiFeatures.ApiFeature.CheckValuesOfCurrentUsersList(&quot;All users&quot;,null)" methodname="CheckValuesOfCurrentUsersList" classname="ApiFeatures.ApiFeature" runstate="Runnable" seed="825195869" result="Passed" start-time="2024-05-15T14:58:40.0749142Z" end-time="2024-05-15T14:58:54.5931776Z" duration="14.518527" asserts="2">
+              <output><![CDATA[##teamcity[testStarted name='Check values of Current Users List (All users)' captureStandardOutput='true']
+tid://@T2dd8ba9f
+Given I login with username "*admin" and password "1234"
+-> done: LoginContext.ILoginWithUsernameAndPassword("*admin", "1234") (3.5s)
+]]></output>
+            </test-case>
+            <test-case id="1-1007" name="CheckValuesOfCurrentUsersList(&quot;Managers&quot;,null)" fullname="ApiFeatures.ApiFeature.CheckValuesOfCurrentUsersList(&quot;Managers&quot;,null)" methodname="CheckValuesOfCurrentUsersList" classname="ApiFeatures.ApiFeature" runstate="Runnable" seed="1825335995" result="Passed" start-time="2024-05-15T14:58:54.5931776Z" end-time="2024-05-15T14:59:07.9551903Z" duration="13.361513" asserts="2">
+              <output><![CDATA[##teamcity[testStarted name='Check values of Current Users List (Managers)' captureStandardOutput='true']
+tid://@T2dd8ba9f
+Given I login with username "*admin" and password "1234"
+-> done: LoginContext.ILoginWithUsernameAndPassword("*admin", "1234") (3.3s)
+##teamcity[testFinished name='Check values of Current Users List (Managers)' duration='13356']
+]]></output>
+            </test-case>
+            <test-case id="1-1008" name="CheckValuesOfCurrentUsersList(&quot;Unclassified&quot;,null)" fullname="ApiFeatures.ApiFeature.CheckValuesOfCurrentUsersList(&quot;Unclassified&quot;,null)" methodname="CheckValuesOfCurrentUsersList" classname="ApiFeatures.ApiFeature" runstate="Runnable" seed="894840745" result="Passed" start-time="2024-05-15T14:59:07.9551903Z" end-time="2024-05-15T14:59:20.8147759Z" duration="12.859747" asserts="2">
+              <output><![CDATA[##teamcity[testStarted name='Check values of Current Users List (Unclassified)' captureStandardOutput='true']
+tid://@T2dd8ba9f
+Given I login with username "*admin" and password "1234"
+-> done: LoginContext.ILoginWithUsernameAndPassword("*admin", "1234") (2.5s)
+##teamcity[testFinished name='Check values of Current Users List (Unclassified)' duration='12836']
+]]></output>
+            </test-case>
+          </test-suite>
+          <test-case id="1-1005" name="SaveApis" fullname="ApiFeatures.ApiFeature.SaveApis" methodname="SaveApis" classname="ApiFeatures.ApiFeature" runstate="Runnable" seed="422926992" result="Passed" start-time="2024-05-15T14:59:20.8257744Z" end-time="2024-05-15T14:59:35.5134171Z" duration="14.687883" asserts="4">
+            <properties>
+              <property name="Description" value="Save Apis" />
+              <property name="Category" value="ClearDownloadFolder" />
+              <property name="Category" value="T9566a1aa" />
+              <property name="Category" value="retry" />
+            </properties>
+            <output><![CDATA[##teamcity[testStarted name='Save Apis' captureStandardOutput='true']
+tid://@T9566a1aa
+Given I login with username "*admin" and password "1234"
+-> done: LoginContext.ILoginWithUsernameAndPassword("*admin", "1234") (2.9s)
+##teamcity[testFinished name='Save Apis' duration='14677']
+]]></output>
+          </test-case>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>
